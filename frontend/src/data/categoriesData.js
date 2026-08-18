@@ -1,0 +1,16 @@
+export const categories = [
+  { id: 'all', label: 'Tất cả chỗ ở', labelEn: 'All Homes', icon: 'TbHomeCheck' },
+  { id: 'beachfront', label: 'Bãi biển', labelEn: 'Beachfront', icon: 'TbBeach' },
+  { id: 'mansions', label: 'Biệt thự sang trọng', labelEn: 'Mansions', icon: 'TbBuildingCastle' },
+  { id: 'views', label: 'Tầm nhìn tuyệt đẹp', labelEn: 'Amazing views', icon: 'TbMountain' },
+  { id: 'pools', label: 'Hồ bơi vô cực', labelEn: 'Amazing pools', icon: 'TbPool' },
+  { id: 'cabins', label: 'Nhà gỗ & Rừng thông', labelEn: 'Cabins', icon: 'TbHome2' },
+  { id: 'trending', label: 'Thịnh hành nhất', labelEn: 'Trending', icon: 'TbFlame' },
+  { id: 'countryside', label: 'Miền quê yên bình', labelEn: 'Countryside', icon: 'TbTrees' },
+  { id: 'lakefront', label: 'Ven hồ lãng mạn', labelEn: 'Lakefront', icon: 'TbSailboat' },
+  { id: 'camping', label: 'Cắm trại & Glamping', labelEn: 'Camping', icon: 'TbCampfire' },
+  { id: 'tropical', label: 'Miền nhiệt đới', labelEn: 'Tropical', icon: 'TbSun' },
+  { id: 'iconic_cities', label: 'Thành phố biểu tượng', labelEn: 'Iconic cities', icon: 'TbBuildingSkyscraper' },
+  { id: 'luxe', label: 'Đẳng cấp Luxe', labelEn: 'Luxe Stays', icon: 'TbCrown' },
+  { id: 'experiences', label: 'Trải nghiệm du lịch', labelEn: 'Experiences', icon: 'TbCompass' },
+];
