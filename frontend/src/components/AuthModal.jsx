@@ -1,177 +1,210 @@
 import React, { useState } from 'react';
-import { TbX, TbMail, TbLock, TbUser, TbBrandGoogle, TbBrandFacebook } from 'react-icons/tb';
+import { TbX, TbBrandGoogle, TbShieldLock, TbCheck, TbMail } from 'react-icons/tb';
+import { apiService } from '../services/api';
 
-export const AuthModal = ({ isOpen, onClose, initialTab = 'login', onAuthSuccess }) => {
-  const [tab, setTab] = useState(initialTab);
-  const [name, setName] = useState('');
+export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!email || !password || (tab === 'register' && !name)) {
-      setError('Vui lòng điền đầy đủ các thông tin bắt buộc.');
-      return;
-    }
+  const handleGoogleLogin = async (customEmail = null) => {
+    setLoading(true);
+    setError('');
 
-    const userData = {
-      name: tab === 'register' ? name : email.split('@')[0],
-      email: email,
-      token: 'mock-token-' + Date.now(),
+    const targetEmail = customEmail || email.trim() || 'demo.traveler@gmail.com';
+    const googleName = targetEmail.split('@')[0].replace('.', ' ').toUpperCase();
+
+    const googlePayload = {
+      email: targetEmail,
+      google_id: 'google-sub-' + Math.abs(targetEmail.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0)),
+      name: googleName,
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
     };
 
-    localStorage.setItem('tripnest_user', JSON.stringify(userData));
-    if (onAuthSuccess) onAuthSuccess(userData);
-    onClose();
+    try {
+      const res = await apiService.googleLogin(googlePayload);
+      if (res.token && res.user) {
+        const userData = {
+          ...res.user,
+          token: res.token,
+        };
+        localStorage.setItem('tripnest_user', JSON.stringify(userData));
+        if (onAuthSuccess) onAuthSuccess(userData);
+        onClose();
+      } else {
+        setError(res.message || 'Đăng nhập Google không thành công.');
+      }
+    } catch (e) {
+      setError('Có lỗi xảy ra khi kết nối máy chủ Google.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSocialMock = (provider) => {
-    const userData = {
-      name: `${provider} User`,
-      email: `user@${provider.toLowerCase()}.com`,
-      token: 'social-token-' + Date.now(),
-    };
-    localStorage.setItem('tripnest_user', JSON.stringify(userData));
-    if (onAuthSuccess) onAuthSuccess(userData);
-    onClose();
+  const handleQuickDemo = (demoType) => {
+    if (demoType === 'guest') {
+      handleGoogleLogin('guest.traveler@gmail.com');
+    } else if (demoType === 'host') {
+      handleGoogleLogin('minhhoang.dalat@gmail.com');
+    }
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal-container"
-        style={{ width: '480px', maxWidth: '95vw', padding: '2rem' }}
+        style={{ width: '460px', maxWidth: '95vw', padding: '2rem' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1px solid #ebebeb' }}>
           <button className="modal-close-btn" onClick={onClose} style={{ position: 'static' }}>
             <TbX />
           </button>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
-            {tab === 'login' ? 'Đăng nhập vào TripNest' : 'Tạo tài khoản TripNest'}
-          </h2>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Đăng nhập vào TripNest</h2>
           <div style={{ width: '36px' }} />
         </div>
 
-        {/* Tab Switcher */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #ebebeb', margin: '1.25rem 0' }}>
-          <button
+        <div style={{ padding: '1.75rem 0 0.5rem 0', textAlign: 'center' }}>
+          {/* Google Icon Badge */}
+          <div
             style={{
-              flex: 1,
-              padding: '0.75rem',
-              fontWeight: 700,
-              fontSize: '0.92rem',
-              borderBottom: tab === 'login' ? '2px solid #ff385c' : '2px solid transparent',
-              color: tab === 'login' ? '#ff385c' : '#717171',
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: '#f8f9fa',
+              border: '1px solid #ebebeb',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1.25rem auto',
+              fontSize: '2rem',
+              color: '#ea4335',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
             }}
-            onClick={() => { setTab('login'); setError(''); }}
           >
-            Đăng nhập
-          </button>
-          <button
-            style={{
-              flex: 1,
-              padding: '0.75rem',
-              fontWeight: 700,
-              fontSize: '0.92rem',
-              borderBottom: tab === 'register' ? '2px solid #ff385c' : '2px solid transparent',
-              color: tab === 'register' ? '#ff385c' : '#717171',
-            }}
-            onClick={() => { setTab('register'); setError(''); }}
-          >
-            Đăng ký
-          </button>
-        </div>
-
-        {error && (
-          <div style={{ background: '#fff0f3', color: '#e00b41', padding: '0.65rem 1rem', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '1rem' }}>
-            {error}
+            <TbBrandGoogle />
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {tab === 'register' && (
-            <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '0.6rem 0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <TbUser style={{ color: '#717171', fontSize: '1.2rem' }} />
-              <input
-                type="text"
-                placeholder="Họ và tên của bạn"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={{ border: 'none', width: '100%', fontSize: '0.92rem' }}
-              />
+          <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '0.5rem', color: '#222' }}>
+            Xác thực qua Google Email
+          </h3>
+          <p style={{ color: '#717171', fontSize: '0.88rem', lineHeight: 1.5, maxWidth: '340px', margin: '0 auto 1.75rem auto' }}>
+            Đăng nhập 1 chạm an toàn không cần mật khẩu. Trải nghiệm tức thì với tài khoản Google của bạn.
+          </p>
+
+          {error && (
+            <div style={{ background: '#fff0f3', color: '#e00b41', padding: '0.65rem 1rem', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+              {error}
             </div>
           )}
 
-          <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '0.6rem 0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <TbMail style={{ color: '#717171', fontSize: '1.2rem' }} />
-            <input
-              type="email"
-              placeholder="Địa chỉ Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={{ border: 'none', width: '100%', fontSize: '0.92rem' }}
-            />
-          </div>
-
-          <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '0.6rem 0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <TbLock style={{ color: '#717171', fontSize: '1.2rem' }} />
-            <input
-              type="password"
-              placeholder="Mật khẩu"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{ border: 'none', width: '100%', fontSize: '0.92rem' }}
-            />
-          </div>
-
-          <button type="submit" className="primary-gradient-btn" style={{ marginTop: '0.5rem' }}>
-            {tab === 'login' ? 'Tiếp tục đăng nhập' : 'Hoàn tất đăng ký'}
-          </button>
-        </form>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', margin: '1.5rem 0' }}>
-          <div style={{ flex: 1, height: '1px', background: '#ebebeb' }} />
-          <span style={{ fontSize: '0.78rem', color: '#717171', textTransform: 'uppercase' }}>hoặc tiếp tục với</span>
-          <div style={{ flex: 1, height: '1px', background: '#ebebeb' }} />
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {/* Direct Google 1-Click Button */}
           <button
             style={{
+              width: '100%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '10px',
-              border: '1px solid #222',
-              padding: '0.65rem',
-              borderRadius: '8px',
-              fontWeight: 600,
-              fontSize: '0.9rem',
+              gap: '12px',
+              padding: '0.85rem',
+              borderRadius: '10px',
+              border: '1.5px solid #dadce0',
+              background: 'white',
+              color: '#3c4043',
+              fontSize: '0.98rem',
+              fontWeight: 700,
+              boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+              transition: 'all 0.2s ease',
+              cursor: loading ? 'wait' : 'pointer',
             }}
-            onClick={() => handleSocialMock('Google')}
+            onClick={() => handleGoogleLogin()}
+            disabled={loading}
           >
-            <TbBrandGoogle style={{ fontSize: '1.2rem' }} /> Tiếp tục với Google
+            <TbBrandGoogle style={{ fontSize: '1.4rem', color: '#ea4335' }} />
+            {loading ? 'Đang xác thực Google...' : 'Tiếp tục với Google'}
           </button>
-          <button
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              border: '1px solid #222',
-              padding: '0.65rem',
-              borderRadius: '8px',
-              fontWeight: 600,
-              fontSize: '0.9rem',
+
+          {/* Or custom Google email input */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', margin: '1.5rem 0' }}>
+            <div style={{ flex: 1, height: '1px', background: '#ebebeb' }} />
+            <span style={{ fontSize: '0.75rem', color: '#717171', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Hoặc nhập Google Email cụ thể
+            </span>
+            <div style={{ flex: 1, height: '1px', background: '#ebebeb' }} />
+          </div>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (email.trim()) handleGoogleLogin(email.trim());
             }}
-            onClick={() => handleSocialMock('Facebook')}
+            style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
           >
-            <TbBrandFacebook style={{ fontSize: '1.2rem', color: '#1877f2' }} /> Tiếp tục với Facebook
-          </button>
+            <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '0.6rem 0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <TbMail style={{ color: '#717171', fontSize: '1.2rem' }} />
+              <input
+                type="email"
+                placeholder="ten-ban@gmail.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{ border: 'none', width: '100%', fontSize: '0.92rem' }}
+              />
+            </div>
+            <button
+              type="submit"
+              className="primary-gradient-btn"
+              style={{ padding: '0.75rem' }}
+              disabled={loading}
+            >
+              Đăng nhập Google Email này
+            </button>
+          </form>
+
+          {/* Quick Demo Acccess */}
+          <div style={{ marginTop: '1.5rem', background: '#f8f9fa', borderRadius: '10px', padding: '0.9rem', textAlign: 'left' }}>
+            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#484848', display: 'block', marginBottom: '6px' }}>
+              Tài khoản mẫu thử nghiệm nhanh:
+            </span>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                style={{
+                  flex: 1,
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  border: '1px solid #ddd',
+                  background: 'white',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                }}
+                onClick={() => handleQuickDemo('guest')}
+              >
+                Khách du lịch (Guest)
+              </button>
+              <button
+                style={{
+                  flex: 1,
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  border: '1px solid #ddd',
+                  background: 'white',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  color: '#ff385c',
+                }}
+                onClick={() => handleQuickDemo('host')}
+              >
+                Chủ nhà (Superhost)
+              </button>
+            </div>
+          </div>
+
+          {/* Security Guarantee */}
+          <div style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: '#717171', fontSize: '0.78rem' }}>
+            <TbShieldLock style={{ fontSize: '1rem', color: '#0d8a43' }} />
+            <span>Bảo mật 2FA bởi Google Identity Platform</span>
+          </div>
         </div>
       </div>
     </div>
