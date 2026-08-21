@@ -11,6 +11,7 @@ import MyBookingsModal from './components/MyBookingsModal';
 import WishlistModal from './components/WishlistModal';
 import HostModal from './components/HostModal';
 import Footer from './components/Footer';
+import AdminLayout from './components/admin/AdminLayout';
 
 import { apiService } from './services/api';
 
@@ -19,6 +20,42 @@ function App() {
   const [rooms, setRooms] = useState([]);
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // View state: Client view vs Admin Portal (URL routing: /admin)
+  const [isAdminOpen, setIsAdminOpen] = useState(() => {
+    return (
+      window.location.pathname.startsWith('/admin') ||
+      window.location.hash.startsWith('#admin') ||
+      new URLSearchParams(window.location.search).get('view') === 'admin'
+    );
+  });
+
+  // Sync URL changes (back/forward buttons)
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const isAdm =
+        window.location.pathname.startsWith('/admin') ||
+        window.location.hash.startsWith('#admin') ||
+        new URLSearchParams(window.location.search).get('view') === 'admin';
+      setIsAdminOpen(isAdm);
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, []);
+
+  const handleOpenAdmin = () => {
+    window.history.pushState({}, '', '/admin');
+    setIsAdminOpen(true);
+  };
+
+  const handleExitAdmin = () => {
+    window.history.pushState({}, '', '/');
+    setIsAdminOpen(false);
+  };
 
   // Filter & Search states
   const [activeCategory, setActiveCategory] = useState('all');
@@ -158,6 +195,11 @@ function App() {
 
   const wishlistRooms = rooms.filter((r) => wishlistIds.includes(r.id));
 
+  // Render Admin Portal if admin mode is active
+  if (isAdminOpen) {
+    return <AdminLayout onExitAdmin={handleExitAdmin} />;
+  }
+
   return (
     <div className="app-container">
       {/* Header with Search Engine & Auth Controls */}
@@ -169,6 +211,7 @@ function App() {
         onOpenBookings={() => setIsBookingsOpen(true)}
         onOpenWishlist={() => setIsWishlistOpen(true)}
         onOpenHost={() => setIsHostOpen(true)}
+        onOpenAdmin={handleOpenAdmin}
         wishlistCount={wishlistIds.length}
         user={user}
         onLogout={() => {

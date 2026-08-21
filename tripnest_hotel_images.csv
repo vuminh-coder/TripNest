@@ -1,0 +1,251 @@
+id,hotel_id,hotel_name,city,image_order,image_type,image_description,image_url,google_search_link
+1,1,"Dalat Palace Heritage Hotel","Đà Lạt",1,exterior,"Mặt tiền kiến trúc Pháp cổ bên hồ Xuân Hương",,https://www.google.com/search?q=Dalat+Palace+Heritage+Hotel+exterior+facade&tbm=isch
+2,1,"Dalat Palace Heritage Hotel","Đà Lạt",2,room,"Phòng Palace Deluxe nội thất cổ điển sang trọng",,https://www.google.com/search?q=Dalat+Palace+Heritage+Hotel+deluxe+room&tbm=isch
+3,1,"Dalat Palace Heritage Hotel","Đà Lạt",3,pool,"Khu vực sảnh chính và vườn hoa",,https://www.google.com/search?q=Dalat+Palace+Heritage+Hotel+lobby+garden&tbm=isch
+4,1,"Dalat Palace Heritage Hotel","Đà Lạt",4,view,"View hồ Xuân Hương từ khách sạn",,https://www.google.com/search?q=Dalat+Palace+Heritage+Hotel+Xuan+Huong+Lake+view&tbm=isch
+5,1,"Dalat Palace Heritage Hotel","Đà Lạt",5,amenity,"Nhà hàng Le Rabelais phong cách Pháp",,https://www.google.com/search?q=Dalat+Palace+Heritage+Hotel+Le+Rabelais+restaurant&tbm=isch
+6,2,"Ana Mandara Villas Dalat","Đà Lạt",1,exterior,"Biệt thự Pháp cổ giữa đồi thông",,https://www.google.com/search?q=Ana+Mandara+Villas+Dalat+exterior+villa&tbm=isch
+7,2,"Ana Mandara Villas Dalat","Đà Lạt",2,room,"Phòng ngủ vintage trong biệt thự cổ",,https://www.google.com/search?q=Ana+Mandara+Villas+Dalat+bedroom+vintage&tbm=isch
+8,2,"Ana Mandara Villas Dalat","Đà Lạt",3,pool,"Hồ bơi ngoài trời giữa vườn",,https://www.google.com/search?q=Ana+Mandara+Villas+Dalat+swimming+pool&tbm=isch
+9,2,"Ana Mandara Villas Dalat","Đà Lạt",4,view,"Vườn hoa và đồi thông xung quanh",,https://www.google.com/search?q=Ana+Mandara+Villas+Dalat+garden+pine+hill&tbm=isch
+10,2,"Ana Mandara Villas Dalat","Đà Lạt",5,amenity,"Spa và khu thư giãn",,https://www.google.com/search?q=Ana+Mandara+Villas+Dalat+spa&tbm=isch
+11,3,"Dalat Edensee Lake Resort","Đà Lạt",1,exterior,"Toàn cảnh resort bên hồ Tuyền Lâm",,https://www.google.com/search?q=Dalat+Edensee+Lake+Resort+aerial+Tuyen+Lam&tbm=isch
+12,3,"Dalat Edensee Lake Resort","Đà Lạt",2,room,"Phòng Lake View Deluxe nhìn ra hồ",,https://www.google.com/search?q=Dalat+Edensee+Lake+Resort+lake+view+room&tbm=isch
+13,3,"Dalat Edensee Lake Resort","Đà Lạt",3,pool,"Khu vực hồ bơi và giải trí",,https://www.google.com/search?q=Dalat+Edensee+Lake+Resort+pool&tbm=isch
+14,3,"Dalat Edensee Lake Resort","Đà Lạt",4,view,"View hồ Tuyền Lâm và rừng thông",,https://www.google.com/search?q=Dalat+Edensee+Lake+Resort+Tuyen+Lam+lake+view&tbm=isch
+15,3,"Dalat Edensee Lake Resort","Đà Lạt",5,amenity,"Cinema riêng và phòng giải trí",,https://www.google.com/search?q=Dalat+Edensee+Lake+Resort+cinema+entertainment&tbm=isch
+16,4,"MerPerle Dalat Hotel","Đà Lạt",1,exterior,"Mặt tiền khách sạn kiến trúc bán cổ điển",,https://www.google.com/search?q=MerPerle+Dalat+Hotel+exterior+facade&tbm=isch
+17,4,"MerPerle Dalat Hotel","Đà Lạt",2,room,"Phòng Grand Deluxe hiện đại",,https://www.google.com/search?q=MerPerle+Dalat+Hotel+Grand+Deluxe+room&tbm=isch
+18,4,"MerPerle Dalat Hotel","Đà Lạt",3,pool,"Hồ bơi nước ấm trong nhà",,https://www.google.com/search?q=MerPerle+Dalat+Hotel+indoor+warm+pool&tbm=isch
+19,4,"MerPerle Dalat Hotel","Đà Lạt",4,view,"Sky Bar 360 độ view toàn thành phố",,https://www.google.com/search?q=MerPerle+Dalat+Hotel+Sky+Bar+360+view&tbm=isch
+20,4,"MerPerle Dalat Hotel","Đà Lạt",5,amenity,"Spa Hàn Quốc và nhà hàng buffet",,https://www.google.com/search?q=MerPerle+Dalat+Hotel+spa+restaurant&tbm=isch
+21,5,"Hôtel Colline Đà Lạt","Đà Lạt",1,exterior,"Mặt tiền boutique hotel trung tâm",,https://www.google.com/search?q=Hotel+Colline+Da+Lat+exterior&tbm=isch
+22,5,"Hôtel Colline Đà Lạt","Đà Lạt",2,room,"Phòng Superior City View",,https://www.google.com/search?q=Hotel+Colline+Da+Lat+superior+room&tbm=isch
+23,5,"Hôtel Colline Đà Lạt","Đà Lạt",3,pool,"Sảnh khách sạn thiết kế hiện đại",,https://www.google.com/search?q=Hotel+Colline+Da+Lat+lobby&tbm=isch
+24,5,"Hôtel Colline Đà Lạt","Đà Lạt",4,view,"View thành phố Đà Lạt từ ban công",,https://www.google.com/search?q=Hotel+Colline+Da+Lat+city+view+balcony&tbm=isch
+25,5,"Hôtel Colline Đà Lạt","Đà Lạt",5,amenity,"Nhà hàng và quầy bar",,https://www.google.com/search?q=Hotel+Colline+Da+Lat+restaurant+bar&tbm=isch
+26,6,"JW Marriott Phu Quoc","Phú Quốc",1,exterior,"Toàn cảnh kiến trúc Lamarck University",,https://www.google.com/search?q=JW+Marriott+Phu+Quoc+Emerald+Bay+exterior+aerial&tbm=isch
+27,6,"JW Marriott Phu Quoc","Phú Quốc",2,room,"Emerald Bay Villa với hồ bơi riêng",,https://www.google.com/search?q=JW+Marriott+Phu+Quoc+villa+private+pool&tbm=isch
+28,6,"JW Marriott Phu Quoc","Phú Quốc",3,pool,"Shell Pool và hồ bơi vô cực",,https://www.google.com/search?q=JW+Marriott+Phu+Quoc+shell+pool+infinity&tbm=isch
+29,6,"JW Marriott Phu Quoc","Phú Quốc",4,view,"Bãi Khem biển xanh trong vắt",,https://www.google.com/search?q=JW+Marriott+Phu+Quoc+Bai+Khem+beach&tbm=isch
+30,6,"JW Marriott Phu Quoc","Phú Quốc",5,amenity,"Nhà hàng Red Rum và ẩm thực",,https://www.google.com/search?q=JW+Marriott+Phu+Quoc+Red+Rum+restaurant&tbm=isch
+31,7,"Regent Phu Quoc","Phú Quốc",1,exterior,"Mặt tiền resort ultra luxury hoàng hôn",,https://www.google.com/search?q=Regent+Phu+Quoc+resort+exterior+sunset&tbm=isch
+32,7,"Regent Phu Quoc","Phú Quốc",2,room,"Suite hướng biển nội thất cao cấp",,https://www.google.com/search?q=Regent+Phu+Quoc+suite+ocean+view+room&tbm=isch
+33,7,"Regent Phu Quoc","Phú Quốc",3,pool,"Hồ bơi vô cực view Bãi Trường",,https://www.google.com/search?q=Regent+Phu+Quoc+infinity+pool&tbm=isch
+34,7,"Regent Phu Quoc","Phú Quốc",4,view,"Bãi biển riêng hoàng hôn",,https://www.google.com/search?q=Regent+Phu+Quoc+private+beach+sunset&tbm=isch
+35,7,"Regent Phu Quoc","Phú Quốc",5,amenity,"Spa cao cấp và nhà hàng fine-dining",,https://www.google.com/search?q=Regent+Phu+Quoc+spa+fine+dining&tbm=isch
+36,8,"Premier Village Phu Quoc","Phú Quốc",1,exterior,"Biệt thự trên đồi Mũi Ông Đội",,https://www.google.com/search?q=Premier+Village+Phu+Quoc+villa+hill+aerial&tbm=isch
+37,8,"Premier Village Phu Quoc","Phú Quốc",2,room,"Phòng ngủ biệt thự 2PN view biển",,https://www.google.com/search?q=Premier+Village+Phu+Quoc+villa+bedroom&tbm=isch
+38,8,"Premier Village Phu Quoc","Phú Quốc",3,pool,"Hồ bơi riêng trong biệt thự",,https://www.google.com/search?q=Premier+Village+Phu+Quoc+private+pool+villa&tbm=isch
+39,8,"Premier Village Phu Quoc","Phú Quốc",4,view,"Hoàng hôn Mũi Ông Đội 2 mặt biển",,https://www.google.com/search?q=Premier+Village+Phu+Quoc+Mui+Ong+Doi+sunset&tbm=isch
+40,8,"Premier Village Phu Quoc","Phú Quốc",5,amenity,"Bếp đầy đủ và khu BBQ",,https://www.google.com/search?q=Premier+Village+Phu+Quoc+kitchen+BBQ&tbm=isch
+41,9,"New World Phu Quoc Resort","Phú Quốc",1,exterior,"Villa mái lá truyền thống nhiệt đới",,https://www.google.com/search?q=New+World+Phu+Quoc+Resort+villa+exterior&tbm=isch
+42,9,"New World Phu Quoc Resort","Phú Quốc",2,room,"Phòng ngủ Garden Villa",,https://www.google.com/search?q=New+World+Phu+Quoc+Resort+garden+villa+room&tbm=isch
+43,9,"New World Phu Quoc Resort","Phú Quốc",3,pool,"Hồ bơi chính trong resort",,https://www.google.com/search?q=New+World+Phu+Quoc+Resort+swimming+pool&tbm=isch
+44,9,"New World Phu Quoc Resort","Phú Quốc",4,view,"Bãi Khem từ resort",,https://www.google.com/search?q=New+World+Phu+Quoc+Resort+Bai+Khem+beach&tbm=isch
+45,9,"New World Phu Quoc Resort","Phú Quốc",5,amenity,"Nhà hàng và Kids Club",,https://www.google.com/search?q=New+World+Phu+Quoc+Resort+restaurant+kids+club&tbm=isch
+46,10,"Radisson Blu Phu Quoc","Phú Quốc",1,exterior,"Mặt tiền resort hiện đại Bãi Dài",,https://www.google.com/search?q=Radisson+Blu+Resort+Phu+Quoc+exterior&tbm=isch
+47,10,"Radisson Blu Phu Quoc","Phú Quốc",2,room,"Phòng Deluxe Ocean View",,https://www.google.com/search?q=Radisson+Blu+Resort+Phu+Quoc+ocean+view+room&tbm=isch
+48,10,"Radisson Blu Phu Quoc","Phú Quốc",3,pool,"Hồ bơi chính view biển",,https://www.google.com/search?q=Radisson+Blu+Resort+Phu+Quoc+pool&tbm=isch
+49,10,"Radisson Blu Phu Quoc","Phú Quốc",4,view,"Bãi biển Bãi Dài",,https://www.google.com/search?q=Radisson+Blu+Resort+Phu+Quoc+Bai+Dai+beach&tbm=isch
+50,10,"Radisson Blu Phu Quoc","Phú Quốc",5,amenity,"Lobby và nhà hàng",,https://www.google.com/search?q=Radisson+Blu+Resort+Phu+Quoc+lobby+restaurant&tbm=isch
+51,11,"Four Seasons The Nam Hai","Hội An",1,exterior,"Hồ bơi bậc thang cascading hướng biển",,https://www.google.com/search?q=Four+Seasons+Nam+Hai+Hoi+An+cascading+pools&tbm=isch
+52,11,"Four Seasons The Nam Hai","Hội An",2,room,"Ocean Villa với hồ bơi riêng",,https://www.google.com/search?q=Four+Seasons+Nam+Hai+Hoi+An+ocean+villa+pool&tbm=isch
+53,11,"Four Seasons The Nam Hai","Hội An",3,pool,"Hồ bơi Olympic view biển",,https://www.google.com/search?q=Four+Seasons+Nam+Hai+Hoi+An+main+pool+beach&tbm=isch
+54,11,"Four Seasons The Nam Hai","Hội An",4,view,"Bãi biển Hà My cát trắng",,https://www.google.com/search?q=Four+Seasons+Nam+Hai+Hoi+An+Ha+My+beach&tbm=isch
+55,11,"Four Seasons The Nam Hai","Hội An",5,amenity,"Spa đẳng cấp và nhà hàng La Sen",,https://www.google.com/search?q=Four+Seasons+Nam+Hai+Hoi+An+spa+La+Sen&tbm=isch
+56,12,"Victoria Hội An Resort","Hội An",1,exterior,"Kiến trúc Đông Dương ven biển Cửa Đại",,https://www.google.com/search?q=Victoria+Hoi+An+Beach+Resort+exterior&tbm=isch
+57,12,"Victoria Hội An Resort","Hội An",2,room,"Phòng Superior Garden View",,https://www.google.com/search?q=Victoria+Hoi+An+Resort+superior+room&tbm=isch
+58,12,"Victoria Hội An Resort","Hội An",3,pool,"Hồ bơi lớn hướng biển",,https://www.google.com/search?q=Victoria+Hoi+An+Resort+swimming+pool+beach&tbm=isch
+59,12,"Victoria Hội An Resort","Hội An",4,view,"Biển Cửa Đại từ resort",,https://www.google.com/search?q=Victoria+Hoi+An+Resort+Cua+Dai+beach&tbm=isch
+60,12,"Victoria Hội An Resort","Hội An",5,amenity,"Xe sidecar dạo phố cổ",,https://www.google.com/search?q=Victoria+Hoi+An+Resort+sidecar+old+town&tbm=isch
+61,13,"Hoiana Resort & Golf","Hội An",1,exterior,"Toàn cảnh quần thể aerial",,https://www.google.com/search?q=Hoiana+Resort+Golf+Hoi+An+aerial+view&tbm=isch
+62,13,"Hoiana Resort & Golf","Hội An",2,room,"Hoiana Residences phòng ngủ",,https://www.google.com/search?q=Hoiana+Resort+Hoi+An+residences+room&tbm=isch
+63,13,"Hoiana Resort & Golf","Hội An",3,pool,"Hồ bơi chính resort",,https://www.google.com/search?q=Hoiana+Resort+Hoi+An+swimming+pool&tbm=isch
+64,13,"Hoiana Resort & Golf","Hội An",4,view,"Sân golf 18 lỗ quốc tế",,https://www.google.com/search?q=Hoiana+Resort+Hoi+An+golf+course&tbm=isch
+65,13,"Hoiana Resort & Golf","Hội An",5,amenity,"Nhà hàng và casino giải trí",,https://www.google.com/search?q=Hoiana+Resort+Hoi+An+restaurant+casino&tbm=isch
+66,14,"Anantara Hoi An Resort","Hội An",1,exterior,"Resort phong cách thuộc địa ven sông Thu Bồn",,https://www.google.com/search?q=Anantara+Hoi+An+Resort+exterior+Thu+Bon+river&tbm=isch
+67,14,"Anantara Hoi An Resort","Hội An",2,room,"Phòng Deluxe Garden View",,https://www.google.com/search?q=Anantara+Hoi+An+Resort+deluxe+room&tbm=isch
+68,14,"Anantara Hoi An Resort","Hội An",3,pool,"Hồ bơi giữa vườn nhiệt đới",,https://www.google.com/search?q=Anantara+Hoi+An+Resort+pool+tropical+garden&tbm=isch
+69,14,"Anantara Hoi An Resort","Hội An",4,view,"Sông Thu Bồn buổi chiều",,https://www.google.com/search?q=Anantara+Hoi+An+Resort+Thu+Bon+river+view&tbm=isch
+70,14,"Anantara Hoi An Resort","Hội An",5,amenity,"Du thuyền trên sông và lớp nấu ăn",,https://www.google.com/search?q=Anantara+Hoi+An+Resort+boat+cooking+class&tbm=isch
+71,15,"Little Riverside Hoi An","Hội An",1,exterior,"Mặt tiền boutique hotel ven sông Hoài",,https://www.google.com/search?q=Little+Riverside+Hoi+An+exterior+river&tbm=isch
+72,15,"Little Riverside Hoi An","Hội An",2,room,"Phòng River View Deluxe",,https://www.google.com/search?q=Little+Riverside+Hoi+An+river+view+room&tbm=isch
+73,15,"Little Riverside Hoi An","Hội An",3,pool,"Hồ bơi vô cực rooftop view sông",,https://www.google.com/search?q=Little+Riverside+Hoi+An+infinity+pool+rooftop&tbm=isch
+74,15,"Little Riverside Hoi An","Hội An",4,view,"View sông Hoài và phố cổ đêm",,https://www.google.com/search?q=Little+Riverside+Hoi+An+Hoai+river+night+view&tbm=isch
+75,15,"Little Riverside Hoi An","Hội An",5,amenity,"Bar trên cao và spa",,https://www.google.com/search?q=Little+Riverside+Hoi+An+rooftop+bar+spa&tbm=isch
+76,16,"InterContinental Nha Trang","Nha Trang",1,exterior,"Mặt tiền đường biển Trần Phú",,https://www.google.com/search?q=InterContinental+Nha+Trang+exterior+Tran+Phu&tbm=isch
+77,16,"InterContinental Nha Trang","Nha Trang",2,room,"Phòng Classic Ocean View",,https://www.google.com/search?q=InterContinental+Nha+Trang+ocean+view+room&tbm=isch
+78,16,"InterContinental Nha Trang","Nha Trang",3,pool,"Hồ bơi vô cực view biển",,https://www.google.com/search?q=InterContinental+Nha+Trang+infinity+pool&tbm=isch
+79,16,"InterContinental Nha Trang","Nha Trang",4,view,"View biển Nha Trang panorama",,https://www.google.com/search?q=InterContinental+Nha+Trang+sea+view+panorama&tbm=isch
+80,16,"InterContinental Nha Trang","Nha Trang",5,amenity,"Rooftop Bar và nhà hàng",,https://www.google.com/search?q=InterContinental+Nha+Trang+rooftop+bar+restaurant&tbm=isch
+81,17,"Amiana Resort Nha Trang","Nha Trang",1,exterior,"Toàn cảnh resort bãi biển riêng",,https://www.google.com/search?q=Amiana+Resort+Nha+Trang+aerial+private+beach&tbm=isch
+82,17,"Amiana Resort Nha Trang","Nha Trang",2,room,"Amiana Suite Ocean nội thất",,https://www.google.com/search?q=Amiana+Resort+Nha+Trang+suite+ocean+room&tbm=isch
+83,17,"Amiana Resort Nha Trang","Nha Trang",3,pool,"Hồ bơi nước mặn ngoài trời",,https://www.google.com/search?q=Amiana+Resort+Nha+Trang+saltwater+pool&tbm=isch
+84,17,"Amiana Resort Nha Trang","Nha Trang",4,view,"Bãi biển riêng và vịnh",,https://www.google.com/search?q=Amiana+Resort+Nha+Trang+private+beach+bay&tbm=isch
+85,17,"Amiana Resort Nha Trang","Nha Trang",5,amenity,"Tắm bùn khoáng và spa",,https://www.google.com/search?q=Amiana+Resort+Nha+Trang+mud+bath+spa&tbm=isch
+86,18,"Vinpearl Luxury Nha Trang","Nha Trang",1,exterior,"Resort trên đảo Hòn Tre và cáp treo",,https://www.google.com/search?q=Vinpearl+Luxury+Nha+Trang+Hon+Tre+cable+car&tbm=isch
+87,18,"Vinpearl Luxury Nha Trang","Nha Trang",2,room,"Biệt thự Beach Front phòng ngủ",,https://www.google.com/search?q=Vinpearl+Luxury+Nha+Trang+beach+villa+room&tbm=isch
+88,18,"Vinpearl Luxury Nha Trang","Nha Trang",3,pool,"Hồ bơi riêng trong biệt thự",,https://www.google.com/search?q=Vinpearl+Luxury+Nha+Trang+private+pool+villa&tbm=isch
+89,18,"Vinpearl Luxury Nha Trang","Nha Trang",4,view,"View biển từ đảo Hòn Tre",,https://www.google.com/search?q=Vinpearl+Luxury+Nha+Trang+sea+view+island&tbm=isch
+90,18,"Vinpearl Luxury Nha Trang","Nha Trang",5,amenity,"VinWonders và Aquarium",,https://www.google.com/search?q=Vinpearl+Luxury+Nha+Trang+VinWonders+Aquarium&tbm=isch
+91,19,"Mia Resort Nha Trang","Nha Trang",1,exterior,"Resort boutique trên vách đá ven biển",,https://www.google.com/search?q=Mia+Resort+Nha+Trang+cliff+exterior&tbm=isch
+92,19,"Mia Resort Nha Trang","Nha Trang",2,room,"Phòng Cliff View nội thất",,https://www.google.com/search?q=Mia+Resort+Nha+Trang+cliff+view+room&tbm=isch
+93,19,"Mia Resort Nha Trang","Nha Trang",3,pool,"Hồ bơi vô cực view biển",,https://www.google.com/search?q=Mia+Resort+Nha+Trang+infinity+pool+ocean&tbm=isch
+94,19,"Mia Resort Nha Trang","Nha Trang",4,view,"Bãi biển riêng biệt yên tĩnh",,https://www.google.com/search?q=Mia+Resort+Nha+Trang+private+beach&tbm=isch
+95,19,"Mia Resort Nha Trang","Nha Trang",5,amenity,"Nhà hàng Sandals ven biển",,https://www.google.com/search?q=Mia+Resort+Nha+Trang+Sandals+restaurant&tbm=isch
+96,20,"Alma Resort Cam Ranh","Nha Trang",1,exterior,"Toàn cảnh resort Địa Trung Hải aerial",,https://www.google.com/search?q=Alma+Resort+Cam+Ranh+aerial+view&tbm=isch
+97,20,"Alma Resort Cam Ranh","Nha Trang",2,room,"Căn hộ 2PN phòng khách rộng",,https://www.google.com/search?q=Alma+Resort+Cam+Ranh+2+bedroom+apartment&tbm=isch
+98,20,"Alma Resort Cam Ranh","Nha Trang",3,pool,"12 hồ bơi và waterpark",,https://www.google.com/search?q=Alma+Resort+Cam+Ranh+pool+waterpark&tbm=isch
+99,20,"Alma Resort Cam Ranh","Nha Trang",4,view,"Bãi biển Bãi Dài Cam Ranh",,https://www.google.com/search?q=Alma+Resort+Cam+Ranh+Bai+Dai+beach&tbm=isch
+100,20,"Alma Resort Cam Ranh","Nha Trang",5,amenity,"Kids Club và nhà hàng",,https://www.google.com/search?q=Alma+Resort+Cam+Ranh+kids+club+restaurant&tbm=isch
+101,21,"Hotel de la Coupole MGallery","Sa Pa",1,exterior,"Mặt tiền kiến trúc Pháp cổ điển sương mù",,https://www.google.com/search?q=Hotel+de+la+Coupole+MGallery+Sapa+exterior&tbm=isch
+102,21,"Hotel de la Coupole MGallery","Sa Pa",2,room,"Phòng Deluxe Valley View",,https://www.google.com/search?q=Hotel+de+la+Coupole+Sapa+deluxe+valley+room&tbm=isch
+103,21,"Hotel de la Coupole MGallery","Sa Pa",3,pool,"Hồ bơi nước ấm trong nhà",,https://www.google.com/search?q=Hotel+de+la+Coupole+Sapa+indoor+warm+pool&tbm=isch
+104,21,"Hotel de la Coupole MGallery","Sa Pa",4,view,"Sảnh Art Deco và lobby sang trọng",,https://www.google.com/search?q=Hotel+de+la+Coupole+Sapa+Art+Deco+lobby&tbm=isch
+105,21,"Hotel de la Coupole MGallery","Sa Pa",5,amenity,"Kết nối nhà ga cáp treo Fansipan",,https://www.google.com/search?q=Hotel+de+la+Coupole+Sapa+Fansipan+cable+car&tbm=isch
+106,22,"Silk Path Grand Sapa","Sa Pa",1,exterior,"Resort trên đồi view thung lũng Mường Hoa",,https://www.google.com/search?q=Silk+Path+Grand+Resort+Sapa+exterior+hill&tbm=isch
+107,22,"Silk Path Grand Sapa","Sa Pa",2,room,"Grand Suite Valley phòng ngủ",,https://www.google.com/search?q=Silk+Path+Grand+Sapa+suite+valley+room&tbm=isch
+108,22,"Silk Path Grand Sapa","Sa Pa",3,pool,"Hồ bơi vô cực nước ấm view núi",,https://www.google.com/search?q=Silk+Path+Grand+Sapa+infinity+pool+mountain&tbm=isch
+109,22,"Silk Path Grand Sapa","Sa Pa",4,view,"Thung lũng Mường Hoa từ resort",,https://www.google.com/search?q=Silk+Path+Grand+Sapa+Muong+Hoa+valley+view&tbm=isch
+110,22,"Silk Path Grand Sapa","Sa Pa",5,amenity,"Vườn hồng cổ và spa",,https://www.google.com/search?q=Silk+Path+Grand+Sapa+rose+garden+spa&tbm=isch
+111,23,"Topas Ecolodge Sapa","Sa Pa",1,exterior,"Bungalow giữa núi rừng Hoàng Liên Sơn",,https://www.google.com/search?q=Topas+Ecolodge+Sapa+bungalow+mountain&tbm=isch
+112,23,"Topas Ecolodge Sapa","Sa Pa",2,room,"Mountain Bungalow phòng ngủ",,https://www.google.com/search?q=Topas+Ecolodge+Sapa+bungalow+room+interior&tbm=isch
+113,23,"Topas Ecolodge Sapa","Sa Pa",3,pool,"Hồ bơi vô cực view thung lũng",,https://www.google.com/search?q=Topas+Ecolodge+Sapa+infinity+pool+valley&tbm=isch
+114,23,"Topas Ecolodge Sapa","Sa Pa",4,view,"Panorama thung lũng và ruộng bậc thang",,https://www.google.com/search?q=Topas+Ecolodge+Sapa+panorama+rice+terrace&tbm=isch
+115,23,"Topas Ecolodge Sapa","Sa Pa",5,amenity,"Trekking và bếp lửa trại",,https://www.google.com/search?q=Topas+Ecolodge+Sapa+trekking+campfire&tbm=isch
+116,24,"Pao's Sapa Leisure Hotel","Sa Pa",1,exterior,"Kiến trúc ruộng bậc thang độc đáo",,https://www.google.com/search?q=Pao+Sapa+Leisure+Hotel+exterior+architecture&tbm=isch
+117,24,"Pao's Sapa Leisure Hotel","Sa Pa",2,room,"Phòng Premier Valley View",,https://www.google.com/search?q=Pao+Sapa+Leisure+Hotel+premier+room&tbm=isch
+118,24,"Pao's Sapa Leisure Hotel","Sa Pa",3,pool,"Hồ bơi nước ấm",,https://www.google.com/search?q=Pao+Sapa+Leisure+Hotel+warm+pool&tbm=isch
+119,24,"Pao's Sapa Leisure Hotel","Sa Pa",4,view,"View thung lũng Mường Hoa",,https://www.google.com/search?q=Pao+Sapa+Leisure+Hotel+valley+view&tbm=isch
+120,24,"Pao's Sapa Leisure Hotel","Sa Pa",5,amenity,"Spa và nhà hàng",,https://www.google.com/search?q=Pao+Sapa+Leisure+Hotel+spa+restaurant&tbm=isch
+121,25,"KK Sapa Hotel","Sa Pa",1,exterior,"Mặt tiền khách sạn 5 sao trung tâm",,https://www.google.com/search?q=KK+Sapa+Hotel+exterior&tbm=isch
+122,25,"KK Sapa Hotel","Sa Pa",2,room,"Phòng Deluxe Mountain View",,https://www.google.com/search?q=KK+Sapa+Hotel+deluxe+mountain+view+room&tbm=isch
+123,25,"KK Sapa Hotel","Sa Pa",3,pool,"Hồ bơi nước ấm trong nhà",,https://www.google.com/search?q=KK+Sapa+Hotel+indoor+pool&tbm=isch
+124,25,"KK Sapa Hotel","Sa Pa",4,view,"View dãy Hoàng Liên Sơn",,https://www.google.com/search?q=KK+Sapa+Hotel+Hoang+Lien+Son+mountain+view&tbm=isch
+125,25,"KK Sapa Hotel","Sa Pa",5,amenity,"Spa tắm lá thuốc và nhà hàng",,https://www.google.com/search?q=KK+Sapa+Hotel+herbal+bath+spa&tbm=isch
+126,26,"InterContinental Danang","Đà Nẵng",1,exterior,"Aerial kiệt tác Bill Bensley Sơn Trà",,https://www.google.com/search?q=InterContinental+Danang+Sun+Peninsula+aerial&tbm=isch
+127,26,"InterContinental Danang","Đà Nẵng",2,room,"Ocean View Classic phòng ngủ",,https://www.google.com/search?q=InterContinental+Danang+ocean+view+room&tbm=isch
+128,26,"InterContinental Danang","Đà Nẵng",3,pool,"Hồ bơi và bãi biển riêng Bãi Bắc",,https://www.google.com/search?q=InterContinental+Danang+pool+private+beach&tbm=isch
+129,26,"InterContinental Danang","Đà Nẵng",4,view,"View biển từ bán đảo Sơn Trà",,https://www.google.com/search?q=InterContinental+Danang+Son+Tra+sea+view&tbm=isch
+130,26,"InterContinental Danang","Đà Nẵng",5,amenity,"La Maison 1888 nhà hàng Michelin",,https://www.google.com/search?q=InterContinental+Danang+La+Maison+1888+restaurant&tbm=isch
+131,27,"Pullman Danang Beach","Đà Nẵng",1,exterior,"Mặt tiền resort bãi biển Mỹ Khê",,https://www.google.com/search?q=Pullman+Danang+Beach+Resort+exterior&tbm=isch
+132,27,"Pullman Danang Beach","Đà Nẵng",2,room,"Phòng Deluxe Ocean",,https://www.google.com/search?q=Pullman+Danang+Beach+deluxe+ocean+room&tbm=isch
+133,27,"Pullman Danang Beach","Đà Nẵng",3,pool,"Hồ bơi vô cực view biển",,https://www.google.com/search?q=Pullman+Danang+Beach+infinity+pool&tbm=isch
+134,27,"Pullman Danang Beach","Đà Nẵng",4,view,"Bãi biển Mỹ Khê nắng vàng",,https://www.google.com/search?q=Pullman+Danang+Beach+My+Khe+beach&tbm=isch
+135,27,"Pullman Danang Beach","Đà Nẵng",5,amenity,"Kids Club và Nắng Spa",,https://www.google.com/search?q=Pullman+Danang+Beach+kids+club+Nang+Spa&tbm=isch
+136,28,"Hyatt Regency Danang","Đà Nẵng",1,exterior,"Toàn cảnh resort Non Nước",,https://www.google.com/search?q=Hyatt+Regency+Danang+Resort+aerial&tbm=isch
+137,28,"Hyatt Regency Danang","Đà Nẵng",2,room,"Regency Suite Sea View",,https://www.google.com/search?q=Hyatt+Regency+Danang+suite+sea+view+room&tbm=isch
+138,28,"Hyatt Regency Danang","Đà Nẵng",3,pool,"5 hồ bơi đa dạng",,https://www.google.com/search?q=Hyatt+Regency+Danang+5+pools&tbm=isch
+139,28,"Hyatt Regency Danang","Đà Nẵng",4,view,"Bãi biển Non Nước",,https://www.google.com/search?q=Hyatt+Regency+Danang+Non+Nuoc+beach&tbm=isch
+140,28,"Hyatt Regency Danang","Đà Nẵng",5,amenity,"Kids Club chuyên nghiệp",,https://www.google.com/search?q=Hyatt+Regency+Danang+kids+club&tbm=isch
+141,29,"Naman Retreat Đà Nẵng","Đà Nẵng",1,exterior,"Villa tre tự nhiên kiến trúc độc đáo",,https://www.google.com/search?q=Naman+Retreat+Danang+bamboo+architecture&tbm=isch
+142,29,"Naman Retreat Đà Nẵng","Đà Nẵng",2,room,"Naman Pool Villa phòng ngủ",,https://www.google.com/search?q=Naman+Retreat+Danang+pool+villa+room&tbm=isch
+143,29,"Naman Retreat Đà Nẵng","Đà Nẵng",3,pool,"Hồ bơi riêng trong villa tre",,https://www.google.com/search?q=Naman+Retreat+Danang+private+pool+bamboo&tbm=isch
+144,29,"Naman Retreat Đà Nẵng","Đà Nẵng",4,view,"Bãi biển và vườn thiền",,https://www.google.com/search?q=Naman+Retreat+Danang+beach+zen+garden&tbm=isch
+145,29,"Naman Retreat Đà Nẵng","Đà Nẵng",5,amenity,"Nhà hàng Hay Hay và Wellness",,https://www.google.com/search?q=Naman+Retreat+Danang+Hay+Hay+restaurant+wellness&tbm=isch
+146,30,"Mikazuki Japanese Resorts","Đà Nẵng",1,exterior,"Resort phong cách Nhật Bản ven biển",,https://www.google.com/search?q=Da+Nang+Mikazuki+Japanese+Resort+exterior&tbm=isch
+147,30,"Mikazuki Japanese Resorts","Đà Nẵng",2,room,"Phòng Onsen Deluxe",,https://www.google.com/search?q=Mikazuki+Danang+onsen+deluxe+room&tbm=isch
+148,30,"Mikazuki Japanese Resorts","Đà Nẵng",3,pool,"Onsen khoáng nóng Nhật Bản",,https://www.google.com/search?q=Mikazuki+Danang+onsen+hot+spring&tbm=isch
+149,30,"Mikazuki Japanese Resorts","Đà Nẵng",4,view,"Công viên nước trong nhà",,https://www.google.com/search?q=Mikazuki+Danang+indoor+water+park&tbm=isch
+150,30,"Mikazuki Japanese Resorts","Đà Nẵng",5,amenity,"Nhà hàng Nhật và lớp làm sushi",,https://www.google.com/search?q=Mikazuki+Danang+Japanese+restaurant+sushi&tbm=isch
+151,31,"Vinpearl Resort Hạ Long","Hạ Long",1,exterior,"Resort đảo Rều aerial view vịnh",,https://www.google.com/search?q=Vinpearl+Resort+Ha+Long+Reu+island+aerial&tbm=isch
+152,31,"Vinpearl Resort Hạ Long","Hạ Long",2,room,"Biệt thự Beach Villa",,https://www.google.com/search?q=Vinpearl+Resort+Ha+Long+beach+villa+room&tbm=isch
+153,31,"Vinpearl Resort Hạ Long","Hạ Long",3,pool,"Hồ bơi chính view vịnh",,https://www.google.com/search?q=Vinpearl+Resort+Ha+Long+pool+bay+view&tbm=isch
+154,31,"Vinpearl Resort Hạ Long","Hạ Long",4,view,"3 bãi biển riêng trên đảo",,https://www.google.com/search?q=Vinpearl+Resort+Ha+Long+private+beach&tbm=isch
+155,31,"Vinpearl Resort Hạ Long","Hạ Long",5,amenity,"Nhà hàng view vịnh và golf mini",,https://www.google.com/search?q=Vinpearl+Resort+Ha+Long+restaurant+golf&tbm=isch
+156,32,"FLC Halong Bay Resort","Hạ Long",1,exterior,"Resort trên đồi panorama vịnh",,https://www.google.com/search?q=FLC+Halong+Bay+Golf+Resort+aerial+panorama&tbm=isch
+157,32,"FLC Halong Bay Resort","Hạ Long",2,room,"Phòng Luxury Bay View",,https://www.google.com/search?q=FLC+Halong+Bay+Resort+luxury+bay+view+room&tbm=isch
+158,32,"FLC Halong Bay Resort","Hạ Long",3,pool,"Hồ bơi resort view vịnh",,https://www.google.com/search?q=FLC+Halong+Bay+Resort+pool+bay+view&tbm=isch
+159,32,"FLC Halong Bay Resort","Hạ Long",4,view,"Sân golf 18 lỗ và vịnh Hạ Long",,https://www.google.com/search?q=FLC+Halong+Bay+golf+course+Ha+Long+bay&tbm=isch
+160,32,"FLC Halong Bay Resort","Hạ Long",5,amenity,"Nhà hàng và bar cao cấp",,https://www.google.com/search?q=FLC+Halong+Bay+Resort+restaurant+bar&tbm=isch
+161,33,"A La Carte Ha Long Bay","Hạ Long",1,exterior,"Mặt tiền khách sạn Bãi Cháy",,https://www.google.com/search?q=A+La+Carte+Ha+Long+Bay+hotel+exterior&tbm=isch
+162,33,"A La Carte Ha Long Bay","Hạ Long",2,room,"Phòng Premium Bay View",,https://www.google.com/search?q=A+La+Carte+Ha+Long+Bay+premium+bay+view+room&tbm=isch
+163,33,"A La Carte Ha Long Bay","Hạ Long",3,pool,"Hồ bơi vô cực rooftop view vịnh",,https://www.google.com/search?q=A+La+Carte+Ha+Long+Bay+infinity+rooftop+pool&tbm=isch
+164,33,"A La Carte Ha Long Bay","Hạ Long",4,view,"View vịnh Hạ Long từ rooftop",,https://www.google.com/search?q=A+La+Carte+Ha+Long+Bay+rooftop+bay+view&tbm=isch
+165,33,"A La Carte Ha Long Bay","Hạ Long",5,amenity,"Sky Bar và nhà hàng",,https://www.google.com/search?q=A+La+Carte+Ha+Long+Bay+sky+bar+restaurant&tbm=isch
+166,34,"InterContinental Ha Long","Hạ Long",1,exterior,"Resort sang trọng view vịnh",,https://www.google.com/search?q=InterContinental+Halong+Bay+Resort+exterior&tbm=isch
+167,34,"InterContinental Ha Long","Hạ Long",2,room,"Phòng Classic Bay View",,https://www.google.com/search?q=InterContinental+Halong+Bay+classic+bay+room&tbm=isch
+168,34,"InterContinental Ha Long","Hạ Long",3,pool,"Hồ bơi view vịnh Hạ Long",,https://www.google.com/search?q=InterContinental+Halong+Bay+pool&tbm=isch
+169,34,"InterContinental Ha Long","Hạ Long",4,view,"View vịnh Hạ Long từ resort",,https://www.google.com/search?q=InterContinental+Halong+Bay+view&tbm=isch
+170,34,"InterContinental Ha Long","Hạ Long",5,amenity,"Spa quốc tế và nhà hàng fine-dining",,https://www.google.com/search?q=InterContinental+Halong+Bay+spa+fine+dining&tbm=isch
+171,35,"Oakwood Ha Long Resort","Hạ Long",1,exterior,"Biệt thự hiện đại trong khuôn viên xanh",,https://www.google.com/search?q=Oakwood+Ha+Long+Resort+villa+exterior&tbm=isch
+172,35,"Oakwood Ha Long Resort","Hạ Long",2,room,"Villa 2BR phòng ngủ master",,https://www.google.com/search?q=Oakwood+Ha+Long+Resort+villa+bedroom&tbm=isch
+173,35,"Oakwood Ha Long Resort","Hạ Long",3,pool,"Hồ bơi chính trong resort",,https://www.google.com/search?q=Oakwood+Ha+Long+Resort+swimming+pool&tbm=isch
+174,35,"Oakwood Ha Long Resort","Hạ Long",4,view,"Không gian xanh và vườn",,https://www.google.com/search?q=Oakwood+Ha+Long+Resort+green+garden&tbm=isch
+175,35,"Oakwood Ha Long Resort","Hạ Long",5,amenity,"Kids Club và khu BBQ",,https://www.google.com/search?q=Oakwood+Ha+Long+Resort+kids+club+BBQ&tbm=isch
+176,36,"Sofitel Legend Metropole Hanoi","Hà Nội",1,exterior,"Mặt tiền Heritage Wing kiến trúc Pháp 1901",,https://www.google.com/search?q=Sofitel+Legend+Metropole+Hanoi+exterior+heritage&tbm=isch
+177,36,"Sofitel Legend Metropole Hanoi","Hà Nội",2,room,"Premium Room Historical Wing",,https://www.google.com/search?q=Sofitel+Metropole+Hanoi+premium+historical+room&tbm=isch
+178,36,"Sofitel Legend Metropole Hanoi","Hà Nội",3,pool,"Hồ bơi giữa sân vườn",,https://www.google.com/search?q=Sofitel+Metropole+Hanoi+swimming+pool+garden&tbm=isch
+179,36,"Sofitel Legend Metropole Hanoi","Hà Nội",4,view,"Hầm trú ẩn lịch sử underground",,https://www.google.com/search?q=Sofitel+Metropole+Hanoi+historical+bunker&tbm=isch
+180,36,"Sofitel Legend Metropole Hanoi","Hà Nội",5,amenity,"Le Beaulieu Restaurant và Angelina Bar",,https://www.google.com/search?q=Sofitel+Metropole+Hanoi+Le+Beaulieu+Angelina+Bar&tbm=isch
+181,37,"InterContinental Westlake Hanoi","Hà Nội",1,exterior,"Over-water hotel Hồ Tây",,https://www.google.com/search?q=InterContinental+Hanoi+Westlake+exterior+lake&tbm=isch
+182,37,"InterContinental Westlake Hanoi","Hà Nội",2,room,"Phòng Deluxe Lake View",,https://www.google.com/search?q=InterContinental+Hanoi+Westlake+lake+view+room&tbm=isch
+183,37,"InterContinental Westlake Hanoi","Hà Nội",3,pool,"Hồ bơi vô cực bên Hồ Tây",,https://www.google.com/search?q=InterContinental+Hanoi+Westlake+infinity+pool&tbm=isch
+184,37,"InterContinental Westlake Hanoi","Hà Nội",4,view,"Hoàng hôn Hồ Tây từ Sunset Bar",,https://www.google.com/search?q=InterContinental+Hanoi+Westlake+sunset+bar+view&tbm=isch
+185,37,"InterContinental Westlake Hanoi","Hà Nội",5,amenity,"Nhà hàng Milano và spa",,https://www.google.com/search?q=InterContinental+Hanoi+Westlake+Milano+restaurant&tbm=isch
+186,38,"Pan Pacific Hanoi","Hà Nội",1,exterior,"Mặt tiền khách sạn cao tầng Hồ Tây",,https://www.google.com/search?q=Pan+Pacific+Hanoi+hotel+exterior&tbm=isch
+187,38,"Pan Pacific Hanoi","Hà Nội",2,room,"Phòng Deluxe City View",,https://www.google.com/search?q=Pan+Pacific+Hanoi+deluxe+city+view+room&tbm=isch
+188,38,"Pan Pacific Hanoi","Hà Nội",3,pool,"Hồ bơi bốn mùa",,https://www.google.com/search?q=Pan+Pacific+Hanoi+swimming+pool&tbm=isch
+189,38,"Pan Pacific Hanoi","Hà Nội",4,view,"Rooftop Bar view panorama thành phố",,https://www.google.com/search?q=Pan+Pacific+Hanoi+rooftop+bar+panorama&tbm=isch
+190,38,"Pan Pacific Hanoi","Hà Nội",5,amenity,"Nhà hàng Pacifica",,https://www.google.com/search?q=Pan+Pacific+Hanoi+Pacifica+restaurant&tbm=isch
+191,39,"The Oriental Jade Hotel Hanoi","Hà Nội",1,exterior,"Mặt tiền boutique hotel phố cổ",,https://www.google.com/search?q=Oriental+Jade+Hotel+Hanoi+exterior&tbm=isch
+192,39,"The Oriental Jade Hotel Hanoi","Hà Nội",2,room,"Jade Premium Room",,https://www.google.com/search?q=Oriental+Jade+Hotel+Hanoi+jade+premium+room&tbm=isch
+193,39,"The Oriental Jade Hotel Hanoi","Hà Nội",3,pool,"Hồ bơi rooftop view phố cổ",,https://www.google.com/search?q=Oriental+Jade+Hotel+Hanoi+rooftop+pool&tbm=isch
+194,39,"The Oriental Jade Hotel Hanoi","Hà Nội",4,view,"View phố cổ Hà Nội từ ban công",,https://www.google.com/search?q=Oriental+Jade+Hotel+Hanoi+old+quarter+view&tbm=isch
+195,39,"The Oriental Jade Hotel Hanoi","Hà Nội",5,amenity,"Spa cao cấp",,https://www.google.com/search?q=Oriental+Jade+Hotel+Hanoi+spa&tbm=isch
+196,40,"Dolce Golden Lake Hanoi","Hà Nội",1,exterior,"Mặt tiền khách sạn dát vàng 24K",,https://www.google.com/search?q=Dolce+Hanoi+Golden+Lake+gold+exterior&tbm=isch
+197,40,"Dolce Golden Lake Hanoi","Hà Nội",2,room,"Phòng Golden Deluxe dát vàng",,https://www.google.com/search?q=Dolce+Hanoi+Golden+Lake+gold+room&tbm=isch
+198,40,"Dolce Golden Lake Hanoi","Hà Nội",3,pool,"Hồ bơi dát vàng trên tầng thượng",,https://www.google.com/search?q=Dolce+Hanoi+Golden+Lake+gold+rooftop+pool&tbm=isch
+199,40,"Dolce Golden Lake Hanoi","Hà Nội",4,view,"View thành phố từ rooftop",,https://www.google.com/search?q=Dolce+Hanoi+Golden+Lake+city+view+rooftop&tbm=isch
+200,40,"Dolce Golden Lake Hanoi","Hà Nội",5,amenity,"Lobby dát vàng và nhà hàng",,https://www.google.com/search?q=Dolce+Hanoi+Golden+Lake+gold+lobby+restaurant&tbm=isch
+201,41,"FLC Luxury Resort Quy Nhơn","Quy Nhơn",1,exterior,"Aerial quần thể resort ven biển Nhơn Lý",,https://www.google.com/search?q=FLC+Luxury+Resort+Quy+Nhon+aerial&tbm=isch
+202,41,"FLC Luxury Resort Quy Nhơn","Quy Nhơn",2,room,"Villa hồ bơi riêng 1BR",,https://www.google.com/search?q=FLC+Luxury+Resort+Quy+Nhon+villa+private+pool&tbm=isch
+203,41,"FLC Luxury Resort Quy Nhơn","Quy Nhơn",3,pool,"Hồ bơi nước mặn dài nhất",,https://www.google.com/search?q=FLC+Luxury+Resort+Quy+Nhon+pool&tbm=isch
+204,41,"FLC Luxury Resort Quy Nhơn","Quy Nhơn",4,view,"Sân golf 36 lỗ view biển",,https://www.google.com/search?q=FLC+Luxury+Resort+Quy+Nhon+golf+course&tbm=isch
+205,41,"FLC Luxury Resort Quy Nhơn","Quy Nhơn",5,amenity,"Safari và bãi biển Nhơn Lý",,https://www.google.com/search?q=FLC+Luxury+Resort+Quy+Nhon+safari+beach&tbm=isch
+206,42,"Avani Quy Nhon Resort","Quy Nhơn",1,exterior,"Resort Bãi Dài view biển trực diện",,https://www.google.com/search?q=Avani+Quy+Nhon+Resort+Spa+exterior&tbm=isch
+207,42,"Avani Quy Nhon Resort","Quy Nhơn",2,room,"Phòng Ocean View Deluxe",,https://www.google.com/search?q=Avani+Quy+Nhon+Resort+ocean+view+room&tbm=isch
+208,42,"Avani Quy Nhon Resort","Quy Nhơn",3,pool,"Hồ bơi vô cực view biển",,https://www.google.com/search?q=Avani+Quy+Nhon+Resort+infinity+pool&tbm=isch
+209,42,"Avani Quy Nhon Resort","Quy Nhơn",4,view,"Bãi Dài biển xanh trong vắt",,https://www.google.com/search?q=Avani+Quy+Nhon+Resort+Bai+Dai+beach&tbm=isch
+210,42,"Avani Quy Nhon Resort","Quy Nhơn",5,amenity,"Bar bãi biển và yoga",,https://www.google.com/search?q=Avani+Quy+Nhon+Resort+beach+bar+yoga&tbm=isch
+211,43,"Casa Marina Resort Quy Nhơn","Quy Nhơn",1,exterior,"Resort ven biển Bãi Xép",,https://www.google.com/search?q=Casa+Marina+Resort+Quy+Nhon+exterior&tbm=isch
+212,43,"Casa Marina Resort Quy Nhơn","Quy Nhơn",2,room,"Bungalow Sea View",,https://www.google.com/search?q=Casa+Marina+Resort+Quy+Nhon+bungalow+sea+view&tbm=isch
+213,43,"Casa Marina Resort Quy Nhơn","Quy Nhơn",3,pool,"Hồ bơi ngoài trời",,https://www.google.com/search?q=Casa+Marina+Resort+Quy+Nhon+pool&tbm=isch
+214,43,"Casa Marina Resort Quy Nhơn","Quy Nhơn",4,view,"Bãi biển Bãi Xép",,https://www.google.com/search?q=Casa+Marina+Resort+Quy+Nhon+Bai+Xep+beach&tbm=isch
+215,43,"Casa Marina Resort Quy Nhơn","Quy Nhơn",5,amenity,"Nhà hàng hải sản và BBQ",,https://www.google.com/search?q=Casa+Marina+Resort+Quy+Nhon+seafood+restaurant&tbm=isch
+216,44,"Crown Retreat Quy Nhơn","Quy Nhơn",1,exterior,"Bungalow ven biển Trung Lương",,https://www.google.com/search?q=Crown+Retreat+Quy+Nhon+bungalow+beach&tbm=isch
+217,44,"Crown Retreat Quy Nhơn","Quy Nhơn",2,room,"Beach Front Bungalow phòng ngủ",,https://www.google.com/search?q=Crown+Retreat+Quy+Nhon+bungalow+room&tbm=isch
+218,44,"Crown Retreat Quy Nhơn","Quy Nhơn",3,pool,"Hồ bơi resort",,https://www.google.com/search?q=Crown+Retreat+Quy+Nhon+swimming+pool&tbm=isch
+219,44,"Crown Retreat Quy Nhơn","Quy Nhơn",4,view,"Bãi biển và thiên nhiên hoang sơ",,https://www.google.com/search?q=Crown+Retreat+Quy+Nhon+beach+nature&tbm=isch
+220,44,"Crown Retreat Quy Nhơn","Quy Nhơn",5,amenity,"Yoga ngoài trời và kayak",,https://www.google.com/search?q=Crown+Retreat+Quy+Nhon+yoga+kayak&tbm=isch
+221,45,"Anya Premier Hotel Quy Nhơn","Quy Nhơn",1,exterior,"Mặt tiền 5 sao đường biển Xuân Diệu",,https://www.google.com/search?q=Anya+Premier+Hotel+Quy+Nhon+exterior&tbm=isch
+222,45,"Anya Premier Hotel Quy Nhơn","Quy Nhơn",2,room,"Phòng Premier Ocean",,https://www.google.com/search?q=Anya+Premier+Hotel+Quy+Nhon+ocean+room&tbm=isch
+223,45,"Anya Premier Hotel Quy Nhơn","Quy Nhơn",3,pool,"Hồ bơi rooftop",,https://www.google.com/search?q=Anya+Premier+Hotel+Quy+Nhon+rooftop+pool&tbm=isch
+224,45,"Anya Premier Hotel Quy Nhơn","Quy Nhơn",4,view,"View biển thành phố Quy Nhơn",,https://www.google.com/search?q=Anya+Premier+Hotel+Quy+Nhon+city+sea+view&tbm=isch
+225,45,"Anya Premier Hotel Quy Nhơn","Quy Nhơn",5,amenity,"Sky Bar và nhà hàng",,https://www.google.com/search?q=Anya+Premier+Hotel+Quy+Nhon+sky+bar&tbm=isch
+226,46,"The Imperial Hotel Vũng Tàu","Vũng Tàu",1,exterior,"Kiến trúc lâu đài châu Âu Bãi Sau",,https://www.google.com/search?q=The+Imperial+Hotel+Vung+Tau+castle+exterior&tbm=isch
+227,46,"The Imperial Hotel Vũng Tàu","Vũng Tàu",2,room,"Phòng Imperial Deluxe Sea View",,https://www.google.com/search?q=The+Imperial+Hotel+Vung+Tau+sea+view+room&tbm=isch
+228,46,"The Imperial Hotel Vũng Tàu","Vũng Tàu",3,pool,"Hồ bơi khu vực biển",,https://www.google.com/search?q=The+Imperial+Hotel+Vung+Tau+pool+beach&tbm=isch
+229,46,"The Imperial Hotel Vũng Tàu","Vũng Tàu",4,view,"Bãi Sau từ khách sạn",,https://www.google.com/search?q=The+Imperial+Hotel+Vung+Tau+Back+Beach+view&tbm=isch
+230,46,"The Imperial Hotel Vũng Tàu","Vũng Tàu",5,amenity,"Nhà hàng và spa",,https://www.google.com/search?q=The+Imperial+Hotel+Vung+Tau+restaurant+spa&tbm=isch
+231,47,"Pullman Vung Tau","Vũng Tàu",1,exterior,"Mặt tiền 5 sao hiện đại",,https://www.google.com/search?q=Pullman+Vung+Tau+hotel+exterior&tbm=isch
+232,47,"Pullman Vung Tau","Vũng Tàu",2,room,"Phòng Deluxe City View",,https://www.google.com/search?q=Pullman+Vung+Tau+deluxe+room&tbm=isch
+233,47,"Pullman Vung Tau","Vũng Tàu",3,pool,"Hồ bơi resort",,https://www.google.com/search?q=Pullman+Vung+Tau+swimming+pool&tbm=isch
+234,47,"Pullman Vung Tau","Vũng Tàu",4,view,"View thành phố biển",,https://www.google.com/search?q=Pullman+Vung+Tau+city+sea+view&tbm=isch
+235,47,"Pullman Vung Tau","Vũng Tàu",5,amenity,"Spa và nhà hàng quốc tế",,https://www.google.com/search?q=Pullman+Vung+Tau+spa+restaurant&tbm=isch
+236,48,"Vias Hotel Vũng Tàu","Vũng Tàu",1,exterior,"Mặt tiền hotel hiện đại Bãi Sau",,https://www.google.com/search?q=Vias+Hotel+Vung+Tau+exterior&tbm=isch
+237,48,"Vias Hotel Vũng Tàu","Vũng Tàu",2,room,"Phòng Ocean Suite",,https://www.google.com/search?q=Vias+Hotel+Vung+Tau+ocean+suite+room&tbm=isch
+238,48,"Vias Hotel Vũng Tàu","Vũng Tàu",3,pool,"Hồ bơi vô cực rooftop view biển",,https://www.google.com/search?q=Vias+Hotel+Vung+Tau+infinity+rooftop+pool&tbm=isch
+239,48,"Vias Hotel Vũng Tàu","Vũng Tàu",4,view,"View biển panorama Bãi Sau",,https://www.google.com/search?q=Vias+Hotel+Vung+Tau+panorama+beach+view&tbm=isch
+240,48,"Vias Hotel Vũng Tàu","Vũng Tàu",5,amenity,"Bar trên cao và nhà hàng",,https://www.google.com/search?q=Vias+Hotel+Vung+Tau+rooftop+bar&tbm=isch
+241,49,"Marina Bay Vũng Tàu Resort","Vũng Tàu",1,exterior,"Biệt thự view biển Long Hải",,https://www.google.com/search?q=Marina+Bay+Vung+Tau+Resort+villa+exterior&tbm=isch
+242,49,"Marina Bay Vũng Tàu Resort","Vũng Tàu",2,room,"Pool Villa Sea View phòng ngủ",,https://www.google.com/search?q=Marina+Bay+Vung+Tau+pool+villa+room&tbm=isch
+243,49,"Marina Bay Vũng Tàu Resort","Vũng Tàu",3,pool,"Hồ bơi riêng trong villa",,https://www.google.com/search?q=Marina+Bay+Vung+Tau+private+pool+villa&tbm=isch
+244,49,"Marina Bay Vũng Tàu Resort","Vũng Tàu",4,view,"Bãi biển Long Hải",,https://www.google.com/search?q=Marina+Bay+Vung+Tau+Long+Hai+beach&tbm=isch
+245,49,"Marina Bay Vũng Tàu Resort","Vũng Tàu",5,amenity,"BBQ ngoài trời và spa",,https://www.google.com/search?q=Marina+Bay+Vung+Tau+BBQ+spa&tbm=isch
+246,50,"Lan Rừng Resort Phước Hải","Vũng Tàu",1,exterior,"Kiến trúc Santorini xanh trắng",,https://www.google.com/search?q=Lan+Rung+Resort+Phuoc+Hai+Santorini+exterior&tbm=isch
+247,50,"Lan Rừng Resort Phước Hải","Vũng Tàu",2,room,"Phòng Santorini View Biển",,https://www.google.com/search?q=Lan+Rung+Resort+Phuoc+Hai+room+sea+view&tbm=isch
+248,50,"Lan Rừng Resort Phước Hải","Vũng Tàu",3,pool,"Hồ bơi phong cách Địa Trung Hải",,https://www.google.com/search?q=Lan+Rung+Resort+Phuoc+Hai+Mediterranean+pool&tbm=isch
+249,50,"Lan Rừng Resort Phước Hải","Vũng Tàu",4,view,"Bãi biển Phước Hải",,https://www.google.com/search?q=Lan+Rung+Resort+Phuoc+Hai+beach&tbm=isch
+250,50,"Lan Rừng Resort Phước Hải","Vũng Tàu",5,amenity,"Bar bãi biển Santorini",,https://www.google.com/search?q=Lan+Rung+Resort+Phuoc+Hai+beach+bar&tbm=isch

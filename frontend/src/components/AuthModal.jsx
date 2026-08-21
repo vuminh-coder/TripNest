@@ -48,6 +48,8 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
       handleGoogleLogin('guest.traveler@gmail.com');
     } else if (demoType === 'host') {
       handleGoogleLogin('minhhoang.dalat@gmail.com');
+    } else if (demoType === 'admin') {
+      handleGoogleLogin('admin@tripnest.com');
     }
   };
 
@@ -180,7 +182,7 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                 }}
                 onClick={() => handleQuickDemo('guest')}
               >
-                Khách du lịch (Guest)
+                Khách (Guest)
               </button>
               <button
                 style={{
@@ -195,7 +197,22 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                 }}
                 onClick={() => handleQuickDemo('host')}
               >
-                Chủ nhà (Superhost)
+                Chủ nhà (Host)
+              </button>
+              <button
+                style={{
+                  flex: 1,
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  border: '1px solid #0f172a',
+                  background: '#0f172a',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  color: '#38bdf8',
+                }}
+                onClick={() => handleQuickDemo('admin')}
+              >
+                Quản trị (Admin)
               </button>
             </div>
           </div>

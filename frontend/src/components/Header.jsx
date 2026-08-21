@@ -20,6 +20,7 @@ export const Header = ({
   onOpenBookings,
   onOpenWishlist,
   onOpenHost,
+  onOpenAdmin,
   wishlistCount = 0,
   user = null,
   onLogout,
@@ -188,6 +189,25 @@ export const Header = ({
 
         {/* Right Header Actions */}
         <div className="header-actions">
+          {/* Quick Admin Access Button */}
+          <button
+            className="host-btn"
+            style={{
+              background: '#fff1f2',
+              color: '#e11d48',
+              borderColor: '#fecdd3',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontWeight: 800,
+            }}
+            onClick={onOpenAdmin}
+            title="Mở Trang Quản Trị Hệ Thống TripNest"
+          >
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#e11d48' }} />
+            Quản trị Admin
+          </button>
+
           <button className="host-btn" onClick={onOpenHost}>
             Cho thuê chỗ ở
           </button>
@@ -289,6 +309,9 @@ export const Header = ({
                       <TbHeart /> Danh sách yêu thích ({wishlistCount})
                     </button>
                     <div className="menu-separator" />
+                    <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenAdmin(); }} style={{ color: '#0284c7', fontWeight: 700 }}>
+                      <TbCompass /> Trang quản trị Admin
+                    </button>
                     <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenHost(); }}>
                       <TbHomePlus /> Quản lý cho thuê phòng
                     </button>
