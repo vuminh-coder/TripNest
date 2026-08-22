@@ -50,5 +50,8 @@ Route::get('/experiences', [ExperienceController::class, 'index']);
 Route::get('/host/estimate', [HostController::class, 'estimate']);
 Route::post('/host/register', [HostController::class, 'registerHost']);
 
-// Admin
-Route::post("/admin/user/create",[UserController::class,'create']);
+// Admin User Management
+Route::get('/admin/users', [UserController::class, 'index']);
+Route::post('/admin/user/create', [UserController::class, 'create']);
+Route::post('/admin/users/{id}/update', [UserController::class, 'update']);
+

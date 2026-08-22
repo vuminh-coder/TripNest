@@ -43,10 +43,10 @@ export const UsersPage = ({
 
     if (searchUser.trim()) {
       const q = searchUser.toLowerCase();
-      const matchName = u.name.toLowerCase().includes(q);
-      const matchEmail = u.email.toLowerCase().includes(q);
-      const matchPhone = u.phone && u.phone.includes(q);
-      const matchIdCard = u.id_card_number && u.id_card_number.includes(q);
+      const matchName = (u.name || '').toLowerCase().includes(q);
+      const matchEmail = (u.email || '').toLowerCase().includes(q);
+      const matchPhone = u.phone && String(u.phone).includes(q);
+      const matchIdCard = u.id_card_number && String(u.id_card_number).includes(q);
       if (!matchName && !matchEmail && !matchPhone && !matchIdCard) return false;
     }
     return true;
