@@ -10,6 +10,7 @@ import {
   TbPhoto,
   TbCheck,
 } from 'react-icons/tb';
+import Swal from "sweetalert2";
 
 export const UserEditModal = ({ user, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -23,7 +24,7 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
     avatar: '',
   });
 
-  const [previewAvatar,setPreviewAvatar] = useState("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80");
+  const [previewAvatar, setPreviewAvatar] = useState("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80");
 
   useEffect(() => {
     if (user) {
@@ -53,7 +54,7 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
 
   const handleChangeAvatar = (e) => {
     const urlImage = URL.createObjectURL(e.target.files[0]);
-    setFormData({...formData,"avatar": e.target.files[0]});
+    setFormData({ ...formData, "avatar": e.target.files[0] });
     setPreviewAvatar(urlImage);
   }
 
@@ -63,10 +64,6 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
       alert('Vui lòng nhập họ tên và email!');
       return;
     }
-    // onSave({
-    //   ...(user ? { id: user.id } : {}),
-    //   ...formData,
-    // });
 
     const data = new FormData();
 
@@ -83,14 +80,40 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
       data.append("avatar", formData.avatar);
     }
 
-    fetch("http://localhost:8000/api/admin/user/create",{
+    fetch("http://localhost:8000/api/admin/user/create", {
       method: "POST",
       credentials: "include",
       body: data
     })
       .then(res => res.json())
       .then(data => {
-        console.log(data);
+        if (data.success) {
+          Swal.fire({
+            icon: "success",
+            title: "🎉 Thêm người dùng thành công!",
+            text: "Tài khoản người dùng đã được tạo thành công.",
+            position: "top-end",
+            toast: true,
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+          onSave({
+            ...(user ? { id: user.id } : {}),
+            ...formData,
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "❌ Thêm người dùng thất bại!",
+            text: data.message,
+            position: "top-end",
+            toast: true,
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        }
       })
   };
 
@@ -431,7 +454,7 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
                   }}
                 />
                 <label htmlFor='change-avatar'> Chọn ảnh</label>
-                <input type = "file" hidden id = "change-avatar" onChange={handleChangeAvatar}>
+                <input type="file" hidden id="change-avatar" onChange={handleChangeAvatar}>
                 </input>
                 {/* <input
                   type="url"

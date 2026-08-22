@@ -5,9 +5,9 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Account;
-use Cloudinary as GlobalCloudinary;
 use Illuminate\Http\Request;
 use Cloudinary\Cloudinary;
+use Illuminate\Support\Str;
 use Throwable;
 
 class UserController extends Controller
@@ -53,6 +53,8 @@ class UserController extends Controller
 
                 $dataUser["avatar_url"] = $result["secure_url"];
             }
+
+            $data["google_id"] = Str::random(10);
             
             $result = Account::create($data);
             $dataUser["account_id"] = $result->id;
