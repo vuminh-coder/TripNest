@@ -9,6 +9,7 @@ import {
   TbShield,
   TbPhoto,
   TbCheck,
+  TbLock,
 } from 'react-icons/tb';
 import Swal from "sweetalert2";
 
@@ -16,12 +17,12 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
     phone: '',
     id_card_number: '',
     address: '',
     role: 'guest',
     status: 'active',
-    avatar: '',
   });
 
   const [previewAvatar, setPreviewAvatar] = useState("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80");
@@ -65,6 +66,8 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
       return;
     }
 
+    console.log(formData);
+
     const data = new FormData();
 
     data.append("full_name", formData.name);
@@ -74,6 +77,7 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
     data.append("address", formData.address);
     data.append("role", formData.role);
     data.append("status", formData.status);
+    data.append("password",formData.password);
 
     // Chỉ append nếu người dùng chọn ảnh mới
     if (formData.avatar instanceof File) {
@@ -242,6 +246,49 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="name@example.com"
+                style={{
+                  width: '100%',
+                  padding: '0.45rem 0.75rem',
+                  borderRadius: 'var(--adm-radius-sm)',
+                  border: '1px solid var(--adm-border-strong)',
+                  fontSize: '0.84rem',
+                  color: 'var(--adm-text-main)',
+                  outline: 'none',
+                }}
+              />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  color: '#334155',
+                  marginBottom: '4px',
+                }}
+              >
+                <TbLock style={{ color: '#8b5cf6' }} />
+                Mật Khẩu {!user && '*'}
+              </label>
+
+              <input
+                type="password"
+                required={!user}
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    password: e.target.value,
+                  })
+                }
+                placeholder={
+                  user
+                    ? 'Để trống nếu không muốn thay đổi'
+                    : 'Nhập mật khẩu'
+                }
                 style={{
                   width: '100%',
                   padding: '0.45rem 0.75rem',

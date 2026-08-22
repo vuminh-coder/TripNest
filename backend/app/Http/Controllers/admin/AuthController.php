@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Throwable;
 
 class AuthController extends Controller
@@ -22,8 +22,9 @@ class AuthController extends Controller
                     'required',
                     'string',
                     'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/',
-                ],422
+                ]
             ]);
+
 
             if ($validator->fails()) {
                 return response()->json([
@@ -43,19 +44,13 @@ class AuthController extends Controller
             }
 
             $account = Auth::guard('api')->user();
-            $user = $account->user;
+            // $user = $account->user();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Đăng nhập thành công',
                 'token' => $token,
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $account->email,
-                    'avatar' => $user->avatar,
-                    'phone' => $user->phone,
-                ],
+                'account' => $account
             ], 200);
         } catch (Throwable $ex) {
             return response()->json([

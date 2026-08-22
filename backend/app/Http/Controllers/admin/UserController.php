@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Account;
 use Illuminate\Http\Request;
 use Cloudinary\Cloudinary;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -24,6 +25,11 @@ class UserController extends Controller
             ]);
             $data = $request->validate([
                 "email" => "required|email",
+                'password' => [
+                    'required',
+                    'string',
+                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/',
+                ],
                 "role" => "sometimes",
                 "status" => "sometimes",
             ]);
@@ -35,6 +41,8 @@ class UserController extends Controller
                     "message" => "Địa chỉ email đã tồn tại. Vui lòng chọn địa chỉ email khác"
                 ]);
             }
+
+            $data["password"] = Hash::make($data["password"]);
 
             if(isset($data["phone_number"])){
                 $exitsPhoneNumber = User::where("phone_number",$data["phone_number"])->first();
