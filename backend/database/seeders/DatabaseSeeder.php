@@ -18,6 +18,7 @@ use App\Models\Wishlist;
 use App\Models\Experience;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -70,105 +71,181 @@ class DatabaseSeeder extends Seeder
             $amenities[$a['code']] = Amenity::create($a);
         }
 
-        // 3. Seed Demo Guest Account
-        $guestAccount = Account::create([
-            'email' => 'demo.traveler@gmail.com',
-            'google_id' => 'google-user-100001',
-            'google_avatar' => 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-            'role' => 'guest',
+        // 3. Seed Super Admin Account (Vũ Văn Minh)
+        $adminAcc = Account::create([
+            'email' => 'vuminh.admin@tripnest.vn',
+            'password' => Hash::make('Admin@2026'),
+            'google_id' => null,
+            'google_avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+            'role' => 'admin',
             'status' => 'active',
             'email_verified_at' => now(),
         ]);
 
-        $guestUser = User::create([
-            'account_id' => $guestAccount->id,
-            'full_name' => 'Nguyễn Hải Đăng',
-            'phone_number' => '0912345678',
-            'avatar_url' => 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        User::create([
+            'account_id' => $adminAcc->id,
+            'full_name' => 'Vũ Văn Minh',
+            'phone_number' => '0988112233',
+            'avatar_url' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
             'gender' => 'male',
-            'date_of_birth' => '1995-06-15',
+            'date_of_birth' => '1996-08-15',
+            'id_card_number' => '001098007788',
             'nationality' => 'Việt Nam',
-            'address' => 'Ba Đình, Hà Nội',
-            'bio' => 'Người đam mê khám phá thiên nhiên và nhiếp ảnh du lịch.',
+            'address' => 'Hoàn Kiếm, Hà Nội',
+            'bio' => 'Quản trị viên hệ thống nền tảng du lịch TripNest.',
         ]);
 
-        // 4. Seed Verified Hosts with Bank Payout Accounts
+        // 4. Seed Guest Accounts
+        $guestsData = [
+            [
+                'email' => 'thangbinh.travel@gmail.com',
+                'password' => 'Guest@2026',
+                'name' => 'Trịnh Thăng Bình',
+                'phone' => '0903445566',
+                'avatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+                'id_card' => '079195004455',
+                'address' => 'Quận 3, TP. Hồ Chí Minh',
+                'status' => 'active',
+                'bio' => 'Yêu thích du lịch trải nghiệm văn hóa và ẩm thực vùng miền.',
+            ],
+            [
+                'email' => 'hoaian.vo@gmail.com',
+                'password' => 'Guest@2026',
+                'name' => 'Võ Hoài An',
+                'phone' => '0938667788',
+                'avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+                'id_card' => '031194002233',
+                'address' => 'Vĩnh Hải, TP. Nha Trang',
+                'status' => 'active',
+                'bio' => 'Chuyên gia thiết kế nội thất và đam mê khám phá các homestay độc đáo.',
+            ],
+            [
+                'email' => 'minhquan.banned@gmail.com',
+                'password' => 'Guest@2026',
+                'name' => 'Đỗ Minh Quân (Vi phạm)',
+                'phone' => '0944889900',
+                'avatar' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+                'id_card' => '001091008899',
+                'address' => 'Cầu Giấy, Hà Nội',
+                'status' => 'banned',
+                'bio' => 'Tài khoản vi phạm quy chuẩn cộng đồng (Tạm khóa).',
+            ],
+        ];
+
+        $createdGuests = [];
+        foreach ($guestsData as $g) {
+            $gAcc = Account::create([
+                'email' => $g['email'],
+                'password' => Hash::make($g['password']),
+                'google_id' => null,
+                'google_avatar' => $g['avatar'],
+                'role' => 'guest',
+                'status' => $g['status'],
+                'email_verified_at' => now(),
+            ]);
+
+            $usr = User::create([
+                'account_id' => $gAcc->id,
+                'full_name' => $g['name'],
+                'phone_number' => $g['phone'],
+                'avatar_url' => $g['avatar'],
+                'gender' => 'other',
+                'id_card_number' => $g['id_card'],
+                'nationality' => 'Việt Nam',
+                'address' => $g['address'],
+                'bio' => $g['bio'],
+            ]);
+
+            $createdGuests[] = $usr;
+        }
+        $guestUser = $createdGuests[0];
+
+        // 5. Seed Verified Hosts with Bank Payout Accounts
         $hostsData = [
             [
-                'email' => 'minhhoang.dalat@gmail.com',
-                'google_id' => 'google-host-100001',
-                'name' => 'Minh Hoàng',
-                'avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-                'display_name' => 'Minh Hoàng',
-                'phone' => '0987654321',
-                'bio' => 'Yêu Đà Lạt và luôn mong muốn mang đến trải nghiệm nghỉ dưỡng ấm cúng nhất cho quý khách.',
+                'email' => 'hoanglong.danang@gmail.com',
+                'password' => 'Host@2026',
+                'name' => 'Lê Hoàng Long',
+                'avatar' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+                'display_name' => 'Hoàng Long Ocean Villas',
+                'phone' => '0915998877',
+                'id_card' => '048192003344',
+                'address' => 'Sơn Trà, TP. Đà Nẵng',
+                'bio' => 'Hơn 8 năm quản lý và vận hành chuỗi biệt thự nghỉ dưỡng cao cấp view biển Đà Nẵng.',
                 'rating' => 4.98,
-                'reviews_count' => 310,
+                'reviews_count' => 345,
                 'is_superhost' => true,
                 'bank_name' => 'Vietcombank',
                 'bank_code' => '970436',
-                'bank_branch' => 'Chi nhánh Đà Lạt, Lâm Đồng',
-                'account_number' => '0071001234567',
-                'account_holder' => 'NGUYEN MINH HOANG',
+                'bank_branch' => 'Chi nhánh Đà Nẵng',
+                'account_number' => '0071009988776',
+                'account_holder' => 'LE HOANG LONG',
             ],
             [
-                'email' => 'thanhha.phuquoc@gmail.com',
-                'google_id' => 'google-host-100002',
-                'name' => 'Trần Thanh Hà',
+                'email' => 'bichphuong.sapa@gmail.com',
+                'password' => 'Host@2026',
+                'name' => 'Bùi Bích Phương',
                 'avatar' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-                'display_name' => 'Thanh Hà Resort & Stay',
-                'phone' => '0978901234',
-                'bio' => 'Hệ thống biệt thự nghỉ dưỡng ven biển cao cấp tại đảo ngọc Phú Quốc.',
-                'rating' => 4.97,
-                'reviews_count' => 520,
+                'display_name' => 'Bích Phương Sapa Ecolodge',
+                'phone' => '0972334455',
+                'id_card' => '024196005566',
+                'address' => 'TX. Sa Pa, Lào Cai',
+                'bio' => 'Chủ chuỗi nhà gỗ sinh thái mộc mạc giữa thung lũng Mường Hoa Sa Pa.',
+                'rating' => 4.96,
+                'reviews_count' => 280,
                 'is_superhost' => true,
                 'bank_name' => 'Techcombank',
                 'bank_code' => '970407',
-                'bank_branch' => 'Chi nhánh Phú Quốc, Kiên Giang',
-                'account_number' => '19033445566778',
-                'account_holder' => 'TRAN THANH HA',
+                'bank_branch' => 'Chi nhánh Lào Cai',
+                'account_number' => '1903388776655',
+                'account_holder' => 'BUI BICH PHUONG',
             ],
             [
-                'email' => 'quangvu.halong@gmail.com',
-                'google_id' => 'google-host-100003',
-                'name' => 'Quang Vũ',
-                'avatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-                'display_name' => 'Captain Quang Vũ',
-                'phone' => '0961234567',
-                'bio' => 'Thuyền trưởng 15 năm kinh nghiệm du thuyền 5 sao trên vịnh di sản Hạ Long.',
-                'rating' => 4.93,
-                'reviews_count' => 410,
+                'email' => 'thanhtruc.dalat@gmail.com',
+                'password' => 'Host@2026',
+                'name' => 'Phan Thanh Trúc',
+                'avatar' => 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
+                'display_name' => 'Thanh Trúc Pine Villa Đà Lạt',
+                'phone' => '0968112244',
+                'id_card' => '001095033445',
+                'address' => 'Phường 10, TP. Đà Lạt, Lâm Đồng',
+                'bio' => 'Biệt thự đồi thông Đà Lạt với lò sưởi ấm cúng và sân vườn hoa cẩm tú cầu.',
+                'rating' => 4.94,
+                'reviews_count' => 195,
                 'is_superhost' => true,
                 'bank_name' => 'MB Bank',
                 'bank_code' => '970422',
-                'bank_branch' => 'Chi nhánh Hạ Long, Quảng Ninh',
-                'account_number' => '0888999777666',
-                'account_holder' => 'VU QUANG VU',
+                'bank_branch' => 'Chi nhánh Đà Lạt',
+                'account_number' => '0888666555444',
+                'account_holder' => 'PHAN THANH TRUC',
             ],
             [
-                'email' => 'eleni.santorini@gmail.com',
-                'google_id' => 'google-host-100004',
-                'name' => 'Eleni & Nikos',
-                'avatar' => 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
-                'display_name' => 'Eleni & Nikos Luxury Cave',
-                'phone' => '+30 6912345678',
-                'bio' => 'Dedicated to offering exceptional cliffside hospitality in the heart of Oia, Santorini.',
-                'rating' => 5.00,
-                'reviews_count' => 280,
-                'is_superhost' => true,
-                'bank_name' => 'National Bank of Greece',
-                'bank_code' => 'ETHNGRAA',
-                'bank_branch' => 'Santorini Branch',
-                'account_number' => 'GR12011012500000012345678',
-                'account_holder' => 'ELENI NIKOS',
-            ]
+                'email' => 'minhtien.phuquoc@gmail.com',
+                'password' => 'Host@2026',
+                'name' => 'Đặng Minh Tiến',
+                'avatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+                'display_name' => 'Minh Tiến Sunset Beach Bungalow',
+                'phone' => '0919223344',
+                'id_card' => '091193005577',
+                'address' => 'Bãi Trường, Dương Tơ, TP. Phú Quốc',
+                'bio' => 'Trải nghiệm ngắm hoàng hôn tuyệt đẹp trên bờ biển cát trắng Phú Quốc.',
+                'rating' => 4.92,
+                'reviews_count' => 160,
+                'is_superhost' => false,
+                'bank_name' => 'ACB',
+                'bank_code' => '970416',
+                'bank_branch' => 'Chi nhánh Phú Quốc',
+                'account_number' => '2345678988',
+                'account_holder' => 'DANG MINH TIEN',
+            ],
         ];
 
         $createdHosts = [];
         foreach ($hostsData as $h) {
             $acc = Account::create([
                 'email' => $h['email'],
-                'google_id' => $h['google_id'],
+                'password' => Hash::make($h['password']),
+                'google_id' => null,
                 'google_avatar' => $h['avatar'],
                 'role' => 'host',
                 'status' => 'active',
@@ -181,7 +258,8 @@ class DatabaseSeeder extends Seeder
                 'phone_number' => $h['phone'],
                 'avatar_url' => $h['avatar'],
                 'bio' => $h['bio'],
-                'id_card_number' => '0010950' . rand(10000, 99999),
+                'id_card_number' => $h['id_card'],
+                'address' => $h['address'],
             ]);
 
             $host = Host::create([

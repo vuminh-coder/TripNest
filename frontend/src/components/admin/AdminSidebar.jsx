@@ -23,7 +23,13 @@ export const AdminSidebar = ({
   setCollapsed,
   pendingKycCount = 0,
   pendingRoleUpgradeCount = 0,
+  currentAdmin,
 }) => {
+  const adminUser = currentAdmin || {
+    name: 'Vũ Văn Minh',
+    email: 'vuminh.admin@tripnest.vn',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+  };
   const navGroups = [
     {
       group: 'Tổng Quan',
@@ -162,19 +168,19 @@ export const AdminSidebar = ({
       </nav>
 
       {/* Sidebar Footer Profile */}
-      <div className="admin-sidebar-footer">
+      <div className="admin-sidebar-footer" title={`Quản trị viên: ${adminUser.name || 'Vũ Văn Minh'}`}>
         <img
-          src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-          alt="Master Admin"
+          src={adminUser.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
+          alt={adminUser.name || 'Vũ Văn Minh'}
           className="admin-user-avatar"
         />
         {!collapsed && (
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              Master Admin
+              {adminUser.name || 'Vũ Văn Minh'}
             </div>
-            <div style={{ fontSize: '0.7rem', color: '#64748b' }}>
-              admin@tripnest.com
+            <div style={{ fontSize: '0.7rem', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {adminUser.email || 'vuminh.admin@tripnest.vn'}
             </div>
           </div>
         )}

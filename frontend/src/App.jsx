@@ -7,6 +7,7 @@ import ExperienceSection from './components/ExperienceSection';
 import RoomDetailModal from './components/RoomDetailModal';
 import FilterModal from './components/FilterModal';
 import AuthModal from './components/AuthModal';
+import ForgotPasswordModal from './components/ForgotPasswordModal';
 import MyBookingsModal from './components/MyBookingsModal';
 import WishlistModal from './components/WishlistModal';
 import ChangePasswordModal from './components/ChangePasswordModal';
@@ -69,6 +70,7 @@ function App() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [authModal, setAuthModal] = useState({ isOpen: false, tab: 'login' });
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
   const [isBookingsOpen, setIsBookingsOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
@@ -323,6 +325,26 @@ function App() {
         initialTab={authModal.tab}
         onClose={() => setAuthModal({ isOpen: false, tab: 'login' })}
         onAuthSuccess={(u) => setUser(u)}
+        onOpenForgotPassword={() => {
+          setAuthModal({ isOpen: false, tab: 'login' });
+          setIsForgotOpen(true);
+        }}
+      />
+
+      <ForgotPasswordModal
+        isOpen={isForgotOpen}
+        onClose={() => setIsForgotOpen(false)}
+        onSwitchToLogin={() => {
+          setIsForgotOpen(false);
+          setAuthModal({ isOpen: true, tab: 'login' });
+        }}
+        onSwitchToRegister={() => {
+          setIsForgotOpen(false);
+          setAuthModal({ isOpen: true, tab: 'register' });
+        }}
+        onResetSuccess={(email, pass) => {
+          console.log('Mật khẩu mới đã được cập nhật:', email, pass);
+        }}
       />
 
       <MyBookingsModal

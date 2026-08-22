@@ -1,51 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import './admin.css';
-import { adminService } from '../../services/adminApi';
+import React, { useState, useEffect } from "react";
+import "./admin.css";
+import { adminService } from "../../services/adminApi";
 
-import AdminSidebar from './AdminSidebar';
-import AdminHeader from './AdminHeader';
+import AdminSidebar from "./AdminSidebar";
+import AdminHeader from "./AdminHeader";
 
 // 10 Distinct Pages
-import DashboardPage from './pages/DashboardPage';
-import AccommodationsPage from './pages/AccommodationsPage';
-import BookingsPage from './pages/BookingsPage';
-import HostsKycPage from './pages/HostsKycPage';
-import UsersPage from './pages/UsersPage';
-import RoleUpgradeRequestsPage from './pages/RoleUpgradeRequestsPage';
-import FinancialsPage from './pages/FinancialsPage';
-import ReviewsPage from './pages/ReviewsPage';
-import CategoriesPage from './pages/CategoriesPage';
-import ExperiencesPage from './pages/ExperiencesPage';
+import DashboardPage from "./pages/DashboardPage";
+import AccommodationsPage from "./pages/AccommodationsPage";
+import BookingsPage from "./pages/BookingsPage";
+import HostsKycPage from "./pages/HostsKycPage";
+import UsersPage from "./pages/UsersPage";
+import RoleUpgradeRequestsPage from "./pages/RoleUpgradeRequestsPage";
+import FinancialsPage from "./pages/FinancialsPage";
+import ReviewsPage from "./pages/ReviewsPage";
+import CategoriesPage from "./pages/CategoriesPage";
+import ExperiencesPage from "./pages/ExperiencesPage";
 
 // Modals
-import KycDetailModal from './modals/KycDetailModal';
-import BookingDetailModal from './modals/BookingDetailModal';
-import AccommodationEditModal from './modals/AccommodationEditModal';
-import PayoutConfirmModal from './modals/PayoutConfirmModal';
-import UserEditModal from './modals/UserEditModal';
+import KycDetailModal from "./modals/KycDetailModal";
+import BookingDetailModal from "./modals/BookingDetailModal";
+import AccommodationEditModal from "./modals/AccommodationEditModal";
+import PayoutConfirmModal from "./modals/PayoutConfirmModal";
+import UserEditModal from "./modals/UserEditModal";
 
 export const AdminLayout = ({ onExitAdmin }) => {
   // Determine initial page from URL path
   const getInitialTabFromUrl = () => {
-    const path = window.location.pathname.replace('/admin', '').replace('/', '');
+    const path = window.location.pathname
+      .replace("/admin", "")
+      .replace("/", "");
     const validTabs = [
-      'dashboard',
-      'accommodations',
-      'bookings',
-      'hosts_kyc',
-      'users',
-      'role_requests',
-      'financials',
-      'reviews',
-      'categories',
-      'experiences',
+      "dashboard",
+      "accommodations",
+      "bookings",
+      "hosts_kyc",
+      "users",
+      "role_requests",
+      "financials",
+      "reviews",
+      "categories",
+      "experiences",
     ];
-    return validTabs.includes(path) ? path : 'dashboard';
+    return validTabs.includes(path) ? path : "dashboard";
   };
 
   const [activeTab, setActiveTab] = useState(getInitialTabFromUrl);
   const [collapsed, setCollapsed] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [userDeleteError, setUserDeleteError] = useState('');
 
@@ -70,46 +72,79 @@ export const AdminLayout = ({ onExitAdmin }) => {
   const [editUser, setEditUser] = useState(null);
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
 
+  // 🟢 1. Khi bấm nút "Sửa", gọi thẳng API Backend lấy dữ liệu mới nhất
+  const handleOpenEditUser = async (user = null) => {
+    if (user && user.id) {
+      // Đổi URL trên trình duyệt kèm ID
+      window.history.pushState({}, "", `/admin/users?edit=${user.id}`);
+
+      // 👉 GỌI TRỰC TIẾP TỪ DATABASE BACKEND THEO ID
+      const freshUser = await adminService.getUserById(user.id);
+      setEditUser(freshUser || user);
+      setIsEditUserOpen(true);
+    } else {
+      window.history.pushState({}, "", `/admin/users?create=true`);
+      setEditUser(null);
+      setIsEditUserOpen(true);
+    }
+  };
+
+  // 🟢 2. Khi đóng Modal hoặc hủy bỏ, đưa URL trở lại /admin/users
+  const handleCloseEditUser = () => {
+    setIsEditUserOpen(false);
+    setEditUser(null);
+    window.history.pushState({}, "", "/admin/users");
+  };
+
+  // 🟢 2. Khi F5 hoặc dán link có ?edit=3, tự động gọi API Backend theo ID
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const editId = params.get("edit");
+
+    if (editId) {
+      adminService.getUserById(editId).then((userData) => {
+        if (userData) {
+          setEditUser(userData);
+          setIsEditUserOpen(true);
+        }
+      });
+    }
+  }, []);
+
   // Sync URL with Tab
   const handleNavigate = (tabId) => {
     setActiveTab(tabId);
-    window.history.pushState({}, '', `/admin/${tabId === 'dashboard' ? '' : tabId}`);
+    window.history.pushState(
+      {},
+      "",
+      `/admin/${tabId === "dashboard" ? "" : tabId}`,
+    );
   };
 
   useEffect(() => {
     const handlePopState = () => {
       setActiveTab(getInitialTabFromUrl());
     };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
   // Load all admin data
   const loadData = async () => {
     setLoading(true);
-    const [
-      st,
-      accs,
-      bks,
-      hsts,
-      usrs,
-      cats,
-      amns,
-      revs,
-      pyts,
-      exps,
-    ] = await Promise.all([
-      adminService.getDashboardStats(),
-      adminService.getAccommodations(),
-      adminService.getBookings(),
-      adminService.getHosts(),
-      adminService.getUsers(),
-      adminService.getCategories(),
-      adminService.getAmenities(),
-      adminService.getReviews(),
-      adminService.getPayouts(),
-      adminService.getExperiences(),
-    ]);
+    const [st, accs, bks, hsts, usrs, cats, amns, revs, pyts, exps] =
+      await Promise.all([
+        adminService.getDashboardStats(),
+        adminService.getAccommodations(),
+        adminService.getBookings(),
+        adminService.getHosts(),
+        adminService.getUsers(),
+        adminService.getCategories(),
+        adminService.getAmenities(),
+        adminService.getReviews(),
+        adminService.getPayouts(),
+        adminService.getExperiences(),
+      ]);
 
     setStats(st);
     setAccommodations(accs);
@@ -155,8 +190,12 @@ export const AdminLayout = ({ onExitAdmin }) => {
   };
 
   // Bookings Actions
-  const handleUpdateBookingStatus = async (bookingId, status, reason = '') => {
-    const updated = await adminService.updateBookingStatus(bookingId, status, reason);
+  const handleUpdateBookingStatus = async (bookingId, status, reason = "") => {
+    const updated = await adminService.updateBookingStatus(
+      bookingId,
+      status,
+      reason,
+    );
     setBookings(updated);
     const st = await adminService.getDashboardStats();
     setStats(st);
@@ -164,14 +203,18 @@ export const AdminLayout = ({ onExitAdmin }) => {
 
   // KYC Actions
   const handleApproveKyc = async (hostId) => {
-    const updated = await adminService.updateKycStatus(hostId, 'verified');
+    const updated = await adminService.updateKycStatus(hostId, "verified");
     setHosts(updated);
     const st = await adminService.getDashboardStats();
     setStats(st);
   };
 
   const handleRejectKyc = async (hostId, reason) => {
-    const updated = await adminService.updateKycStatus(hostId, 'rejected', reason);
+    const updated = await adminService.updateKycStatus(
+      hostId,
+      "rejected",
+      reason,
+    );
     setHosts(updated);
     const st = await adminService.getDashboardStats();
     setStats(st);
@@ -191,8 +234,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
   const handleSaveUser = async (userData) => {
     const updated = await adminService.saveUser(userData);
     setUsers(updated);
-    setIsEditUserOpen(false);
-    setEditUser(null);
+    handleCloseEditUser();
   };
 
   const handleDeleteUser = async (userId) => {
@@ -205,12 +247,13 @@ export const AdminLayout = ({ onExitAdmin }) => {
     }
   };
 
-  const handleApproveUpgrade = async (userId, approved, rejectionReason = '') => {
-    const { users: updatedUsers, hosts: updatedHosts } = await adminService.approveRoleUpgrade(
-      userId,
-      approved,
-      rejectionReason
-    );
+  const handleApproveUpgrade = async (
+    userId,
+    approved,
+    rejectionReason = "",
+  ) => {
+    const { users: updatedUsers, hosts: updatedHosts } =
+      await adminService.approveRoleUpgrade(userId, approved, rejectionReason);
     setUsers(updatedUsers);
     if (updatedHosts) setHosts(updatedHosts);
     const st = await adminService.getDashboardStats();
@@ -247,8 +290,16 @@ export const AdminLayout = ({ onExitAdmin }) => {
   };
 
   const pendingRoleUpgradeCount = users.filter(
-    (u) => u.role_upgrade_request && u.role_upgrade_request.status === 'pending'
+    (u) =>
+      u.role_upgrade_request && u.role_upgrade_request.status === "pending",
   ).length;
+
+  const currentAdmin = users.find((u) => u.role === "admin") || {
+    name: "Vũ Văn Minh",
+    email: "vuminh.admin@tripnest.vn",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    role: "admin",
+  };
 
   return (
     <div className="admin-portal-wrapper">
@@ -260,6 +311,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
         setCollapsed={setCollapsed}
         pendingKycCount={stats.pendingKycCount || 0}
         pendingRoleUpgradeCount={pendingRoleUpgradeCount}
+        currentAdmin={currentAdmin}
       />
 
       {/* Main Container */}
@@ -275,12 +327,19 @@ export const AdminLayout = ({ onExitAdmin }) => {
         {/* Distinct Page View */}
         <main className="admin-content-view">
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '5rem 0', color: '#64748b', fontWeight: 600 }}>
+            <div
+              style={{
+                textAlign: "center",
+                padding: "5rem 0",
+                color: "#64748b",
+                fontWeight: 600,
+              }}
+            >
               Đang tải dữ liệu Trung Tâm Quản Trị TripNest...
             </div>
           ) : (
             <>
-              {activeTab === 'dashboard' && (
+              {activeTab === "dashboard" && (
                 <DashboardPage
                   stats={stats}
                   bookings={bookings}
@@ -290,7 +349,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
                 />
               )}
 
-              {activeTab === 'accommodations' && (
+              {activeTab === "accommodations" && (
                 <AccommodationsPage
                   accommodations={accommodations}
                   onUpdateStatus={handleUpdateAccStatus}
@@ -303,7 +362,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
                 />
               )}
 
-              {activeTab === 'bookings' && (
+              {activeTab === "bookings" && (
                 <BookingsPage
                   bookings={bookings}
                   onOpenDetailModal={(b) => setSelectedBooking(b)}
@@ -311,7 +370,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
                 />
               )}
 
-              {activeTab === 'hosts_kyc' && (
+              {activeTab === "hosts_kyc" && (
                 <HostsKycPage
                   hosts={hosts}
                   onOpenKycModal={(h) => setSelectedKycHost(h)}
@@ -319,22 +378,19 @@ export const AdminLayout = ({ onExitAdmin }) => {
                 />
               )}
 
-              {activeTab === 'users' && (
+              {activeTab === "users" && (
                 <UsersPage
                   users={users}
                   deleteError={userDeleteError}
                   onToggleStatus={handleToggleUserStatus}
-                  onOpenEditModal={(u) => {
-                    setEditUser(u);
-                    setIsEditUserOpen(true);
-                  }}
+                  onOpenEditModal={handleOpenEditUser}
                   onDeleteUser={handleDeleteUser}
                   onApproveUpgrade={handleApproveUpgrade}
                   onNavigate={handleNavigate}
                 />
               )}
 
-              {activeTab === 'role_requests' && (
+              {activeTab === "role_requests" && (
                 <RoleUpgradeRequestsPage
                   users={users}
                   onApproveUpgrade={handleApproveUpgrade}
@@ -342,7 +398,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
                 />
               )}
 
-              {activeTab === 'categories' && (
+              {activeTab === "categories" && (
                 <CategoriesPage
                   categories={categories}
                   amenities={amenities}
@@ -351,14 +407,14 @@ export const AdminLayout = ({ onExitAdmin }) => {
                 />
               )}
 
-              {activeTab === 'reviews' && (
+              {activeTab === "reviews" && (
                 <ReviewsPage
                   reviews={reviews}
                   onUpdateReviewStatus={handleUpdateReviewStatus}
                 />
               )}
 
-              {activeTab === 'financials' && (
+              {activeTab === "financials" && (
                 <FinancialsPage
                   payouts={payouts}
                   stats={stats}
@@ -366,7 +422,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
                 />
               )}
 
-              {activeTab === 'experiences' && (
+              {activeTab === "experiences" && (
                 <ExperiencesPage
                   experiences={experiences}
                   onToggleActive={handleToggleExpActive}
@@ -409,10 +465,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
       {isEditUserOpen && (
         <UserEditModal
           user={editUser}
-          onClose={() => {
-            setIsEditUserOpen(false);
-            setEditUser(null);
-          }}
+          onClose={handleCloseEditUser}
           onSave={handleSaveUser}
         />
       )}

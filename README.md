@@ -30,8 +30,8 @@ cd backend
 # Cài đặt dependencies (nếu chưa cài)
 composer install
 
-# Chạy migration dữ liệu
-php artisan migrate
+# Chạy migration & nạp dữ liệu mẫu
+php artisan migrate:fresh --seed
 
 # Khởi chạy server API
 php artisan serve
@@ -61,9 +61,73 @@ Hệ thống Admin Portal được thiết kế theo phong cách **Modern Light 
 
 ---
 
+## 🔄 Kiến Trúc Luồng Dữ Liệu API (Backend Laravel ➔ Frontend React)
+
+Mô hình luồng hoạt động chuẩn của các tính năng API (ví dụ: Lấy danh sách người dùng `GET /api/admin/users`):
+
+```text
+[1. React Component]                [2. Service API]                 [3. Laravel Route]               [4. Controller]              [5. MySQL DB]
+  AdminLayout.jsx    ──(fetch)──►   adminApi.js     ──(HTTP GET)──►    api.php         ──(invoke)──►   UserController.php  ──(SQL)──► accounts & users
+  setUsers(data)     ◄──(render)──   parse JSON      ◄──(200 OK)────    JSON Response   ◄──(map data)──  Eloquent with()    ◄──(rows)── 2 Tables Joined
+```
+
+### 📋 1. Luồng Lấy Danh Sách Thành Viên (Index - `GET /api/admin/users`)
+
+1. **Frontend Trigger**: Khi người dùng mở trang `/admin/users`, Hook `useEffect` trong `AdminLayout.jsx` được kích hoạt.
+2. **Gửi Request**: `adminService.getUsers()` trong `adminApi.js` thực hiện gọi hàm `fetch('http://localhost:8000/api/admin/users')`.
+3. **Định Tuyến Backend**: File `backend/routes/api.php` nhận request và chuyển tiếp cho `UserController@index`.
+4. **Truy Vấn Eloquent**: `UserController.php` gọi `Account::with('user')->orderBy('id', 'desc')->get()` để truy vấn đồng thời 2 bảng `accounts` và `users` qua quan hệ 1-1.
+5. **Định Dạng JSON**: Hàm `$accounts->map(...)` chuẩn hóa dữ liệu thành định dạng JSON chuẩn (kết hợp `email`, `role`, `status` với `full_name`, `phone`, `id_card`, `address`, `avatar`).
+6. **Cập Nhật State React**: React nhận kết quả JSON `{ success: true, data: [...] }` và gọi `setUsers(data)`.
+7. **Render Giao Diện**: `UsersPage.jsx` và `UserTable.jsx` nhận danh sách `users`, tự động phân trang và vẽ bảng dữ liệu hoàn chỉnh.
+
+---
+
+### 📋 2. Luồng Chỉnh Sửa Thông Tin Thành Viên (Update - `PUT /api/admin/user/{id}`)
+
+```text
+[1. Admin bấm icon "Sửa"] ──► Modal UserEditModal.jsx mở ra với dữ liệu cũ
+             │
+             ▼ (Admin chỉnh sửa họ tên, SĐT, CCCD, địa chỉ, quyền, mật khẩu mới)
+[2. Bấm "Lưu Thay Đổi"]  ──► UserEditModal gọi onSave(formData)
+             │
+             ▼
+[3. adminService.saveUser] ──► Gửi HTTP PUT http://localhost:8000/api/admin/user/{id} (JSON Body)
+             │
+             ▼
+[4. Router: api.php]     ──► Gọi UserController::class, 'update'
+             │
+             ▼
+[5. UserController.php]
+     ├── Bước 5.1: Validate (Họ tên bắt buộc, Email hợp lệ & unique ngoại trừ user hiện tại, Password min 6)
+     ├── Bước 5.2: DB::beginTransaction() đảm bảo an toàn giao dịch
+     ├── Bước 5.3: Cập nhật bảng `accounts`: `email`, `role`, `status`, `password` (Hash::make nếu có nhập mới)
+     ├── Bước 5.4: Cập nhật bảng `users`: `full_name`, `phone_number`, `id_card_number`, `address`, `avatar_url`
+     └── Bước 5.5: DB::commit() và trả về JSON { success: true, message: '...', data: { ... } }
+             │
+             ▼
+[6. React nhận kết quả]   ──► Cập nhật mảng state `users` ➔ Bảng tự động cập nhật ngay lập tức ➔ Đóng Modal
+```
+
+#### 📌 Bảng Ánh Xạ Dữ Liệu Form Sang 2 Bảng Cơ Sở Dữ Liệu MySQL:
+
+| Trường Trên Giao Diện (Form Field) | Bảng Đích (Table) | Cột CSDL (Column) | Ghi Chú Xử Lý Backend |
+| :--- | :--- | :--- | :--- |
+| **Họ và tên** (`name`) | `users` | `full_name` | Lưu thông tin cá nhân |
+| **Email đăng nhập** (`email`) | `accounts` | `email` | Unique trong bảng `accounts`, trừ ID hiện tại |
+| **Mật khẩu mới** (`password`) | `accounts` | `password` | Mã hóa bằng `Hash::make()` nếu có nhập |
+| **Số điện thoại** (`phone`) | `users` | `phone_number` | Tối đa 20 ký tự |
+| **Số CCCD / Hộ chiếu** (`id_card_number`) | `users` | `id_card_number` | Dùng cho xác minh định danh KYC |
+| **Địa chỉ thường trú** (`address`) | `users` | `address` | Tỉnh/thành phố, địa chỉ cư trú |
+| **Vai trò tài khoản** (`role`) | `accounts` | `role` | `guest` (Khách), `host` (Chủ nhà), `admin` (Quản trị) |
+| **Trạng thái tài khoản** (`status`) | `accounts` | `status` | `active` (Hoạt động), `banned` (Bị khóa) |
+| **Ảnh đại diện** (`avatar`) | `users` | `avatar_url` | URL ảnh đại diện |
+
+---
+
 ## 🔄 Phân Biệt Nghiệp Vụ Host: `/admin/role_requests` vs `/admin/hosts_kyc`
 
-```
+```text
 [1. Khách Hàng (Guest)]
         │
         ▼ (Nộp đơn xin trở thành Chủ nhà)
@@ -113,7 +177,7 @@ frontend/src/components/admin/
 │   └── UserUpgradeCard.jsx      # Thẻ hồ sơ xét duyệt làm Host
 │
 └── modals/                      # Hệ thống cửa sổ tương tác (Modal Dialogs)
-    ├── UserEditModal.jsx        # Thêm & sửa thông tin người dùng (kèm xem trước Avatar)
+    ├── UserEditModal.jsx        # Thêm & sửa thông tin người dùng (kèm xem trước Avatar & Password)
     ├── KycDetailModal.jsx       # Soi ảnh CCCD 2 mặt & thẩm định chủ nhà
     ├── BookingDetailModal.jsx   # Chi tiết hóa đơn thanh toán đơn đặt phòng
     ├── AccommodationEditModal.jsx # Chỉnh sửa thông tin cơ sở lưu trú

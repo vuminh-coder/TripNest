@@ -9,6 +9,10 @@ import {
   TbShield,
   TbPhoto,
   TbCheck,
+  TbLock,
+  TbEye,
+  TbEyeOff,
+  TbDice,
 } from 'react-icons/tb';
 import Swal from "sweetalert2";
 
@@ -16,6 +20,7 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
     phone: '',
     id_card_number: '',
     address: '',
@@ -25,12 +30,14 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
   });
 
   const [previewAvatar, setPreviewAvatar] = useState("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80");
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (user) {
       setFormData({
         name: user.name || '',
         email: user.email || '',
+        password: '', // Để trống khi sửa
         phone: user.phone || '',
         id_card_number: user.id_card_number || '',
         address: user.address || '',
@@ -38,10 +45,12 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
         status: user.status || 'active',
         avatar: user.avatar || '',
       });
+      setPreviewAvatar(user.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80");
     } else {
       setFormData({
         name: '',
         email: '',
+        password: 'TripNest@' + Math.floor(1000 + Math.random() * 9000), // Mật khẩu mặc định bảo mật
         phone: '',
         id_card_number: '',
         address: '',
@@ -49,14 +58,26 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
         status: 'active',
         avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
       });
+      setPreviewAvatar("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80");
     }
   }, [user]);
 
   const handleChangeAvatar = (e) => {
-    const urlImage = URL.createObjectURL(e.target.files[0]);
-    setFormData({ ...formData, "avatar": e.target.files[0] });
-    setPreviewAvatar(urlImage);
-  }
+    if (e.target.files && e.target.files[0]) {
+      const urlImage = URL.createObjectURL(e.target.files[0]);
+      setFormData({ ...formData, avatar: e.target.files[0] });
+      setPreviewAvatar(urlImage);
+    }
+  };
+
+  const handleGenerateRandomPassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
+    let pass = 'TN@';
+    for (let i = 0; i < 6; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setFormData((prev) => ({ ...prev, password: pass }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -65,56 +86,20 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
       return;
     }
 
-    const data = new FormData();
-
-    data.append("full_name", formData.name);
-    data.append("email", formData.email);
-    data.append("phone_number", formData.phone);
-    data.append("id_card_number", formData.id_card_number);
-    data.append("address", formData.address);
-    data.append("role", formData.role);
-    data.append("status", formData.status);
-
-    // Chỉ append nếu người dùng chọn ảnh mới
-    if (formData.avatar instanceof File) {
-      data.append("avatar", formData.avatar);
+    if (!user && (!formData.password || formData.password.trim().length < 6)) {
+      alert('Vui lòng nhập mật khẩu khởi tạo (tối thiểu 6 ký tự) cho tài khoản mới!');
+      return;
     }
 
-    fetch("http://localhost:8000/api/admin/user/create", {
-      method: "POST",
-      credentials: "include",
-      body: data
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          Swal.fire({
-            icon: "success",
-            title: "🎉 Thêm người dùng thành công!",
-            text: "Tài khoản người dùng đã được tạo thành công.",
-            position: "top-end",
-            toast: true,
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true
-          });
-          onSave({
-            ...(user ? { id: user.id } : {}),
-            ...formData,
-          });
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "❌ Thêm người dùng thất bại!",
-            text: data.message,
-            position: "top-end",
-            toast: true,
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true
-          });
-        }
-      })
+    if (user && formData.password && formData.password.trim().length < 6) {
+      alert('Mật khẩu mới phải có tối thiểu 6 ký tự!');
+      return;
+    }
+
+    onSave({
+      ...(user ? { id: user.id } : {}),
+      ...formData,
+    });
   };
 
   return (
@@ -123,7 +108,7 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
         className="modal-container"
         style={{
           width: '100%',
-          maxWidth: '520px',
+          maxWidth: '540px',
           borderRadius: 'var(--adm-radius-xl)',
           background: '#ffffff',
           boxShadow: 'var(--adm-shadow-modal)',
@@ -173,7 +158,7 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
                 {user ? 'Chỉnh Sửa Thông Tin Thành Viên' : 'Thêm Tài Khoản Mới'}
               </h2>
               <p style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)', marginTop: '1px' }}>
-                {user ? `Mã tài khoản #${user.id} • ${user.email}` : 'Tạo mới người dùng và phân quyền hệ thống'}
+                {user ? `Mã tài khoản #${user.id} • ${user.email}` : 'Tạo mới người dùng, cấp mật khẩu và phân quyền hệ thống'}
               </p>
             </div>
           </div>
@@ -252,6 +237,84 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
                   outline: 'none',
                 }}
               />
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    color: '#334155',
+                  }}
+                >
+                  <TbLock style={{ color: '#e11d48' }} />
+                  {user ? 'Mật Khẩu Mới' : 'Mật Khẩu Khởi Tạo *'}
+                </label>
+                <button
+                  type="button"
+                  onClick={handleGenerateRandomPassword}
+                  title="Tạo mật khẩu ngẫu nhiên"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--adm-primary)',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    padding: 0,
+                  }}
+                >
+                  <TbDice style={{ fontSize: '0.9rem' }} />
+                  <span>Random</span>
+                </button>
+              </div>
+
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required={!user}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder={user ? 'Để trống nếu không đổi' : 'Tối thiểu 6 ký tự...'}
+                  style={{
+                    width: '100%',
+                    padding: '0.45rem 2.2rem 0.45rem 0.75rem',
+                    borderRadius: 'var(--adm-radius-sm)',
+                    border: '1px solid var(--adm-border-strong)',
+                    fontSize: '0.84rem',
+                    color: 'var(--adm-text-main)',
+                    fontFamily: showPassword ? 'var(--adm-font-base)' : 'monospace',
+                    outline: 'none',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  style={{
+                    position: 'absolute',
+                    right: '8px',
+                    background: 'none',
+                    border: 'none',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: 0,
+                    fontSize: '1.05rem',
+                  }}
+                >
+                  {showPassword ? <TbEyeOff /> : <TbEye />}
+                </button>
+              </div>
             </div>
 
             {/* Phone */}

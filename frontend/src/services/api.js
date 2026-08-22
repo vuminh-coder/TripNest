@@ -48,7 +48,63 @@ export const apiService = {
     return data;
   },
 
-  // 3. Lấy danh mục
+  // 1.1. Yêu cầu gửi mã OTP khôi phục mật khẩu
+  async forgotPassword(email) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      return await res.json();
+    } catch (e) {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ Backend (Port 8000).',
+      };
+    }
+  },
+
+  // 1.2. Xác thực mã OTP 6 chữ số
+  async verifyOtp(email, otp) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ email, otp }),
+      });
+      return await res.json();
+    } catch (e) {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ Backend (Port 8000).',
+      };
+    }
+  },
+
+  // 1.3. Đặt lại mật khẩu mới
+  async resetPassword(email, resetToken, newPassword) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          email,
+          reset_token: resetToken,
+          new_password: newPassword,
+        }),
+      });
+      return await res.json();
+    } catch (e) {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ Backend (Port 8000).',
+      };
+    }
+  },
+
+  // 2. Lấy danh mục
+>>>>>>> 24711fe (Demo Quên mật khẩu | index show users | Update ththioong tin users,..)
   async getCategories() {
     try {
       const res = await fetch(`${API_BASE_URL}/categories`);

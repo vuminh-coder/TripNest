@@ -34,6 +34,7 @@ class Account extends Authenticatable
     protected function casts(): array
     {
         return [
+            'password' => 'hashed',
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
         ];

@@ -11,15 +11,20 @@ use App\Http\Controllers\HostController;
 use App\Http\Controllers\AdminUserController;
 use Illuminate\Support\Facades\Route;
 
+
 /*
 |--------------------------------------------------------------------------
 | TripNest RESTful API Routes
 |--------------------------------------------------------------------------
 */
 
-// 1. Xác thực Google OAuth
+// 1. Xác thực & Khôi phục tài khoản
 Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 Route::post('/auth/login', [AuthController::class, 'googleLogin']); // Compatibility alias
+Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
+Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::put('/auth/password', [AuthController::class, 'updatePassword']);
@@ -49,6 +54,13 @@ Route::get('/experiences', [ExperienceController::class, 'index']);
 // 7. Chủ nhà & Ước tính doanh thu
 Route::get('/host/estimate', [HostController::class, 'estimate']);
 Route::post('/host/register', [HostController::class, 'registerHost']);
-
+// Admin lấy tất cả danh sách
+Route::get("/admin/users", [UserController::class, 'index']);
 // Admin
-Route::post("/admin/user/create",[UserController::class,'create']);
+Route::post("/admin/user/create", [UserController::class, 'create']);
+
+
+// Route Admin lấy id từ database 
+Route::get('/admin/user/{id}', [UserController::class, 'show']);
+// Route cập nhật thông tin người dùng theo ID
+Route::put('/admin/user/{id}', [UserController::class, 'update']);
