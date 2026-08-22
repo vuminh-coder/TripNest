@@ -23,6 +23,7 @@ class UserController extends Controller
                 "address" => "sometimes",
                 "avatar_url" => "sometimes|image|max:5120"
             ]);
+
             $data = $request->validate([
                 "email" => "required|email",
                 'password' => [
@@ -44,8 +45,8 @@ class UserController extends Controller
 
             $data["password"] = Hash::make($data["password"]);
 
-            if(isset($data["phone_number"])){
-                $exitsPhoneNumber = User::where("phone_number",$data["phone_number"])->first();
+            if(isset($dataUser["phone_number"])){
+                $exitsPhoneNumber = User::where("phone_number",$dataUser["phone_number"])->first();
                 if($exitsPhoneNumber){
                     return response()->json([
                     "success" => false,
