@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\RoomController;
@@ -45,3 +46,6 @@ Route::get('/experiences', [ExperienceController::class, 'index']);
 // 7. Chủ nhà & Ước tính doanh thu
 Route::get('/host/estimate', [HostController::class, 'estimate']);
 Route::post('/host/register', [HostController::class, 'registerHost']);
+
+// Admin
+Route::post("/admin/user/create",[UserController::class,'create']);

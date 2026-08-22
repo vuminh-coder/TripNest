@@ -55,10 +55,20 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
       alert('Vui lòng nhập họ tên và email!');
       return;
     }
-    onSave({
-      ...(user ? { id: user.id } : {}),
-      ...formData,
-    });
+    // onSave({
+    //   ...(user ? { id: user.id } : {}),
+    //   ...formData,
+    // });
+
+    fetch("http://localhost:8000/api/admin/user/create",{
+      method: "POST",
+      credentials: "include",
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+      })
   };
 
   return (
