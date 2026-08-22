@@ -376,7 +376,7 @@ export const UsersTab = ({
                           title="Xóa người dùng"
                           onClick={() => {
                             if (window.confirm(`Bạn có chắc chắn muốn xóa người dùng "${user.name}"?`)) {
-                              onDeleteUser(user.id);
+                              onDeleteUser(user);
                             }
                           }}
                         >

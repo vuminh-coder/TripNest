@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -35,17 +36,21 @@ class AuthController extends Controller
         $name = $request->input('name') ?: explode('@', $email)[0];
         $avatar = $request->input('avatar') ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80';
 
-        // 1. Tìm hoặc tạo Account
-        $account = Account::firstOrCreate(
-            ['google_id' => $googleId],
-            [
+        // 1. Tìm tài khoản hiện có theo Google ID hoặc email, rồi mới tạo tài khoản mới.
+        $account = Account::where('google_id', $googleId)
+            ->orWhere('email', $email)
+            ->first();
+
+        if (!$account) {
+            $account = Account::create([
                 'email' => $email,
+                'google_id' => $googleId,
                 'google_avatar' => $avatar,
                 'role' => 'guest',
                 'status' => 'active',
                 'email_verified_at' => now(),
-            ]
-        );
+            ]);
+        }
 
         // Cập nhật thông tin mới nhất từ Google
         $account->update([
@@ -107,6 +112,43 @@ class AuthController extends Controller
             'role' => $account->role,
             'is_host' => $user?->host !== null,
             'host' => $user?->host,
+        ]);
+    }
+
+    /**
+     * Update the authenticated account's local password.
+     */
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'nullable|string',
+            'new_password' => 'required|string|min:8|confirmed|different:current_password',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Thông tin mật khẩu không hợp lệ.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        /** @var Account $account */
+        $account = $request->user();
+        if ($account->password && !Hash::check($request->input('current_password', ''), $account->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mật khẩu hiện tại không chính xác.',
+            ], 422);
+        }
+
+        $account->update([
+            'password' => Hash::make($request->input('new_password')),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đổi mật khẩu thành công.',
         ]);
     }
 

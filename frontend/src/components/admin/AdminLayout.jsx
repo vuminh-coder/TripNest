@@ -47,6 +47,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [userDeleteError, setUserDeleteError] = useState('');
 
   // State Store
   const [stats, setStats] = useState({});
@@ -195,8 +196,13 @@ export const AdminLayout = ({ onExitAdmin }) => {
   };
 
   const handleDeleteUser = async (userId) => {
-    const updated = await adminService.deleteUser(userId);
-    setUsers(updated);
+    setUserDeleteError('');
+    try {
+      const updated = await adminService.deleteUser(userId);
+      setUsers(updated);
+    } catch (error) {
+      setUserDeleteError(error.message || 'Không thể xóa người dùng.');
+    }
   };
 
   const handleApproveUpgrade = async (userId, approved, rejectionReason = '') => {
@@ -316,6 +322,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
               {activeTab === 'users' && (
                 <UsersPage
                   users={users}
+                  deleteError={userDeleteError}
                   onToggleStatus={handleToggleUserStatus}
                   onOpenEditModal={(u) => {
                     setEditUser(u);

@@ -28,21 +28,27 @@ export const apiService = {
       const data = await res.json();
       return data;
     } catch (e) {
-      // Fallback
-      return {
-        success: true,
-        token: 'google-token-' + Date.now(),
-        user: {
-          name: payload.name || payload.email.split('@')[0],
-          email: payload.email,
-          avatar: payload.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-          role: 'guest',
-        },
-      };
+      throw new Error('Không thể kết nối máy chủ đăng nhập. Hãy kiểm tra Laravel đang chạy tại http://127.0.0.1:8000.');
     }
   },
 
-  // 2. Lấy danh mục
+  // 2. Đổi mật khẩu tài khoản đã có mật khẩu cục bộ
+  async updatePassword(payload) {
+    const res = await fetch(`${API_BASE_URL}/auth/password`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const error = new Error(data.message || 'Không thể đổi mật khẩu.');
+      error.response = data;
+      throw error;
+    }
+    return data;
+  },
+
+  // 3. Lấy danh mục
   async getCategories() {
     try {
       const res = await fetch(`${API_BASE_URL}/categories`);

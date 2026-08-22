@@ -7,6 +7,7 @@ import {
   TbUserCircle,
   TbHeart,
   TbCalendarEvent,
+  TbLock,
   TbHomePlus,
   TbHelpCircle,
   TbX,
@@ -19,6 +20,7 @@ export const Header = ({
   onOpenAuth,
   onOpenBookings,
   onOpenWishlist,
+  onOpenChangePassword,
   onOpenHost,
   onOpenAdmin,
   wishlistCount = 0,
@@ -307,6 +309,9 @@ export const Header = ({
                     </button>
                     <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenWishlist(); }}>
                       <TbHeart /> Danh sách yêu thích ({wishlistCount})
+                    </button>
+                    <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenChangePassword(); }}>
+                      <TbLock /> Đổi mật khẩu
                     </button>
                     <div className="menu-separator" />
                     <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenAdmin(); }} style={{ color: '#0284c7', fontWeight: 700 }}>

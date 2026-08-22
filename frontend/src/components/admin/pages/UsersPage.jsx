@@ -8,6 +8,7 @@ import UserTable from '../users/UserTable';
 
 export const UsersPage = ({
   users,
+  deleteError,
   onToggleStatus,
   onOpenEditModal,
   onDeleteUser,
@@ -55,6 +56,24 @@ export const UsersPage = ({
 
   return (
     <div>
+      {deleteError && (
+        <div
+          role="alert"
+          style={{
+            background: '#fff0f3',
+            border: '1px solid #fecdd3',
+            color: '#be123c',
+            borderRadius: '8px',
+            padding: '0.8rem 1rem',
+            marginBottom: '1.25rem',
+            fontSize: '0.88rem',
+            fontWeight: 600,
+          }}
+        >
+          {deleteError}
+        </div>
+      )}
+
       {/* Header */}
       <AdminPageHeader
         title="Quản Lý Tài Khoản & Người Dùng"
@@ -148,7 +167,7 @@ export const UsersPage = ({
         type="danger"
         onConfirm={() => {
           if (deleteTarget) {
-            onDeleteUser(deleteTarget.id);
+            onDeleteUser(deleteTarget);
             setDeleteTarget(null);
           }
         }}

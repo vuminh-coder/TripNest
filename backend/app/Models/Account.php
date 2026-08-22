@@ -17,6 +17,7 @@ class Account extends Authenticatable
 
     protected $fillable = [
         'email',
+        'password',
         'google_id',
         'google_avatar',
         'role',
@@ -26,6 +27,7 @@ class Account extends Authenticatable
     ];
 
     protected $hidden = [
+        'password',
         'remember_token',
     ];
 

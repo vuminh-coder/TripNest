@@ -7,6 +7,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\ExperienceController;
 use App\Http\Controllers\HostController;
+use App\Http\Controllers\AdminUserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,7 +21,9 @@ Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 Route::post('/auth/login', [AuthController::class, 'googleLogin']); // Compatibility alias
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::put('/auth/password', [AuthController::class, 'updatePassword']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::delete('/admin/users/by-email/{email}', [AdminUserController::class, 'destroy']);
 });
 
 // 2. Danh mục chỗ ở

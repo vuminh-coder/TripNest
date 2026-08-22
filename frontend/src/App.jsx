@@ -9,6 +9,7 @@ import FilterModal from './components/FilterModal';
 import AuthModal from './components/AuthModal';
 import MyBookingsModal from './components/MyBookingsModal';
 import WishlistModal from './components/WishlistModal';
+import ChangePasswordModal from './components/ChangePasswordModal';
 import HostModal from './components/HostModal';
 import Footer from './components/Footer';
 import AdminLayout from './components/admin/AdminLayout';
@@ -70,6 +71,7 @@ function App() {
   const [authModal, setAuthModal] = useState({ isOpen: false, tab: 'login' });
   const [isBookingsOpen, setIsBookingsOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isHostOpen, setIsHostOpen] = useState(false);
 
   // User & Wishlist & Bookings
@@ -210,6 +212,7 @@ function App() {
         onOpenAuth={(tab) => setAuthModal({ isOpen: true, tab })}
         onOpenBookings={() => setIsBookingsOpen(true)}
         onOpenWishlist={() => setIsWishlistOpen(true)}
+        onOpenChangePassword={() => setIsChangePasswordOpen(true)}
         onOpenHost={() => setIsHostOpen(true)}
         onOpenAdmin={handleOpenAdmin}
         wishlistCount={wishlistIds.length}
@@ -337,6 +340,11 @@ function App() {
         onSelectRoom={(r) => setSelectedRoom(r)}
         onRemoveFavorite={handleToggleFavorite}
         currency={currency}
+      />
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
       />
 
       <HostModal

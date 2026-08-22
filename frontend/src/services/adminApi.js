@@ -1,6 +1,18 @@
 // Admin API & State Service for TripNest Admin Portal
 import { initialAdminData } from './adminMockData';
 
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
+
+const getAuthHeaders = () => {
+  const user = JSON.parse(localStorage.getItem('tripnest_user') || 'null');
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  };
+  if (user?.token) headers.Authorization = `Bearer ${user.token}`;
+  return headers;
+};
+
 const STORAGE_KEY = 'tripnest_admin_data_v1';
 
 const getStoredData = () => {
@@ -203,8 +215,19 @@ export const adminService = {
   },
 
   async deleteUser(userId) {
+    const targetId = typeof userId === 'object' ? userId.id : userId;
+    const email = typeof userId === 'object' ? userId.email : userId;
+    const response = await fetch(`${API_BASE_URL}/admin/users/by-email/${encodeURIComponent(email)}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Không thể xóa người dùng.');
+    }
+
     const data = getStoredData();
-    data.users = data.users.filter((u) => u.id !== userId);
+    data.users = data.users.filter((u) => u.id !== targetId && u.email !== email);
     saveStoredData(data);
     return data.users;
   },
