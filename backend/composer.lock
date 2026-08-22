@@ -4,11 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
-    "content-hash": "80c98da50d9147946e642af567ddc9da",
-=======
     "content-hash": "46109775d86fcd78f449967f5cfb1bcc",
->>>>>>> 63b94b603db844b32837c2acc68108790cb6c48b
     "packages": [
         {
             "name": "brick/math",
@@ -4962,19 +4958,6 @@
             "time": "2026-04-10T16:19:22+00:00"
         },
         {
-<<<<<<< HEAD
-            "name": "symfony/polyfill-php82",
-            "version": "v1.38.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/polyfill-php82.git",
-                "reference": "002dc0cfe5fd4ed6033d48f27d4f19a486c4b04b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php82/zipball/002dc0cfe5fd4ed6033d48f27d4f19a486c4b04b",
-                "reference": "002dc0cfe5fd4ed6033d48f27d4f19a486c4b04b",
-=======
             "name": "symfony/polyfill-php83",
             "version": "v1.41.0",
             "source": {
@@ -4986,7 +4969,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/symfony/polyfill-php83/zipball/5ea99087fb99c273a9b9236ed4c31e78b16103c6",
                 "reference": "5ea99087fb99c273a9b9236ed4c31e78b16103c6",
->>>>>>> 63b94b603db844b32837c2acc68108790cb6c48b
+
                 "shasum": ""
             },
             "require": {
@@ -5004,11 +4987,7 @@
                     "bootstrap.php"
                 ],
                 "psr-4": {
-<<<<<<< HEAD
-                    "Symfony\\Polyfill\\Php82\\": ""
-=======
                     "Symfony\\Polyfill\\Php83\\": ""
->>>>>>> 63b94b603db844b32837c2acc68108790cb6c48b
                 },
                 "classmap": [
                     "Resources/stubs"
@@ -5028,11 +5007,7 @@
                     "homepage": "https://symfony.com/contributors"
                 }
             ],
-<<<<<<< HEAD
-            "description": "Symfony polyfill backporting some PHP 8.2+ features to lower PHP versions",
-=======
             "description": "Symfony polyfill backporting some PHP 8.3+ features to lower PHP versions",
->>>>>>> 63b94b603db844b32837c2acc68108790cb6c48b
             "homepage": "https://symfony.com",
             "keywords": [
                 "compatibility",
@@ -5041,11 +5016,7 @@
                 "shim"
             ],
             "support": {
-<<<<<<< HEAD
-                "source": "https://github.com/symfony/polyfill-php82/tree/v1.38.1"
-=======
                 "source": "https://github.com/symfony/polyfill-php83/tree/v1.41.0"
->>>>>>> 63b94b603db844b32837c2acc68108790cb6c48b
             },
             "funding": [
                 {
@@ -5065,11 +5036,7 @@
                     "type": "tidelift"
                 }
             ],
-<<<<<<< HEAD
-            "time": "2026-05-26T12:45:58+00:00"
-=======
             "time": "2026-07-01T12:47:55+00:00"
->>>>>>> 63b94b603db844b32837c2acc68108790cb6c48b
         },
         {
             "name": "symfony/polyfill-php84",
@@ -8584,3 +8551,4 @@
     "platform-dev": {},
     "plugin-api-version": "2.9.0"
 }
+
