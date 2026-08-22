@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\admin\AuthController as AdminAuthController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
@@ -18,6 +19,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 // 1. Xác thực Google OAuth
+//
+Route::post("/auth/not-goole/login",[AdminAuthController::class,'login']);
+//
 Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 Route::post('/auth/login', [AuthController::class, 'googleLogin']); // Compatibility alias
 Route::middleware('auth:sanctum')->group(function () {

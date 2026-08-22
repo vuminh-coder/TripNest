@@ -456,21 +456,6 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
                 <label htmlFor='change-avatar'> Chọn ảnh</label>
                 <input type="file" hidden id="change-avatar" onChange={handleChangeAvatar}>
                 </input>
-                {/* <input
-                  type="url"
-                  value={formData.avatar}
-                  onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
-                  style={{
-                    width: '100%',
-                    padding: '0.45rem 0.75rem',
-                    borderRadius: 'var(--adm-radius-sm)',
-                    border: '1px solid var(--adm-border-strong)',
-                    fontSize: '0.84rem',
-                    color: 'var(--adm-text-main)',
-                    outline: 'none',
-                  }}
-                /> */}
               </div>
             </div>
           </div>
