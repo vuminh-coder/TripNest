@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use App\Models\Host;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -88,6 +90,160 @@ class AuthController extends Controller
                 'role' => $account->role,
                 'is_host' => $user->host !== null,
                 'host' => $user->host,
+            ],
+        ], 200);
+    }
+
+    /**
+     * Đăng ký tài khoản mới cục bộ (Email & Password)
+     */
+    public function register(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:191',
+            'email' => 'required|email|max:191|unique:accounts,email',
+            'password' => 'required|string|min:6',
+            'phone' => 'nullable|string|max:20',
+            'role' => 'required|string|in:guest,host',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Thông tin đăng ký không hợp lệ.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // 1. Tạo tài khoản Account
+        $account = Account::create([
+            'email' => strtolower(trim($request->input('email'))),
+            'password' => Hash::make($request->input('password')),
+            'role' => $request->input('role', 'guest'),
+            'status' => 'active',
+            'email_verified_at' => now(), // Tự động xác thực email phục vụ test nhanh
+        ]);
+
+        // 2. Tạo User Profile
+        $user = User::create([
+            'account_id' => $account->id,
+            'full_name' => $request->input('name'),
+            'phone_number' => $request->input('phone'),
+            'avatar_url' => 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        ]);
+
+        // Nếu người dùng chọn vai trò Host, tự động tạo hồ sơ Host
+        if ($account->role === 'host') {
+            Host::create([
+                'user_id' => $user->id,
+                'host_display_name' => $user->full_name,
+                'host_avatar_url' => $user->avatar_url,
+                'is_superhost' => false,
+                'host_rating' => 5.0,
+                'host_reviews_count' => 0,
+            ]);
+        }
+
+        // Load host info nếu có
+        $user->load(['host.defaultPayoutAccount']);
+
+        // 3. Cấp Sanctum Bearer Token để đăng nhập ngay sau đăng ký
+        $token = $account->createToken('tripnest-auth-token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đăng ký tài khoản thành công!',
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'account_id' => $account->id,
+                'name' => $user->full_name,
+                'email' => $account->email,
+                'avatar' => $user->avatar_url,
+                'role' => $account->role,
+                'is_host' => $user->host !== null,
+                'host' => $user->host,
+            ],
+        ], 201);
+    }
+
+    /**
+     * Đăng nhập bằng Email & Mật khẩu
+     */
+    public function login(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email hoặc mật khẩu không đúng định dạng.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $email = strtolower(trim($request->input('email')));
+        $password = $request->input('password');
+
+        $account = Account::where('email', $email)->first();
+
+        if (!$account) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Địa chỉ email này chưa được đăng ký.',
+            ], 404);
+        }
+
+        if ($account->status === 'banned') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tài khoản của bạn đang bị khóa.',
+            ], 403);
+        }
+
+        // Trường hợp tài khoản chỉ có Google ID mà không có mật khẩu cục bộ
+        if (empty($account->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tài khoản này được đăng ký qua Google. Vui lòng sử dụng Đăng nhập bằng Google hoặc khôi phục mật khẩu để đặt mật khẩu cục bộ.',
+            ], 422);
+        }
+
+        if (!Hash::check($password, $account->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mật khẩu nhập vào không chính xác.',
+            ], 401);
+        }
+
+        // Cập nhật thời gian đăng nhập cuối
+        $account->update([
+            'last_login_at' => now(),
+        ]);
+
+        $user = User::where('account_id', $account->id)->first();
+        if ($user) {
+            $user->load(['host.defaultPayoutAccount']);
+        }
+
+        $token = $account->createToken('tripnest-auth-token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đăng nhập thành công!',
+            'token' => $token,
+            'user' => [
+                'id' => $user?->id,
+                'account_id' => $account->id,
+                'name' => $user?->full_name ?: explode('@', $account->email)[0],
+                'email' => $account->email,
+                'avatar' => $user?->avatar_url ?: ($account->google_avatar ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'),
+                'role' => $account->role,
+                'is_host' => $user?->host !== null,
+                'host' => $user?->host,
             ],
         ], 200);
     }

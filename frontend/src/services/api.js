@@ -32,6 +32,48 @@ export const apiService = {
     }
   },
 
+  // 1.2. Đăng ký tài khoản cục bộ
+  async register(payload) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Đăng ký tài khoản không thành công.');
+      }
+      return data;
+    } catch (e) {
+      if (e.message && e.message !== 'Failed to fetch') {
+        throw e;
+      }
+      throw new Error('Không thể kết nối máy chủ đăng ký. Hãy kiểm tra Laravel đang chạy tại http://127.0.0.1:8000.');
+    }
+  },
+
+  // 1.3. Đăng nhập bằng Email & Mật khẩu
+  async login(payload) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Đăng nhập thất bại.');
+      }
+      return data;
+    } catch (e) {
+      if (e.message && e.message !== 'Failed to fetch') {
+        throw e;
+      }
+      throw new Error('Không thể kết nối máy chủ đăng nhập. Hãy kiểm tra Laravel đang chạy tại http://127.0.0.1:8000.');
+    }
+  },
+
   // 2. Đổi mật khẩu tài khoản đã có mật khẩu cục bộ
   async updatePassword(payload) {
     const res = await fetch(`${API_BASE_URL}/auth/password`, {
