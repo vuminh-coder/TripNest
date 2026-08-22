@@ -104,7 +104,6 @@ export const apiService = {
   },
 
   // 2. Lấy danh mục
->>>>>>> 24711fe (Demo Quên mật khẩu | index show users | Update ththioong tin users,..)
   async getCategories() {
     try {
       const res = await fetch(`${API_BASE_URL}/categories`);

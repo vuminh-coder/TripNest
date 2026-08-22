@@ -14,7 +14,6 @@ import {
   TbEyeOff,
   TbDice,
 } from 'react-icons/tb';
-import Swal from "sweetalert2";
 
 export const UserEditModal = ({ user, onClose, onSave }) => {
   const [formData, setFormData] = useState({
