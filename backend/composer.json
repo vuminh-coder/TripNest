@@ -7,7 +7,12 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+<<<<<<< HEAD
         "laravel/framework": "^13.26.1",
+=======
+        "cloudinary/cloudinary_php": "^3.1",
+        "laravel/framework": "^13.17",
+>>>>>>> 63b94b603db844b32837c2acc68108790cb6c48b
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0"
     },

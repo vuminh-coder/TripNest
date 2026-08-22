@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   TbX,
   TbUser,
@@ -10,6 +10,7 @@ import {
   TbPhoto,
   TbCheck,
 } from 'react-icons/tb';
+import Swal from "sweetalert2";
 
 export const UserEditModal = ({ user, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -22,6 +23,8 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
     status: 'active',
     avatar: '',
   });
+
+  const [previewAvatar, setPreviewAvatar] = useState("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80");
 
   useEffect(() => {
     if (user) {
@@ -49,16 +52,69 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
     }
   }, [user]);
 
+  const handleChangeAvatar = (e) => {
+    const urlImage = URL.createObjectURL(e.target.files[0]);
+    setFormData({ ...formData, "avatar": e.target.files[0] });
+    setPreviewAvatar(urlImage);
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.email.trim()) {
       alert('Vui lòng nhập họ tên và email!');
       return;
     }
-    onSave({
-      ...(user ? { id: user.id } : {}),
-      ...formData,
-    });
+
+    const data = new FormData();
+
+    data.append("full_name", formData.name);
+    data.append("email", formData.email);
+    data.append("phone_number", formData.phone);
+    data.append("id_card_number", formData.id_card_number);
+    data.append("address", formData.address);
+    data.append("role", formData.role);
+    data.append("status", formData.status);
+
+    // Chỉ append nếu người dùng chọn ảnh mới
+    if (formData.avatar instanceof File) {
+      data.append("avatar", formData.avatar);
+    }
+
+    fetch("http://localhost:8000/api/admin/user/create", {
+      method: "POST",
+      credentials: "include",
+      body: data
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire({
+            icon: "success",
+            title: "🎉 Thêm người dùng thành công!",
+            text: "Tài khoản người dùng đã được tạo thành công.",
+            position: "top-end",
+            toast: true,
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+          onSave({
+            ...(user ? { id: user.id } : {}),
+            ...formData,
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "❌ Thêm người dùng thất bại!",
+            text: data.message,
+            position: "top-end",
+            toast: true,
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        }
+      })
   };
 
   return (
@@ -386,7 +442,7 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
               </label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <img
-                  src={formData.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}
+                  src={previewAvatar}
                   alt="Preview"
                   style={{
                     width: '36px',
@@ -397,7 +453,10 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
                     flexShrink: 0,
                   }}
                 />
-                <input
+                <label htmlFor='change-avatar'> Chọn ảnh</label>
+                <input type="file" hidden id="change-avatar" onChange={handleChangeAvatar}>
+                </input>
+                {/* <input
                   type="url"
                   value={formData.avatar}
                   onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
@@ -411,7 +470,7 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
                     color: 'var(--adm-text-main)',
                     outline: 'none',
                   }}
-                />
+                /> */}
               </div>
             </div>
           </div>
