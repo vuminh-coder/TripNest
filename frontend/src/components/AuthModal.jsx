@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   TbX,
   TbBrandGoogle,
   TbShieldLock,
   TbMail,
   TbLock,
-} from 'react-icons/tb';
-import { apiService } from '../services/api';
-import Swal from 'sweetalert2';
+} from "react-icons/tb";
+import { apiService } from "../services/api";
+import Swal from "sweetalert2";
 
 export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   if (!isOpen) return null;
 
@@ -22,19 +22,20 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     e.preventDefault();
 
     if (!email.trim() || !password) {
-      setError('Vui lòng nhập đầy đủ email và mật khẩu.');
+      setError("Vui lòng nhập đầy đủ email và mật khẩu.");
       return;
     }
-    const dataUpToSever = { "email": email, "password": password };
+    const dataUpToSever = { email: email, password: password };
     fetch("http://localhost:8000/api/auth/not-goole/login", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(dataUpToSever)
+      body: JSON.stringify(dataUpToSever),
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
         if (data.success) {
           Swal.fire({
             icon: "success",
@@ -44,7 +45,7 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             toast: true,
             showConfirmButton: false,
             timer: 3000,
-            timerProgressBar: true
+            timerProgressBar: true,
           });
           localStorage.setItem("token", data.token);
         } else {
@@ -56,41 +57,39 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             toast: true,
             showConfirmButton: false,
             timer: 3000,
-            timerProgressBar: true
+            timerProgressBar: true,
           });
         }
       })
+      .catch((e) => {
+        console.log(e);
+      });
   };
 
   // Đăng nhập bằng Google
   const handleGoogleLogin = async () => {
     setLoading(true);
-    setError('');
+    setError("");
 
-    const targetEmail =
-      email.trim() || 'demo.traveler@gmail.com';
+    const targetEmail = email.trim() || "demo.traveler@gmail.com";
 
     const googleName = targetEmail
-      .split('@')[0]
-      .replace('.', ' ')
+      .split("@")[0]
+      .replace(".", " ")
       .toUpperCase();
 
     const googlePayload = {
       email: targetEmail,
       google_id:
-        'google-sub-' +
+        "google-sub-" +
         Math.abs(
           targetEmail
-            .split('')
-            .reduce(
-              (a, b) =>
-                ((a << 5) - a) + b.charCodeAt(0),
-              0
-            )
+            .split("")
+            .reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0),
         ),
       name: googleName,
       avatar:
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
     };
 
     try {
@@ -102,10 +101,7 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
           token: res.token,
         };
 
-        localStorage.setItem(
-          'tripnest_user',
-          JSON.stringify(userData)
-        );
+        localStorage.setItem("tripnest_user", JSON.stringify(userData));
 
         if (onAuthSuccess) {
           onAuthSuccess(userData);
@@ -113,52 +109,47 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
 
         onClose();
       } else {
-        setError(
-          res.message || 'Đăng nhập Google không thành công.'
-        );
+        setError(res.message || "Đăng nhập Google không thành công.");
       }
     } catch (e) {
-      setError('Có lỗi xảy ra khi đăng nhập Google.');
+      setError("Có lỗi xảy ra khi đăng nhập Google.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={onClose}
-    >
+    <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal-container"
         style={{
-          width: '420px',
-          maxWidth: '95vw',
-          padding: '1.5rem',
+          width: "420px",
+          maxWidth: "95vw",
+          padding: "1.5rem",
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingBottom: '0.9rem',
-            borderBottom: '1px solid #ebebeb',
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingBottom: "0.9rem",
+            borderBottom: "1px solid #ebebeb",
           }}
         >
           <button
             className="modal-close-btn"
             onClick={onClose}
-            style={{ position: 'static' }}
+            style={{ position: "static" }}
           >
             <TbX />
           </button>
 
           <h2
             style={{
-              fontSize: '1.1rem',
+              fontSize: "1.1rem",
               fontWeight: 700,
               margin: 0,
             }}
@@ -166,17 +157,17 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             Đăng nhập vào TripNest
           </h2>
 
-          <div style={{ width: '36px' }} />
+          <div style={{ width: "36px" }} />
         </div>
 
         {/* Form */}
-        <div style={{ paddingTop: '1rem' }}>
+        <div style={{ paddingTop: "1rem" }}>
           <h3
             style={{
-              fontSize: '1.25rem',
+              fontSize: "1.25rem",
               fontWeight: 800,
-              margin: '0 0 1rem',
-              color: '#222',
+              margin: "0 0 1rem",
+              color: "#222",
             }}
           >
             Chào mừng trở lại 👋
@@ -186,12 +177,12 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
           {error && (
             <div
               style={{
-                background: '#fff0f3',
-                color: '#e00b41',
-                padding: '0.6rem 0.8rem',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                marginBottom: '0.75rem',
+                background: "#fff0f3",
+                color: "#e00b41",
+                padding: "0.6rem 0.8rem",
+                borderRadius: "8px",
+                fontSize: "0.85rem",
+                marginBottom: "0.75rem",
               }}
             >
               {error}
@@ -202,26 +193,26 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
           <form
             onSubmit={handleEmailLogin}
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.6rem',
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.6rem",
             }}
           >
             {/* Email */}
             <div
               style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '0.65rem 0.8rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                padding: "0.65rem 0.8rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
               }}
             >
               <TbMail
                 style={{
-                  color: '#717171',
-                  fontSize: '1.15rem',
+                  color: "#717171",
+                  fontSize: "1.15rem",
                 }}
               />
 
@@ -231,10 +222,10 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 style={{
-                  border: 'none',
-                  outline: 'none',
-                  width: '100%',
-                  fontSize: '0.9rem',
+                  border: "none",
+                  outline: "none",
+                  width: "100%",
+                  fontSize: "0.9rem",
                 }}
               />
             </div>
@@ -242,18 +233,18 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             {/* Password */}
             <div
               style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '0.65rem 0.8rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                padding: "0.65rem 0.8rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
               }}
             >
               <TbLock
                 style={{
-                  color: '#717171',
-                  fontSize: '1.15rem',
+                  color: "#717171",
+                  fontSize: "1.15rem",
                 }}
               />
 
@@ -263,10 +254,10 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 style={{
-                  border: 'none',
-                  outline: 'none',
-                  width: '100%',
-                  fontSize: '0.9rem',
+                  border: "none",
+                  outline: "none",
+                  width: "100%",
+                  fontSize: "0.9rem",
                 }}
               />
             </div>
@@ -274,17 +265,17 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             {/* Forgot password */}
             <div
               style={{
-                textAlign: 'right',
+                textAlign: "right",
               }}
             >
               <button
                 type="button"
                 style={{
-                  border: 'none',
-                  background: 'none',
-                  color: '#ff385c',
-                  fontSize: '0.8rem',
-                  cursor: 'pointer',
+                  border: "none",
+                  background: "none",
+                  color: "#ff385c",
+                  fontSize: "0.8rem",
+                  cursor: "pointer",
                   padding: 0,
                 }}
               >
@@ -298,38 +289,36 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
               className="primary-gradient-btn"
               disabled={loading}
               style={{
-                padding: '0.7rem',
-                borderRadius: '8px',
+                padding: "0.7rem",
+                borderRadius: "8px",
                 fontWeight: 700,
               }}
             >
-              {loading
-                ? 'Đang đăng nhập...'
-                : 'Đăng nhập'}
+              {loading ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
           </form>
 
           {/* Divider */}
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.7rem',
-              margin: '1rem 0',
+              display: "flex",
+              alignItems: "center",
+              gap: "0.7rem",
+              margin: "1rem 0",
             }}
           >
             <div
               style={{
                 flex: 1,
-                height: '1px',
-                background: '#ebebeb',
+                height: "1px",
+                background: "#ebebeb",
               }}
             />
 
             <span
               style={{
-                fontSize: '0.7rem',
-                color: '#717171',
+                fontSize: "0.7rem",
+                color: "#717171",
               }}
             >
               HOẶC
@@ -338,8 +327,8 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             <div
               style={{
                 flex: 1,
-                height: '1px',
-                background: '#ebebeb',
+                height: "1px",
+                background: "#ebebeb",
               }}
             />
           </div>
@@ -349,55 +338,51 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             onClick={handleGoogleLogin}
             disabled={loading}
             style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              padding: '0.7rem',
-              borderRadius: '8px',
-              border: '1px solid #dadce0',
-              background: '#fff',
-              color: '#3c4043',
-              fontSize: '0.9rem',
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "10px",
+              padding: "0.7rem",
+              borderRadius: "8px",
+              border: "1px solid #dadce0",
+              background: "#fff",
+              color: "#3c4043",
+              fontSize: "0.9rem",
               fontWeight: 700,
-              cursor: loading ? 'wait' : 'pointer',
+              cursor: loading ? "wait" : "pointer",
             }}
           >
             <TbBrandGoogle
               style={{
-                fontSize: '1.3rem',
-                color: '#ea4335',
+                fontSize: "1.3rem",
+                color: "#ea4335",
               }}
             />
 
-            {loading
-              ? 'Đang xác thực...'
-              : 'Đăng nhập với Google'}
+            {loading ? "Đang xác thực..." : "Đăng nhập với Google"}
           </button>
 
           {/* Security */}
           <div
             style={{
-              marginTop: '0.9rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              color: '#717171',
-              fontSize: '0.75rem',
+              marginTop: "0.9rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+              color: "#717171",
+              fontSize: "0.75rem",
             }}
           >
             <TbShieldLock
               style={{
-                fontSize: '1rem',
-                color: '#0d8a43',
+                fontSize: "1rem",
+                color: "#0d8a43",
               }}
             />
 
-            <span>
-              Thông tin đăng nhập được bảo mật
-            </span>
+            <span>Thông tin đăng nhập được bảo mật</span>
           </div>
         </div>
       </div>
