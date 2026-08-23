@@ -12,6 +12,7 @@ import {
   TbHelpCircle,
   TbX,
 } from 'react-icons/tb';
+import { useDispatch, useSelector } from 'react-redux';
 
 export const Header = ({
   onSearch,
@@ -24,7 +25,6 @@ export const Header = ({
   onOpenHost,
   onOpenAdmin,
   wishlistCount = 0,
-  user = null,
   onLogout,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -38,6 +38,12 @@ export const Header = ({
 
   const menuRef = useRef(null);
   const searchRef = useRef(null);
+
+  //redux
+  const dispatch = useDispatch();
+  const user = useSelector(state => state.userInfo);
+  //
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -266,8 +272,17 @@ export const Header = ({
             >
               <TbMenu2 style={{ fontSize: '1.1rem' }} />
               <div className="user-avatar-circle">
-                {user ? (
-                  <span style={{ fontWeight: 700, color: '#ff385c' }}>{user.name[0]}</span>
+                {user?.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt={user.full_name || "Avatar"}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      borderRadius: "50%",
+                    }}
+                  />
                 ) : (
                   <TbUserCircle />
                 )}
@@ -298,10 +313,10 @@ export const Header = ({
             {/* Dropdown Menu */}
             {isMenuOpen && (
               <div className="user-dropdown-card">
-                {user ? (
+                {Object.keys(user).length > 0 ? (
                   <>
                     <div style={{ padding: '0.75rem 1.25rem', borderBottom: '1px solid #ebebeb' }}>
-                      <p style={{ fontWeight: 700, fontSize: '0.92rem' }}>{user.name}</p>
+                      <p style={{ fontWeight: 700, fontSize: '0.92rem' }}>{user.full_name}</p>
                       <p style={{ color: '#717171', fontSize: '0.8rem' }}>{user.email}</p>
                     </div>
                     <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenBookings(); }}>

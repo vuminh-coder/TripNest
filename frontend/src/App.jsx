@@ -15,6 +15,7 @@ import Footer from './components/Footer';
 import AdminLayout from './components/admin/AdminLayout';
 
 import { apiService } from './services/api';
+import { useDispatch, useSelector } from 'react-redux';
 
 function App() {
   const [categories, setCategories] = useState([]);
@@ -75,13 +76,16 @@ function App() {
   const [isHostOpen, setIsHostOpen] = useState(false);
 
   // User & Wishlist & Bookings
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('tripnest_user') || 'null');
-    } catch {
-      return null;
-    }
-  });
+  const dispatch = useDispatch();
+  const user = useSelector(state => state.userInfo);
+  console.log(user);
+  // const [user, setUser] = useState(() => {
+  //   try {
+  //     return JSON.parse(localStorage.getItem('tripnest_user') || 'null');
+  //   } catch {
+  //     return null;
+  //   }
+  // });
 
   const [wishlistIds, setWishlistIds] = useState(() => {
     try {
@@ -216,10 +220,9 @@ function App() {
         onOpenHost={() => setIsHostOpen(true)}
         onOpenAdmin={handleOpenAdmin}
         wishlistCount={wishlistIds.length}
-        user={user}
         onLogout={() => {
-          localStorage.removeItem('tripnest_user');
-          setUser(null);
+          localStorage.removeItem('token');
+          dispatch({"type": "UPDATE","payload": {}});
         }}
       />
 
@@ -319,10 +322,11 @@ function App() {
       />
 
       <AuthModal
+        // setUser = {setUser}
         isOpen={authModal.isOpen}
         initialTab={authModal.tab}
         onClose={() => setAuthModal({ isOpen: false, tab: 'login' })}
-        onAuthSuccess={(u) => setUser(u)}
+        // onAuthSuccess={(u) => setUser(u)}
       />
 
       <MyBookingsModal

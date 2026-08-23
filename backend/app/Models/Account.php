@@ -56,7 +56,7 @@ class Account extends Authenticatable  implements JWTSubject
         ];
     }
 
-    public function user():HasOne{
+    public function getUserInfo():HasOne{
         return $this->hasOne(User::class,'account_id','id');
     }
 }

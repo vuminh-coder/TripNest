@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Account;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Throwable;
 
 class AuthController extends Controller
@@ -44,13 +44,18 @@ class AuthController extends Controller
             }
 
             $account = Auth::guard('api')->user();
-            // $user = $account->user();
+            $user = User::where("account_id",$account->id)->first();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Đăng nhập thành công',
                 'token' => $token,
-                'account' => $account
+                'user' => [
+                    ...$user->toArray(),
+                    "email" => $account->email,
+                    "role" => $account->role
+                ],
+                
             ], 200);
         } catch (Throwable $ex) {
             return response()->json([

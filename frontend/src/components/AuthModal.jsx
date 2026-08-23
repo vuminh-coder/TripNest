@@ -8,12 +8,16 @@ import {
 } from 'react-icons/tb';
 import { apiService } from '../services/api';
 import Swal from 'sweetalert2';
-
+import {useDispatch} from "react-redux";
 export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  //redux
+  const dispatch = useDispatch();
+  // end redux
 
   if (!isOpen) return null;
 
@@ -35,6 +39,7 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     })
       .then(res => res.json())
       .then(data => {
+        console.log(data);
         if (data.success) {
           Swal.fire({
             icon: "success",
@@ -47,6 +52,8 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             timerProgressBar: true
           });
           localStorage.setItem("token", data.token);
+          dispatch({"type": "UPDATE",payload: data.user});
+          onClose();
         } else {
           Swal.fire({
             icon: "error",
@@ -59,7 +66,8 @@ export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             timerProgressBar: true
           });
         }
-      })
+      }
+    )
   };
 
   // Đăng nhập bằng Google
