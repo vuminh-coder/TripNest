@@ -18,6 +18,7 @@ use App\Models\Wishlist;
 use App\Models\Experience;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -69,6 +70,30 @@ class DatabaseSeeder extends Seeder
         foreach ($amenitiesData as $a) {
             $amenities[$a['code']] = Amenity::create($a);
         }
+
+        // 2.5 Seed Super Admin Account
+        $adminAccount = Account::create([
+            'email' => 'admin@tripnest.vn',
+            'password' => Hash::make('Admin@123'),
+            'google_id' => 'google-admin-000001',
+            'google_avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+            'role' => 'admin',
+            'status' => 'active',
+            'email_verified_at' => now(),
+        ]);
+
+        $adminUser = User::create([
+            'account_id' => $adminAccount->id,
+            'full_name' => 'Quản Trị Viên TripNest',
+            'phone_number' => '0988112233',
+            'avatar_url' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+            'gender' => 'male',
+            'date_of_birth' => '1990-01-01',
+            'nationality' => 'Việt Nam',
+            'id_card_number' => '001090000001',
+            'address' => 'Hà Nội, Việt Nam',
+            'bio' => 'Hệ thống Quản trị viên cấp cao của TripNest.',
+        ]);
 
         // 3. Seed Demo Guest Account
         $guestAccount = Account::create([

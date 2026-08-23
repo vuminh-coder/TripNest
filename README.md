@@ -1,12 +1,33 @@
-# TripNest - Nền Tảng Đặt Phòng Nghỉ Dưỡng & Quản Trị Du Lịch Trực Tuyến
+# TripNest - Hệ Thống Quản Lý Đặt Phòng Du Lịch
 
-Hệ thống bao gồm 2 phân hệ chính:
-- **Frontend**: Ứng dụng khách hàng & Cổng quản trị Admin Portal cao cấp (React + Vite + Tabler Icons + Be Vietnam Pro).
-- **Backend**: API RESTful, quản lý cơ sở dữ liệu và phân quyền nghiệp vụ (Laravel Framework).
+TripNest là nền tảng hỗ trợ tìm kiếm, đặt phòng nghỉ dưỡng du lịch và quản trị hệ thống. Dự án bao gồm 2 phân hệ chính:
+- **Frontend**: Giao diện người dùng & Trang quản trị Admin (React + Vite).
+- **Backend**: API RESTful và quản lý cơ sở dữ liệu (Laravel Framework).
 
 ---
 
-## 🚀 Hướng Dẫn Khởi Chạy Nhanh
+## 📁 Cấu Trúc Thư Mục Dự Án
+
+```text
+TripNest/
+├── frontend/          # Giao diện người dùng & Admin (React + Vite)
+│   ├── src/
+│   │   ├── components/ # Component giao diện, modals, admin
+│   │   ├── services/   # Gọi API backend & mock data
+│   │   └── data/       # Dữ liệu tĩnh
+│   └── package.json
+│
+└── backend/           # API RESTful & Cơ sở dữ liệu (Laravel)
+    ├── app/           # Controllers, Models, Middleware
+    ├── config/        # Cấu hình CORS, database,...
+    ├── database/      # Migrations & Seeders
+    ├── routes/        # Định nghĩa các Route API (api.php)
+    └── composer.json
+```
+
+---
+
+## 🚀 Hướng Dẫn Cài Đặt & Khởi Chạy
 
 ### 1. Frontend (React + Vite)
 ```bash
@@ -19,8 +40,10 @@ npm install
 # Khởi chạy máy chủ phát triển
 npm run dev
 ```
-- **Trang Khách Hàng (Client)**: `http://localhost:5173`
-- **Cổng Quản Trị Admin (Admin Portal)**: `http://localhost:5173/admin`
+- **Giao diện Client**: `http://localhost:5173`
+- **Giao diện Admin**: `http://localhost:5173/admin`
+
+---
 
 ### 2. Backend (Laravel API)
 ```bash
@@ -29,6 +52,10 @@ cd backend
 
 # Cài đặt dependencies (nếu chưa cài)
 composer install
+
+# Cấu hình môi trường (nếu chưa có file .env)
+cp .env.example .env
+php artisan key:generate
 
 # Chạy migration dữ liệu
 php artisan migrate
@@ -40,90 +67,88 @@ php artisan serve
 
 ---
 
-## 👑 Cổng Quản Trị TripNest Admin Portal
+## 👥 Quy Tắc Làm Việc Nhóm & Phân Quyền Code (Team Collaboration Rules)
 
-Hệ thống Admin Portal được thiết kế theo phong cách **Modern Light SaaS** với hệ thống 10 phân hệ nghiệp vụ chuyên sâu, đồng bộ 100% về giao diện, hỗ trợ font chữ tiếng Việt `Be Vietnam Pro` và chống tràn vỡ layout.
+Nhằm đảm bảo dự án phát triển mượt mà, **tránh xung đột (conflict) và tuyệt đối không ghi đè / làm hỏng code của nhau**, tất cả thành viên trong nhóm phải tuân thủ nghiêm ngặt các nguyên tắc sau:
 
-### 🌐 Danh Sách 10 Trang Nghiệp Vụ Riêng Biệt
-
-| STT | Phân Hệ Quản Trị | Đường Dẫn Trực Tiếp | Chức Năng Chính |
-| :---: | :--- | :--- | :--- |
-| **1** | **Bảng Điều Khiển (Dashboard)** | [`/admin/dashboard`](http://localhost:5173/admin/dashboard) | Tổng quan KPIs doanh thu GMV, hoa hồng 11%, tỷ lệ lấp phòng, hồ sơ KYC chờ duyệt và 5 đơn đặt mới nhất. |
-| **2** | **Cơ Sở Lưu Trú (Accommodations)** | [`/admin/accommodations`](http://localhost:5173/admin/accommodations) | Quản lý danh sách khách sạn/villa, lọc theo tỉnh thành, phân trang, thêm/sửa thông tin, ghim Nổi Bật (Featured) / Yêu Thích. |
-| **3** | **Sổ Cái Đặt Phòng (Bookings)** | [`/admin/bookings`](http://localhost:5173/admin/bookings) | Quản lý sổ cái đơn phòng, lọc mã booking/khách, xem chi tiết hóa đơn, phê duyệt đơn, xử lý hủy đơn và xuất hóa đơn. |
-| **4** | **Thẩm Định Pháp Lý KYC (Hosts KYC)** | [`/admin/hosts_kyc`](http://localhost:5173/admin/hosts_kyc) | Thẩm định hồ sơ pháp lý của Chủ nhà: soi ảnh CCCD 2 mặt, xác minh tài khoản ngân hàng nhận tiền giải ngân, cấp huy hiệu Superhost. |
-| **5** | **Quản Lý Người Dùng (Users)** | [`/admin/users`](http://localhost:5173/admin/users) | CRUD thành viên, phân quyền tài khoản (Guest / Host / Admin), lọc nhóm người dùng, khóa / mở khóa tài khoản, xem CCCD & địa chỉ. |
-| **6** | **Duyệt Đơn Xin Làm Host (Role Requests)** | [`/admin/role_requests`](http://localhost:5173/admin/role_requests) | Cổng tiếp nhận và xét duyệt đơn xin nâng quyền từ Khách du lịch (`Guest`) lên Chủ nhà (`Host`) để mở khóa quyền đăng phòng. |
-| **7** | **Tài Chính & Payouts (Financials)** | [`/admin/financials`](http://localhost:5173/admin/financials) | Quản lý GMV, giữ lại 11% phí sàn, quản lý sổ cái giải ngân Payouts định kỳ và xác nhận chuyển tiền cho Chủ nhà. |
-| **8** | **Kiểm Duyệt Đánh Giá (Reviews)** | [`/admin/reviews`](http://localhost:5173/admin/reviews) | Kiểm duyệt nội dung nhận xét của khách, phân tích radar 6 tiêu chí (Sạch sẽ, Vị trí, Giá trị, Nhận phòng, Giao tiếp, Chính xác), ẩn/hiện bình luận vi phạm. |
-| **9** | **Danh Mục & Tiện Nghi (Categories)** | [`/admin/categories`](http://localhost:5173/admin/categories) | Quản lý 14 danh mục loại hình lưu trú và hệ thống danh mục tiện nghi (Wifi, Hồ bơi, Bếp BBQ, v.v.). |
-| **10** | **Tour & Trải Nghiệm (Experiences)** | [`/admin/experiences`](http://localhost:5173/admin/experiences) | Quản lý danh sách tour du lịch trải nghiệm địa phương, thời lượng tour, giá vé và bật/tắt trạng thái mở bán. |
+### 1. 🚫 Nguyên Tắc Bất Di Bất Dịch Về Code (Code Isolation)
+- **Tôn trọng phạm vi phân công (Module Ownership)**: Mỗi thành viên chỉ làm việc trong module/tính năng được giao. Tuyệt đối **KHÔNG** tự ý chỉnh sửa, xóa, hoặc refactor file thuộc module của người khác khi chưa thảo luận và có sự đồng thuận.
+- **Tích hợp thông qua Interface / API Contract**:
+  - Frontend và Backend thống nhất cấu trúc dữ liệu JSON (Request/Response) trước khi code.
+  - Sử dụng Mock Data hoặc API Service riêng biệt, không chỉnh sửa trực tiếp vào logic đang chạy của thành viên khác.
+- **Không tự ý sửa file cấu hình dùng chung**: Các file như `routes/api.php`, `App.jsx`, `package.json`, `.env.example`, `config/*` cần được trao đổi trong nhóm trước khi bổ sung route hoặc thư viện mới.
 
 ---
 
-## 🔄 Phân Biệt Nghiệp Vụ Host: `/admin/role_requests` vs `/admin/hosts_kyc`
-
-```
-[1. Khách Hàng (Guest)]
-        │
-        ▼ (Nộp đơn xin trở thành Chủ nhà)
-[2. /admin/role_requests] ──► Admin duyệt ➔ Vai trò tài khoản đổi thành "Host"
-        │
-        ▼ (Host tải lên ảnh CCCD 2 mặt & STK Ngân hàng)
-[3. /admin/hosts_kyc]     ──► Admin thẩm định pháp lý ➔ Mở khóa nhận tiền giải ngân Payouts
-        │
-        ▼
-[4. Host Đăng Phòng & Kinh Doanh Hợp Pháp]
-```
-
----
-
-## 🏗️ Cấu Trúc Mã Nguồn Phân Hệ Admin (`frontend/src/components/admin/`)
+### 2. 🌿 Quy Trình Làm Việc Với Git (Git Workflow)
 
 ```text
-frontend/src/components/admin/
-├── AdminLayout.jsx              # Master Layout điều phối URL router & đồng bộ trạng thái
-├── AdminHeader.jsx              # Topbar tìm kiếm, chuông báo pending KYC, nút Reset Demo
-├── AdminSidebar.jsx             # Sidebar điều hướng 10 trang, hỗ trợ thu gọn/mở rộng
-├── admin.css                    # Hệ thống Design Tokens, Typography, Anti-Wrap CSS
-│
-├── pages/                       # 10 Trang nghiệp vụ độc lập
-│   ├── DashboardPage.jsx
-│   ├── AccommodationsPage.jsx
-│   ├── BookingsPage.jsx
-│   ├── HostsKycPage.jsx
-│   ├── UsersPage.jsx
-│   ├── RoleUpgradeRequestsPage.jsx
-│   ├── FinancialsPage.jsx
-│   ├── ReviewsPage.jsx
-│   ├── CategoriesPage.jsx
-│   └── ExperiencesPage.jsx
-│
-├── common/                      # Component con tái sử dụng
-│   ├── AdminPageHeader.jsx      # Tiêu đề trang & nút hành động
-│   ├── AdminSearchFilterBar.jsx # Thanh công cụ tìm kiếm & bộ lọc
-│   ├── AdminTableWrapper.jsx    # Khung bọc bảng chống tràn & phân trang
-│   ├── AdminStatusBadge.jsx     # Huy hiệu trạng thái dữ liệu
-│   ├── AdminConfirmDialog.jsx   # Hộp thoại xác nhận thao tác (Xóa, Hủy, Khóa)
-│   └── Pagination.jsx           # Phân trang dùng chung (Pagination)
-│
-├── users/                       # Component con phục vụ quản lý người dùng
-│   ├── UserTable.jsx            # Bảng hiển thị danh sách người dùng
-│   ├── UserFilterTabs.jsx       # Tab lọc nhóm vai trò người dùng
-│   └── UserUpgradeCard.jsx      # Thẻ hồ sơ xét duyệt làm Host
-│
-└── modals/                      # Hệ thống cửa sổ tương tác (Modal Dialogs)
-    ├── UserEditModal.jsx        # Thêm & sửa thông tin người dùng (kèm xem trước Avatar)
-    ├── KycDetailModal.jsx       # Soi ảnh CCCD 2 mặt & thẩm định chủ nhà
-    ├── BookingDetailModal.jsx   # Chi tiết hóa đơn thanh toán đơn đặt phòng
-    ├── AccommodationEditModal.jsx # Chỉnh sửa thông tin cơ sở lưu trú
-    └── PayoutConfirmModal.jsx   # Xác nhận lệnh giải ngân tiền về ngân hàng
+               (Tạo nhánh mới)
+[main] ────────────────────────────► [feature/user-management-minh]
+  │                                               │
+  │                                               ▼ (Code & Commit)
+  │                                  [Commit: feat: add user CRUD]
+  │                                               │
+  │ (Pull Request & Code Review)                  │
+[main] ◄──────────────────────────────────────────┘
 ```
+
+#### Bước 1: Luôn cập nhật mã nguồn mới nhất trước khi làm việc
+```bash
+git checkout main
+git pull origin main
+```
+
+#### Bước 2: Tạo nhánh riêng theo tính năng & tên thành viên
+> ⚠️ **TUYỆT ĐỐI KHÔNG commit hoặc push trực tiếp lên nhánh `main`.**
+
+Quy tắc đặt tên nhánh:
+- Tính năng mới: `feature/<ten-tinh-nang>-<ten-thanh-vien>`
+  - *Ví dụ: `feature/user-management-minh`, `feature/booking-flow-nam`*
+- Sửa lỗi: `fix/<ten-loi>-<ten-thanh-vien>`
+  - *Ví dụ: `fix/cors-api-minh`, `fix/login-modal-hung`*
+
+```bash
+# Tạo và chuyển sang nhánh mới
+git checkout -b feature/user-management-minh
+```
+
+#### Bước 3: Commit code rõ ràng theo chuẩn Conventional Commits
+- Commit thường xuyên theo từng đơn vị công việc nhỏ (atomic commit), kèm thông điệp rõ nghĩa:
+  - `feat: ...` : Thêm tính năng mới
+  - `fix: ...` : Sửa lỗi
+  - `refactor: ...` : Tối ưu / tái cấu trúc mã nguồn (không đổi logic)
+  - `style: ...` : Chỉnh sửa giao diện, CSS, format code
+  - `docs: ...` : Cập nhật tài liệu, README
+
+```bash
+git add .
+git commit -m "feat: implement user creation API and form validation"
+```
+
+#### Bước 4: Đẩy nhánh lên Remote & Tạo Pull Request (PR)
+```bash
+git push -u origin feature/user-management-minh
+```
+- Tạo **Pull Request (PR)** trên GitHub/GitLab vào nhánh `main`.
+- Gắn tag thành viên khác hoặc trưởng nhóm để **Review Code**.
+- Chỉ merge vào `main` khi:
+  - Đã pass kiểm tra (build không lỗi, test pass).
+  - Được ít nhất 1 thành viên khác review xác nhận không ảnh hưởng đến module của họ.
 
 ---
 
-## 🎨 Quy Chuẩn Thiết Kế (Design System & Standards)
-- **100% Light Mode**: Tông màu sáng thanh lịch, nền trắng `#ffffff` và canvas xám dịu `#f8fafc`.
-- **Typography Tiếng Việt**: Chuẩn hóa toàn diện với bộ font **`Be Vietnam Pro`** kết hợp **`Outfit`** cho các con số tài chính & KPI.
-- **Hệ Thống Bo Góc Tinh Tế (Refined Radii)**: Bo góc nhẹ `6px - 8px` tạo sự vuông vắn, hiện đại chuẩn SaaS quốc tế.
-- **Phân Trang & Chống Tràn**: Toàn bộ các bảng dữ liệu đều được trang bị phân trang (`Pagination`) và quy tắc `white-space: nowrap` chống gãy dòng.
+### 3. 🛠️ Quy Tắc Xử Lý Khi Có Xung Đột (Conflict Resolution)
+1. **Không tự ý force push (`git push --force`)** lên các nhánh dùng chung (`main`, `develop`).
+2. Nếu nhánh làm việc bị chậm so với `main`, thực hiện rebase/merge từ `main` về nhánh của mình để xử lý conflict tại máy local trước:
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout feature/user-management-minh
+   git merge main
+   # Xử lý các đoạn code conflict trong IDE nếu có, sau đó test lại
+   git add .
+   git commit -m "chore: merge latest main and resolve conflicts"
+   git push origin feature/user-management-minh
+   ```
+3. **Khi gặp conflict ở file của người khác**: Phải liên hệ trực tiếp với người phụ trách file đó để cùng giải quyết, không tự ý chọn *Accept Current* hoặc *Accept Incoming* làm mất code của đồng đội.

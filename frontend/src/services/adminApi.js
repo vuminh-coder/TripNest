@@ -182,6 +182,22 @@ export const adminService = {
 
   // 5. Users & Accounts
   async getUsers() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/users`, {
+        headers: getAuthHeaders(),
+      });
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          const data = getStoredData();
+          data.users = result.data;
+          saveStoredData(data);
+          return result.data;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch users from backend, fallback to local store', e);
+    }
     const data = getStoredData();
     return data.users || [];
   },
