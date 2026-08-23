@@ -273,14 +273,17 @@ class AuthController extends Controller
     }
 
     /**
-     * Update the authenticated account's local password.
+     * Update local password.
      */
     public function updatePassword(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'current_password' => 'nullable|string',
-            'new_password' => 'required|string|min:8|confirmed|different:current_password',
-        ]);
+            'new_password' => [
+                    'required',
+                    'string',
+                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/',
+                ]        ]);
 
         if ($validator->fails()) {
             return response()->json([

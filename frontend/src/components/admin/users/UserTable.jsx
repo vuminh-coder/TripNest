@@ -1,8 +1,9 @@
 import React from 'react';
-import { TbMapPin, TbEdit, TbLock, TbLockOpen, TbTrash, TbCheck, TbX } from 'react-icons/tb';
+import { TbMapPin, TbEye, TbEdit, TbLock, TbLockOpen, TbTrash, TbCheck, TbX } from 'react-icons/tb';
 
 export const UserTable = ({
   users,
+  onOpenDetailModal,
   onOpenEditModal,
   onToggleStatus,
   onDeletePrompt,
@@ -22,7 +23,7 @@ export const UserTable = ({
         <tr>
           <th>Người Dùng</th>
           <th>Liên Hệ & CCCD</th>
-          <th>Vai Trò (Cố Định)</th>
+          <th>Vai Trò (CỐ ĐỊNH)</th>
           <th>Yêu Cầu Nâng Cấp</th>
           <th>Ngày Tham Gia</th>
           <th>Trạng Thái</th>
@@ -34,7 +35,16 @@ export const UserTable = ({
           <tr key={user.id}>
             {/* User Details */}
             <td>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  cursor: onOpenDetailModal ? 'pointer' : 'default',
+                }}
+                onClick={() => onOpenDetailModal && onOpenDetailModal(user)}
+                title="Bấm để xem chi tiết tài khoản"
+              >
                 <img
                   src={user.avatar}
                   alt={user.name}
@@ -206,6 +216,13 @@ export const UserTable = ({
             {/* Actions (Strictly single line, no wrap) */}
             <td style={{ textAlign: 'right' }}>
               <div className="td-actions-group">
+                <button
+                  className="btn-action-icon"
+                  title="Xem chi tiết thông tin tài khoản"
+                  onClick={() => onOpenDetailModal(user)}
+                >
+                  <TbEye />
+                </button>
                 <button
                   className="btn-action-icon"
                   title="Sửa thông tin chi tiết"

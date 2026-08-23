@@ -23,6 +23,7 @@ import BookingDetailModal from "./modals/BookingDetailModal";
 import AccommodationEditModal from "./modals/AccommodationEditModal";
 import PayoutConfirmModal from "./modals/PayoutConfirmModal";
 import UserEditModal from "./modals/UserEditModal";
+import UserDetailModal from "./modals/UserDetailModal";
 
 export const AdminLayout = ({ onExitAdmin }) => {
   // Determine initial page from URL path
@@ -71,6 +72,21 @@ export const AdminLayout = ({ onExitAdmin }) => {
   const [selectedPayout, setSelectedPayout] = useState(null);
   const [editUser, setEditUser] = useState(null);
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
+  const [selectedUserDetail, setSelectedUserDetail] = useState(null);
+
+  // 🟢 Xem thông tin chi tiết người dùng
+  const handleOpenUserDetail = async (user) => {
+    if (user && user.id) {
+      const freshUser = await adminService.getUserById(user.id);
+      setSelectedUserDetail(freshUser || user);
+    } else {
+      setSelectedUserDetail(user);
+    }
+  };
+
+  const handleCloseUserDetail = () => {
+    setSelectedUserDetail(null);
+  };
 
   // 🟢 1. Khi bấm nút "Sửa", gọi thẳng API Backend lấy dữ liệu mới nhất
   const handleOpenEditUser = async (user = null) => {
@@ -383,6 +399,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
                   users={users}
                   deleteError={userDeleteError}
                   onToggleStatus={handleToggleUserStatus}
+                  onOpenDetailModal={handleOpenUserDetail}
                   onOpenEditModal={handleOpenEditUser}
                   onDeleteUser={handleDeleteUser}
                   onApproveUpgrade={handleApproveUpgrade}
@@ -434,6 +451,29 @@ export const AdminLayout = ({ onExitAdmin }) => {
       </div>
 
       {/* Global Admin Modals */}
+      {selectedUserDetail && (
+        <UserDetailModal
+          user={selectedUserDetail}
+          onClose={handleCloseUserDetail}
+          onEdit={(u) => {
+            handleCloseUserDetail();
+            handleOpenEditUser(u);
+          }}
+          onToggleStatus={async (userId) => {
+            await handleToggleUserStatus(userId);
+            setSelectedUserDetail((prev) =>
+              prev && prev.id === userId
+                ? {
+                    ...prev,
+                    status: prev.status === "active" ? "banned" : "active",
+                  }
+                : prev,
+            );
+          }}
+          onApproveUpgrade={handleApproveUpgrade}
+        />
+      )}
+
       {selectedKycHost && (
         <KycDetailModal
           host={selectedKycHost}

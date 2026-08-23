@@ -71,6 +71,7 @@ class DatabaseSeeder extends Seeder
             $amenities[$a['code']] = Amenity::create($a);
         }
 
+<<<<<<< HEAD
         // 3. Seed Super Admin Account (Vũ Văn Minh)
         $adminAcc = Account::create([
             'email' => 'vuminh.admin@tripnest.vn',
@@ -78,6 +79,38 @@ class DatabaseSeeder extends Seeder
             'google_id' => null,
             'google_avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
             'role' => 'admin',
+=======
+        // 2.5 Seed Super Admin Account
+        $adminAccount = Account::create([
+            'email' => 'admin@tripnest.vn',
+            'password' => Hash::make('Admin@123'),
+            'google_id' => 'google-admin-000001',
+            'google_avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+            'role' => 'admin',
+            'status' => 'active',
+            'email_verified_at' => now(),
+        ]);
+
+        $adminUser = User::create([
+            'account_id' => $adminAccount->id,
+            'full_name' => 'Quản Trị Viên TripNest',
+            'phone_number' => '0988112233',
+            'avatar_url' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+            'gender' => 'male',
+            'date_of_birth' => '1990-01-01',
+            'nationality' => 'Việt Nam',
+            'id_card_number' => '001090000001',
+            'address' => 'Hà Nội, Việt Nam',
+            'bio' => 'Hệ thống Quản trị viên cấp cao của TripNest.',
+        ]);
+
+        // 3. Seed Demo Guest Account
+        $guestAccount = Account::create([
+            'email' => 'demo.traveler@gmail.com',
+            'google_id' => 'google-user-100001',
+            'google_avatar' => 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+            'role' => 'guest',
+>>>>>>> a233047877fc12a9ef1b8818b763589202071781
             'status' => 'active',
             'email_verified_at' => now(),
         ]);

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\admin\AuthController as AdminAuthController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
@@ -11,7 +12,6 @@ use App\Http\Controllers\HostController;
 use App\Http\Controllers\AdminUserController;
 use Illuminate\Support\Facades\Route;
 
-
 /*
 |--------------------------------------------------------------------------
 | TripNest RESTful API Routes
@@ -19,6 +19,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 // 1. Xác thực & Khôi phục tài khoản
+
+// Admin login
+Route::post('/auth/not-goole/login', [AdminAuthController::class, 'login']);
+
 Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -45,7 +49,7 @@ Route::post('/bookings', [BookingController::class, 'store']);
 Route::get('/my-bookings', [BookingController::class, 'myBookings']);
 Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
 
-// 5. Danh sách yêu thích (Wishlist)
+// 5. Danh sách yêu thích
 Route::get('/wishlist', [WishlistController::class, 'index']);
 Route::post('/wishlist/toggle', [WishlistController::class, 'toggle']);
 
@@ -55,13 +59,9 @@ Route::get('/experiences', [ExperienceController::class, 'index']);
 // 7. Chủ nhà & Ước tính doanh thu
 Route::get('/host/estimate', [HostController::class, 'estimate']);
 Route::post('/host/register', [HostController::class, 'registerHost']);
-// Admin lấy tất cả danh sách
-Route::get("/admin/users", [UserController::class, 'index']);
-// Admin
-Route::post("/admin/user/create", [UserController::class, 'create']);
 
-
-// Route Admin lấy id từ database 
+// 8. Admin User Management
+Route::get('/admin/users', [UserController::class, 'index']);
+Route::post('/admin/user/create', [UserController::class, 'create']);
 Route::get('/admin/user/{id}', [UserController::class, 'show']);
-// Route cập nhật thông tin người dùng theo ID
 Route::put('/admin/user/{id}', [UserController::class, 'update']);

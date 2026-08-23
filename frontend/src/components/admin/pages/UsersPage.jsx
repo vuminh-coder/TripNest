@@ -10,6 +10,7 @@ export const UsersPage = ({
   users,
   deleteError,
   onToggleStatus,
+  onOpenDetailModal,
   onOpenEditModal,
   onDeleteUser,
   onApproveUpgrade,
@@ -43,10 +44,10 @@ export const UsersPage = ({
 
     if (searchUser.trim()) {
       const q = searchUser.toLowerCase();
-      const matchName = u.name.toLowerCase().includes(q);
-      const matchEmail = u.email.toLowerCase().includes(q);
-      const matchPhone = u.phone && u.phone.includes(q);
-      const matchIdCard = u.id_card_number && u.id_card_number.includes(q);
+      const matchName = (u.name || '').toLowerCase().includes(q);
+      const matchEmail = (u.email || '').toLowerCase().includes(q);
+      const matchPhone = u.phone && String(u.phone).includes(q);
+      const matchIdCard = u.id_card_number && String(u.id_card_number).includes(q);
       if (!matchName && !matchEmail && !matchPhone && !matchIdCard) return false;
     }
     return true;
@@ -141,6 +142,7 @@ export const UsersPage = ({
       >
         <UserTable
           users={paginatedUsers}
+          onOpenDetailModal={onOpenDetailModal}
           onOpenEditModal={onOpenEditModal}
           onToggleStatus={onToggleStatus}
           onDeletePrompt={(u) => setDeleteTarget(u)}

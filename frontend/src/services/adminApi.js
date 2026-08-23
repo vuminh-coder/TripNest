@@ -202,22 +202,36 @@ export const adminService = {
   },
 
   // 5. Users & Accounts
-  async getUsers() {
-    try {
-      const res = await fetch("http://localhost:8000/api/admin/users");
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-        return json.data;
+async getUsers() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/users`, {
+      headers: getAuthHeaders(),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+
+      if (result.success && Array.isArray(result.data)) {
+        const data = getStoredData();
+
+        data.users = result.data;
+
+        saveStoredData(data);
+
+        return result.data;
       }
-    } catch (e) {
-      console.warn(
-        "Backend API /api/admin/users không khả dụng, dùng fallback:",
-        e,
-      );
     }
-    const data = getStoredData();
-    return data.users || [];
-  },
+  } catch (e) {
+    console.warn(
+      'Failed to fetch users from backend, fallback to local store',
+      e
+    );
+  }
+
+  const data = getStoredData();
+
+  return data.users || [];
+},
 
   async saveUser(userData) {
     if (userData.id) {

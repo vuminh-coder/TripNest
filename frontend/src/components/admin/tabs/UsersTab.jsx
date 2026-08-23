@@ -5,6 +5,7 @@ import {
   TbLock,
   TbLockOpen,
   TbPlus,
+  TbEye,
   TbEdit,
   TbTrash,
   TbCheck,
@@ -17,6 +18,7 @@ import {
 
 export const UsersTab = ({
   users,
+  onOpenDetailModal,
   onToggleStatus,
   onOpenEditModal,
   onDeleteUser,
@@ -349,9 +351,20 @@ export const UsersTab = ({
                       </span>
                     </td>
 
-                    {/* Actions: Edit, Lock, Delete */}
+                    {/* Actions: View, Edit, Lock, Delete */}
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                        {/* View Detail Button */}
+                        {onOpenDetailModal && (
+                          <button
+                            className="btn-action-icon"
+                            title="Xem thông tin chi tiết"
+                            onClick={() => onOpenDetailModal(user)}
+                          >
+                            <TbEye />
+                          </button>
+                        )}
+
                         {/* Edit Button */}
                         <button
                           className="btn-action-icon"
