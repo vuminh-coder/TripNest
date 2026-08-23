@@ -55,6 +55,60 @@ class UserController extends Controller
     }
 
     /**
+     * Lấy thông tin chi tiết một người dùng theo ID
+     */
+    public function show($id)
+    {
+        try {
+            $user = is_numeric($id)
+                ? User::with(['account', 'host', 'bookings', 'reviews'])->find($id)
+                : User::whereHas('account', fn ($q) => $q->where('email', $id))->with(['account', 'host', 'bookings', 'reviews'])->first();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy người dùng với ID: ' . $id,
+                ], 404);
+            }
+
+            $account = $user->account;
+            $formatted = [
+                'id' => $user->id,
+                'account_id' => $user->account_id,
+                'name' => $user->full_name ?? '',
+                'email' => $account?->email ?? '',
+                'phone' => $user->phone_number ?? '',
+                'id_card_number' => $user->id_card_number ?? '',
+                'address' => $user->address ?? '',
+                'gender' => $user->gender ?? 'other',
+                'date_of_birth' => $user->date_of_birth ? $user->date_of_birth->format('Y-m-d') : null,
+                'bio' => $user->bio ?? '',
+                'role' => $account?->role ?? 'guest',
+                'status' => $account?->status ?? 'active',
+                'avatar' => $user->avatar_url ?: ($account?->google_avatar ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'),
+                'joined_date' => $user->created_at ? \Carbon\Carbon::parse($user->created_at)->format('Y-m-d') : '',
+                'last_login' => $account?->last_login_at ? \Carbon\Carbon::parse($account->last_login_at)->diffForHumans() : 'Chưa đăng nhập',
+                'is_host' => $user->host !== null,
+                'host' => $user->host,
+                'bookings_count' => $user->bookings->count(),
+                'reviews_count' => $user->reviews->count(),
+                'role_upgrade_request' => null,
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $formatted,
+            ]);
+        } catch (Throwable $ex) {
+            return response()->json([
+                'success' => false,
+                'error' => $ex->getMessage(),
+                'message' => 'Lỗi khi tải chi tiết người dùng: ' . $ex->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Thêm mới người dùng
      */
     public function create(Request $request)

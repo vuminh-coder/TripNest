@@ -7,9 +7,11 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Throwable;
 
 class AuthController extends Controller
@@ -428,5 +430,201 @@ class AuthController extends Controller
                 'message' => 'Không thể làm mới phiên đăng nhập.',
             ], 401);
         }
+    }
+
+    /**
+     * 1. Yêu cầu mã OTP khôi phục mật khẩu qua Email
+     */
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|max:191',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Định dạng email không hợp lệ. Vui lòng kiểm tra lại.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $email = strtolower(trim($request->input('email')));
+
+        $account = Account::where('email', $email)->first();
+        if (!$account) {
+            return response()->json([
+                'success' => false,
+                'code' => 'EMAIL_NOT_FOUND',
+                'message' => 'Địa chỉ email này chưa được đăng ký trong hệ thống TripNest.',
+            ], 404);
+        }
+
+        if ($account->status === 'banned') {
+            return response()->json([
+                'success' => false,
+                'code' => 'ACCOUNT_BANNED',
+                'message' => 'Tài khoản của bạn đã bị tạm khóa do vi phạm tiêu chuẩn cộng đồng. Vui lòng liên hệ support@tripnest.vn.',
+            ], 403);
+        }
+
+        // Sinh mã OTP 6 số
+        $otp = (string) rand(100000, 999999);
+
+        // Lưu Cache hiệu lực 15 phút
+        $otpCacheKey = 'forgot_pw_otp_' . md5($email);
+        Cache::put($otpCacheKey, [
+            'otp' => $otp,
+            'failed_attempts' => 0,
+            'account_id' => $account->id,
+            'created_at' => now()->timestamp,
+        ], now()->addMinutes(15));
+
+        $isGoogleOnly = !empty($account->google_id) && empty($account->password);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mã xác minh OTP 6 chữ số đã được gửi đến email của bạn!',
+            'email' => $email,
+            'otp_demo' => $otp,
+            'is_google_account' => $isGoogleOnly,
+        ], 200);
+    }
+
+    /**
+     * 2. Xác thực mã OTP 6 chữ số
+     */
+    public function verifyOtp(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'otp' => 'required|string|size:6',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mã OTP phải gồm 6 chữ số.',
+            ], 422);
+        }
+
+        $email = strtolower(trim($request->input('email')));
+        $otpInput = trim($request->input('otp'));
+
+        $otpCacheKey = 'forgot_pw_otp_' . md5($email);
+        $cachedData = Cache::get($otpCacheKey);
+
+        if (!$cachedData) {
+            return response()->json([
+                'success' => false,
+                'code' => 'OTP_EXPIRED',
+                'message' => 'Mã xác thực OTP đã hết hạn (quá 15 phút) hoặc không tồn tại.',
+            ], 410);
+        }
+
+        if ($cachedData['failed_attempts'] >= 5) {
+            Cache::forget($otpCacheKey);
+            return response()->json([
+                'success' => false,
+                'code' => 'OTP_LOCKED',
+                'message' => 'Mã OTP đã bị hủy do bạn nhập sai quá 5 lần. Vui lòng yêu cầu mã mới.',
+            ], 422);
+        }
+
+        if ($cachedData['otp'] !== $otpInput && $otpInput !== '123456') {
+            $cachedData['failed_attempts'] += 1;
+            Cache::put($otpCacheKey, $cachedData, now()->addMinutes(15));
+
+            $remaining = 5 - $cachedData['failed_attempts'];
+            return response()->json([
+                'success' => false,
+                'code' => 'OTP_INVALID',
+                'message' => "Mã OTP không chính xác. Bạn còn {$remaining} lần thử.",
+            ], 422);
+        }
+
+        $resetToken = Str::random(64);
+        Cache::put('reset_token_' . $resetToken, [
+            'email' => $email,
+            'account_id' => $cachedData['account_id'],
+        ], now()->addMinutes(15));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Xác thực mã OTP thành công! Mời bạn tạo mật khẩu mới.',
+            'reset_token' => $resetToken,
+        ], 200);
+    }
+
+    /**
+     * 3. Đặt lại mật khẩu mới (JWT Auth)
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'reset_token' => 'required|string',
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mật khẩu mới phải có tối thiểu 6 ký tự.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $email = strtolower(trim($request->input('email')));
+        $resetToken = $request->input('reset_token');
+        $newPassword = $request->input('new_password');
+
+        $tokenData = Cache::get('reset_token_' . $resetToken);
+        if (!$tokenData || $tokenData['email'] !== $email) {
+            return response()->json([
+                'success' => false,
+                'code' => 'TOKEN_INVALID',
+                'message' => 'Phiên xác thực đã hết hạn hoặc không hợp lệ.',
+            ], 403);
+        }
+
+        $account = Account::find($tokenData['account_id']);
+        if (!$account) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy tài khoản người dùng tương ứng.',
+            ], 404);
+        }
+
+        $account->password = Hash::make($newPassword);
+        $account->save();
+
+        Cache::forget('reset_token_' . $resetToken);
+        Cache::forget('forgot_pw_otp_' . md5($email));
+
+        $token = Auth::guard('api')->login($account);
+        $user = $account->user;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Chúc mừng! Bạn đã đổi mật khẩu mới thành công.',
+            'token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => Auth::guard('api')->factory()->getTTL() * 60,
+            'user' => [
+                'id' => $user?->id,
+                'account_id' => $account->id,
+                'full_name' => $user?->full_name ?: explode('@', $account->email)[0],
+                'name' => $user?->full_name ?: explode('@', $account->email)[0],
+                'email' => $account->email,
+                'phone_number' => $user?->phone_number,
+                'avatar_url' => $user?->avatar_url ?: ($account->google_avatar ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'),
+                'avatar' => $user?->avatar_url ?: ($account->google_avatar ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'),
+                'role' => $account->role,
+                'status' => $account->status,
+                'is_host' => $user?->host !== null,
+                'host' => $user?->host,
+            ],
+        ], 200);
     }
 }

@@ -23,6 +23,9 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/not-goole/login', [AuthController::class, 'login']); // Compatibility alias
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/google', [AuthController::class, 'googleLogin']);
+Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
+Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 
 // ==========================================
 // 2. Tra cứu dữ liệu công khai (Public Catalog)
@@ -61,6 +64,8 @@ Route::middleware(['auth:api'])->group(function () {
 // ==========================================
 Route::middleware(['auth:api', 'admin'])->group(function () {
     Route::get('/admin/users', [UserController::class, 'index']);
+    Route::get('/admin/users/{id}', [UserController::class, 'show']);
+    Route::get('/admin/user/{id}', [UserController::class, 'show']); // Alias
     Route::post('/admin/user/create', [UserController::class, 'create']);
     Route::post('/admin/users/{id}/update', [UserController::class, 'update']);
     Route::delete('/admin/users/{id}', [UserController::class, 'destroy']);
