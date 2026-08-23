@@ -76,13 +76,11 @@ class BookingController extends Controller
         $serviceFee = round($baseTotal * ((float)$room->service_fee_percent / 100));
         $grandTotal = $baseTotal + $cleaningFee + $serviceFee;
 
-        // 4. Lấy thông tin user
-        $user = null;
-        if ($request->user()) {
-            $user = $request->user()->user;
-        }
+        // 4. Lấy thông tin user từ JWT Token
+        $account = \Illuminate\Support\Facades\Auth::guard('api')->user();
+        $user = $account?->user;
         if (!$user) {
-            $user = User::first(); // Fallback tài khoản demo nếu chưa đăng nhập
+            $user = User::first(); // Fallback nếu chưa đăng nhập
         }
 
         // 5. Tạo mã đặt phòng duy nhất
@@ -137,10 +135,8 @@ class BookingController extends Controller
      */
     public function myBookings(Request $request): JsonResponse
     {
-        $user = null;
-        if ($request->user()) {
-            $user = $request->user()->user;
-        }
+        $account = \Illuminate\Support\Facades\Auth::guard('api')->user();
+        $user = $account?->user;
         if (!$user) {
             $user = User::first();
         }

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { TbCheck, TbEye, TbEyeOff, TbLock, TbX } from 'react-icons/tb';
+import { TbCheck, TbEye, TbEyeOff, TbLock, TbX, TbShieldCheck, TbAlertCircle } from 'react-icons/tb';
 import { apiService } from '../services/api';
+import Swal from 'sweetalert2';
 
 export const ChangePasswordModal = ({ isOpen, onClose }) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
-  const [visibleFields, setVisibleFields] = useState({});
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
-  const [isSaved, setIsSaved] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
@@ -17,9 +19,10 @@ export const ChangePasswordModal = ({ isOpen, onClose }) => {
     setCurrentPassword('');
     setNewPassword('');
     setConfirmation('');
-    setVisibleFields({});
+    setShowCurrent(false);
+    setShowNew(false);
+    setShowConfirm(false);
     setError('');
-    setIsSaved(false);
     setIsSubmitting(false);
   };
 
@@ -28,27 +31,23 @@ export const ChangePasswordModal = ({ isOpen, onClose }) => {
     onClose();
   };
 
-  const toggleVisibility = (field) => {
-    setVisibleFields((fields) => ({ ...fields, [field]: !fields[field] }));
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
 
     if (!newPassword || !confirmation) {
-      setError('Vui lòng điền đầy đủ thông tin.');
+      setError('Vui lòng điền đầy đủ mật khẩu mới và xác nhận mật khẩu.');
       return;
     }
-    if (newPassword.length < 8) {
-      setError('Mật khẩu mới phải có ít nhất 8 ký tự.');
+    if (newPassword.length < 6) {
+      setError('Mật khẩu mới phải có ít nhất 6 ký tự.');
       return;
     }
     if (newPassword !== confirmation) {
       setError('Mật khẩu xác nhận không khớp.');
       return;
     }
-    if (currentPassword === newPassword) {
+    if (currentPassword && currentPassword === newPassword) {
       setError('Mật khẩu mới phải khác mật khẩu hiện tại.');
       return;
     }
@@ -60,84 +59,148 @@ export const ChangePasswordModal = ({ isOpen, onClose }) => {
         new_password: newPassword,
         new_password_confirmation: confirmation,
       });
-      setIsSaved(true);
+
+      Swal.fire({
+        icon: 'success',
+        title: '🎉 Đổi mật khẩu thành công!',
+        text: 'Mật khẩu của bạn đã được cập nhật an toàn trên hệ thống.',
+        position: 'top-end',
+        toast: true,
+        showConfirmButton: false,
+        timer: 3500,
+        timerProgressBar: true,
+      });
+
+      handleClose();
     } catch (submitError) {
-      setError(submitError.message || 'Không thể đổi mật khẩu.');
+      const msg = submitError.response?.message || submitError.message || 'Không thể đổi mật khẩu.';
+      setError(msg);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const fields = [
-    { id: 'current', label: 'Mật khẩu hiện tại (nếu có)', value: currentPassword, setValue: setCurrentPassword },
-    { id: 'new', label: 'Mật khẩu mới', value: newPassword, setValue: setNewPassword },
-    { id: 'confirmation', label: 'Xác nhận mật khẩu mới', value: confirmation, setValue: setConfirmation },
-  ];
-
   return (
-    <div className="modal-overlay" onClick={handleClose}>
+    <div className="auth-modal-overlay" onClick={handleClose}>
       <div
-        className="modal-container"
-        style={{ width: '460px', maxWidth: '95vw', padding: '2rem' }}
+        className="auth-modal-card"
+        style={{ width: '460px' }}
         onClick={(event) => event.stopPropagation()}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1px solid #ebebeb' }}>
-          <button className="modal-close-btn" onClick={handleClose} style={{ position: 'static' }} aria-label="Đóng">
+        <div className="auth-modal-header">
+          <h2>Đổi mật khẩu tài khoản</h2>
+          <button className="auth-modal-close-btn" onClick={handleClose} aria-label="Đóng">
             <TbX />
           </button>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Đổi mật khẩu</h2>
-          <div style={{ width: '36px' }} />
         </div>
 
-        {isSaved ? (
-          <div style={{ textAlign: 'center', padding: '2.5rem 1rem 1rem' }}>
-            <TbCheck style={{ color: '#0d8a43', fontSize: '3.5rem', marginBottom: '1rem' }} />
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Đổi mật khẩu thành công</h3>
-            <p style={{ color: '#717171', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              Mật khẩu của bạn đã được cập nhật.
+        <div className="auth-modal-body">
+          <div className="auth-title-group">
+            <p>
+              Tạo mật khẩu mạnh với tối thiểu 6 ký tự để bảo vệ an toàn cho tài khoản và lịch trình của bạn.
             </p>
-            <button className="primary-gradient-btn" style={{ width: 'auto', padding: '0.65rem 1.5rem' }} onClick={handleClose}>
-              Đóng
-            </button>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} style={{ paddingTop: '1.5rem' }}>
-            <p style={{ color: '#717171', fontSize: '0.88rem', lineHeight: 1.5, marginBottom: '1.25rem' }}>
-              Sử dụng mật khẩu mạnh với ít nhất 8 ký tự để bảo vệ tài khoản của bạn.
-            </p>
 
-            {error && (
-              <div style={{ background: '#fff0f3', color: '#e00b41', padding: '0.65rem 1rem', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                {error}
+          {error && (
+            <div className="auth-error-banner">
+              <TbAlertCircle style={{ fontSize: '1.2rem', flexShrink: 0 }} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="auth-form-stack">
+            {/* Current Password */}
+            <div className="auth-input-group">
+              <label>Mật khẩu hiện tại (nếu có)</label>
+              <div className="auth-input-box">
+                <TbLock className="auth-input-icon" />
+                <input
+                  type={showCurrent ? 'text' : 'password'}
+                  className="auth-input-field"
+                  placeholder="Nhập mật khẩu hiện tại"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className="auth-password-toggle"
+                  onClick={() => setShowCurrent(!showCurrent)}
+                  title={showCurrent ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                >
+                  {showCurrent ? <TbEyeOff /> : <TbEye />}
+                </button>
               </div>
-            )}
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-              {fields.map((field) => (
-                <label key={field.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', color: '#484848', fontSize: '0.82rem', fontWeight: 700 }}>
-                  {field.label}
-                  <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '0.65rem 0.8rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <TbLock style={{ color: '#717171', fontSize: '1.1rem' }} />
-                    <input
-                      type={visibleFields[field.id] ? 'text' : 'password'}
-                      value={field.value}
-                      onChange={(event) => field.setValue(event.target.value)}
-                      style={{ border: 'none', outline: 'none', width: '100%', fontSize: '0.92rem' }}
-                      autoComplete={field.id === 'current' ? 'current-password' : 'new-password'}
-                    />
-                    <button type="button" onClick={() => toggleVisibility(field.id)} aria-label={visibleFields[field.id] ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'} style={{ color: '#717171', fontSize: '1.15rem' }}>
-                      {visibleFields[field.id] ? <TbEyeOff /> : <TbEye />}
-                    </button>
-                  </div>
-                </label>
-              ))}
             </div>
 
-            <button type="submit" className="primary-gradient-btn" style={{ padding: '0.75rem', marginTop: '1.25rem' }} disabled={isSubmitting}>
-              {isSubmitting ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
+            {/* New Password */}
+            <div className="auth-input-group">
+              <label>Mật khẩu mới *</label>
+              <div className="auth-input-box">
+                <TbLock className="auth-input-icon" />
+                <input
+                  type={showNew ? 'text' : 'password'}
+                  className="auth-input-field"
+                  placeholder="Tối thiểu 6 ký tự"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="auth-password-toggle"
+                  onClick={() => setShowNew(!showNew)}
+                  title={showNew ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                >
+                  {showNew ? <TbEyeOff /> : <TbEye />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm New Password */}
+            <div className="auth-input-group">
+              <label>Xác nhận mật khẩu mới *</label>
+              <div className="auth-input-box">
+                <TbLock className="auth-input-icon" />
+                <input
+                  type={showConfirm ? 'text' : 'password'}
+                  className="auth-input-field"
+                  placeholder="Nhập lại mật khẩu mới"
+                  value={confirmation}
+                  onChange={(e) => setConfirmation(e.target.value)}
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="auth-password-toggle"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  title={showConfirm ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                >
+                  {showConfirm ? <TbEyeOff /> : <TbEye />}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="auth-primary-submit"
+              disabled={isSubmitting}
+              style={{ marginTop: '0.6rem' }}
+            >
+              {isSubmitting ? (
+                <span>Đang cập nhật...</span>
+              ) : (
+                <>
+                  <TbShieldCheck />
+                  <span>Xác nhận đổi mật khẩu</span>
+                </>
+              )}
             </button>
           </form>
-        )}
+        </div>
       </div>
     </div>
   );

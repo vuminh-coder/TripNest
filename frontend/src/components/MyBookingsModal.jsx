@@ -1,105 +1,182 @@
 import React from 'react';
-import { TbX, TbCalendarCheck, TbTrash, TbReceipt, TbMapPin } from 'react-icons/tb';
+import { TbX, TbCalendarCheck, TbTrash, TbReceipt, TbMapPin, TbClock, TbUsers, TbPlaneDeparture } from 'react-icons/tb';
+import Swal from 'sweetalert2';
 
 export const MyBookingsModal = ({ isOpen, onClose, bookings = [], onCancelBooking, currency = 'VND' }) => {
   if (!isOpen) return null;
 
   const formatPrice = (val, cur) => {
-    if (cur === 'USD') return `$${val.toLocaleString()}`;
-    if (cur === 'EUR') return `€${Math.round(val * 0.92).toLocaleString()}`;
-    return `${val.toLocaleString()} ₫`;
+    if (cur === 'USD') return `$${Number(val).toLocaleString()}`;
+    if (cur === 'EUR') return `€${Math.round(Number(val) * 0.92).toLocaleString()}`;
+    return `${Number(val).toLocaleString()} ₫`;
+  };
+
+  const handleCancel = (booking) => {
+    Swal.fire({
+      title: 'Hủy đơn đặt phòng?',
+      html: `Bạn có chắc chắn muốn hủy đặt phòng <b>${booking.roomTitle}</b> (Mã: <code>${booking.id}</code>)?<br><span style="color: #64748b; font-size: 0.85rem;">Chính sách hủy phòng linh hoạt áp dụng theo quy định của chỗ ở.</span>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Xác nhận hủy phòng',
+      cancelButtonText: 'Giữ lại lịch trình',
+      reverseButtons: true,
+    }).then((res) => {
+      if (res.isConfirmed) {
+        onCancelBooking(booking.id);
+        Swal.fire({
+          icon: 'success',
+          title: 'Đã hủy đơn đặt phòng',
+          text: `Đơn đặt chỗ #${booking.id} đã được hủy thành công.`,
+          position: 'top-end',
+          toast: true,
+          showConfirmButton: false,
+          timer: 3000,
+        });
+      }
+    });
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="auth-modal-overlay" onClick={onClose}>
       <div
-        className="modal-container"
-        style={{ width: '700px', maxWidth: '95vw', padding: '2rem' }}
+        className="auth-modal-card"
+        style={{ width: '740px' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1px solid #ebebeb' }}>
-          <button className="modal-close-btn" onClick={onClose} style={{ position: 'static' }}>
+        <div className="auth-modal-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <TbPlaneDeparture style={{ fontSize: '1.4rem', color: '#ff385c' }} />
+            <h2>Chuyến đi đã đặt của bạn ({bookings.length})</h2>
+          </div>
+          <button className="auth-modal-close-btn" onClick={onClose} title="Đóng">
             <TbX />
           </button>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Chuyến đi đã đặt của bạn ({bookings.length})</h2>
-          <div style={{ width: '36px' }} />
         </div>
 
-        <div style={{ padding: '1.5rem 0', maxHeight: '60vh', overflowY: 'auto' }}>
+        <div style={{ padding: '1.25rem 1.5rem', maxHeight: '68vh', overflowY: 'auto' }}>
           {bookings.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-              <TbCalendarCheck style={{ fontSize: '3.5rem', color: '#ff385c', marginBottom: '1rem' }} />
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Chưa có chuyến đi nào được đặt</h3>
-              <p style={{ color: '#717171', fontSize: '0.9rem', maxWidth: '380px', margin: '0 auto 1.5rem auto' }}>
-                Khi bạn hoàn tất đặt phòng trên TripNest, tất cả lịch trình và mã đặt chỗ sẽ xuất hiện tại đây.
+            <div style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+              <div
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: '#fff1f2',
+                  color: '#ff385c',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '2.5rem',
+                  margin: '0 auto 1.25rem',
+                }}
+              >
+                <TbCalendarCheck />
+              </div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.5rem' }}>
+                Chưa có chuyến đi nào được đặt
+              </h3>
+              <p style={{ color: '#64748b', fontSize: '0.9rem', maxWidth: '400px', margin: '0 auto 1.5rem auto', lineHeight: 1.5 }}>
+                Khi bạn hoàn tất đặt phòng trên TripNest, toàn bộ lịch trình, hướng dẫn nhận phòng và mã đặt chỗ sẽ hiển thị tại đây.
               </p>
-              <button className="primary-gradient-btn" style={{ width: 'auto', padding: '0.65rem 1.5rem' }} onClick={onClose}>
-                Khám phá các điểm đến
+              <button
+                className="auth-primary-submit"
+                style={{ width: 'auto', display: 'inline-flex', padding: '0.65rem 1.75rem', margin: '0 auto' }}
+                onClick={onClose}
+              >
+                Khám phá các điểm đến ngay
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {bookings.map((b) => (
                 <div
                   key={b.id}
                   style={{
-                    border: '1px solid #ebebeb',
-                    borderRadius: '12px',
-                    padding: '1.25rem',
+                    border: '1.5px solid #f1f5f9',
+                    borderRadius: '16px',
+                    padding: '1.1rem',
                     display: 'flex',
                     gap: '1.25rem',
                     alignItems: 'center',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    background: '#ffffff',
+                    boxShadow: '0 2px 10px rgba(15, 23, 42, 0.04)',
+                    transition: 'all 0.2s ease',
                   }}
                 >
                   <img
-                    src={b.roomImage}
+                    src={b.roomImage || 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=300&auto=format&fit=crop&q=80'}
                     alt={b.roomTitle}
-                    style={{ width: '120px', height: '100px', borderRadius: '10px', objectFit: 'cover' }}
+                    style={{ width: '130px', height: '110px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }}
                   />
 
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0d8a43', background: '#e6f7ed', padding: '2px 8px', borderRadius: '4px' }}>
-                        MÃ: {b.id} · ĐÃ XÁC NHẬN
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span
+                        style={{
+                          fontSize: '0.72rem',
+                          fontWeight: 800,
+                          color: '#059669',
+                          background: '#ecfdf5',
+                          border: '1px solid #a7f3d0',
+                          padding: '2px 8px',
+                          borderRadius: '6px',
+                          letterSpacing: '0.5px',
+                        }}
+                      >
+                        MÃ: #{b.id} • ĐÃ XÁC NHẬN
                       </span>
-                      <span style={{ fontSize: '0.82rem', color: '#717171' }}>
-                        {b.guests} khách · {b.nights} đêm
+                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <TbUsers style={{ fontSize: '0.95rem' }} /> {b.guests} khách • {b.nights || 1} đêm
                       </span>
                     </div>
 
-                    <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#222', marginBottom: '4px' }}>
+                    <h4
+                      style={{
+                        fontSize: '1rem',
+                        fontWeight: 800,
+                        color: '#0f172a',
+                        margin: '0 0 4px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
                       {b.roomTitle}
                     </h4>
 
-                    <div style={{ fontSize: '0.85rem', color: '#717171', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
-                      <TbMapPin /> {b.roomCity}
+                    <div style={{ fontSize: '0.82rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
+                      <TbMapPin style={{ color: '#ff385c' }} /> {b.roomCity || 'Việt Nam'}
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#484848' }}>
-                        Lịch trình: {b.checkIn} đến {b.checkOut}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #f8fafc', paddingTop: '6px' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <TbClock style={{ color: '#0ea5e9' }} /> {b.checkIn} ➔ {b.checkOut}
                       </span>
-                      <span style={{ fontSize: '1.05rem', fontWeight: 700, color: '#ff385c' }}>
-                        {formatPrice(b.totalPrice, b.currency)}
+                      <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ff385c' }}>
+                        {formatPrice(b.totalPrice, b.currency || currency)}
                       </span>
                     </div>
                   </div>
 
                   <button
                     style={{
-                      padding: '0.5rem',
-                      color: '#e00b41',
-                      fontSize: '1.2rem',
-                      borderRadius: '8px',
-                      border: '1px solid #ffe0e6',
+                      padding: '0.6rem',
+                      color: '#ef4444',
+                      background: '#fff1f2',
+                      border: '1px solid #fecdd3',
+                      borderRadius: '10px',
+                      cursor: 'pointer',
+                      fontSize: '1.15rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.15s ease',
+                      flexShrink: 0,
                     }}
                     title="Hủy đặt phòng"
-                    onClick={() => {
-                      if (window.confirm('Bạn có chắc chắn muốn hủy đặt phòng này?')) {
-                        onCancelBooking(b.id);
-                      }
-                    }}
+                    onClick={() => handleCancel(b)}
                   >
                     <TbTrash />
                   </button>
@@ -112,4 +189,5 @@ export const MyBookingsModal = ({ isOpen, onClose, bookings = [], onCancelBookin
     </div>
   );
 };
+
 export default MyBookingsModal;

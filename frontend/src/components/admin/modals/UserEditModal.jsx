@@ -157,34 +157,38 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
       data.append('avatar', formData.avatar);
     }
 
+    let token = localStorage.getItem('token');
+    if (!token) {
+      const storedUser = JSON.parse(localStorage.getItem('tripnest_user') || 'null');
+      token = storedUser?.token;
+    }
+
     const url = user
-      ? `http://localhost:8000/api/admin/users/${user.id}/update`
-      : 'http://localhost:8000/api/admin/user/create';
+      ? `http://127.0.0.1:8000/api/admin/users/${user.id}/update`
+      : 'http://127.0.0.1:8000/api/admin/user/create';
 
     try {
       const response = await fetch(url, {
         method: 'POST',
-        credentials: 'include',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          Accept: 'application/json',
+        },
         body: data,
       });
 
       const result = await response.json();
       console.log(result);
-      if (result.success) {
+      if (result.success && result.data) {
         showToast(
           'success',
           user
             ? '🎉 Cập nhật thành công!'
             : '🎉 Thêm người dùng thành công!',
-          result.message ||
-            'Dữ liệu người dùng đã được lưu vào hệ thống.'
+          result.message || 'Dữ liệu người dùng đã được lưu vào hệ thống.'
         );
 
-        onSave({
-          ...(user ? { id: result.data.id } : {}),
-          ...formData,
-          avatar: previewAvatar,
-        });
+        onSave(result.data);
       } else {
         showToast(
           'error',

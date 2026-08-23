@@ -1,424 +1,514 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   TbX,
   TbBrandGoogle,
   TbShieldLock,
   TbMail,
   TbLock,
+  TbUser,
+  TbPhone,
+  TbEye,
+  TbEyeOff,
+  TbSparkles,
+  TbCheck,
+  TbAlertCircle,
+  TbUserShield,
+  TbHome,
 } from 'react-icons/tb';
 import { apiService } from '../services/api';
 import Swal from 'sweetalert2';
 import { useDispatch } from 'react-redux';
+import '../assets/css/AuthModal.css';
 
-export const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
+export const AuthModal = ({ isOpen, onClose, initialTab = 'login', onAuthSuccess }) => {
+  const [tab, setTab] = useState(initialTab); // 'login' | 'register'
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   // Redux
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    setTab(initialTab || 'login');
+    setError('');
+  }, [initialTab, isOpen]);
+
   if (!isOpen) return null;
 
-  // Đăng nhập bằng Email + Password
+  // Tính toán độ mạnh mật khẩu (Password Strength)
+  const calculatePasswordStrength = (pass) => {
+    if (!pass) return { score: 0, label: '', class: '' };
+    let score = 0;
+    if (pass.length >= 6) score += 1;
+    if (pass.length >= 8 && /[A-Z]/.test(pass) && /[0-9]/.test(pass)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pass) && pass.length >= 8) score += 1;
+
+    if (score === 1) return { score: 1, label: 'Yếu', class: 'active-weak', color: '#ef4444' };
+    if (score === 2) return { score: 2, label: 'Trung bình', class: 'active-medium', color: '#f59e0b' };
+    if (score === 3) return { score: 3, label: 'Rất mạnh', class: 'active-strong', color: '#10b981' };
+    return { score: 1, label: 'Yếu', class: 'active-weak', color: '#ef4444' };
+  };
+
+  const strength = calculatePasswordStrength(password);
+
+  const saveAuthSession = (data) => {
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+    }
+    if (data.user) {
+      const userData = {
+        ...data.user,
+        token: data.token,
+      };
+      localStorage.setItem('tripnest_user', JSON.stringify(userData));
+      dispatch({ type: 'UPDATE', payload: data.user });
+      if (onAuthSuccess) {
+        onAuthSuccess(userData);
+      }
+    }
+  };
+
+  // 1. Đăng nhập Email + Password
   const handleEmailLogin = async (e) => {
     e.preventDefault();
+    setError('');
 
     if (!email.trim() || !password) {
       setError('Vui lòng nhập đầy đủ email và mật khẩu.');
       return;
     }
-    const dataUpToSever = { email: email, password: password };
+
     setLoading(true);
-    fetch("http://localhost:8000/api/auth/not-goole/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(dataUpToSever)
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setLoading(false);
-        console.log(data);
-        if (data.success) {
-          Swal.fire({
-            icon: "success",
-            title: "🎉 Đăng nhập thành công!",
-            text: "Chào mừng bạn quay trở lại TripNest.",
-            position: "top-end",
-            toast: true,
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true
-          });
-          localStorage.setItem("token", data.token);
-          if (data.user) {
-            dispatch({ type: "UPDATE", payload: data.user });
-            localStorage.setItem("tripnest_user", JSON.stringify({ ...data.user, token: data.token }));
-            if (onAuthSuccess) {
-              onAuthSuccess({ ...data.user, token: data.token });
-            }
-          }
-          onClose();
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "❌ Đăng nhập thất bại!",
-            text: data.message,
-            position: "top-end",
-            toast: true,
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true
-          });
-        }
-      })
-      .catch((e) => {
-        setLoading(false);
-        console.log(e);
+    try {
+      const data = await apiService.login({
+        email: email.trim(),
+        password,
       });
+
+      setLoading(false);
+      if (data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: '🎉 Đăng nhập thành công!',
+          text: `Chào mừng bạn quay trở lại, ${data.user?.full_name || 'Quý khách'}!`,
+          position: 'top-end',
+          toast: true,
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+        });
+
+        saveAuthSession(data);
+        onClose();
+      } else {
+        setError(data.message || 'Đăng nhập thất bại.');
+      }
+    } catch (err) {
+      setLoading(false);
+      const msg = err.response?.message || err.message || 'Email hoặc mật khẩu không chính xác.';
+      setError(msg);
+      Swal.fire({
+        icon: 'error',
+        title: '❌ Đăng nhập thất bại!',
+        text: msg,
+        position: 'top-end',
+        toast: true,
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+    }
   };
 
-  // Đăng nhập bằng Google
-  const handleGoogleLogin = async () => {
+  // 2. Đăng ký tài khoản người dùng mới
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!fullName.trim()) {
+      setError('Vui lòng nhập họ và tên.');
+      return;
+    }
+    if (!email.trim()) {
+      setError('Vui lòng nhập địa chỉ email.');
+      return;
+    }
+    if (!password || password.length < 6) {
+      setError('Mật khẩu phải có ít nhất 6 ký tự.');
+      return;
+    }
+    if (password !== passwordConfirmation) {
+      setError('Mật khẩu xác nhận không khớp. Vui lòng kiểm tra lại.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await apiService.register({
+        full_name: fullName.trim(),
+        email: email.trim(),
+        password,
+        phone_number: phone.trim() || null,
+      });
+
+      setLoading(false);
+      if (data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: '🎉 Đăng ký thành công!',
+          text: `Chào mừng ${data.user?.full_name || ''} đã gia nhập cộng đồng TripNest!`,
+          position: 'top-end',
+          toast: true,
+          showConfirmButton: false,
+          timer: 3500,
+          timerProgressBar: true,
+        });
+
+        saveAuthSession(data);
+        onClose();
+      } else {
+        setError(data.message || 'Đăng ký không thành công.');
+      }
+    } catch (err) {
+      setLoading(false);
+      const msg = err.response?.message || err.message || 'Đăng ký tài khoản thất bại.';
+      setError(msg);
+      Swal.fire({
+        icon: 'error',
+        title: '❌ Đăng ký thất bại!',
+        text: msg,
+        position: 'top-end',
+        toast: true,
+        showConfirmButton: false,
+        timer: 3500,
+        timerProgressBar: true,
+      });
+    }
+  };
+
+  // 3. Đăng nhập bằng Google
+  const handleGoogleLogin = async (customEmail = null) => {
     setLoading(true);
     setError('');
 
-    const targetEmail =
-      email.trim() || 'demo.traveler@gmail.com';
-
-    const googleName = targetEmail
-      .split('@')[0]
-      .replace('.', ' ')
-      .toUpperCase();
+    const targetEmail = customEmail || email.trim() || 'demo.traveler@gmail.com';
+    const googleName = fullName.trim() || targetEmail.split('@')[0].replace('.', ' ').toUpperCase();
 
     const googlePayload = {
       email: targetEmail,
       google_id:
         'google-sub-' +
         Math.abs(
-          targetEmail
-            .split('')
-            .reduce(
-              (a, b) =>
-                ((a << 5) - a) + b.charCodeAt(0),
-              0
-            )
+          targetEmail.split('').reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0)
         ),
       name: googleName,
-      avatar:
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
     };
 
     try {
       const res = await apiService.googleLogin(googlePayload);
+      setLoading(false);
 
       if (res.token && res.user) {
-        const userData = {
-          ...res.user,
-          token: res.token,
-        };
+        Swal.fire({
+          icon: 'success',
+          title: '🎉 Đăng nhập Google thành công!',
+          text: `Chào mừng ${res.user?.full_name || 'bạn'} đến với TripNest!`,
+          position: 'top-end',
+          toast: true,
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+        });
 
-        localStorage.setItem(
-          'tripnest_user',
-          JSON.stringify(userData)
-        );
-        localStorage.setItem('token', res.token);
-        dispatch({ type: 'UPDATE', payload: res.user });
-
-        if (onAuthSuccess) {
-          onAuthSuccess(userData);
-        }
-
+        saveAuthSession(res);
         onClose();
       } else {
-        setError(
-          res.message || 'Đăng nhập Google không thành công.'
-        );
+        setError(res.message || 'Đăng nhập Google không thành công.');
       }
     } catch (e) {
-      setError('Có lỗi xảy ra khi đăng nhập Google.');
-    } finally {
       setLoading(false);
+      setError(e.message || 'Có lỗi xảy ra khi đăng nhập Google.');
+    }
+  };
+
+  // 4. Quick Demo Login Handlers
+  const handleQuickDemo = (roleType) => {
+    if (roleType === 'guest') {
+      setEmail('test.traveler.2026@gmail.com');
+      setPassword('Password@123');
+      handleGoogleLogin('demo.traveler@gmail.com');
+    } else if (roleType === 'host') {
+      setEmail('minhhoang.dalat@gmail.com');
+      setPassword('Password@123');
+      handleGoogleLogin('minhhoang.dalat@gmail.com');
+    } else if (roleType === 'admin') {
+      setEmail('admin@tripnest.vn');
+      setPassword('Admin@123456');
+      handleGoogleLogin('admin@tripnest.vn');
     }
   };
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={onClose}
-    >
-      <div
-        className="modal-container"
-        style={{
-          width: '420px',
-          maxWidth: '95vw',
-          padding: '1.5rem',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="auth-modal-overlay" onClick={onClose}>
+      <div className="auth-modal-card" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingBottom: '0.9rem',
-            borderBottom: '1px solid #ebebeb',
-          }}
-        >
-          <button
-            className="modal-close-btn"
-            onClick={onClose}
-            style={{ position: 'static' }}
-          >
+        <div className="auth-modal-header">
+          <h2>{tab === 'login' ? 'Đăng nhập vào TripNest' : 'Đăng ký tài khoản mới'}</h2>
+          <button className="auth-modal-close-btn" onClick={onClose} title="Đóng cửa sổ">
             <TbX />
           </button>
-
-          <h2
-            style={{
-              fontSize: '1.1rem',
-              fontWeight: 700,
-              margin: 0,
-            }}
-          >
-            Đăng nhập vào TripNest
-          </h2>
-
-          <div style={{ width: '36px' }} />
         </div>
 
-        {/* Form */}
-        <div style={{ paddingTop: '1rem' }}>
-          <h3
-            style={{
-              fontSize: '1.25rem',
-              fontWeight: 800,
-              margin: '0 0 1rem',
-              color: '#222',
-            }}
-          >
-            Chào mừng trở lại 👋
-          </h3>
-
-          {/* Error */}
-          {error && (
-            <div
-              style={{
-                background: '#fff0f3',
-                color: '#e00b41',
-                padding: '0.6rem 0.8rem',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                marginBottom: '0.75rem',
-              }}
+        {/* Body */}
+        <div className="auth-modal-body">
+          {/* Segmented Tab Switcher */}
+          <div className="auth-segmented-tabs">
+            <button
+              type="button"
+              className={`auth-tab-btn ${tab === 'login' ? 'active' : ''}`}
+              onClick={() => { setTab('login'); setError(''); }}
             >
-              {error}
+              <span>Đăng nhập</span>
+            </button>
+            <button
+              type="button"
+              className={`auth-tab-btn ${tab === 'register' ? 'active' : ''}`}
+              onClick={() => { setTab('register'); setError(''); }}
+            >
+              <TbSparkles style={{ color: '#ff385c' }} />
+              <span>Tạo tài khoản</span>
+            </button>
+          </div>
+
+          {/* Title Greetings */}
+          <div className="auth-title-group">
+            <h3>{tab === 'login' ? 'Chào mừng trở lại 👋' : 'Khám phá thế giới cùng TripNest ✨'}</h3>
+            <p>
+              {tab === 'login'
+                ? 'Đăng nhập để quản lý lịch trình, chuyến đi và danh sách yêu thích.'
+                : 'Đăng ký miễn phí chỉ trong vài giây để trải nghiệm hàng ngàn chỗ ở.'}
+            </p>
+          </div>
+
+          {/* Error Banner */}
+          {error && (
+            <div className="auth-error-banner">
+              <TbAlertCircle style={{ fontSize: '1.2rem', flexShrink: 0 }} />
+              <span>{error}</span>
             </div>
           )}
 
-          {/* Email + Password */}
+          {/* Form */}
           <form
-            onSubmit={handleEmailLogin}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.6rem',
-            }}
+            onSubmit={tab === 'login' ? handleEmailLogin : handleRegister}
+            className="auth-form-stack"
           >
-            {/* Email */}
-            <div
-              style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '0.65rem 0.8rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-            >
-              <TbMail
-                style={{
-                  color: '#717171',
-                  fontSize: '1.15rem',
-                }}
-              />
+            {/* Full Name (Register Only) */}
+            {tab === 'register' && (
+              <div className="auth-input-group">
+                <label>Họ và tên *</label>
+                <div className="auth-input-box">
+                  <TbUser className="auth-input-icon" />
+                  <input
+                    type="text"
+                    className="auth-input-field"
+                    placeholder="Ví dụ: Nguyễn Văn An"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+            )}
 
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{
-                  border: 'none',
-                  outline: 'none',
-                  width: '100%',
-                  fontSize: '0.9rem',
-                }}
-              />
+            {/* Email Address */}
+            <div className="auth-input-group">
+              <label>Địa chỉ Email *</label>
+              <div className="auth-input-box">
+                <TbMail className="auth-input-icon" />
+                <input
+                  type="email"
+                  className="auth-input-field"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
             </div>
+
+            {/* Phone Number (Register Only) */}
+            {tab === 'register' && (
+              <div className="auth-input-group">
+                <label>Số điện thoại (tùy chọn)</label>
+                <div className="auth-input-box">
+                  <TbPhone className="auth-input-icon" />
+                  <input
+                    type="tel"
+                    className="auth-input-field"
+                    placeholder="0988 123 456"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Password */}
-            <div
-              style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '0.65rem 0.8rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-            >
-              <TbLock
-                style={{
-                  color: '#717171',
-                  fontSize: '1.15rem',
-                }}
-              />
+            <div className="auth-input-group">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label>Mật khẩu *</label>
+                {tab === 'login' && (
+                  <button
+                    type="button"
+                    onClick={() => alert('Vui lòng liên hệ quản trị viên hoặc sử dụng tính năng đổi mật khẩu khi đã đăng nhập.')}
+                    style={{ border: 'none', background: 'none', color: '#ff385c', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    Quên mật khẩu?
+                  </button>
+                )}
+              </div>
 
-              <input
-                type="password"
-                placeholder="Mật khẩu"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  border: 'none',
-                  outline: 'none',
-                  width: '100%',
-                  fontSize: '0.9rem',
-                }}
-              />
+              <div className="auth-input-box">
+                <TbLock className="auth-input-icon" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="auth-input-field"
+                  placeholder={tab === 'login' ? 'Nhập mật khẩu' : 'Tối thiểu 6 ký tự'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="auth-password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                  title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                >
+                  {showPassword ? <TbEyeOff /> : <TbEye />}
+                </button>
+              </div>
+
+              {/* Password Strength Indicator (Register only) */}
+              {tab === 'register' && password && (
+                <div className="auth-strength-meter">
+                  <div className="auth-strength-bars">
+                    <div className={`auth-strength-bar ${strength.score >= 1 ? strength.class : ''}`} />
+                    <div className={`auth-strength-bar ${strength.score >= 2 ? strength.class : ''}`} />
+                    <div className={`auth-strength-bar ${strength.score >= 3 ? strength.class : ''}`} />
+                  </div>
+                  <span className="auth-strength-text" style={{ color: strength.color }}>
+                    {strength.label}
+                  </span>
+                </div>
+              )}
             </div>
 
-            {/* Forgot password */}
-            <div
-              style={{
-                textAlign: 'right',
-              }}
-            >
-              <button
-                type="button"
-                style={{
-                  border: 'none',
-                  background: 'none',
-                  color: '#ff385c',
-                  fontSize: '0.8rem',
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
-              >
-                Quên mật khẩu?
-              </button>
-            </div>
+            {/* Confirm Password (Register Only) */}
+            {tab === 'register' && (
+              <div className="auth-input-group">
+                <label>Xác nhận lại mật khẩu *</label>
+                <div className="auth-input-box">
+                  <TbLock className="auth-input-icon" />
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    className="auth-input-field"
+                    placeholder="Nhập lại mật khẩu"
+                    value={passwordConfirmation}
+                    onChange={(e) => setPasswordConfirmation(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="auth-password-toggle"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    title={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  >
+                    {showConfirmPassword ? <TbEyeOff /> : <TbEye />}
+                  </button>
+                </div>
+              </div>
+            )}
 
-            {/* Login */}
-            <button
-              type="submit"
-              className="primary-gradient-btn"
-              disabled={loading}
-              style={{
-                padding: '0.7rem',
-                borderRadius: '8px',
-                fontWeight: 700,
-              }}
-            >
-              {loading
-                ? 'Đang đăng nhập...'
-                : 'Đăng nhập'}
+            {/* Submit Button */}
+            <button type="submit" className="auth-primary-submit" disabled={loading}>
+              {loading ? (
+                <span>Đang xử lý dữ liệu...</span>
+              ) : tab === 'login' ? (
+                <>
+                  <TbCheck />
+                  <span>Đăng nhập</span>
+                </>
+              ) : (
+                <>
+                  <TbSparkles />
+                  <span>Tạo tài khoản ngay</span>
+                </>
+              )}
             </button>
           </form>
 
-          {/* Divider */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.7rem',
-              margin: '1rem 0',
-            }}
-          >
-            <div
-              style={{
-                flex: 1,
-                height: '1px',
-                background: '#ebebeb',
-              }}
-            />
-
-            <span
-              style={{
-                fontSize: '0.7rem',
-                color: '#717171',
-              }}
-            >
-              HOẶC
-            </span>
-
-            <div
-              style={{
-                flex: 1,
-                height: '1px',
-                background: '#ebebeb',
-              }}
-            />
+          {/* OR Divider */}
+          <div className="auth-or-divider">
+            <span>Hoặc tiếp tục với</span>
           </div>
 
-          {/* Google */}
+          {/* Google 1-Click Login */}
           <button
-            onClick={handleGoogleLogin}
+            type="button"
+            className="auth-google-btn"
+            onClick={() => handleGoogleLogin()}
             disabled={loading}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              padding: '0.7rem',
-              borderRadius: '8px',
-              border: '1px solid #dadce0',
-              background: '#fff',
-              color: '#3c4043',
-              fontSize: '0.9rem',
-              fontWeight: 700,
-              cursor: loading ? 'wait' : 'pointer',
-            }}
           >
-            <TbBrandGoogle
-              style={{
-                fontSize: '1.3rem',
-                color: '#ea4335',
-              }}
-            />
-
-            {loading
-              ? 'Đang xác thực...'
-              : 'Đăng nhập với Google'}
+            <TbBrandGoogle />
+            <span>Tiếp tục với tài khoản Google</span>
           </button>
 
-          {/* Security */}
-          <div
-            style={{
-              marginTop: '0.9rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              color: '#717171',
-              fontSize: '0.75rem',
-            }}
-          >
-            <TbShieldLock
-              style={{
-                fontSize: '1rem',
-                color: '#0d8a43',
-              }}
-            />
+          {/* Quick Demo Accounts */}
+          <div className="auth-demo-box">
+            <div className="auth-demo-header">
+              <span>Tài khoản thử nghiệm nhanh:</span>
+            </div>
+            <div className="auth-demo-buttons">
+              <button
+                type="button"
+                className="auth-demo-pill guest"
+                onClick={() => handleQuickDemo('guest')}
+                title="Đăng nhập tài khoản Khách du lịch"
+              >
+                <TbUser /> Khách
+              </button>
+              <button
+                type="button"
+                className="auth-demo-pill host"
+                onClick={() => handleQuickDemo('host')}
+                title="Đăng nhập tài khoản Chủ nhà"
+              >
+                <TbHome /> Chủ nhà
+              </button>
+              <button
+                type="button"
+                className="auth-demo-pill admin"
+                onClick={() => handleQuickDemo('admin')}
+                title="Đăng nhập tài khoản Quản trị viên"
+              >
+                <TbUserShield /> Quản trị
+              </button>
+            </div>
+          </div>
 
-            <span>
-              Thông tin đăng nhập được bảo mật
-            </span>
+          {/* Security Guarantee */}
+          <div className="auth-security-badge">
+            <TbShieldLock />
+            <span>Bảo mật dữ liệu 100% qua chuẩn JSON Web Token (JWT)</span>
           </div>
         </div>
       </div>

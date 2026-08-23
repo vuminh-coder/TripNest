@@ -66,7 +66,8 @@ class HostController extends Controller
             ], 422);
         }
 
-        $user = $request->user()?->user ?: User::first();
+        $account = \Illuminate\Support\Facades\Auth::guard('api')->user();
+        $user = $account?->user ?: User::first();
 
         // Kiểm tra xem đã là Host chưa
         $host = Host::firstOrCreate(

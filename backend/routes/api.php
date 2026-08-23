@@ -1,61 +1,68 @@
 <?php
 
-use App\Http\Controllers\admin\AuthController as AdminAuthController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\RoomController;
 use App\Http\Controllers\BookingController;
-use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ExperienceController;
 use App\Http\Controllers\HostController;
-use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\RoomController;
+use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| TripNest RESTful API Routes
+| TripNest RESTful API Routes (JWT Authenticated)
 |--------------------------------------------------------------------------
 */
 
-// 1. Xác thực Google OAuth
-//
-Route::post("/auth/not-goole/login",[AdminAuthController::class,'login']);
-//
+// ==========================================
+// 1. Xác thực người dùng (Public Auth Routes)
+// ==========================================
+Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/not-goole/login', [AuthController::class, 'login']); // Compatibility alias
+Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/google', [AuthController::class, 'googleLogin']);
-Route::post('/auth/login', [AuthController::class, 'googleLogin']); // Compatibility alias
-Route::middleware('auth:sanctum')->group(function () {
+
+// ==========================================
+// 2. Tra cứu dữ liệu công khai (Public Catalog)
+// ==========================================
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/rooms', [RoomController::class, 'index']);
+Route::get('/rooms/{id}', [RoomController::class, 'show']);
+Route::get('/experiences', [ExperienceController::class, 'index']);
+Route::get('/host/estimate', [HostController::class, 'estimate']);
+
+// ==========================================
+// 3. API yêu cầu đăng nhập (JWT Authenticated: auth:api)
+// ==========================================
+Route::middleware(['auth:api'])->group(function () {
+    // Tài khoản & Phiên làm việc
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::put('/auth/password', [AuthController::class, 'updatePassword']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::delete('/admin/users/by-email/{email}', [AdminUserController::class, 'destroy']);
+    Route::post('/auth/refresh', [AuthController::class, 'refresh']);
+
+    // Chuyến đi & Đặt phòng
+    Route::get('/my-bookings', [BookingController::class, 'myBookings']);
+    Route::post('/bookings', [BookingController::class, 'store']);
+    Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
+
+    // Danh sách yêu thích (Wishlist)
+    Route::get('/wishlist', [WishlistController::class, 'index']);
+    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle']);
+
+    // Đăng ký chủ nhà (Host KYC)
+    Route::post('/host/register', [HostController::class, 'registerHost']);
 });
 
-// 2. Danh mục chỗ ở
-Route::get('/categories', [CategoryController::class, 'index']);
-
-// 3. Danh sách & Chi tiết phòng
-Route::get('/rooms', [RoomController::class, 'index']);
-Route::get('/rooms/{id}', [RoomController::class, 'show']);
-
-// 4. Đặt phòng & Chuyến đi
-Route::post('/bookings', [BookingController::class, 'store']);
-Route::get('/my-bookings', [BookingController::class, 'myBookings']);
-Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
-
-// 5. Danh sách yêu thích (Wishlist)
-Route::get('/wishlist', [WishlistController::class, 'index']);
-Route::post('/wishlist/toggle', [WishlistController::class, 'toggle']);
-
-// 6. Trải nghiệm du lịch
-Route::get('/experiences', [ExperienceController::class, 'index']);
-
-// 7. Chủ nhà & Ước tính doanh thu
-Route::get('/host/estimate', [HostController::class, 'estimate']);
-Route::post('/host/register', [HostController::class, 'registerHost']);
-
-// Admin User Management
-Route::get('/admin/users', [UserController::class, 'index']);
-Route::post('/admin/user/create', [UserController::class, 'create']);
-Route::post('/admin/users/{id}/update', [UserController::class, 'update']);
-
+// ==========================================
+// 4. API Quản trị hệ thống (Admin Portal: auth:api + admin role)
+// ==========================================
+Route::middleware(['auth:api', 'admin'])->group(function () {
+    Route::get('/admin/users', [UserController::class, 'index']);
+    Route::post('/admin/user/create', [UserController::class, 'create']);
+    Route::post('/admin/users/{id}/update', [UserController::class, 'update']);
+    Route::delete('/admin/users/{id}', [UserController::class, 'destroy']);
+    Route::delete('/admin/users/by-email/{email}', [UserController::class, 'destroy']);
+});

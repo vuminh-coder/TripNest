@@ -4,19 +4,55 @@ import { categories } from '../data/categoriesData';
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 const getAuthHeaders = () => {
-  const user = JSON.parse(localStorage.getItem('tripnest_user') || 'null');
+  let token = localStorage.getItem('token');
+  if (!token) {
+    const user = JSON.parse(localStorage.getItem('tripnest_user') || 'null');
+    token = user?.token;
+  }
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   };
-  if (user?.token) {
-    headers['Authorization'] = `Bearer ${user.token}`;
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
   }
   return headers;
 };
 
 export const apiService = {
-  // 1. Đăng nhập bằng Google Email
+  // 1. Đăng nhập thông thường bằng Email + Mật khẩu
+  async login(payload) {
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const error = new Error(data.message || 'Đăng nhập không thành công.');
+      error.response = data;
+      throw error;
+    }
+    return data;
+  },
+
+  // 2. Đăng ký tài khoản người dùng mới
+  async register(payload) {
+    const res = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const error = new Error(data.message || 'Đăng ký không thành công.');
+      error.response = data;
+      throw error;
+    }
+    return data;
+  },
+
+  // 3. Đăng nhập bằng Google Email (JWT OAuth)
   async googleLogin(payload) {
     try {
       const res = await fetch(`${API_BASE_URL}/auth/google`, {
@@ -24,15 +60,42 @@ export const apiService = {
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('API Auth Failed');
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Xác thực Google không thành công.');
+      }
       return data;
     } catch (e) {
-      throw new Error('Không thể kết nối máy chủ đăng nhập. Hãy kiểm tra Laravel đang chạy tại http://127.0.0.1:8000.');
+      throw new Error(e.message || 'Không thể kết nối máy chủ đăng nhập.');
     }
   },
 
-  // 2. Đổi mật khẩu tài khoản đã có mật khẩu cục bộ
+  // 4. Lấy thông tin người dùng hiện tại
+  async me() {
+    const res = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: getAuthHeaders(),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Phiên đăng nhập không hợp lệ.');
+    }
+    return data;
+  },
+
+  // 5. Đăng xuất
+  async logout() {
+    try {
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('tripnest_user');
+    }
+  },
+
+  // 6. Đổi mật khẩu tài khoản
   async updatePassword(payload) {
     const res = await fetch(`${API_BASE_URL}/auth/password`, {
       method: 'PUT',
@@ -48,7 +111,7 @@ export const apiService = {
     return data;
   },
 
-  // 3. Lấy danh mục
+  // 7. Lấy danh mục
   async getCategories() {
     try {
       const res = await fetch(`${API_BASE_URL}/categories`);
@@ -59,7 +122,7 @@ export const apiService = {
     }
   },
 
-  // 3. Lấy danh sách phòng với bộ lọc đa tiêu chí
+  // 8. Lấy danh sách phòng với bộ lọc đa tiêu chí
   async getRooms(params = {}) {
     try {
       const query = new URLSearchParams(params).toString();
@@ -95,7 +158,7 @@ export const apiService = {
     }
   },
 
-  // 4. Lấy chi tiết phòng
+  // 9. Lấy chi tiết phòng
   async getRoomDetail(id) {
     try {
       const res = await fetch(`${API_BASE_URL}/rooms/${id}`);
@@ -106,7 +169,7 @@ export const apiService = {
     }
   },
 
-  // 5. Lấy danh sách trải nghiệm
+  // 10. Lấy danh sách trải nghiệm
   async getExperiences() {
     try {
       const res = await fetch(`${API_BASE_URL}/experiences`);
@@ -117,7 +180,7 @@ export const apiService = {
     }
   },
 
-  // 6. Tạo đơn đặt phòng mới
+  // 11. Tạo đơn đặt phòng mới
   async createBooking(bookingPayload) {
     try {
       const res = await fetch(`${API_BASE_URL}/bookings`, {
@@ -145,7 +208,7 @@ export const apiService = {
     }
   },
 
-  // 7. Lấy danh sách phòng đã đặt của user
+  // 12. Lấy danh sách phòng đã đặt của user
   async getMyBookings() {
     try {
       const res = await fetch(`${API_BASE_URL}/my-bookings`, {
@@ -158,7 +221,7 @@ export const apiService = {
     }
   },
 
-  // 8. Hủy đơn đặt phòng
+  // 13. Hủy đơn đặt phòng
   async cancelBooking(bookingId) {
     try {
       const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel`, {
@@ -171,7 +234,7 @@ export const apiService = {
     }
   },
 
-  // 9. Lấy danh sách Wishlist
+  // 14. Lấy danh sách Wishlist
   async getWishlist() {
     try {
       const res = await fetch(`${API_BASE_URL}/wishlist`, {
@@ -184,7 +247,7 @@ export const apiService = {
     }
   },
 
-  // 10. Bật/tắt yêu thích
+  // 15. Bật/tắt yêu thích
   async toggleWishlist(roomId) {
     try {
       const res = await fetch(`${API_BASE_URL}/wishlist/toggle`, {
@@ -198,7 +261,7 @@ export const apiService = {
     }
   },
 
-  // 11. Đăng ký trở thành Chủ nhà (Host)
+  // 16. Đăng ký trở thành Chủ nhà (Host)
   async registerHost(hostData) {
     try {
       const res = await fetch(`${API_BASE_URL}/host/register`, {

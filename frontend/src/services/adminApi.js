@@ -4,12 +4,16 @@ import { initialAdminData } from './adminMockData';
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 const getAuthHeaders = () => {
-  const user = JSON.parse(localStorage.getItem('tripnest_user') || 'null');
+  let token = localStorage.getItem('token');
+  if (!token) {
+    const user = JSON.parse(localStorage.getItem('tripnest_user') || 'null');
+    token = user?.token;
+  }
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   };
-  if (user?.token) headers.Authorization = `Bearer ${user.token}`;
+  if (token) headers.Authorization = `Bearer ${token}`;
   return headers;
 };
 
@@ -205,26 +209,11 @@ export const adminService = {
   async saveUser(userData) {
     const data = getStoredData();
     if (userData.id) {
-      // Edit user
       data.users = data.users.map((u) =>
         u.id === userData.id ? { ...u, ...userData } : u
       );
     } else {
-      // Add new user
-      const newUser = {
-        ...userData,
-        id: Date.now(),
-        avatar:
-          userData.avatar ||
-          'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-        joined_date: new Date().toISOString().split('T')[0],
-        last_login: 'Chưa đăng nhập',
-        total_bookings_count: 0,
-        status: userData.status || 'active',
-        role: userData.role || 'guest',
-        role_upgrade_request: null,
-      };
-      data.users.unshift(newUser);
+      data.users.unshift(userData);
     }
     saveStoredData(data);
     return data.users;
@@ -233,7 +222,8 @@ export const adminService = {
   async deleteUser(userId) {
     const targetId = typeof userId === 'object' ? userId.id : userId;
     const email = typeof userId === 'object' ? userId.email : userId;
-    const response = await fetch(`${API_BASE_URL}/admin/users/by-email/${encodeURIComponent(email)}`, {
+
+    const response = await fetch(`${API_BASE_URL}/admin/users/${targetId}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
     });
@@ -248,11 +238,37 @@ export const adminService = {
     return data.users;
   },
 
-  async toggleUserStatus(userId) {
+  async toggleUserStatus(user) {
+    const userId = typeof user === 'object' ? user.id : user;
+    const targetUser = typeof user === 'object' ? user : getStoredData().users.find((u) => u.id === userId);
+    const newStatus = targetUser?.status === 'active' ? 'banned' : 'active';
+
+    if (targetUser) {
+      const formData = new FormData();
+      formData.append('full_name', targetUser.name);
+      formData.append('email', targetUser.email);
+      formData.append('role', targetUser.role || 'guest');
+      formData.append('status', newStatus);
+
+      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/update`, {
+        method: 'POST',
+        headers: {
+          Authorization: getAuthHeaders().Authorization || '',
+          Accept: 'application/json',
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || 'Không thể cập nhật trạng thái người dùng.');
+      }
+    }
+
     const data = getStoredData();
     data.users = data.users.map((u) => {
       if (u.id === userId) {
-        return { ...u, status: u.status === 'active' ? 'banned' : 'active' };
+        return { ...u, status: newStatus };
       }
       return u;
     });

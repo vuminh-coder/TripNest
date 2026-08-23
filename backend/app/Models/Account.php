@@ -33,6 +33,14 @@ class Account extends Authenticatable  implements JWTSubject
         'remember_token',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
+        ];
+    }
+
      // ===== 2 method của JWTSubject =====
 
     /**
@@ -51,12 +59,19 @@ class Account extends Authenticatable  implements JWTSubject
     public function getJWTCustomClaims(): array
     {
         return [
-            'name'  => $this->name,
             'email' => $this->email,
+            'role' => $this->role,
+            'account_id' => $this->id,
         ];
     }
 
-    public function getUserInfo():HasOne{
-        return $this->hasOne(User::class,'account_id','id');
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class, 'account_id', 'id');
+    }
+
+    public function getUserInfo(): HasOne
+    {
+        return $this->user();
     }
 }

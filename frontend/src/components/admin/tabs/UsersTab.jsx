@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Pagination from '../Pagination';
+import Swal from 'sweetalert2';
 import {
   TbSearch,
   TbLock,
@@ -49,6 +50,42 @@ export const UsersTab = ({
     }
     return true;
   });
+
+  const handleDeleteClick = (user) => {
+    Swal.fire({
+      title: 'Xác nhận xóa tài khoản?',
+      html: `Bạn có chắc chắn muốn xóa tài khoản <b>${user.name}</b> (<code>${user.email}</code>)?<br><span style="color: #ef4444; font-size: 0.85rem;">Hành động này sẽ được ghi nhận vào cơ sở dữ liệu!</span>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Đúng, xóa vĩnh viễn',
+      cancelButtonText: 'Hủy bỏ',
+      reverseButtons: true,
+    }).then((res) => {
+      if (res.isConfirmed) {
+        onDeleteUser(user);
+      }
+    });
+  };
+
+  const handleRejectUpgradeClick = (user) => {
+    Swal.fire({
+      title: 'Từ chối yêu cầu làm Host',
+      input: 'text',
+      inputLabel: 'Lý do từ chối gửi tới thành viên:',
+      inputValue: 'Hồ sơ định danh chưa đầy đủ hoặc không hợp lệ',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Xác nhận từ chối',
+      cancelButtonText: 'Đóng',
+    }).then((res) => {
+      if (res.isConfirmed && res.value) {
+        onApproveUpgrade(user.id, false, res.value);
+      }
+    });
+  };
 
   return (
     <div>
@@ -311,12 +348,7 @@ export const UsersTab = ({
                                   alignItems: 'center',
                                   gap: '2px',
                                 }}
-                                onClick={() => {
-                                  const reason = prompt('Lý do từ chối yêu cầu làm Host:', 'Hồ sơ chưa đầy đủ');
-                                  if (reason !== null) {
-                                    onApproveUpgrade(user.id, false, reason);
-                                  }
-                                }}
+                                onClick={() => handleRejectUpgradeClick(user)}
                                 title="Từ chối yêu cầu"
                               >
                                 <TbX /> Từ chối
@@ -374,11 +406,7 @@ export const UsersTab = ({
                         <button
                           className="btn-action-icon danger"
                           title="Xóa người dùng"
-                          onClick={() => {
-                            if (window.confirm(`Bạn có chắc chắn muốn xóa người dùng "${user.name}"?`)) {
-                              onDeleteUser(user);
-                            }
-                          }}
+                          onClick={() => handleDeleteClick(user)}
                         >
                           <TbTrash />
                         </button>

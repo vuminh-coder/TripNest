@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Room;
 use App\Models\User;
 use App\Models\Wishlist;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class WishlistController extends Controller
 {
@@ -15,10 +15,8 @@ class WishlistController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $user = null;
-        if ($request->user()) {
-            $user = $request->user()->user;
-        }
+        $account = Auth::guard('api')->user();
+        $user = $account?->user;
         if (!$user) {
             $user = User::first();
         }
@@ -34,10 +32,8 @@ class WishlistController extends Controller
     public function toggle(Request $request): JsonResponse
     {
         $roomId = $request->input('roomId');
-        $user = null;
-        if ($request->user()) {
-            $user = $request->user()->user;
-        }
+        $account = Auth::guard('api')->user();
+        $user = $account?->user;
         if (!$user) {
             $user = User::first();
         }

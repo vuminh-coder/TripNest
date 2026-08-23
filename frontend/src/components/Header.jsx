@@ -197,24 +197,26 @@ export const Header = ({
 
         {/* Right Header Actions */}
         <div className="header-actions">
-          {/* Quick Admin Access Button */}
-          <button
-            className="host-btn"
-            style={{
-              background: '#fff1f2',
-              color: '#e11d48',
-              borderColor: '#fecdd3',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontWeight: 800,
-            }}
-            onClick={onOpenAdmin}
-            title="Mở Trang Quản Trị Hệ Thống TripNest"
-          >
-            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#e11d48' }} />
-            Quản trị Admin
-          </button>
+          {/* Quick Admin Access Button (Only for Admin) */}
+          {user?.role === 'admin' && (
+            <button
+              className="host-btn"
+              style={{
+                background: '#eef2ff',
+                color: '#4f46e5',
+                borderColor: '#c7d2fe',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontWeight: 800,
+              }}
+              onClick={onOpenAdmin}
+              title="Mở Trang Quản Trị Hệ Thống TripNest"
+            >
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#4f46e5' }} />
+              Quản trị Admin
+            </button>
+          )}
 
           <button className="host-btn" onClick={onOpenHost}>
             Cho thuê chỗ ở
@@ -252,7 +254,7 @@ export const Header = ({
                   className={`menu-option-item ${currency === 'USD' ? 'highlight' : ''}`}
                   onClick={() => { setCurrency('USD'); setIsLangOpen(false); }}
                 >
-                  $ USD (United States)
+                  $ USD (Đô la Mỹ)
                 </button>
                 <button
                   className={`menu-option-item ${currency === 'EUR' ? 'highlight' : ''}`}
@@ -264,7 +266,7 @@ export const Header = ({
             )}
           </div>
 
-          {/* User Profile Dropdown Button */}
+          {/* User Profile Pill Menu */}
           <div style={{ position: 'relative' }} ref={menuRef}>
             <button
               className="user-menu-btn"
@@ -272,10 +274,10 @@ export const Header = ({
             >
               <TbMenu2 style={{ fontSize: '1.1rem' }} />
               <div className="user-avatar-circle">
-                {user?.avatar_url ? (
+                {user?.avatar_url || user?.avatar ? (
                   <img
-                    src={user.avatar_url}
-                    alt={user.full_name || "Avatar"}
+                    src={user.avatar_url || user.avatar}
+                    alt={user.full_name || user.name || "Avatar"}
                     style={{
                       width: "100%",
                       height: "100%",
@@ -313,12 +315,39 @@ export const Header = ({
             {/* Dropdown Menu */}
             {isMenuOpen && (
               <div className="user-dropdown-card">
-                {Object.keys(user).length > 0 ? (
+                {Object.keys(user || {}).length > 0 && (user?.id || user?.email) ? (
                   <>
-                    <div style={{ padding: '0.75rem 1.25rem', borderBottom: '1px solid #ebebeb' }}>
-                      <p style={{ fontWeight: 700, fontSize: '0.92rem' }}>{user.full_name}</p>
-                      <p style={{ color: '#717171', fontSize: '0.8rem' }}>{user.email}</p>
+                    <div style={{ padding: '0.75rem 1.15rem', borderBottom: '1px solid #f1f5f9' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                        <p style={{ fontWeight: 800, fontSize: '0.92rem', color: '#0f172a', margin: 0 }}>
+                          {user.full_name || user.name || 'Người dùng'}
+                        </p>
+                        <span
+                          style={{
+                            fontSize: '0.68rem',
+                            fontWeight: 800,
+                            padding: '1px 6px',
+                            borderRadius: '999px',
+                            background:
+                              user.role === 'admin'
+                                ? '#eef2ff'
+                                : user.role === 'host'
+                                ? '#ecfdf5'
+                                : '#f1f5f9',
+                            color:
+                              user.role === 'admin'
+                                ? '#4f46e5'
+                                : user.role === 'host'
+                                ? '#059669'
+                                : '#64748b',
+                          }}
+                        >
+                          {user.role === 'admin' ? 'Quản Trị' : user.role === 'host' ? 'Chủ Nhà' : 'Khách'}
+                        </span>
+                      </div>
+                      <p style={{ color: '#64748b', fontSize: '0.78rem', margin: '2px 0 0' }}>{user.email}</p>
                     </div>
+
                     <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenBookings(); }}>
                       <TbCalendarEvent /> Chuyến đi của tôi
                     </button>
@@ -328,14 +357,25 @@ export const Header = ({
                     <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenChangePassword(); }}>
                       <TbLock /> Đổi mật khẩu
                     </button>
+
+                    {user?.role === 'admin' && (
+                      <>
+                        <div className="menu-separator" />
+                        <button
+                          className="menu-option-item"
+                          onClick={() => { setIsMenuOpen(false); onOpenAdmin(); }}
+                          style={{ color: '#4f46e5', fontWeight: 800 }}
+                        >
+                          <TbCompass /> Cổng Quản trị Admin
+                        </button>
+                      </>
+                    )}
+
                     <div className="menu-separator" />
-                    <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenAdmin(); }} style={{ color: '#0284c7', fontWeight: 700 }}>
-                      <TbCompass /> Trang quản trị Admin
-                    </button>
                     <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenHost(); }}>
                       <TbHomePlus /> Quản lý cho thuê phòng
                     </button>
-                    <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onLogout(); }}>
+                    <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onLogout(); }} style={{ color: '#ef4444' }}>
                       Đăng xuất
                     </button>
                   </>

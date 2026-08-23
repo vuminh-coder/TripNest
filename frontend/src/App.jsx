@@ -220,9 +220,9 @@ function App() {
         onOpenHost={() => setIsHostOpen(true)}
         onOpenAdmin={handleOpenAdmin}
         wishlistCount={wishlistIds.length}
-        onLogout={() => {
-          localStorage.removeItem('token');
-          dispatch({"type": "UPDATE","payload": {}});
+        onLogout={async () => {
+          await apiService.logout();
+          dispatch({ type: 'UPDATE', payload: {} });
         }}
       />
 
