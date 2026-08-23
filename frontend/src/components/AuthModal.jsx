@@ -19,9 +19,11 @@ import { apiService } from '../services/api';
 import Swal from 'sweetalert2';
 import { useDispatch } from 'react-redux';
 import '../assets/css/AuthModal.css';
+import { ForgotPasswordModal } from './ForgotPasswordModal';
 
 export const AuthModal = ({ isOpen, onClose, initialTab = 'login', onAuthSuccess }) => {
   const [tab, setTab] = useState(initialTab); // 'login' | 'register'
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -369,7 +371,7 @@ export const AuthModal = ({ isOpen, onClose, initialTab = 'login', onAuthSuccess
                 {tab === 'login' && (
                   <button
                     type="button"
-                    onClick={() => alert('Vui lòng liên hệ quản trị viên hoặc sử dụng tính năng đổi mật khẩu khi đã đăng nhập.')}
+                    onClick={() => setIsForgotOpen(true)}
                     style={{ border: 'none', background: 'none', color: '#ff385c', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
                   >
                     Quên mật khẩu?
@@ -512,6 +514,26 @@ export const AuthModal = ({ isOpen, onClose, initialTab = 'login', onAuthSuccess
           </div>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      {isForgotOpen && (
+        <ForgotPasswordModal
+          isOpen={isForgotOpen}
+          onClose={() => setIsForgotOpen(false)}
+          onSwitchToLogin={() => {
+            setIsForgotOpen(false);
+            setTab('login');
+          }}
+          onSwitchToRegister={() => {
+            setIsForgotOpen(false);
+            setTab('register');
+          }}
+          onResetSuccess={() => {
+            setIsForgotOpen(false);
+            setTab('login');
+          }}
+        />
+      )}
     </div>
   );
 };

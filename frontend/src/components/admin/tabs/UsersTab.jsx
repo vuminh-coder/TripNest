@@ -14,10 +14,12 @@ import {
   TbUserCheck,
   TbMapPin,
   TbId,
+  TbEye,
 } from 'react-icons/tb';
 
 export const UsersTab = ({
   users,
+  onOpenDetailModal,
   onToggleStatus,
   onOpenEditModal,
   onDeleteUser,
@@ -238,7 +240,16 @@ export const UsersTab = ({
                   <tr key={user.id}>
                     {/* User Info */}
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          cursor: onOpenDetailModal ? 'pointer' : 'default',
+                        }}
+                        onClick={() => onOpenDetailModal && onOpenDetailModal(user)}
+                        title="Bấm để xem hồ sơ chi tiết"
+                      >
                         <img
                           src={user.avatar}
                           alt={user.name}
@@ -384,6 +395,17 @@ export const UsersTab = ({
                     {/* Actions: Edit, Lock, Delete */}
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                        {/* View Detail Button */}
+                        {onOpenDetailModal && (
+                          <button
+                            className="btn-action-icon"
+                            title="Xem thông tin chi tiết"
+                            onClick={() => onOpenDetailModal(user)}
+                          >
+                            <TbEye />
+                          </button>
+                        )}
+
                         {/* Edit Button */}
                         <button
                           className="btn-action-icon"

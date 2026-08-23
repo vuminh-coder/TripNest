@@ -10,6 +10,7 @@ export const UsersPage = ({
   users,
   deleteError,
   onToggleStatus,
+  onOpenDetailModal,
   onOpenEditModal,
   onDeleteUser,
   onApproveUpgrade,
@@ -141,6 +142,7 @@ export const UsersPage = ({
       >
         <UserTable
           users={paginatedUsers}
+          onOpenDetailModal={onOpenDetailModal}
           onOpenEditModal={onOpenEditModal}
           onToggleStatus={onToggleStatus}
           onDeletePrompt={(u) => setDeleteTarget(u)}

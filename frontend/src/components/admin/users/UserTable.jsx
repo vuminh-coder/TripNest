@@ -1,8 +1,9 @@
 import React from 'react';
-import { TbMapPin, TbEdit, TbLock, TbLockOpen, TbTrash, TbCheck, TbX } from 'react-icons/tb';
+import { TbMapPin, TbEdit, TbLock, TbLockOpen, TbTrash, TbCheck, TbX, TbEye } from 'react-icons/tb';
 
 export const UserTable = ({
   users,
+  onOpenDetailModal,
   onOpenEditModal,
   onToggleStatus,
   onDeletePrompt,
@@ -34,7 +35,11 @@ export const UserTable = ({
           <tr key={user.id}>
             {/* User Details */}
             <td>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div 
+                style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: onOpenDetailModal ? 'pointer' : 'default' }}
+                onClick={() => onOpenDetailModal && onOpenDetailModal(user)}
+                title="Bấm để xem chi tiết tài khoản"
+              >
                 <img
                   src={user.avatar}
                   alt={user.name}
@@ -108,7 +113,35 @@ export const UserTable = ({
 
             {/* Fixed Role */}
             <td className="td-nowrap">
-              <span className={`role-pill ${user.role}`}>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '3px 9px',
+                  borderRadius: '999px',
+                  fontSize: '0.76rem',
+                  fontWeight: 800,
+                  background:
+                    user.role === 'admin'
+                      ? '#eef2ff'
+                      : user.role === 'host'
+                      ? '#ecfdf5'
+                      : '#f1f5f9',
+                  color:
+                    user.role === 'admin'
+                      ? '#4f46e5'
+                      : user.role === 'host'
+                      ? '#059669'
+                      : '#475569',
+                  border:
+                    user.role === 'admin'
+                      ? '1px solid #c7d2fe'
+                      : user.role === 'host'
+                      ? '1px solid #a7f3d0'
+                      : '1px solid #e2e8f0',
+                }}
+              >
                 {user.role === 'admin' ? 'Quản Trị' : user.role === 'host' ? 'Chủ Nhà' : 'Khách Hàng'}
               </span>
             </td>
@@ -117,26 +150,25 @@ export const UserTable = ({
             <td>
               {user.role_upgrade_request ? (
                 user.role_upgrade_request.status === 'pending' ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', maxWidth: '240px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '240px' }}>
                     <span
                       style={{
-                        fontSize: '0.72rem',
+                        fontSize: '0.74rem',
                         color: '#b45309',
-                        fontWeight: 800,
+                        fontWeight: 700,
                         background: '#fffbeb',
                         padding: '2px 6px',
                         borderRadius: '4px',
                         border: '1px solid #fde68a',
                         width: 'fit-content',
-                        whiteSpace: 'nowrap',
                       }}
                     >
-                      Xin làm Host (Chờ duyệt)
+                      Xin lên Chủ Nhà (Host)
                     </span>
-                    <div style={{ fontSize: '0.72rem', color: '#64748b', lineHeight: 1.25 }}>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b', lineHeight: 1.2 }}>
                       "{user.role_upgrade_request.reason}"
                     </div>
-                    <div style={{ display: 'flex', gap: '4px', marginTop: '2px', whiteSpace: 'nowrap' }}>
+                    <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
                       <button
                         style={{
                           padding: '2px 8px',
@@ -147,14 +179,14 @@ export const UserTable = ({
                           fontSize: '0.72rem',
                           fontWeight: 700,
                           cursor: 'pointer',
-                          display: 'inline-flex',
+                          display: 'flex',
                           alignItems: 'center',
                           gap: '2px',
                         }}
                         onClick={() => onApproveUpgradePrompt(user, true)}
-                        title="Duyệt nâng quyền làm Host"
+                        title="Phê duyệt nâng cấp làm Host"
                       >
-                        <TbCheck /> Duyệt
+                        <TbCheck /> Duyệt Host
                       </button>
                       <button
                         style={{
@@ -166,7 +198,7 @@ export const UserTable = ({
                           fontSize: '0.72rem',
                           fontWeight: 700,
                           cursor: 'pointer',
-                          display: 'inline-flex',
+                          display: 'flex',
                           alignItems: 'center',
                           gap: '2px',
                         }}
@@ -178,11 +210,11 @@ export const UserTable = ({
                     </div>
                   </div>
                 ) : user.role_upgrade_request.status === 'approved' ? (
-                  <span style={{ fontSize: '0.74rem', color: '#059669', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: '0.74rem', color: '#059669', fontWeight: 700 }}>
                     ✓ Đã duyệt làm Host
                   </span>
                 ) : (
-                  <span style={{ fontSize: '0.74rem', color: '#dc2626', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: '0.74rem', color: '#dc2626', fontWeight: 600 }}>
                     ✗ Bị từ chối
                   </span>
                 )
@@ -203,9 +235,18 @@ export const UserTable = ({
               </span>
             </td>
 
-            {/* Actions (Strictly single line, no wrap) */}
+            {/* Actions */}
             <td style={{ textAlign: 'right' }}>
               <div className="td-actions-group">
+                {onOpenDetailModal && (
+                  <button
+                    className="btn-action-icon"
+                    title="Xem chi tiết tài khoản"
+                    onClick={() => onOpenDetailModal(user)}
+                  >
+                    <TbEye />
+                  </button>
+                )}
                 <button
                   className="btn-action-icon"
                   title="Sửa thông tin chi tiết"

@@ -24,6 +24,7 @@ import BookingDetailModal from './modals/BookingDetailModal';
 import AccommodationEditModal from './modals/AccommodationEditModal';
 import PayoutConfirmModal from './modals/PayoutConfirmModal';
 import UserEditModal from './modals/UserEditModal';
+import UserDetailModal from './modals/UserDetailModal';
 
 export const AdminLayout = ({ onExitAdmin }) => {
   // Determine initial page from URL path
@@ -70,6 +71,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
   const [selectedPayout, setSelectedPayout] = useState(null);
   const [editUser, setEditUser] = useState(null);
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
+  const [selectedDetailUser, setSelectedDetailUser] = useState(null);
 
   // Sync URL with Tab
   const handleNavigate = (tabId) => {
@@ -340,6 +342,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
                   users={users}
                   deleteError={userDeleteError}
                   onToggleStatus={handleToggleUserStatus}
+                  onOpenDetailModal={(u) => setSelectedDetailUser(u)}
                   onOpenEditModal={(u) => {
                     setEditUser(u);
                     setIsEditUserOpen(true);
@@ -419,6 +422,20 @@ export const AdminLayout = ({ onExitAdmin }) => {
             setEditAccommodation(null);
           }}
           onSave={handleSaveAccommodation}
+        />
+      )}
+
+      {selectedDetailUser && (
+        <UserDetailModal
+          user={selectedDetailUser}
+          onClose={() => setSelectedDetailUser(null)}
+          onEdit={(u) => {
+            setSelectedDetailUser(null);
+            setEditUser(u);
+            setIsEditUserOpen(true);
+          }}
+          onToggleStatus={handleToggleUserStatus}
+          onApproveUpgrade={handleApproveUpgrade}
         />
       )}
 
