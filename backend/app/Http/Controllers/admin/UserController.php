@@ -306,16 +306,15 @@ class UserController extends Controller
                 ], 422);
             }
 
-            // Kiểm tra lịch sử đặt phòng hoặc đánh giá
-            if ($user->bookings()->exists() || $user->reviews()->exists()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không thể xóa người dùng đã có lịch sử đặt phòng hoặc đánh giá.',
-                ], 409);
-            }
-
             DB::transaction(function () use ($user) {
                 $account = $user->account;
+                $user->wishlists()->delete();
+                $user->bookings()->delete();
+                $user->reviews()->delete();
+                if ($user->host) {
+                    $user->host->rooms()->delete();
+                    $user->host->delete();
+                }
                 $user->delete();
                 $account?->delete();
             });
