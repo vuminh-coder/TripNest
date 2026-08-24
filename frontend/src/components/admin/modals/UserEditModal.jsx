@@ -178,7 +178,6 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
       });
 
       const result = await response.json();
-      console.log(result);
       if (result.success && result.data) {
         showToast(
           'success',

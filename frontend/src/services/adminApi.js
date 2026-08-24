@@ -208,7 +208,8 @@ export const adminService = {
 
   async saveUser(userData) {
     const data = getStoredData();
-    if (userData.id) {
+    const index = data.users.findIndex((item) => item.id == userData.id);
+    if(index >= 0){
       data.users = data.users.map((u) =>
         u.id === userData.id ? { ...u, ...userData } : u
       );
