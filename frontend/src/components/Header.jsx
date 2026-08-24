@@ -262,9 +262,15 @@ export const Header = ({
 
         {/* Right Header Actions */}
         <div className="header-actions">
-          <button className="host-btn" onClick={onOpenHost}>
-            Cho thuê chỗ ở
-          </button>
+          {user?.role === 'host' ? (
+            <button className="host-btn" onClick={onOpenHost}>
+              Kênh Chủ Nhà
+            </button>
+          ) : user?.role !== 'admin' ? (
+            <button className="host-btn" onClick={onOpenHost}>
+              Cho thuê chỗ ở
+            </button>
+          ) : null}
 
           {/* Currency Switcher */}
           <div style={{ position: 'relative' }}>
@@ -420,10 +426,25 @@ export const Header = ({
                       </>
                     )}
 
+                    {user?.role === 'host' && (
+                      <>
+                        <div className="menu-separator" />
+                        <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenHost(); }} style={{ color: '#059669', fontWeight: 700 }}>
+                          <TbHomePlus /> Kênh Quản lý Chủ Nhà
+                        </button>
+                      </>
+                    )}
+
+                    {user?.role !== 'admin' && user?.role !== 'host' && (
+                      <>
+                        <div className="menu-separator" />
+                        <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenHost(); }}>
+                          <TbHomePlus /> Đăng ký trở thành Chủ Nhà
+                        </button>
+                      </>
+                    )}
+
                     <div className="menu-separator" />
-                    <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenHost(); }}>
-                      <TbHomePlus /> Quản lý cho thuê phòng
-                    </button>
                     <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onLogout(); }} style={{ color: '#ef4444', fontWeight: 600 }}>
                       <TbLogout /> Đăng xuất
                     </button>

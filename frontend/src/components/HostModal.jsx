@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TbX, TbHomePlus, TbShieldCheck, TbCoins, TbHeadset } from 'react-icons/tb';
 
-export const HostModal = ({ isOpen, onClose, currency = 'VND' }) => {
+export const HostModal = ({ isOpen, onClose, onStartHosting, currency = 'VND' }) => {
   const [nights, setNights] = useState(7);
   const [location, setLocation] = useState('Đà Lạt');
 
@@ -16,6 +16,14 @@ export const HostModal = ({ isOpen, onClose, currency = 'VND' }) => {
     return `${val.toLocaleString()} ₫`;
   };
 
+  const handleStartHosting = () => {
+    localStorage.setItem('tripnest_is_host', 'true');
+    onClose();
+    if (onStartHosting) {
+      onStartHosting();
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
@@ -27,13 +35,13 @@ export const HostModal = ({ isOpen, onClose, currency = 'VND' }) => {
           <button className="modal-close-btn" onClick={onClose} style={{ position: 'static' }}>
             <TbX />
           </button>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Ước tính thu nhập cho thuê phòng</h2>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Đăng ký trở thành Chủ nhà TripNest</h2>
           <div style={{ width: '36px' }} />
         </div>
 
         <div style={{ padding: '2rem 0', textAlign: 'center' }}>
           <span style={{ fontSize: '0.95rem', color: '#ff385c', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
-            TripNest your home
+            Ước tính thu nhập cho thuê phòng
           </span>
           <h1 style={{ fontSize: '2.4rem', fontWeight: 800, margin: '0.5rem 0', color: '#222' }}>
             {formatPrice(estimatedTotal)}
@@ -64,11 +72,13 @@ export const HostModal = ({ isOpen, onClose, currency = 'VND' }) => {
                   style={{
                     padding: '0.4rem 0.9rem',
                     borderRadius: '999px',
-                    border: location === loc ? '1px solid #222' : '1px solid #ebebeb',
-                    background: location === loc ? '#222' : 'white',
-                    color: location === loc ? 'white' : '#222',
+                    border: location === loc ? '1.5px solid #ff385c' : '1px solid #e2e8f0',
+                    background: location === loc ? '#ff385c' : '#f8fafc',
+                    color: location === loc ? 'white' : '#334155',
                     fontSize: '0.85rem',
-                    fontWeight: 600,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
                   }}
                   onClick={() => setLocation(loc)}
                 >
@@ -107,12 +117,9 @@ export const HostModal = ({ isOpen, onClose, currency = 'VND' }) => {
             <button
               className="primary-gradient-btn"
               style={{ width: 'auto', padding: '0.85rem 2.5rem' }}
-              onClick={() => {
-                alert('Cảm ơn bạn! Đội ngũ cố vấn TripNest sẽ liên hệ hỗ trợ bạn đăng ký phòng.');
-                onClose();
-              }}
+              onClick={handleStartHosting}
             >
-              Bắt đầu cho thuê phòng ngay
+              Kích hoạt quyền Chủ Nhà & Vào Quản Lý
             </button>
           </div>
         </div>

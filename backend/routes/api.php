@@ -55,8 +55,16 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/wishlist', [WishlistController::class, 'index']);
     Route::post('/wishlist/toggle', [WishlistController::class, 'toggle']);
 
-    // Đăng ký chủ nhà (Host KYC)
+    // Đăng ký & Quản lý chủ nhà (Host Portal & Listing Wizard)
     Route::post('/host/register', [HostController::class, 'registerHost']);
+    Route::get('/host/dashboard-stats', [HostController::class, 'getDashboardStats']);
+    Route::get('/host/accommodations', [HostController::class, 'getAccommodations']);
+    Route::post('/host/accommodations', [HostController::class, 'storeAccommodation']);
+    Route::patch('/host/accommodations/{id}/status', [HostController::class, 'toggleStatus']);
+    Route::delete('/host/accommodations/{id}', [HostController::class, 'deleteAccommodation']);
+    Route::get('/host/bookings', [HostController::class, 'getHostBookings']);
+    Route::get('/host/payouts', [HostController::class, 'getPayouts']);
+    Route::put('/host/payout-account', [HostController::class, 'updatePayoutAccount']);
 });
 
 // ==========================================

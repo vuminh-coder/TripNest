@@ -12,6 +12,7 @@ import MyBookingsModal from './components/MyBookingsModal';
 import WishlistModal from './components/WishlistModal';
 import ChangePasswordModal from './components/ChangePasswordModal';
 import HostModal from './components/HostModal';
+import HostLayout from './components/host/HostLayout';
 import Footer from './components/Footer';
 import AdminLayout from './components/admin/AdminLayout';
 
@@ -105,7 +106,16 @@ function App() {
   const [isBookingsOpen, setIsBookingsOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
-  const [isHostOpen, setIsHostOpen] = useState(false);
+  const [isHostModalOpen, setIsHostModalOpen] = useState(false);
+  const [isHostOpen, setIsHostOpen] = useState(() => {
+    const isHostRoute =
+      window.location.pathname.startsWith('/host') ||
+      window.location.pathname.startsWith('/become-a-host') ||
+      window.location.hash.startsWith('#host') ||
+      new URLSearchParams(window.location.search).get('view') === 'host';
+    const isHostUser = localStorage.getItem('tripnest_is_host') === 'true';
+    return isHostRoute && isHostUser;
+  });
 
   // User & Wishlist & Bookings
   const dispatch = useDispatch();
@@ -136,6 +146,34 @@ function App() {
         new URLSearchParams(window.location.search).get('view') === 'admin';
       setIsAdminOpen(isAdm);
 
+      const isHost =
+        window.location.pathname.startsWith('/host') ||
+        window.location.pathname.startsWith('/become-a-host') ||
+        window.location.hash.startsWith('#host') ||
+        new URLSearchParams(window.location.search).get('view') === 'host';
+
+      if (isHost && user?.role === 'admin') {
+        setIsHostOpen(false);
+        setIsAdminOpen(true);
+        window.history.replaceState({}, '', '/admin');
+        return;
+      }
+
+      const isHostUser =
+        user?.role === 'host' ||
+        (user?.role !== 'admin' && localStorage.getItem('tripnest_is_host') === 'true');
+
+      if (isHost && !isHostUser) {
+        setIsHostOpen(false);
+        if (!user || (!user.id && !user.email)) {
+          setAuthModal({ isOpen: true, tab: 'login' });
+        } else {
+          setIsHostModalOpen(true);
+        }
+      } else {
+        setIsHostOpen(isHost);
+      }
+
       const bId = getBookingRoomIdFromUrl();
       if (bId && rooms.length > 0) {
         const found = rooms.find((r) => String(r.id) === String(bId));
@@ -151,7 +189,7 @@ function App() {
             setSelectedRoom(found);
             setCheckoutData(null);
           }
-        } else if (!rId && !isAdm) {
+        } else if (!rId && !isAdm && !isHost) {
           setSelectedRoom(null);
           setCheckoutData(null);
         }
@@ -253,13 +291,37 @@ function App() {
 
   // Create booking
   const handleBookRoom = (bookingData) => {
+    const bookingCode = 'TN-' + Math.floor(100000 + Math.random() * 900000);
     const newBooking = {
-      id: 'TN-' + Math.floor(100000 + Math.random() * 900000),
+      id: bookingCode,
+      code: bookingCode,
       status: 'confirmed',
       createdAt: new Date().toISOString(),
       ...bookingData,
     };
     setBookings((prev) => [newBooking, ...prev]);
+
+    // Đồng bộ tức thời vào danh sách đơn của Kênh Chủ Nhà
+    try {
+      const existingHostBookings = JSON.parse(localStorage.getItem('tripnest_host_bookings') || '[]');
+      const hostEntry = {
+        id: 'BK-' + Date.now().toString().slice(-4),
+        code: bookingCode,
+        guestName: bookingData.customerName || bookingData.guestName || user?.full_name || 'Khách du lịch TripNest',
+        guestPhone: bookingData.phone || bookingData.guestPhone || '0912 345 678',
+        roomTitle: bookingData.roomTitle || bookingData.room?.title || bookingData.room?.name || 'Chỗ nghỉ cao cấp TripNest',
+        checkIn: bookingData.checkInDate || bookingData.checkIn || '25/08/2026',
+        checkOut: bookingData.checkOutDate || bookingData.checkOut || '28/08/2026',
+        nights: bookingData.nights || 3,
+        guests: bookingData.guests || 2,
+        totalAmount: bookingData.totalAmount || 7500000,
+        hostEarnings: Math.round((bookingData.totalAmount || 7500000) * 0.88),
+        status: 'confirmed',
+      };
+      localStorage.setItem('tripnest_host_bookings', JSON.stringify([hostEntry, ...existingHostBookings]));
+    } catch {
+      // ignore
+    }
   };
 
   // Cancel booking
@@ -427,6 +489,29 @@ function App() {
     return <AdminLayout onExitAdmin={handleExitAdmin} />;
   }
 
+  // Render Host Portal if host mode is active
+  if (isHostOpen) {
+    return (
+      <HostLayout
+        currency={currency}
+        onSwitchToClient={() => {
+          setIsHostOpen(false);
+          window.history.pushState({}, '', '/');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onOpenRoomDetail={(roomId) => {
+          const found = rooms.find((r) => String(r.id) === String(roomId));
+          if (found) {
+            setIsHostOpen(false);
+            setSelectedRoom(found);
+            window.history.pushState({}, '', `/room/${roomId}`);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }}
+      />
+    );
+  }
+
   return (
     <div className="app-container">
       {/* Header with Search Engine & Auth Controls */}
@@ -439,7 +524,31 @@ function App() {
         onOpenBookings={() => setIsBookingsOpen(true)}
         onOpenWishlist={() => setIsWishlistOpen(true)}
         onOpenChangePassword={() => setIsChangePasswordOpen(true)}
-        onOpenHost={() => setIsHostOpen(true)}
+        onOpenHost={() => {
+          if (user?.role === 'admin') {
+            alert('Tài khoản Quản trị viên (Admin) không thuộc vai trò Chủ nhà. Đang chuyển hướng bạn đến Cổng Quản Trị Admin.');
+            handleOpenAdmin();
+            return;
+          }
+
+          const isHostUser =
+            user?.role === 'host' ||
+            (user?.role !== 'admin' && localStorage.getItem('tripnest_is_host') === 'true');
+
+          if (!user || (!user.id && !user.email)) {
+            setAuthModal({ isOpen: true, tab: 'login' });
+            return;
+          }
+
+          if (!isHostUser) {
+            setIsHostModalOpen(true);
+            return;
+          }
+
+          setIsHostOpen(true);
+          window.history.pushState({}, '', '/host');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         onOpenAdmin={handleOpenAdmin}
         wishlistCount={wishlistIds.length}
         onLogout={async () => {
@@ -670,8 +779,13 @@ function App() {
       />
 
       <HostModal
-        isOpen={isHostOpen}
-        onClose={() => setIsHostOpen(false)}
+        isOpen={isHostModalOpen}
+        onClose={() => setIsHostModalOpen(false)}
+        onStartHosting={() => {
+          setIsHostOpen(true);
+          window.history.pushState({}, '', '/host');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         currency={currency}
       />
     </div>
