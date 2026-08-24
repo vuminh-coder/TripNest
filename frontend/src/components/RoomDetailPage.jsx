@@ -31,8 +31,19 @@ import {
   TbCompass,
   TbBuildingCommunity,
   TbMessageCircle,
+  TbMessageCheck,
   TbLock,
   TbInfoCircle,
+  TbCrown,
+  TbMaximize,
+  TbBolt,
+  TbSun,
+  TbCoffee,
+  TbTrees,
+  TbBuildingSkyscraper,
+  TbPlaneDeparture,
+  TbWalk,
+  TbListCheck,
 } from 'react-icons/tb';
 
 const amenityIcons = {
@@ -66,16 +77,32 @@ export const RoomDetailPage = ({
 }) => {
   // Today and default check-in/out
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
-  const defaultCheckIn = searchParams.checkInDate || '2026-10-15';
-  const defaultCheckOut = searchParams.checkOutDate || '2026-10-20';
+  const tomorrowStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  }, []);
+  const defaultOutStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 4);
+    return d.toISOString().split('T')[0];
+  }, []);
+
+  const defaultCheckIn = searchParams.checkInDate || searchParams.checkIn || tomorrowStr;
+  const defaultCheckOut = searchParams.checkOutDate || searchParams.checkOut || defaultOutStr;
 
   const [checkIn, setCheckIn] = useState(defaultCheckIn);
   const [checkOut, setCheckOut] = useState(defaultCheckOut);
-  const [guestCount, setGuestCount] = useState(searchParams.guests || 2);
+  const [guestCount, setGuestCount] = useState(Number(searchParams.guests) || 2);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Active section for sticky scrollspy
-  const [activeSection, setActiveSection] = useState('section-overview');
+  const getNextDayStr = (dateStr) => {
+    if (!dateStr) return todayStr;
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  };
+
   // Review keyword filter chip state
   const [activeReviewKeyword, setActiveReviewKeyword] = useState('all');
 
@@ -87,53 +114,34 @@ export const RoomDetailPage = ({
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   // All amenities modal state
   const [showAllAmenities, setShowAllAmenities] = useState(false);
+  // Contact host toast state
+  const [contactToast, setContactToast] = useState(false);
 
   // Scroll to top when room changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [room?.id]);
 
-  // Dynamic Scrollspy Active Section Detection
-  useEffect(() => {
-    const handleScroll = () => {
-      const sections = [
-        'section-overview',
-        'section-booking',
-        'section-about',
-        'section-sleeping',
-        'section-amenities',
-        'section-calendar',
-        'section-reviews',
-        'section-location',
-        'section-rules',
-      ];
-      const scrollPosition = window.scrollY + 180;
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const el = document.getElementById(sections[i]);
-        if (el && el.offsetTop <= scrollPosition) {
-          setActiveSection(sections[i]);
-          break;
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const scrollToSection = (e, sectionId) => {
-    e.preventDefault();
-    const el = document.getElementById(sectionId);
+  // Smooth scroll to interactive booking calendar
+  const scrollToCalendar = (e) => {
+    if (e) e.preventDefault();
+    const el = document.getElementById('section-calendar');
     if (el) {
-      const topOffset = 130;
-      const elementPosition = el.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - topOffset;
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth',
-      });
-      setActiveSection(sectionId);
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  // Vietnamese date formatter
+  const formatVNDate = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        return `${parseInt(parts[2], 10)} thg ${parseInt(parts[1], 10)}, ${parts[0]}`;
+      }
+      return dateStr;
+    } catch {
+      return dateStr;
     }
   };
 
@@ -583,78 +591,7 @@ export const RoomDetailPage = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. STICKY SCROLLSPY NAVIGATION BAR (DYNAMIC ACTIVE SECTION) */}
-      {/* ========================================================================= */}
-      <nav className="sticky-scrollspy-bar">
-        <div className="scrollspy-inner">
-          <button
-            type="button"
-            className={`scrollspy-link ${activeSection === 'section-overview' ? 'active' : ''}`}
-            onClick={(e) => scrollToSection(e, 'section-overview')}
-          >
-            ✨ Tổng quan
-          </button>
-          <button
-            type="button"
-            className={`scrollspy-link ${activeSection === 'section-booking' ? 'active' : ''}`}
-            onClick={(e) => scrollToSection(e, 'section-booking')}
-          >
-            🏷️ Đặt phòng
-          </button>
-          <button
-            type="button"
-            className={`scrollspy-link ${activeSection === 'section-about' ? 'active' : ''}`}
-            onClick={(e) => scrollToSection(e, 'section-about')}
-          >
-            📖 Giới thiệu
-          </button>
-          <button
-            type="button"
-            className={`scrollspy-link ${activeSection === 'section-sleeping' ? 'active' : ''}`}
-            onClick={(e) => scrollToSection(e, 'section-sleeping')}
-          >
-            🛏️ Phòng ngủ
-          </button>
-          <button
-            type="button"
-            className={`scrollspy-link ${activeSection === 'section-amenities' ? 'active' : ''}`}
-            onClick={(e) => scrollToSection(e, 'section-amenities')}
-          >
-            🏊 Tiện nghi
-          </button>
-          <button
-            type="button"
-            className={`scrollspy-link ${activeSection === 'section-calendar' ? 'active' : ''}`}
-            onClick={(e) => scrollToSection(e, 'section-calendar')}
-          >
-            📅 Lịch & Giá
-          </button>
-          <button
-            type="button"
-            className={`scrollspy-link ${activeSection === 'section-reviews' ? 'active' : ''}`}
-            onClick={(e) => scrollToSection(e, 'section-reviews')}
-          >
-            ⭐ Đánh giá ({room.reviewsCount})
-          </button>
-          <button
-            type="button"
-            className={`scrollspy-link ${activeSection === 'section-location' ? 'active' : ''}`}
-            onClick={(e) => scrollToSection(e, 'section-location')}
-          >
-            📍 Vị trí
-          </button>
-          <button
-            type="button"
-            className={`scrollspy-link ${activeSection === 'section-rules' ? 'active' : ''}`}
-            onClick={(e) => scrollToSection(e, 'section-rules')}
-          >
-            🛡️ Quy định
-          </button>
-        </div>
-      </nav>
-
-      {/* ========================================================================= */}
-      {/* 4. SINGLE-COLUMN LUXURY MAIN CONTAINER (1040px Width) */}
+      {/* 3. SINGLE-COLUMN LUXURY MAIN CONTAINER (1040px Width) */}
       {/* ========================================================================= */}
       <div className="single-col-luxury-container">
         {/* ------------------------------------------------------------------------- */}
@@ -670,7 +607,9 @@ export const RoomDetailPage = ({
                   className="host-avatar-large"
                 />
                 {room.host?.isSuperhost && (
-                  <span className="host-super-crown" title="Chủ nhà siêu cấp (Superhost)">🏆</span>
+                  <span className="host-super-crown" title="Chủ nhà siêu cấp (Superhost)">
+                    <TbCrown style={{ color: '#f59e0b', fontSize: '0.85rem' }} />
+                  </span>
                 )}
               </div>
               <div className="host-meta-details">
@@ -678,7 +617,7 @@ export const RoomDetailPage = ({
                   {room.type || 'Toàn bộ Biệt thự nghỉ dưỡng'} · {room.specs?.size || '120 m²'}
                 </h2>
                 <p className="host-subtitle">
-                  Chủ nhà: <strong>{room.host?.name || 'Minh Hoàng'}</strong> (🏆 Superhost 4 năm kinh nghiệm · Phản hồi 100%)
+                  Chủ nhà: <strong>{room.host?.name || 'Minh Hoàng'}</strong> (<TbAward style={{ color: '#ff385c', verticalAlign: 'middle' }} /> Superhost 4 năm kinh nghiệm · Phản hồi 100%)
                 </p>
               </div>
             </div>
@@ -689,11 +628,11 @@ export const RoomDetailPage = ({
               <span className="strip-dot">·</span>
               <span className="metric-item"><TbBed /> {room.specs?.bedrooms || 4} phòng ngủ</span>
               <span className="strip-dot">·</span>
-              <span className="metric-item">{room.specs?.beds || 5} giường</span>
+              <span className="metric-item"><TbBed /> {room.specs?.beds || 5} giường</span>
               <span className="strip-dot">·</span>
               <span className="metric-item"><TbBath /> {room.specs?.bathrooms || 4} phòng tắm</span>
               <span className="strip-dot">·</span>
-              <span className="metric-item">📐 {room.specs?.size || '120 m²'}</span>
+              <span className="metric-item"><TbMaximize style={{ verticalAlign: 'middle', marginRight: '2px' }} /> {room.specs?.size || '120 m²'}</span>
             </div>
 
             {/* 3 Verified Trust Highlights */}
@@ -716,7 +655,7 @@ export const RoomDetailPage = ({
                 <div className="trust-icon-box"><TbMapPin /></div>
                 <div>
                   <h4 className="trust-title">Vị trí nghỉ dưỡng đắc địa</h4>
-                  <p className="trust-desc">{room.distance || 'Cách trung tâm 4.2 km'}, không gian yên tĩnh ngắm trọn view rừng thông.</p>
+                  <p className="trust-desc">{room.distance || 'Cách trung tâm 4.2 km'}, không gian yên tĩnh và thuận tiện di chuyển.</p>
                 </div>
               </div>
             </div>
@@ -724,40 +663,105 @@ export const RoomDetailPage = ({
         </section>
 
         {/* ------------------------------------------------------------------------- */}
-        {/* [MỤC 2]: ACTION SNAPSHOT (TINH GIẢN, ĐẲNG CẤP LUXURY) */}
+        {/* [MỤC 2]: KHỐI ĐẶT PHÒNG & THỜI GIAN LƯU TRÚ (INSTANT BOOKING & TIME BAR) */}
         {/* ------------------------------------------------------------------------- */}
         <section id="section-booking" className="single-col-section">
-          <div className="action-snapshot-card">
-            <div className="snapshot-left">
-              <div className="snapshot-price-box">
-                <span className="snapshot-price">{formatPriceVal(pricePerNight)}</span>
-                <span className="snapshot-unit"> / đêm</span>
+          <div className="instant-booking-card">
+            {/* Top Row: Price + Cancellation & Standard Hours Policy */}
+            <div className="instant-booking-top-row">
+              <div className="instant-price-group">
+                <span className="instant-price-val">{formatPriceVal(pricePerNight)}</span>
+                <span className="instant-price-unit"> / đêm</span>
               </div>
-              <div className="snapshot-badges-row">
-                <span className="snapshot-rating-badge">
-                  <TbStarFilled style={{ color: '#ff385c' }} />
-                  <strong>{room.rating.toFixed(2)}</strong>
-                  <span>({room.reviewsCount} đánh giá)</span>
+              <div className="instant-badge-group">
+                <span className="instant-tag-cancel">
+                  <TbShieldCheck style={{ verticalAlign: 'middle', marginRight: '4px', fontSize: '0.88rem' }} /> Miễn phí hủy trước 48h
                 </span>
-                <span className="snapshot-tag-favorite">⚡ Khách yêu thích</span>
-                <span className="snapshot-tag-cancel">🛡️ Hủy miễn phí trước 48h</span>
+                <span className="instant-tag-hours">
+                  <TbClock style={{ verticalAlign: 'middle', marginRight: '4px', fontSize: '0.88rem' }} /> Nhận phòng từ 14:00 · Trả phòng trước 12:00
+                </span>
               </div>
             </div>
 
-            <div className="snapshot-actions-right">
+            {/* Middle Row: Interactive Check-in / Check-out / Guests Controls */}
+            <div className="instant-booking-controls-grid">
+              {/* Check-In Picker */}
+              <div className="instant-field-box">
+                <label className="instant-field-label">
+                  <TbCalendar style={{ color: '#ff385c' }} /> Ngày nhận phòng (Từ 14:00)
+                </label>
+                <input
+                  type="date"
+                  min={todayStr}
+                  value={checkIn}
+                  onChange={(e) => {
+                    const newIn = e.target.value;
+                    setCheckIn(newIn);
+                    if (new Date(newIn) >= new Date(checkOut)) {
+                      setCheckOut(getNextDayStr(newIn));
+                    }
+                  }}
+                  className="instant-date-input"
+                />
+              </div>
+
+              {/* Check-Out Picker */}
+              <div className="instant-field-box">
+                <label className="instant-field-label">
+                  <TbCalendar style={{ color: '#ff385c' }} /> Ngày trả phòng (Trước 12:00)
+                </label>
+                <input
+                  type="date"
+                  min={getNextDayStr(checkIn)}
+                  value={checkOut}
+                  onChange={(e) => setCheckOut(e.target.value)}
+                  className="instant-date-input"
+                />
+              </div>
+
+              {/* Guest Count Counter */}
+              <div className="instant-field-box">
+                <label className="instant-field-label">
+                  <TbUsers style={{ color: '#ff385c' }} /> Số lượng khách lưu trú
+                </label>
+                <div className="instant-guest-control">
+                  <span className="instant-guest-text">
+                    <strong>{guestCount} khách</strong> <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>(tối đa {room.specs?.guests || 8})</span>
+                  </span>
+                  <div className="instant-counter-btns">
+                    <button
+                      type="button"
+                      className="instant-mini-btn"
+                      onClick={() => setGuestCount((g) => Math.max(1, g - 1))}
+                      disabled={guestCount <= 1}
+                    >-</button>
+                    <button
+                      type="button"
+                      className="instant-mini-btn"
+                      onClick={() => setGuestCount((g) => Math.min(room.specs?.guests || 8, g + 1))}
+                      disabled={guestCount >= (room.specs?.guests || 8)}
+                    >+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Row: Total Estimation + High-Converting CTA */}
+            <div className="instant-booking-footer-row">
+              <div className="instant-total-info">
+                <span className="instant-total-nights">Tổng ước tính cho {nights} đêm lưu trú:</span>
+                <div className="instant-total-price-wrap">
+                  <strong className="instant-total-val">{formatPriceVal(grandTotal)}</strong>
+                  <span className="instant-fee-note">(Đã gồm thuế & phí dịch vụ 12%)</span>
+                </div>
+              </div>
+
               <button
                 type="button"
-                className="snapshot-secondary-btn"
-                onClick={(e) => scrollToSection(e, 'section-calendar')}
-              >
-                <TbCalendar /> Chọn ngày lưu trú
-              </button>
-              <button
-                type="button"
-                className="snapshot-primary-btn"
+                className="instant-reserve-submit-btn"
                 onClick={handleReserve}
               >
-                ⚡ ĐẶT PHÒNG HOTEL / VILLA NGAY
+                <TbBolt style={{ verticalAlign: 'middle', marginRight: '4px', fontSize: '1.05rem' }} /> Đặt phòng nghỉ dưỡng ngay
               </button>
             </div>
           </div>
@@ -836,7 +840,9 @@ export const RoomDetailPage = ({
           <h3 className="section-title-luxury">Tiện nghi có sẵn cho bạn</h3>
           <div className="categorized-amenities-4grid">
             <div className="amenity-cat-card">
-              <h4 className="amenity-cat-title">✨ Nghỉ dưỡng</h4>
+              <h4 className="amenity-cat-title">
+                <TbSparkles style={{ color: '#ff385c', marginRight: '6px', verticalAlign: 'middle' }} /> Nghỉ dưỡng
+              </h4>
               <ul className="amenity-bullet-list">
                 <li><TbCheck className="bullet-icon" /> Hồ bơi nước ấm</li>
                 <li><TbCheck className="bullet-icon" /> Lò sưởi trong nhà</li>
@@ -845,25 +851,31 @@ export const RoomDetailPage = ({
             </div>
 
             <div className="amenity-cat-card">
-              <h4 className="amenity-cat-title">🌄 Cảnh quan</h4>
+              <h4 className="amenity-cat-title">
+                <TbSun style={{ color: '#f59e0b', marginRight: '6px', verticalAlign: 'middle' }} /> Cảnh quan
+              </h4>
               <ul className="amenity-bullet-list">
-                <li><TbCheck className="bullet-icon" /> View rừng thông</li>
+                <li><TbCheck className="bullet-icon" /> Không gian thiên nhiên</li>
                 <li><TbCheck className="bullet-icon" /> Sân vườn riêng</li>
-                <li><TbCheck className="bullet-icon" /> Ban công ngắm mây</li>
+                <li><TbCheck className="bullet-icon" /> Ban công ngắm cảnh</li>
               </ul>
             </div>
 
             <div className="amenity-cat-card">
-              <h4 className="amenity-cat-title">🍳 Sinh hoạt</h4>
+              <h4 className="amenity-cat-title">
+                <TbCoffee style={{ color: '#0ea5e9', marginRight: '6px', verticalAlign: 'middle' }} /> Sinh hoạt
+              </h4>
               <ul className="amenity-bullet-list">
                 <li><TbCheck className="bullet-icon" /> Bếp nấu gia vị</li>
-                <li><TbCheck className="bullet-icon" /> Wi-Fi 150 Mbps</li>
+                <li><TbCheck className="bullet-icon" /> Wi-Fi tốc độ cao</li>
                 <li><TbCheck className="bullet-icon" /> Chỗ đỗ xe ô tô</li>
               </ul>
             </div>
 
             <div className="amenity-cat-card">
-              <h4 className="amenity-cat-title">🛡️ An toàn</h4>
+              <h4 className="amenity-cat-title">
+                <TbShieldCheck style={{ color: '#10b981', marginRight: '6px', verticalAlign: 'middle' }} /> An toàn
+              </h4>
               <ul className="amenity-bullet-list">
                 <li><TbCheck className="bullet-icon" /> Khóa tự động</li>
                 <li><TbCheck className="bullet-icon" /> Báo khói & CO</li>
@@ -876,89 +888,10 @@ export const RoomDetailPage = ({
             className="outline-show-all-btn"
             onClick={() => setShowAllAmenities(true)}
           >
-            Hiển thị tất cả {room.amenities?.length || 10} tiện nghi đầy đủ
+            <TbListCheck style={{ marginRight: '6px', fontSize: '1.05rem', verticalAlign: 'middle' }} /> Hiển thị tất cả {room.amenities?.length || 10} tiện nghi đầy đủ
           </button>
         </section>
 
-        {/* ------------------------------------------------------------------------- */}
-        {/* [MỤC 6]: LỊCH TRỰC QUAN & TƯƠNG TÁC ĐẶT PHÒNG (Interactive Booking Calendar) */}
-        {/* ------------------------------------------------------------------------- */}
-        <section id="section-calendar" className="single-col-section">
-          <h3 className="section-title-luxury">
-            {nights} đêm tại {room.city} · Nhận phòng 14:00 – Trả phòng 12:00
-          </h3>
-          <p className="section-sub-desc">
-            Từ {checkIn} đến {checkOut} · Tổng ước tính: <strong>{formatPriceVal(grandTotal)}</strong> (đã bao gồm phí dịch vụ 12% & phí vệ sinh)
-          </p>
-          <div className="calendar-interactive-card">
-            <div className="calendar-pickers-row">
-              <div className="cal-input-group">
-                <label><TbCalendar /> Ngày nhận phòng (Từ 14:00)</label>
-                <input
-                  type="date"
-                  min={todayStr}
-                  value={checkIn}
-                  onChange={(e) => {
-                    const newIn = e.target.value;
-                    setCheckIn(newIn);
-                    if (new Date(newIn) >= new Date(checkOut)) {
-                      const nextD = new Date(newIn);
-                      nextD.setDate(nextD.getDate() + 2);
-                      setCheckOut(nextD.toISOString().split('T')[0]);
-                    }
-                  }}
-                  className="cal-input-field"
-                />
-              </div>
-              <div className="cal-input-group">
-                <label><TbCalendar /> Ngày trả phòng (Trước 12:00)</label>
-                <input
-                  type="date"
-                  min={checkIn}
-                  value={checkOut}
-                  onChange={(e) => setCheckOut(e.target.value)}
-                  className="cal-input-field"
-                />
-              </div>
-              <div className="cal-input-group">
-                <label><TbUsers /> Số lượng khách</label>
-                <div className="guest-selector-control-cal">
-                  <span>{guestCount} khách</span>
-                  <div className="counter-mini-btns">
-                    <button
-                      type="button"
-                      className="mini-count-btn"
-                      onClick={() => setGuestCount((g) => Math.max(1, g - 1))}
-                      disabled={guestCount <= 1}
-                    >-</button>
-                    <button
-                      type="button"
-                      className="mini-count-btn"
-                      onClick={() => setGuestCount((g) => Math.min(room.specs?.guests || 8, g + 1))}
-                      disabled={guestCount >= (room.specs?.guests || 8)}
-                    >+</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Live calculation banner + CTA to checkout */}
-            <div className="calendar-cta-banner">
-              <div className="cal-price-summary">
-                <span className="cal-nights-text">{nights} đêm lưu trú:</span>
-                <strong className="cal-total-val">{formatPriceVal(grandTotal)}</strong>
-                <span className="cal-included-note">(Đã gồm thuế & phí)</span>
-              </div>
-              <button
-                type="button"
-                className="calendar-continue-booking-btn"
-                onClick={handleReserve}
-              >
-                TIẾP TỤC ĐẶT PHÒNG NÀY ➔
-              </button>
-            </div>
-          </div>
-        </section>
 
         {/* ------------------------------------------------------------------------- */}
         {/* [MỤC 7]: TRUNG TÂM ĐÁNH GIÁ (2 CỘT x 3 HÀNG CHUẨN SENIOR UX) */}
@@ -1008,11 +941,11 @@ export const RoomDetailPage = ({
           {/* Keyword Search & Filter Chips */}
           <div className="review-keywords-filter-bar">
             {[
-              { id: 'all', label: `Tất cả (${room.reviewsCount})` },
-              { id: 'clean', label: '🧹 Sạch sẽ (86)' },
-              { id: 'view', label: '🌄 View đẹp (74)' },
-              { id: 'cafe', label: '☕ Gần quán cafe (52)' },
-              { id: 'family', label: '👨‍👩‍👧‍👦 Gia đình (48)' },
+              { id: 'all', label: `Tất cả (${room.reviewsCount})`, icon: null },
+              { id: 'clean', label: 'Sạch sẽ (86)', icon: <TbSparkles style={{ color: '#ff385c', marginRight: '4px', verticalAlign: 'middle' }} /> },
+              { id: 'view', label: 'View đẹp (74)', icon: <TbSun style={{ color: '#f59e0b', marginRight: '4px', verticalAlign: 'middle' }} /> },
+              { id: 'cafe', label: 'Gần quán cafe (52)', icon: <TbCoffee style={{ color: '#0ea5e9', marginRight: '4px', verticalAlign: 'middle' }} /> },
+              { id: 'family', label: 'Gia đình (48)', icon: <TbUsers style={{ color: '#8b5cf6', marginRight: '4px', verticalAlign: 'middle' }} /> },
             ].map((kw) => (
               <button
                 key={kw.id}
@@ -1020,7 +953,7 @@ export const RoomDetailPage = ({
                 className={`kw-tag ${activeReviewKeyword === kw.id ? 'active' : ''}`}
                 onClick={() => setActiveReviewKeyword(kw.id)}
               >
-                {kw.label}
+                {kw.icon} {kw.label}
               </button>
             ))}
           </div>
@@ -1073,7 +1006,7 @@ export const RoomDetailPage = ({
               </p>
               <div className="host-response-box">
                 <strong>Phản hồi từ chủ nhà {room.host?.name || 'Minh Hoàng'}:</strong>
-                <p>"Cảm ơn gia đình anh Kiệt! Chúc các bé luôn ngoan và có thật nhiều kỷ niệm đẹp tại Đà Lạt ạ."</p>
+                <p>"Cảm ơn gia đình anh Kiệt! Chúc các bé luôn ngoan và có thật nhiều kỷ niệm đẹp tại {room.city || 'kỳ nghỉ'} ạ."</p>
               </div>
             </div>
           </div>
@@ -1084,45 +1017,53 @@ export const RoomDetailPage = ({
         {/* ------------------------------------------------------------------------- */}
         <section id="section-location" className="single-col-section">
           <h3 className="section-title-luxury">Vị trí & Khám phá lân cận</h3>
-          <p className="section-sub-desc">{room.location} · {room.distance || 'Khu vực trung tâm đồi thông'}</p>
+          <p className="section-sub-desc">{room.location} · {room.distance || 'Khu vực trung tâm thuận tiện'}</p>
           
           <div className="location-and-guide-layout">
             {/* Left 60%: Interactive Map Preview */}
             <div className="map-preview-mockup">
               <div className="map-overlay-badge">
                 <TbMapPin style={{ color: '#ff385c', fontSize: '1.3rem' }} />
-                <span>{room.city} - {room.distance || 'Khu vực yên tĩnh ngắm đồi'}</span>
+                <span>{room.city} - {room.distance || 'Khu vực yên tĩnh nghỉ dưỡng'}</span>
               </div>
             </div>
 
             {/* Right 40%: Realistic Travel Distance Cards */}
             <div className="neighborhood-guide-column">
               <div className="neighbor-card">
-                <span className="neighbor-icon">🌲</span>
+                <span className="neighbor-icon">
+                  <TbTrees style={{ color: '#10b981', fontSize: '1.2rem' }} />
+                </span>
                 <div>
-                  <h5 className="neighbor-name">Rừng thông & Đồi chè</h5>
-                  <span className="neighbor-dist">800m · 🚶 10 phút đi bộ</span>
+                  <h5 className="neighbor-name">Cảnh quan & Thiên nhiên lân cận</h5>
+                  <span className="neighbor-dist">800m · <TbWalk style={{ verticalAlign: 'middle' }} /> 10 phút đi bộ</span>
                 </div>
               </div>
               <div className="neighbor-card">
-                <span className="neighbor-icon">☕</span>
+                <span className="neighbor-icon">
+                  <TbCoffee style={{ color: '#f59e0b', fontSize: '1.2rem' }} />
+                </span>
                 <div>
-                  <h5 className="neighbor-name">Tiệm cafe ngắm hoàng hôn</h5>
-                  <span className="neighbor-dist">400m · 🚶 5 phút đi bộ</span>
+                  <h5 className="neighbor-name">Tiệm cafe & Ẩm thực ngắm cảnh</h5>
+                  <span className="neighbor-dist">400m · <TbWalk style={{ verticalAlign: 'middle' }} /> 5 phút đi bộ</span>
                 </div>
               </div>
               <div className="neighbor-card">
-                <span className="neighbor-icon">🏞️</span>
+                <span className="neighbor-icon">
+                  <TbBuildingSkyscraper style={{ color: '#0ea5e9', fontSize: '1.2rem' }} />
+                </span>
                 <div>
-                  <h5 className="neighbor-name">Trung tâm TP & Chợ đêm</h5>
-                  <span className="neighbor-dist">4.2 km · 🚗 8 phút đi xe</span>
+                  <h5 className="neighbor-name">Trung tâm thành phố {room.city}</h5>
+                  <span className="neighbor-dist">4.2 km · <TbCar style={{ verticalAlign: 'middle' }} /> 8 phút đi xe</span>
                 </div>
               </div>
               <div className="neighbor-card">
-                <span className="neighbor-icon">✈️</span>
+                <span className="neighbor-icon">
+                  <TbPlaneDeparture style={{ color: '#8b5cf6', fontSize: '1.2rem' }} />
+                </span>
                 <div>
-                  <h5 className="neighbor-name">Sân bay Liên Khương</h5>
-                  <span className="neighbor-dist">32 km · 🚗 40 phút đi xe</span>
+                  <h5 className="neighbor-name">Sân bay & Trạm trung chuyển</h5>
+                  <span className="neighbor-dist">32 km · <TbCar style={{ verticalAlign: 'middle' }} /> 40 phút đi xe</span>
                 </div>
               </div>
             </div>
@@ -1168,10 +1109,18 @@ export const RoomDetailPage = ({
               <button
                 type="button"
                 className="contact-host-btn"
-                onClick={() => alert(`Kênh trò chuyện an toàn với Chủ nhà ${room.host?.name || 'Minh Hoàng'} đã sẵn sàng!`)}
+                onClick={() => {
+                  setContactToast(true);
+                  setTimeout(() => setContactToast(false), 3500);
+                }}
               >
-                💬 Nhắn tin cho chủ nhà
+                <TbMessageCircle style={{ verticalAlign: 'middle', marginRight: '6px', fontSize: '1.05rem' }} /> Nhắn tin trực tiếp cho chủ nhà
               </button>
+              {contactToast && (
+                <div className="contact-host-toast">
+                  <TbMessageCheck style={{ color: '#10b981', verticalAlign: 'middle', marginRight: '6px', fontSize: '1.15rem' }} /> Đã kết nối trò chuyện an toàn với Chủ nhà <strong>{room.host?.name || 'Minh Hoàng'}</strong> (Phản hồi trong 1 giờ)
+                </div>
+              )}
             </div>
 
             {/* Right: House Rules & Safety */}
@@ -1408,43 +1357,57 @@ export const RoomDetailPage = ({
       {/* 6. ALL AMENITIES MODAL (LUXURY MODAL DIALOG) */}
       {/* ========================================================================= */}
       {showAllAmenities && (
-        <div className="modal-overlay" onClick={() => setShowAllAmenities(false)}>
+        <div className="filter-modal-overlay" onClick={() => setShowAllAmenities(false)}>
           <div
-            className="modal-container"
-            style={{ maxWidth: '640px', width: '92%', padding: '1.75rem 2rem', borderRadius: '12px' }}
+            className="filter-modal-card"
+            style={{ maxWidth: '640px' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '1px solid #ebebeb' }}>
-              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: 'var(--dark)' }}>
-                Tiện nghi & Dịch vụ đầy đủ
-              </h2>
+            <div className="filter-modal-header">
               <button
                 type="button"
-                className="modal-close-btn"
-                style={{ position: 'static', margin: 0 }}
+                className="filter-modal-close-btn"
                 onClick={() => setShowAllAmenities(false)}
-                title="Đóng"
+                title="Đóng tiện nghi"
               >
                 <TbX />
               </button>
+              <h2 className="filter-modal-title">Tiện nghi & Dịch vụ đầy đủ</h2>
+              <div style={{ width: '36px' }} />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
-              {room.amenities && room.amenities.map((item, idx) => {
-                let icon = <TbCheck />;
-                for (const key in amenityIcons) {
-                  if (item.toLowerCase().includes(key.toLowerCase())) {
-                    icon = amenityIcons[key];
-                    break;
+            <div className="filter-modal-body" style={{ gap: '0.85rem' }}>
+              <p style={{ color: '#64748b', fontSize: '0.88rem', margin: 0 }}>
+                Toàn bộ các trang thiết bị và tiện ích cao cấp được chuẩn bị chu đáo để phục vụ kỳ nghỉ của bạn:
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', marginTop: '0.5rem' }}>
+                {room.amenities && room.amenities.map((item, idx) => {
+                  let icon = <TbCheck />;
+                  for (const key in amenityIcons) {
+                    if (item.toLowerCase().includes(key.toLowerCase())) {
+                      icon = amenityIcons[key];
+                      break;
+                    }
                   }
-                }
-                return (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 0', borderBottom: '1px solid #f3f4f6' }}>
-                    <span style={{ fontSize: '1.35rem', color: '#ff385c', display: 'flex', alignItems: 'center' }}>{icon}</span>
-                    <span style={{ fontSize: '0.96rem', color: '#222', fontWeight: 600 }}>{item}</span>
-                  </div>
-                );
-              })}
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        padding: '0.85rem 1rem',
+                        borderRadius: '12px',
+                        border: '1.5px solid #e2e8f0',
+                        background: '#f8fafc',
+                      }}
+                    >
+                      <span style={{ fontSize: '1.25rem', color: '#ff385c', display: 'flex', alignItems: 'center' }}>{icon}</span>
+                      <span style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: 700 }}>{item}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -1457,18 +1420,13 @@ export const RoomDetailPage = ({
         <div>
           <span className="mobile-bar-price">{formatPriceVal(pricePerNight)}</span>
           <span className="mobile-bar-unit"> / đêm</span>
-          <div style={{ fontSize: '0.78rem', color: '#717171' }}>{checkIn} – {checkOut}</div>
+          <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>{formatVNDate(checkIn)} – {formatVNDate(checkOut)}</div>
         </div>
         <button
           className="primary-gradient-btn mobile-bar-btn"
-          onClick={() => {
-            window.scrollTo({
-              top: document.querySelector('.sticky-booking-card')?.offsetTop || 500,
-              behavior: 'smooth',
-            });
-          }}
+          onClick={scrollToCalendar}
         >
-          Đặt phòng
+          Chọn ngày đặt phòng
         </button>
       </div>
     </div>
