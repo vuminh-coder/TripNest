@@ -1,5 +1,23 @@
 import React, { useState } from 'react';
-import { TbX, TbHomeCheck, TbBuildingCastle, TbHome2 } from 'react-icons/tb';
+import {
+  TbX,
+  TbHomeCheck,
+  TbBuildingCastle,
+  TbHome2,
+  TbWifi,
+  TbToolsKitchen2,
+  TbSwimming,
+  TbCar,
+  TbAirConditioning,
+  TbWashMachine,
+  TbPaw,
+  TbDeviceLaptop,
+  TbFlame,
+  TbBath,
+  TbDeviceTv,
+  TbCheck,
+  TbFilter,
+} from 'react-icons/tb';
 
 export const FilterModal = ({
   isOpen,
@@ -12,30 +30,49 @@ export const FilterModal = ({
   const [maxPrice, setMaxPrice] = useState(initialFilters.maxPrice || '');
   const [placeType, setPlaceType] = useState(initialFilters.placeType || 'all');
   const [bedrooms, setBedrooms] = useState(initialFilters.bedrooms || 'any');
-  const [beds, setBeds] = useState(initialFilters.beds || 'any');
   const [bathrooms, setBathrooms] = useState(initialFilters.bathrooms || 'any');
   const [selectedAmenities, setSelectedAmenities] = useState(initialFilters.amenities || []);
 
   if (!isOpen) return null;
 
+  const currencySign = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '₫';
+
+  // Currency-aware price presets
+  const pricePresets =
+    currency === 'VND'
+      ? [
+          { label: 'Dưới 1 triệu', min: 0, max: 1000000 },
+          { label: '1 - 3 triệu', min: 1000000, max: 3000000 },
+          { label: '3 - 5 triệu', min: 3000000, max: 5000000 },
+          { label: 'Trên 5 triệu', min: 5000000, max: '' },
+        ]
+      : [
+          { label: '< $50', min: 0, max: 50 },
+          { label: '$50 - $150', min: 50, max: 150 },
+          { label: '$150 - $300', min: 150, max: 300 },
+          { label: '> $300', min: 300, max: '' },
+        ];
+
   const amenityOptions = [
-    'Wifi',
-    'Bếp',
-    'Bể bơi',
-    'Chỗ đỗ xe',
-    'Điều hòa',
-    'Máy giặt',
-    'thú cưng',
-    'làm việc',
-    'BBQ',
-    'Lò sưởi',
+    { key: 'Wifi', label: 'Wifi tốc độ cao', icon: <TbWifi /> },
+    { key: 'Bếp', label: 'Bếp nấu ăn đầy đủ', icon: <TbToolsKitchen2 /> },
+    { key: 'Bể bơi', label: 'Hồ bơi riêng', icon: <TbSwimming /> },
+    { key: 'Chỗ đỗ xe', label: 'Chỗ đỗ xe miễn phí', icon: <TbCar /> },
+    { key: 'Điều hòa', label: 'Điều hòa nhiệt độ', icon: <TbAirConditioning /> },
+    { key: 'Máy giặt', label: 'Máy giặt & sấy', icon: <TbWashMachine /> },
+    { key: 'thú cưng', label: 'Cho phép thú cưng', icon: <TbPaw /> },
+    { key: 'làm việc', label: 'Không gian làm việc', icon: <TbDeviceLaptop /> },
+    { key: 'BBQ', label: 'Bếp nướng BBQ', icon: <TbFlame /> },
+    { key: 'Lò sưởi', label: 'Lò sưởi ấm cúng', icon: <TbFlame /> },
+    { key: 'Bồn tắm', label: 'Bồn tắm nằm sang trọng', icon: <TbBath /> },
+    { key: 'Tivi', label: 'Tivi truyền hình cáp', icon: <TbDeviceTv /> },
   ];
 
-  const toggleAmenity = (amenity) => {
-    if (selectedAmenities.includes(amenity)) {
-      setSelectedAmenities(selectedAmenities.filter((a) => a !== amenity));
+  const toggleAmenity = (amenityKey) => {
+    if (selectedAmenities.includes(amenityKey)) {
+      setSelectedAmenities(selectedAmenities.filter((a) => a !== amenityKey));
     } else {
-      setSelectedAmenities([...selectedAmenities, amenity]);
+      setSelectedAmenities([...selectedAmenities, amenityKey]);
     }
   };
 
@@ -44,7 +81,6 @@ export const FilterModal = ({
     setMaxPrice('');
     setPlaceType('all');
     setBedrooms('any');
-    setBeds('any');
     setBathrooms('any');
     setSelectedAmenities([]);
   };
@@ -55,7 +91,6 @@ export const FilterModal = ({
       maxPrice,
       placeType,
       bedrooms,
-      beds,
       bathrooms,
       amenities: selectedAmenities,
     });
@@ -63,96 +98,130 @@ export const FilterModal = ({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal-container"
-        style={{ width: '640px', maxWidth: '95vw', padding: '1.75rem 2rem' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1px solid #ebebeb' }}>
-          <button className="modal-close-btn" onClick={onClose} style={{ position: 'static' }}>
+    <div className="filter-modal-overlay" onClick={onClose}>
+      <div className="filter-modal-card" onClick={(e) => e.stopPropagation()}>
+        {/* Sticky Header */}
+        <div className="filter-modal-header">
+          <button className="filter-modal-close-btn" onClick={onClose} title="Đóng bộ lọc">
             <TbX />
           </button>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Bộ lọc nâng cao</h2>
+          <h2 className="filter-modal-title">Bộ lọc nâng cao</h2>
           <div style={{ width: '36px' }} />
         </div>
 
-        <div style={{ padding: '1.5rem 0', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          {/* Price Range */}
-          <div>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '0.4rem' }}>Khoảng giá (USD)</h3>
-            <p style={{ color: '#717171', fontSize: '0.85rem', marginBottom: '1rem' }}>Giá theo đêm chưa bao gồm phí và thuế</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ flex: 1, border: '1px solid #ccc', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
-                <span style={{ fontSize: '0.72rem', color: '#717171', textTransform: 'uppercase' }}>Tối thiểu</span>
-                <input
-                  type="number"
-                  placeholder="$0"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  style={{ border: 'none', width: '100%', fontSize: '0.95rem', fontWeight: 600 }}
-                />
+        {/* Scrollable Body */}
+        <div className="filter-modal-body">
+          {/* Section 1: Khoảng giá */}
+          <div className="filter-section">
+            <h3 className="filter-section-title">Khoảng giá ({currency})</h3>
+            <p className="filter-section-desc">Giá tính theo đêm chưa bao gồm thuế và phí dịch vụ</p>
+
+            <div className="filter-price-boxes-row">
+              <div className="filter-price-box">
+                <span className="filter-price-label">Giá tối thiểu</span>
+                <div className="filter-price-input-wrapper">
+                  <span className="filter-price-currency-sign">{currencySign}</span>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    className="filter-price-input"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                  />
+                </div>
               </div>
-              <span style={{ color: '#717171' }}>-</span>
-              <div style={{ flex: 1, border: '1px solid #ccc', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
-                <span style={{ fontSize: '0.72rem', color: '#717171', textTransform: 'uppercase' }}>Tối đa</span>
-                <input
-                  type="number"
-                  placeholder="$1000+"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  style={{ border: 'none', width: '100%', fontSize: '0.95rem', fontWeight: 600 }}
-                />
+
+              <span style={{ color: '#94a3b8', fontWeight: 800 }}>—</span>
+
+              <div className="filter-price-box">
+                <span className="filter-price-label">Giá tối đa</span>
+                <div className="filter-price-input-wrapper">
+                  <span className="filter-price-currency-sign">{currencySign}</span>
+                  <input
+                    type="number"
+                    placeholder={currency === 'VND' ? '10000000+' : '500+'}
+                    className="filter-price-input"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Place Type */}
-          <div>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '1rem' }}>Loại chỗ ở</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
-              {[
-                { id: 'all', label: 'Bất kỳ' },
-                { id: 'entire', label: 'Toàn bộ nhà' },
-                { id: 'room', label: 'Phòng riêng' },
-              ].map((t) => (
+            {/* Quick Presets */}
+            <div className="filter-price-presets-row">
+              {pricePresets.map((p, idx) => (
                 <button
-                  key={t.id}
-                  style={{
-                    padding: '0.75rem',
-                    borderRadius: '10px',
-                    border: placeType === t.id ? '2px solid #222' : '1px solid #ebebeb',
-                    fontWeight: 600,
-                    fontSize: '0.88rem',
-                    background: placeType === t.id ? '#f7f7f7' : 'white',
+                  key={idx}
+                  type="button"
+                  className={`filter-preset-chip ${minPrice == p.min && maxPrice == p.max ? 'is-active' : ''}`}
+                  onClick={() => {
+                    setMinPrice(p.min);
+                    setMaxPrice(p.max);
                   }}
-                  onClick={() => setPlaceType(t.id)}
                 >
-                  {t.label}
+                  {p.label}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Bedrooms & Beds */}
-          <div>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '1rem' }}>Phòng ngủ và giường</h3>
-            <div style={{ marginBottom: '1rem' }}>
-              <span style={{ fontSize: '0.88rem', color: '#484848' }}>Phòng ngủ</span>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+          {/* Section 2: Loại chỗ ở */}
+          <div className="filter-section">
+            <h3 className="filter-section-title">Loại chỗ ở</h3>
+            <p className="filter-section-desc">Tìm kiếm phòng riêng hoặc toàn bộ không gian nghỉ dưỡng</p>
+
+            <div className="filter-place-types-grid">
+              {[
+                { id: 'all', label: 'Tất cả', icon: <TbBuildingCastle /> },
+                { id: 'entire', label: 'Toàn bộ nhà', icon: <TbHome2 /> },
+                { id: 'room', label: 'Phòng riêng', icon: <TbHomeCheck /> },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={`filter-place-card-btn ${placeType === t.id ? 'is-active' : ''}`}
+                  onClick={() => setPlaceType(t.id)}
+                >
+                  {t.icon}
+                  <span>{t.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 3: Phòng ngủ và phòng tắm */}
+          <div className="filter-section">
+            <h3 className="filter-section-title">Phòng ngủ và phòng tắm</h3>
+            <p className="filter-section-desc">Lựa chọn số lượng phòng phù hợp với đoàn khách của bạn</p>
+
+            {/* Bedrooms */}
+            <div className="filter-sub-group">
+              <span className="filter-sub-title">Số phòng ngủ</span>
+              <div className="filter-pills-row">
+                {['any', '1', '2', '3', '4', '5+'].map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    className={`filter-pill-btn ${bedrooms === num ? 'is-active' : ''}`}
+                    onClick={() => setBedrooms(num)}
+                  >
+                    {num === 'any' ? 'Bất kỳ' : num}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Bathrooms */}
+            <div className="filter-sub-group">
+              <span className="filter-sub-title">Số phòng tắm</span>
+              <div className="filter-pills-row">
                 {['any', '1', '2', '3', '4+'].map((num) => (
                   <button
                     key={num}
-                    style={{
-                      padding: '0.45rem 1rem',
-                      borderRadius: '999px',
-                      border: bedrooms === num ? '1px solid #222' : '1px solid #ebebeb',
-                      background: bedrooms === num ? '#222' : 'white',
-                      color: bedrooms === num ? 'white' : '#222',
-                      fontSize: '0.85rem',
-                      fontWeight: 600,
-                    }}
-                    onClick={() => setBedrooms(num)}
+                    type="button"
+                    className={`filter-pill-btn ${bathrooms === num ? 'is-active' : ''}`}
+                    onClick={() => setBathrooms(num)}
                   >
                     {num === 'any' ? 'Bất kỳ' : num}
                   </button>
@@ -161,42 +230,42 @@ export const FilterModal = ({
             </div>
           </div>
 
-          {/* Amenities */}
-          <div>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '1rem' }}>Tiện nghi</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              {amenityOptions.map((a) => (
-                <label
-                  key={a}
-                  style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', cursor: 'pointer' }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedAmenities.includes(a)}
-                    onChange={() => toggleAmenity(a)}
-                    style={{ width: '18px', height: '18px', accentColor: '#ff385c' }}
-                  />
-                  <span>{a}</span>
-                </label>
-              ))}
+          {/* Section 4: Tiện nghi cao cấp */}
+          <div className="filter-section">
+            <h3 className="filter-section-title">Tiện nghi chỗ ở</h3>
+            <p className="filter-section-desc">Chọn các dịch vụ và tiện ích mong muốn trong kỳ nghỉ</p>
+
+            <div className="filter-amenities-grid">
+              {amenityOptions.map((a) => {
+                const isSelected = selectedAmenities.includes(a.key);
+                return (
+                  <div
+                    key={a.key}
+                    className={`amenity-toggle-card ${isSelected ? 'is-active' : ''}`}
+                    onClick={() => toggleAmenity(a.key)}
+                  >
+                    <div className="amenity-card-left">
+                      <div className="amenity-card-icon">{a.icon}</div>
+                      <span className="amenity-card-label">{a.label}</span>
+                    </div>
+                    <div className="amenity-card-checkbox">
+                      {isSelected && <TbCheck style={{ fontSize: '0.85rem' }} />}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1.25rem', borderTop: '1px solid #ebebeb' }}>
-          <button
-            style={{ fontWeight: 600, textDecoration: 'underline', fontSize: '0.92rem' }}
-            onClick={handleClearAll}
-          >
-            Xóa tất cả
+        {/* Sticky Footer */}
+        <div className="filter-modal-footer">
+          <button type="button" className="filter-clear-all-link" onClick={handleClearAll}>
+            Xóa tất cả bộ lọc
           </button>
-          <button
-            className="primary-gradient-btn"
-            style={{ width: 'auto', padding: '0.75rem 1.75rem' }}
-            onClick={handleApply}
-          >
-            Áp dụng bộ lọc
+          <button type="button" className="filter-apply-btn" onClick={handleApply}>
+            <TbFilter />
+            <span>Áp dụng bộ lọc</span>
           </button>
         </div>
       </div>

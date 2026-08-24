@@ -10,12 +10,14 @@ import {
   TbLock,
   TbHomePlus,
   TbHelpCircle,
+  TbLogout,
   TbX,
 } from 'react-icons/tb';
 import { useDispatch, useSelector } from 'react-redux';
 
 export const Header = ({
   onSearch,
+  searchParams = {},
   currency,
   setCurrency,
   onOpenAuth,
@@ -30,14 +32,26 @@ export const Header = ({
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const [destination, setDestination] = useState('');
-  const [guests, setGuests] = useState(1);
-  const [checkInDate, setCheckInDate] = useState('');
-  const [checkOutDate, setCheckOutDate] = useState('');
+  const [destination, setDestination] = useState(searchParams.destination || '');
+  const [guests, setGuests] = useState(searchParams.guests || 1);
+  const [checkInDate, setCheckInDate] = useState(searchParams.checkInDate || '');
+  const [checkOutDate, setCheckOutDate] = useState(searchParams.checkOutDate || '');
+  const [activeField, setActiveField] = useState('where');
   const [isLangOpen, setIsLangOpen] = useState(false);
 
   const menuRef = useRef(null);
   const searchRef = useRef(null);
+  const whereInputRef = useRef(null);
+  const checkInInputRef = useRef(null);
+  const checkOutInputRef = useRef(null);
+
+  // Sync with external searchParams changes
+  useEffect(() => {
+    setDestination(searchParams.destination || '');
+    setGuests(searchParams.guests || 1);
+    setCheckInDate(searchParams.checkInDate || '');
+    setCheckOutDate(searchParams.checkOutDate || '');
+  }, [searchParams]);
 
   //redux
   const dispatch = useDispatch();
@@ -107,117 +121,147 @@ export const Header = ({
           </div>
         </div>
 
-        {/* Compact Search Bar */}
-        <div className="search-bar-container" ref={searchRef} style={{ position: 'relative' }}>
-          <div
-            className="search-bar-compact"
-            onClick={() => setIsSearchExpanded(!isSearchExpanded)}
-          >
-            <button className="search-item-btn">
-              {destination || 'Bất cứ đâu'}
-            </button>
-            <div className="search-divider" />
-            <button className="search-item-btn">
-              {checkInDate ? `${checkInDate} - ${checkOutDate || '...'}` : 'Tuần bất kỳ'}
-            </button>
-            <div className="search-divider" />
-            <button className="search-item-btn muted">
-              {guests > 1 ? `${guests} khách` : 'Thêm khách'}
-            </button>
-            <div className="search-action-circle" onClick={handleExecuteSearch}>
-              <TbSearch />
+        {/* In-Place Expandable Search Bar (Transforms directly inside Header) */}
+        <div className={`search-bar-container ${isSearchExpanded ? 'is-expanded' : ''}`} ref={searchRef}>
+          {!isSearchExpanded ? (
+            /* Mode 1: Compact Search Pill */
+            <div
+              className="search-bar-compact"
+              onClick={() => {
+                setIsSearchExpanded(true);
+                setActiveField('where');
+              }}
+              title="Nhấp để mở rộng tìm kiếm"
+            >
+              <button type="button" className="search-item-btn">
+                {destination || 'Bất cứ đâu'}
+              </button>
+              <div className="search-divider" />
+              <button type="button" className="search-item-btn">
+                {checkInDate ? `${checkInDate} - ${checkOutDate || '...'}` : 'Tuần bất kỳ'}
+              </button>
+              <div className="search-divider" />
+              <button type="button" className="search-item-btn muted">
+                {guests > 1 ? `${guests} khách` : 'Thêm khách'}
+              </button>
+              <div
+                className="search-action-circle"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsSearchExpanded(true);
+                  setActiveField('where');
+                }}
+              >
+                <TbSearch />
+              </div>
             </div>
-          </div>
-
-          {/* Expanded Search Flyout Modal */}
-          {isSearchExpanded && (
-            <div className="search-expanded-flyout">
-              <div className="search-box-field active">
-                <span className="search-label">Địa điểm</span>
+          ) : (
+            /* Mode 2: In-Place Full Search Bar (No Floating Dropdown, Silky Smooth) */
+            <div className="search-bar-expanded-inline" onClick={(e) => e.stopPropagation()}>
+              {/* Field 1: Địa điểm */}
+              <div
+                className={`search-inline-field where ${activeField === 'where' ? 'is-active' : ''}`}
+                onClick={() => {
+                  setActiveField('where');
+                  whereInputRef.current?.focus();
+                }}
+              >
+                <span className="search-inline-label">Địa điểm</span>
                 <input
+                  ref={whereInputRef}
                   type="text"
-                  placeholder="Bạn muốn đi đâu? (Đà Lạt, Phú Quốc...)"
-                  className="search-input"
+                  placeholder="Bạn muốn đi đâu? (Đà Lạt, Hội An...)"
+                  className="search-inline-input"
                   value={destination}
+                  onFocus={() => setActiveField('where')}
                   onChange={(e) => setDestination(e.target.value)}
                   autoFocus
                   onKeyDown={(e) => e.key === 'Enter' && handleExecuteSearch(e)}
                 />
               </div>
 
-              <div className="search-box-field">
-                <span className="search-label">Nhận phòng</span>
+              <div className={`search-inline-divider ${activeField === 'where' || activeField === 'checkIn' ? 'hidden' : ''}`} />
+
+              {/* Field 2: Nhận phòng */}
+              <div
+                className={`search-inline-field date ${activeField === 'checkIn' ? 'is-active' : ''}`}
+                onClick={() => {
+                  setActiveField('checkIn');
+                  checkInInputRef.current?.showPicker?.();
+                }}
+              >
+                <span className="search-inline-label">Nhận phòng</span>
                 <input
+                  ref={checkInInputRef}
                   type="date"
-                  className="search-input"
+                  className="search-inline-input date-input"
                   value={checkInDate}
+                  onFocus={() => setActiveField('checkIn')}
                   onChange={(e) => setCheckInDate(e.target.value)}
                 />
               </div>
 
-              <div className="search-box-field">
-                <span className="search-label">Trả phòng</span>
+              <div className={`search-inline-divider ${activeField === 'checkIn' || activeField === 'checkOut' ? 'hidden' : ''}`} />
+
+              {/* Field 3: Trả phòng */}
+              <div
+                className={`search-inline-field date ${activeField === 'checkOut' ? 'is-active' : ''}`}
+                onClick={() => {
+                  setActiveField('checkOut');
+                  checkOutInputRef.current?.showPicker?.();
+                }}
+              >
+                <span className="search-inline-label">Trả phòng</span>
                 <input
+                  ref={checkOutInputRef}
                   type="date"
-                  className="search-input"
+                  className="search-inline-input date-input"
                   value={checkOutDate}
+                  onFocus={() => setActiveField('checkOut')}
                   onChange={(e) => setCheckOutDate(e.target.value)}
                 />
               </div>
 
-              <div className="search-box-field" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <span className="search-label">Số khách</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                    <button
-                      type="button"
-                      style={{ border: '1px solid #ccc', borderRadius: '50%', width: '24px', height: '24px' }}
-                      onClick={(e) => { e.stopPropagation(); setGuests(Math.max(1, guests - 1)); }}
-                    >-</button>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{guests}</span>
-                    <button
-                      type="button"
-                      style={{ border: '1px solid #ccc', borderRadius: '50%', width: '24px', height: '24px' }}
-                      onClick={(e) => { e.stopPropagation(); setGuests(guests + 1); }}
-                    >+</button>
-                  </div>
-                </div>
+              <div className={`search-inline-divider ${activeField === 'checkOut' || activeField === 'guests' ? 'hidden' : ''}`} />
 
-                <button
-                  className="primary-gradient-btn"
-                  style={{ width: 'auto', padding: '0.65rem 1.25rem', borderRadius: '999px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                  onClick={handleExecuteSearch}
-                >
-                  <TbSearch /> Tìm kiếm
-                </button>
+              {/* Field 4: Số khách */}
+              <div
+                className={`search-inline-field guests ${activeField === 'guests' ? 'is-active' : ''}`}
+                onClick={() => setActiveField('guests')}
+              >
+                <span className="search-inline-label">Số khách</span>
+                <div className="search-inline-guest-row">
+                  <button
+                    type="button"
+                    className="search-guest-counter-btn"
+                    onClick={(e) => { e.stopPropagation(); setGuests(Math.max(1, guests - 1)); }}
+                    title="Giảm khách"
+                  >-</button>
+                  <span className="search-guest-count-val">{guests} khách</span>
+                  <button
+                    type="button"
+                    className="search-guest-counter-btn"
+                    onClick={(e) => { e.stopPropagation(); setGuests(guests + 1); }}
+                    title="Tăng khách"
+                  >+</button>
+                </div>
               </div>
+
+              {/* Search Submit CTA Button */}
+              <button
+                type="button"
+                className="search-cta-submit-btn"
+                onClick={handleExecuteSearch}
+              >
+                <TbSearch style={{ fontSize: '1.1rem' }} />
+                <span>Tìm kiếm</span>
+              </button>
             </div>
           )}
         </div>
 
         {/* Right Header Actions */}
         <div className="header-actions">
-          {/* Quick Admin Access Button (Only for Admin) */}
-          {user?.role === 'admin' && (
-            <button
-              className="host-btn"
-              style={{
-                background: '#eef2ff',
-                color: '#4f46e5',
-                borderColor: '#c7d2fe',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontWeight: 800,
-              }}
-              onClick={onOpenAdmin}
-              title="Mở Trang Quản Trị Hệ Thống TripNest"
-            >
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#4f46e5' }} />
-              Quản trị Admin
-            </button>
-          )}
-
           <button className="host-btn" onClick={onOpenHost}>
             Cho thuê chỗ ở
           </button>
@@ -317,17 +361,19 @@ export const Header = ({
               <div className="user-dropdown-card">
                 {Object.keys(user || {}).length > 0 && (user?.id || user?.email) ? (
                   <>
-                    <div style={{ padding: '0.75rem 1.15rem', borderBottom: '1px solid #f1f5f9' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
-                        <p style={{ fontWeight: 800, fontSize: '0.92rem', color: '#0f172a', margin: 0 }}>
+                    <div style={{ padding: '0.85rem 1.15rem', borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <p style={{ fontWeight: 800, fontSize: '0.92rem', color: '#0f172a', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {user.full_name || user.name || 'Người dùng'}
                         </p>
                         <span
                           style={{
                             fontSize: '0.68rem',
                             fontWeight: 800,
-                            padding: '1px 6px',
+                            padding: '2px 8px',
                             borderRadius: '999px',
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0,
                             background:
                               user.role === 'admin'
                                 ? '#eef2ff'
@@ -340,12 +386,15 @@ export const Header = ({
                                 : user.role === 'host'
                                 ? '#059669'
                                 : '#64748b',
+                            border: user.role === 'admin' ? '1px solid #c7d2fe' : 'none',
                           }}
                         >
                           {user.role === 'admin' ? 'Quản Trị' : user.role === 'host' ? 'Chủ Nhà' : 'Khách'}
                         </span>
                       </div>
-                      <p style={{ color: '#64748b', fontSize: '0.78rem', margin: '2px 0 0' }}>{user.email}</p>
+                      <p style={{ color: '#64748b', fontSize: '0.78rem', margin: '3px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {user.email}
+                      </p>
                     </div>
 
                     <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenBookings(); }}>
@@ -375,8 +424,8 @@ export const Header = ({
                     <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenHost(); }}>
                       <TbHomePlus /> Quản lý cho thuê phòng
                     </button>
-                    <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onLogout(); }} style={{ color: '#ef4444' }}>
-                      Đăng xuất
+                    <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onLogout(); }} style={{ color: '#ef4444', fontWeight: 600 }}>
+                      <TbLogout /> Đăng xuất
                     </button>
                   </>
                 ) : (

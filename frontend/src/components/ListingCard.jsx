@@ -14,10 +14,20 @@ export const ListingCard = ({
   onToggleFavorite,
   currency = 'VND',
   showTotalBeforeTaxes = false,
+  searchParams = {},
 }) => {
   const [activeImgIndex, setActiveImgIndex] = useState(0);
 
   const images = room.images && room.images.length > 0 ? room.images : [room.images];
+
+  // Calculate nights from search dates if present
+  let searchNights = 0;
+  if (searchParams.checkInDate && searchParams.checkOutDate) {
+    const d1 = new Date(searchParams.checkInDate);
+    const d2 = new Date(searchParams.checkOutDate);
+    const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+    if (diff > 0) searchNights = diff;
+  }
 
   const handlePrevImg = (e) => {
     e.stopPropagation();
@@ -53,10 +63,14 @@ export const ListingCard = ({
       {/* Media with Carousel */}
       <div className="listing-media-wrapper">
         <img
-          src={images[activeImgIndex]}
+          src={images[activeImgIndex] || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800'}
           alt={room.title}
           className="listing-img-slide"
           loading="lazy"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800';
+          }}
         />
 
         {/* Favorite Heart Button */}
@@ -107,10 +121,22 @@ export const ListingCard = ({
         </div>
 
         <span className="listing-distance-text">{room.distance}</span>
-        <span className="listing-date-text">{room.dates}</span>
+        <span className="listing-date-text">
+          {searchParams.checkInDate && searchParams.checkOutDate
+            ? `${searchParams.checkInDate} - ${searchParams.checkOutDate}`
+            : room.dates}
+        </span>
 
         <div className="listing-price-row">
-          {showTotalBeforeTaxes ? (
+          {searchNights > 0 ? (
+            <div>
+              <span className="listing-price-bold">{formatPrice(room.priceUSD, room.priceVND, 1)}</span>
+              <span className="listing-price-period"> / đêm</span>
+              <div style={{ fontSize: '0.8rem', color: '#475569', fontWeight: 600, marginTop: '2px' }}>
+                Tổng {formatPrice(room.priceUSD, room.priceVND, searchNights)} cho {searchNights} đêm
+              </div>
+            </div>
+          ) : showTotalBeforeTaxes ? (
             <div>
               <span className="listing-price-bold">{formatPrice(room.priceUSD, room.priceVND, 5)}</span>
               <span className="listing-price-period"> / 5 đêm trước thuế</span>

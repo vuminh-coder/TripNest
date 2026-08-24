@@ -912,6 +912,95 @@
   flex-direction: column;
 }
 
+/* KYC Appraisal Modal Styling */
+.kyc-modal-header {
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.kyc-modal-body {
+  padding: 1.5rem 1.75rem;
+  overflow-y: auto;
+  max-height: calc(85vh - 140px);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.kyc-doc-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kyc-doc-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.kyc-doc-img-box {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0f172a;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+}
+
+.kyc-doc-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.kyc-doc-img-box:hover .kyc-doc-img {
+  transform: scale(1.03);
+}
+
+.kyc-doc-overlay-hint {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(1px);
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  gap: 6px;
+  transition: opacity 0.2s ease;
+}
+
+.kyc-doc-img-box:hover .kyc-doc-overlay-hint {
+  opacity: 1;
+}
+
+.kyc-modal-footer {
+  padding: 1rem 1.75rem;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
 /* Responsive */
 @media (max-width: 992px) {
   .admin-sidebar {
