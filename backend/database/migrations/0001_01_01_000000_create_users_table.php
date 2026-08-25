@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
             $table->string('email', 191)->unique();
-            $table->string('google_id', 191)->unique();
+            $table->string('google_id', 191)->nullable()->unique();
             $table->string('google_avatar', 500)->nullable();
             $table->enum('role', ['guest', 'host', 'admin'])->default('guest');
             $table->enum('status', ['active', 'inactive', 'banned'])->default('active');

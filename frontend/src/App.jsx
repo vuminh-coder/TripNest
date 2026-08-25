@@ -1,22 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
-import CategoryBar from './components/CategoryBar';
-import SpotlightBanner from './components/SpotlightBanner';
-import ListingCard from './components/ListingCard';
-import ExperienceSection from './components/ExperienceSection';
-import RoomDetailPage from './components/RoomDetailPage';
-import BookingCheckoutPage from './components/BookingCheckoutPage';
-import FilterModal from './components/FilterModal';
-import AuthModal from './components/AuthModal';
-import MyBookingsModal from './components/MyBookingsModal';
-import WishlistModal from './components/WishlistModal';
-import ChangePasswordModal from './components/ChangePasswordModal';
-import HostModal from './components/HostModal';
-import HostLayout from './components/host/HostLayout';
-import Footer from './components/Footer';
-import AdminLayout from './components/admin/AdminLayout';
 
-import { apiService } from './services/api';
+// Layout Components
+import { Header } from '@/components/layout/Header/Header';
+import { Footer } from '@/components/layout/Footer/Footer';
+
+// Common Components
+import { ListingCard } from '@/components/common/ListingCard/ListingCard';
+
+// Modal Components
+import { AuthModal } from '@/components/modals/AuthModal/AuthModal';
+import { FilterModal } from '@/components/modals/FilterModal/FilterModal';
+import { MyBookingsModal } from '@/components/modals/MyBookingsModal/MyBookingsModal';
+import { WishlistModal } from '@/components/modals/WishlistModal/WishlistModal';
+import { ChangePasswordModal } from '@/components/modals/ChangePasswordModal/ChangePasswordModal';
+import { HostModal } from '@/components/modals/HostModal/HostModal';
+
+// Pages & Feature Modules
+import { CategoryBar } from '@/pages/home/components/CategoryBar/CategoryBar';
+import { SpotlightBanner } from '@/pages/home/components/SpotlightBanner/SpotlightBanner';
+import { ExperienceSection } from '@/pages/home/components/ExperienceSection/ExperienceSection';
+import { RoomDetailPage } from '@/pages/room-detail/RoomDetailPage/RoomDetailPage';
+import { BookingCheckoutPage } from '@/pages/checkout/BookingCheckoutPage/BookingCheckoutPage';
+import HostLayout from '@/pages/host/HostLayout';
+import AdminLayout from '@/pages/admin/AdminLayout';
+
+// Services & Utilities
+import { apiService } from '@/services/api';
+import { removeVietnameseTones } from '@/utils/textUtils';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   TbSearch,
@@ -27,18 +37,6 @@ import {
   TbCompass,
   TbSparkles,
 } from 'react-icons/tb';
-
-// Helper to remove Vietnamese tones for robust accent-insensitive fuzzy searching
-const removeVietnameseTones = (str) => {
-  if (!str) return '';
-  return str
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLowerCase()
-    .trim();
-};
 
 // Helper to extract initial search params from URL
 const getInitialSearchParams = () => {
@@ -264,9 +262,16 @@ function App() {
 
       // Check if URL has roomId to open directly
       const urlRoomId = getRoomIdFromUrl();
-      if (urlRoomId && rms.length > 0) {
+      if (urlRoomId) {
         const found = rms.find((r) => String(r.id) === String(urlRoomId));
-        if (found) setSelectedRoom(found);
+        if (found) {
+          setSelectedRoom(found);
+        } else {
+          try {
+            const single = await apiService.getRoomById(urlRoomId);
+            if (single && single.id) setSelectedRoom(single);
+          } catch (e) {}
+        }
       }
     };
     fetchData();
@@ -669,7 +674,7 @@ function App() {
                   <div className="popular-dest-chips-container">
                     <div className="popular-dest-chips-title">Gợi ý điểm đến thịnh hành</div>
                     <div className="popular-dest-chips-row">
-                      {['Đà Lạt', 'Phú Quốc', 'Hội An', 'Nha Trang', 'Vũng Tàu', 'Hạ Long', 'Sapa', 'Đà Nẵng'].map((dest) => (
+                      {['Đà Lạt', 'Phú Quốc', 'Hội An', 'Nha Trang', 'Vũng Tàu', 'Hạ Long', 'Sa Pa', 'Đà Nẵng', 'Hà Nội', 'Quy Nhơn'].map((dest) => (
                         <button
                           key={dest}
                           type="button"

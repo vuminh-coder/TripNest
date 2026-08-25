@@ -82,7 +82,7 @@ class AuthController extends Controller
                 $user = User::create([
                     'account_id' => $account->id,
                     'full_name' => explode('@', $account->email)[0],
-                    'avatar_url' => $account->google_avatar,
+                    'avatar_url' => 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
                 ]);
             }
 
@@ -101,8 +101,8 @@ class AuthController extends Controller
                     'name' => $user->full_name,
                     'email' => $account->email,
                     'phone_number' => $user->phone_number,
-                    'avatar_url' => $user->avatar_url ?: $account->google_avatar,
-                    'avatar' => $user->avatar_url ?: ($account->google_avatar ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'),
+                    'avatar_url' => $user->avatar_url ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+                    'avatar' => $user->avatar_url ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
                     'role' => $account->role,
                     'status' => $account->status,
                     'is_host' => $user->host !== null,
@@ -155,7 +155,6 @@ class AuthController extends Controller
                 $createdAccount = Account::create([
                     'email' => strtolower(trim($request->input('email'))),
                     'password' => Hash::make($request->input('password')),
-                    'google_id' => 'local_' . uniqid(),
                     'role' => 'guest',
                     'status' => 'active',
                     'email_verified_at' => now(),
@@ -204,112 +203,7 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Xác thực đăng nhập qua Google Email (1-Click Google OAuth - JWT Auth)
-     */
-    public function googleLogin(Request $request): JsonResponse
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'email' => 'required|email',
-                'google_id' => 'required|string',
-                'name' => 'nullable|string',
-                'avatar' => 'nullable|string',
-            ]);
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Dữ liệu xác thực Google không hợp lệ.',
-                    'errors' => $validator->errors(),
-                ], 422);
-            }
-
-            $email = strtolower(trim($request->input('email')));
-            $googleId = $request->input('google_id');
-            $name = $request->input('name') ?: explode('@', $email)[0];
-            $avatar = $request->input('avatar') ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80';
-
-            // 1. Tìm hoặc tạo tài khoản
-            $account = Account::where('google_id', $googleId)
-                ->orWhere('email', $email)
-                ->first();
-
-            if (!$account) {
-                $account = Account::create([
-                    'email' => $email,
-                    'google_id' => $googleId,
-                    'google_avatar' => $avatar,
-                    'role' => 'guest',
-                    'status' => 'active',
-                    'email_verified_at' => now(),
-                    'last_login_at' => now(),
-                ]);
-            } else {
-                if ($account->status === 'banned') {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.',
-                    ], 403);
-                }
-
-                if ($account->status === 'inactive') {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Tài khoản của bạn chưa được kích hoạt.',
-                    ], 403);
-                }
-
-                $account->update([
-                    'google_id' => $googleId ?: $account->google_id,
-                    'google_avatar' => $avatar ?: $account->google_avatar,
-                    'last_login_at' => now(),
-                ]);
-            }
-
-            // 2. Tìm hoặc tạo User Profile
-            $user = User::firstOrCreate(
-                ['account_id' => $account->id],
-                [
-                    'full_name' => $name,
-                    'avatar_url' => $avatar,
-                ]
-            );
-
-            $user->load(['host.defaultPayoutAccount']);
-
-            // 3. Cấp JWT Token đồng nhất
-            $token = Auth::guard('api')->login($account);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Đăng nhập Google thành công vào hệ thống TripNest!',
-                'token' => $token,
-                'token_type' => 'bearer',
-                'expires_in' => Auth::guard('api')->factory()->getTTL() * 60,
-                'user' => [
-                    'id' => $user->id,
-                    'account_id' => $account->id,
-                    'full_name' => $user->full_name,
-                    'name' => $user->full_name,
-                    'email' => $account->email,
-                    'phone_number' => $user->phone_number,
-                    'avatar_url' => $user->avatar_url ?: $account->google_avatar,
-                    'avatar' => $user->avatar_url ?: ($account->google_avatar ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'),
-                    'role' => $account->role,
-                    'status' => $account->status,
-                    'is_host' => $user->host !== null,
-                    'host' => $user->host,
-                ],
-            ], 200);
-        } catch (Throwable $ex) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Có lỗi xảy ra khi xác thực qua Google.',
-                'error' => $ex->getMessage(),
-            ], 500);
-        }
-    }
 
     /**
      * Lấy thông tin người dùng hiện tại (JWT Authenticated)
@@ -480,14 +374,11 @@ class AuthController extends Controller
             'created_at' => now()->timestamp,
         ], now()->addMinutes(15));
 
-        $isGoogleOnly = !empty($account->google_id) && empty($account->password);
-
         return response()->json([
             'success' => true,
             'message' => 'Mã xác minh OTP 6 chữ số đã được gửi đến email của bạn!',
             'email' => $email,
             'otp_demo' => $otp,
-            'is_google_account' => $isGoogleOnly,
         ], 200);
     }
 

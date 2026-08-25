@@ -1,0 +1,317 @@
+/* Price Range */
+.filter-price-boxes-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.filter-price-box {
+  flex: 1;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.65rem 0.95rem;
+  background: #ffffff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.filter-price-box:focus-within {
+  border-color: #0f172a;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
+}
+
+.filter-price-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.filter-price-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filter-price-currency-sign {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.filter-price-input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  background: transparent;
+}
+
+.filter-price-presets-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.85rem;
+}
+
+.filter-preset-chip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filter-preset-chip:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.filter-preset-chip.is-active {
+  background: #0f172a;
+  border-color: #0f172a;
+  color: #ffffff;
+}
+
+
+/* Place Types */
+.filter-place-types-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.filter-place-card-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 0.75rem;
+  border-radius: 14px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: center;
+}
+
+.filter-place-card-btn svg {
+  font-size: 1.5rem;
+  color: #64748b;
+  transition: color 0.15s ease;
+}
+
+.filter-place-card-btn span {
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.filter-place-card-btn:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.filter-place-card-btn.is-active {
+  border-color: #0f172a;
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+}
+
+.filter-place-card-btn.is-active svg {
+  color: #ffffff;
+}
+
+
+/* Selector Pills (Rooms & Beds) */
+.filter-sub-group {
+  margin-bottom: 1.25rem;
+}
+
+.filter-sub-group:last-child {
+  margin-bottom: 0;
+}
+
+.filter-sub-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 0.65rem;
+  display: block;
+}
+
+.filter-pills-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.filter-pill-btn {
+  padding: 0.5rem 1.15rem;
+  border-radius: 999px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 48px;
+  text-align: center;
+}
+
+.filter-pill-btn:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.filter-pill-btn.is-active {
+  background: #0f172a;
+  border-color: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.2);
+}
+
+
+/* Amenities Card Grid */
+.filter-amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.amenity-toggle-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.15rem;
+  border-radius: 14px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.amenity-card-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.amenity-card-icon {
+  font-size: 1.3rem;
+  color: #475569;
+  display: flex;
+  align-items: center;
+}
+
+.amenity-card-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.amenity-card-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  background: #ffffff;
+}
+
+.amenity-toggle-card:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.amenity-toggle-card.is-active {
+  border-color: #ff385c;
+  background: #fff1f2;
+}
+
+.amenity-toggle-card.is-active .amenity-card-icon {
+  color: #ff385c;
+}
+
+.amenity-toggle-card.is-active .amenity-card-label {
+  color: #0f172a;
+}
+
+.amenity-toggle-card.is-active .amenity-card-checkbox {
+  background: #ff385c;
+  border-color: #ff385c;
+  color: #ffffff;
+}
+
+
+/* Modal Footer */
+.filter-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.15rem 1.75rem;
+  border-top: 1px solid #f1f5f9;
+  background: #ffffff;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.filter-clear-all-link {
+  background: transparent;
+  border: none;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0.5rem 0.25rem;
+  transition: color 0.15s ease;
+}
+
+.filter-clear-all-link:hover {
+  color: #ef4444;
+}
+
+.filter-apply-btn {
+  background: linear-gradient(135deg, #ff385c 0%, #e61e4d 50%, #d70466 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 1.85rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(255, 56, 92, 0.35);
+  transition: all 0.2s ease;
+}
+
+.filter-apply-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(255, 56, 92, 0.45);
+}
+
+.filter-apply-btn:active {
+  transform: translateY(0);
+}
+

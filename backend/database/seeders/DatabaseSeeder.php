@@ -16,6 +16,8 @@ use App\Models\Booking;
 use App\Models\Review;
 use App\Models\Wishlist;
 use App\Models\Experience;
+use App\Models\ExchangeRate;
+use App\Models\Voucher;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -74,9 +76,7 @@ class DatabaseSeeder extends Seeder
         // 2.5 Seed Super Admin Account
         $adminAccount = Account::create([
             'email' => 'admin@tripnest.vn',
-            'password' => Hash::make('Admin@123'),
-            'google_id' => 'google-admin-000001',
-            'google_avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+            'password' => Hash::make('123456'),
             'role' => 'admin',
             'status' => 'active',
             'email_verified_at' => now(),
@@ -98,8 +98,7 @@ class DatabaseSeeder extends Seeder
         // 3. Seed Demo Guest Account
         $guestAccount = Account::create([
             'email' => 'demo.traveler@gmail.com',
-            'google_id' => 'google-user-100001',
-            'google_avatar' => 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+            'password' => Hash::make('123456'),
             'role' => 'guest',
             'status' => 'active',
             'email_verified_at' => now(),
@@ -118,13 +117,14 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 4. Seed Verified Hosts with Bank Payout Accounts
+        // 4. Seed Verified Hosts across Vietnam regions
         $hostsData = [
             [
                 'email' => 'minhhoang.dalat@gmail.com',
                 'google_id' => 'google-host-100001',
                 'name' => 'Minh Hoàng',
                 'avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-                'display_name' => 'Minh Hoàng',
+                'display_name' => 'Minh Hoàng Đà Lạt',
                 'phone' => '0987654321',
                 'bio' => 'Yêu Đà Lạt và luôn mong muốn mang đến trải nghiệm nghỉ dưỡng ấm cúng nhất cho quý khách.',
                 'rating' => 4.98,
@@ -141,7 +141,7 @@ class DatabaseSeeder extends Seeder
                 'google_id' => 'google-host-100002',
                 'name' => 'Trần Thanh Hà',
                 'avatar' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-                'display_name' => 'Thanh Hà Resort & Stay',
+                'display_name' => 'Thanh Hà Resort Phú Quốc',
                 'phone' => '0978901234',
                 'bio' => 'Hệ thống biệt thự nghỉ dưỡng ven biển cao cấp tại đảo ngọc Phú Quốc.',
                 'rating' => 4.97,
@@ -154,11 +154,79 @@ class DatabaseSeeder extends Seeder
                 'account_holder' => 'TRAN THANH HA',
             ],
             [
-                'email' => 'quangvu.halong@gmail.com',
+                'email' => 'thuong.hoian@gmail.com',
                 'google_id' => 'google-host-100003',
+                'name' => 'Hoài Thương',
+                'avatar' => 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
+                'display_name' => 'Hoài Thương Hội An',
+                'phone' => '0981122334',
+                'bio' => 'Đam mê bảo tồn kiến trúc cổ và văn hóa ẩm thực truyền thống Hội An.',
+                'rating' => 4.99,
+                'reviews_count' => 420,
+                'is_superhost' => true,
+                'bank_name' => 'VietinBank',
+                'bank_code' => '970415',
+                'bank_branch' => 'Chi nhánh Hội An, Quảng Nam',
+                'account_number' => '102001928374',
+                'account_holder' => 'LE HOAI THUONG',
+            ],
+            [
+                'email' => 'hoangnam.nhatrang@gmail.com',
+                'google_id' => 'google-host-100004',
+                'name' => 'Hoàng Nam',
+                'avatar' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+                'display_name' => 'Hoàng Nam Nha Trang Stays',
+                'phone' => '0971234888',
+                'bio' => 'Cung cấp căn hộ & villa hướng vịnh biển Nha Trang thơ mộng.',
+                'rating' => 4.95,
+                'reviews_count' => 380,
+                'is_superhost' => true,
+                'bank_name' => 'BIDV',
+                'bank_code' => '970418',
+                'bank_branch' => 'Chi nhánh Nha Trang, Khánh Hòa',
+                'account_number' => '60110000889922',
+                'account_holder' => 'NGUYEN HOANG NAM',
+            ],
+            [
+                'email' => 'haimy.sapa@gmail.com',
+                'google_id' => 'google-host-100005',
+                'name' => 'Hải My',
+                'avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+                'display_name' => 'Hải My Sa Pa Ecolodges',
+                'phone' => '0963334455',
+                'bio' => 'Chuyên các khu nghỉ dưỡng nhà gỗ view thung lũng Mường Hoa Sa Pa.',
+                'rating' => 4.96,
+                'reviews_count' => 290,
+                'is_superhost' => true,
+                'bank_name' => 'Agribank',
+                'bank_code' => '970405',
+                'bank_branch' => 'Chi nhánh Sa Pa, Lào Cai',
+                'account_number' => '8800205123456',
+                'account_holder' => 'VUONG HAI MY',
+            ],
+            [
+                'email' => 'ducthang.danang@gmail.com',
+                'google_id' => 'google-host-100006',
+                'name' => 'Đức Thắng',
+                'avatar' => 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80',
+                'display_name' => 'Đức Thắng Đà Nẵng Luxury',
+                'phone' => '0935112233',
+                'bio' => 'Đồng hành cùng trải nghiệm nghỉ dưỡng 5 sao bãi biển Mỹ Khê và Sơn Trà.',
+                'rating' => 4.97,
+                'reviews_count' => 460,
+                'is_superhost' => true,
+                'bank_name' => 'Techcombank',
+                'bank_code' => '970407',
+                'bank_branch' => 'Chi nhánh Đà Nẵng',
+                'account_number' => '19022334455667',
+                'account_holder' => 'TRAN DUC THANG',
+            ],
+            [
+                'email' => 'quangvu.halong@gmail.com',
+                'google_id' => 'google-host-100007',
                 'name' => 'Quang Vũ',
                 'avatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-                'display_name' => 'Captain Quang Vũ',
+                'display_name' => 'Captain Quang Vũ Hạ Long',
                 'phone' => '0961234567',
                 'bio' => 'Thuyền trưởng 15 năm kinh nghiệm du thuyền 5 sao trên vịnh di sản Hạ Long.',
                 'rating' => 4.93,
@@ -171,21 +239,55 @@ class DatabaseSeeder extends Seeder
                 'account_holder' => 'VU QUANG VU',
             ],
             [
-                'email' => 'eleni.santorini@gmail.com',
-                'google_id' => 'google-host-100004',
-                'name' => 'Eleni & Nikos',
-                'avatar' => 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
-                'display_name' => 'Eleni & Nikos Luxury Cave',
-                'phone' => '+30 6912345678',
-                'bio' => 'Dedicated to offering exceptional cliffside hospitality in the heart of Oia, Santorini.',
-                'rating' => 5.00,
-                'reviews_count' => 280,
+                'email' => 'thanhthuy.hanoi@gmail.com',
+                'google_id' => 'google-host-100008',
+                'name' => 'Thanh Thủy',
+                'avatar' => 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+                'display_name' => 'Thanh Thủy Hà Nội Heritage',
+                'phone' => '0918889900',
+                'bio' => 'Khách sạn boutique & căn hộ phong cách Pháp cổ trung tâm thủ đô.',
+                'rating' => 4.98,
+                'reviews_count' => 510,
                 'is_superhost' => true,
-                'bank_name' => 'National Bank of Greece',
-                'bank_code' => 'ETHNGRAA',
-                'bank_branch' => 'Santorini Branch',
-                'account_number' => 'GR12011012500000012345678',
-                'account_holder' => 'ELENI NIKOS',
+                'bank_name' => 'Vietcombank',
+                'bank_code' => '970436',
+                'bank_branch' => 'Chi nhánh Hoàn Kiếm, Hà Nội',
+                'account_number' => '0011009988776',
+                'account_holder' => 'NGUYEN THANH THUY',
+            ],
+            [
+                'email' => 'nguyenphuong.quynhon@gmail.com',
+                'google_id' => 'google-host-100009',
+                'name' => 'Nguyên Phương',
+                'avatar' => 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80',
+                'display_name' => 'Nguyên Phương Quy Nhơn Beach',
+                'phone' => '0945678123',
+                'bio' => 'Khám phá thiên đường biển xanh Quy Nhơn cùng các resort cao cấp hàng đầu.',
+                'rating' => 4.96,
+                'reviews_count' => 330,
+                'is_superhost' => true,
+                'bank_name' => 'VPBank',
+                'bank_code' => '970432',
+                'bank_branch' => 'Chi nhánh Quy Nhơn, Bình Định',
+                'account_number' => '1566889922',
+                'account_holder' => 'LE NGUYEN PHUONG',
+            ],
+            [
+                'email' => 'tuananh.vungtau@gmail.com',
+                'google_id' => 'google-host-100010',
+                'name' => 'Tuấn Anh',
+                'avatar' => 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80',
+                'display_name' => 'Tuấn Anh Vũng Tàu Villas',
+                'phone' => '0903332211',
+                'bio' => 'Biệt thự nghỉ dưỡng view biển Bãi Sau và Long Hải tuyệt đẹp.',
+                'rating' => 4.97,
+                'reviews_count' => 405,
+                'is_superhost' => true,
+                'bank_name' => 'ACB',
+                'bank_code' => '970416',
+                'bank_branch' => 'Chi nhánh Vũng Tàu',
+                'account_number' => '2244668899',
+                'account_holder' => 'HOANG TUAN ANH',
             ]
         ];
 
@@ -193,8 +295,7 @@ class DatabaseSeeder extends Seeder
         foreach ($hostsData as $h) {
             $acc = Account::create([
                 'email' => $h['email'],
-                'google_id' => $h['google_id'],
-                'google_avatar' => $h['avatar'],
+                'password' => Hash::make('123456'),
                 'role' => 'host',
                 'status' => 'active',
                 'email_verified_at' => now(),
@@ -234,11 +335,8 @@ class DatabaseSeeder extends Seeder
                 'host_id' => $host->id,
                 'account_type' => 'bank_transfer',
                 'bank_name' => $h['bank_name'],
-                'bank_code' => $h['bank_code'],
-                'bank_branch' => $h['bank_branch'],
                 'account_number' => $h['account_number'],
                 'account_holder_name' => $h['account_holder'],
-                'currency' => 'VND',
                 'is_default' => true,
                 'is_verified' => true,
             ]);
@@ -246,402 +344,81 @@ class DatabaseSeeder extends Seeder
             $createdHosts[] = $host;
         }
 
-        // 5. Seed 8 High-end Accommodations & Rooms with Real Images
-        $accommodationsSeed = [
-            [
-                'host' => $createdHosts[0],
-                'category' => $categories['views'],
-                'name_vi' => 'Khu Nghỉ Dưỡng Biệt Thự Đỉnh Đồi Mây Ngàn Đà Lạt',
-                'name_en' => 'Hilltop Pine Forest Cloud Villa Resort',
-                'type' => 'villa',
-                'city' => 'Đà Lạt',
-                'address' => 'Đường Mimosa, Phường 10, Đà Lạt, Lâm Đồng',
-                'distance' => 'Cách trung tâm 4.2 km',
-                'star' => 5,
-                'room' => [
-                    'title_vi' => 'Biệt Thự Đỉnh Đồi View Rừng Thông & Mây Ngàn',
-                    'title_en' => 'Hilltop Pine Forest Villa & Cloud View',
-                    'type_code' => 'entire_villa',
-                    'space_type' => 'entire_place',
-                    'priceUSD' => 115,
-                    'priceVND' => 2850000,
-                    'rating' => 4.96,
-                    'reviewsCount' => 128,
-                    'isFavorite' => true,
-                    'specs' => ['guests' => 8, 'bedrooms' => 4, 'beds' => 5, 'bathrooms' => 4.0],
-                    'description' => 'Tọa lạc trên ngọn đồi yên bình bậc nhất Đà Lạt, căn biệt thự mang lối kiến trúc kính tràn viền giúp bạn đón bình minh cùng biển mây bồng bềnh mỗi sáng. Không gian riêng tư với sân vườn rộng rãi, khu BBQ ngoài trời và hồ bơi nước ấm thư giãn.',
-                    'images' => [
-                        'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80',
-                    ],
-                    'amenity_codes' => ['wifi', 'kitchen', 'pool', 'bbq', 'fireplace', 'parking', 'ac', 'washer', 'pet_friendly', 'workspace'],
-                    'radar' => ['cleanliness' => 4.9, 'accuracy' => 5.0, 'communication' => 5.0, 'location' => 4.8, 'checkIn' => 5.0, 'value' => 4.9],
-                ]
-            ],
-            [
-                'host' => $createdHosts[1],
-                'category' => $categories['beachfront'],
-                'name_vi' => 'Thanh Hà Luxury Beachfront Resort & Spa Phú Quốc',
-                'name_en' => 'Thanh Ha Luxury Beachfront Resort & Spa Phu Quoc',
-                'type' => 'resort',
-                'city' => 'Phú Quốc',
-                'address' => 'Khu du lịch Bãi Dài, Gành Dầu, Phú Quốc, Kiên Giang',
-                'distance' => 'Ngay sát mặt biển Bãi Dài',
-                'star' => 5,
-                'room' => [
-                    'title_vi' => 'Luxury Beachfront Villa - Bãi Dài Phú Quốc',
-                    'title_en' => 'Luxury Beachfront Villa - Long Beach',
-                    'type_code' => 'entire_villa',
-                    'space_type' => 'entire_place',
-                    'priceUSD' => 185,
-                    'priceVND' => 4600000,
-                    'rating' => 4.98,
-                    'reviewsCount' => 94,
-                    'isFavorite' => true,
-                    'specs' => ['guests' => 6, 'bedrooms' => 3, 'beds' => 3, 'bathrooms' => 3.0],
-                    'description' => 'Tận hưởng vẻ đẹp nguyên sơ của biển Phú Quốc với biệt thự sang trọng sát biển. Từng góc nhỏ được bài trí tinh tế, hồ bơi riêng tư hướng trọn hoàng hôn buông lãng mạn.',
-                    'images' => [
-                        'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&auto=format&fit=crop&q=80',
-                    ],
-                    'amenity_codes' => ['private_beach', 'pool', 'wifi', 'parking', 'ac', 'washer', 'jacuzzi'],
-                    'radar' => ['cleanliness' => 5.0, 'accuracy' => 4.9, 'communication' => 5.0, 'location' => 5.0, 'checkIn' => 4.9, 'value' => 4.9],
-                ]
-            ],
-            [
-                'host' => $createdHosts[2],
-                'category' => $categories['lakefront'],
-                'name_vi' => 'Đội Tàu Du Thuyền Panorama Heritage Hạ Long',
-                'name_en' => 'Panorama Heritage Cruise Fleet Ha Long',
-                'type' => 'yacht',
-                'city' => 'Hạ Long',
-                'address' => 'Cảng tàu khách Quốc tế Tuần Châu, Hạ Long, Quảng Ninh',
-                'distance' => 'Trên vịnh di sản thiên nhiên thế giới',
-                'star' => 5,
-                'room' => [
-                    'title_vi' => 'Du Thuyền Panorama Ngắm Vịnh Hạ Long',
-                    'title_en' => 'Panorama Yacht Cruise - Ha Long Bay',
-                    'type_code' => 'entire_cabin',
-                    'space_type' => 'entire_place',
-                    'priceUSD' => 140,
-                    'priceVND' => 3450000,
-                    'rating' => 4.92,
-                    'reviewsCount' => 156,
-                    'isFavorite' => false,
-                    'specs' => ['guests' => 4, 'bedrooms' => 2, 'beds' => 2, 'bathrooms' => 2.0],
-                    'description' => 'Trải nghiệm đẳng cấp nghỉ dưỡng 5 sao giữa kỳ quan thiên nhiên thế giới. Phòng ngủ có ban công kính ngắm trọn vẹn vẻ đẹp huyền ảo của Vịnh Hạ Long từ bình minh đến khi màn đêm buông xuống.',
-                    'images' => [
-                        'https://images.unsplash.com/photo-1569263979104-865ab7cd8d17?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1510312305653-8ed496efae75?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=800&auto=format&fit=crop&q=80',
-                    ],
-                    'amenity_codes' => ['jacuzzi', 'ac', 'wifi', 'kitchen'],
-                    'radar' => ['cleanliness' => 4.9, 'accuracy' => 4.9, 'communication' => 4.9, 'location' => 5.0, 'checkIn' => 4.9, 'value' => 4.8],
-                ]
-            ],
-            [
-                'host' => $createdHosts[3],
-                'category' => $categories['mansions'],
-                'name_vi' => 'Oia Sunset Cliff Cave Villas Santorini',
-                'name_en' => 'Oia Sunset Cliff Cave Villas Santorini',
-                'type' => 'villa',
-                'city' => 'Santorini',
-                'address' => 'Oia Village Cliffside, Santorini, Cyclades, Greece',
-                'distance' => 'Vách đá Oia ngắm hoàng hôn Aegean',
-                'star' => 5,
-                'room' => [
-                    'title_vi' => 'Santorini Sunset Cave Villa - Oia Cliff',
-                    'title_en' => 'Santorini Sunset Cave Villa - Oia Cliff',
-                    'type_code' => 'entire_cave_house',
-                    'space_type' => 'entire_place',
-                    'priceUSD' => 320,
-                    'priceVND' => 7950000,
-                    'rating' => 5.00,
-                    'reviewsCount' => 88,
-                    'isFavorite' => true,
-                    'specs' => ['guests' => 4, 'bedrooms' => 2, 'beds' => 2, 'bathrooms' => 2.0],
-                    'description' => 'Căn biệt thự hang động biểu tượng nằm trên vách đá Oia tuyệt mỹ. Chiêm ngưỡng hoàng hôn trứ danh Santorini ngay từ bồn sục riêng tư của bạn với ly rượu vang địa phương thượng hạng.',
-                    'images' => [
-                        'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=800&auto=format&fit=crop&q=80',
-                    ],
-                    'amenity_codes' => ['jacuzzi', 'wifi', 'kitchen', 'ac'],
-                    'radar' => ['cleanliness' => 5.0, 'accuracy' => 5.0, 'communication' => 5.0, 'location' => 5.0, 'checkIn' => 5.0, 'value' => 4.9],
-                ]
-            ],
-            [
-                'host' => $createdHosts[0],
-                'category' => $categories['tropical'],
-                'name_vi' => 'Ubud Rainforest Eco Bamboo Oasis',
-                'name_en' => 'Ubud Rainforest Eco Bamboo Oasis',
-                'type' => 'homestay',
-                'city' => 'Bali',
-                'address' => 'Jl. Raya Ubud, Gianyar, Bali, Indonesia',
-                'distance' => 'Ẩn mình giữa rừng nhiệt đới Ubud',
-                'star' => 5,
-                'room' => [
-                    'title_vi' => 'Eco Bamboo House & Private Waterfall Oasis',
-                    'title_en' => 'Eco Bamboo House & Private Waterfall Oasis',
-                    'type_code' => 'architectural_home',
-                    'space_type' => 'entire_place',
-                    'priceUSD' => 160,
-                    'priceVND' => 3950000,
-                    'rating' => 4.95,
-                    'reviewsCount' => 215,
-                    'isFavorite' => true,
-                    'specs' => ['guests' => 4, 'bedrooms' => 2, 'beds' => 2, 'bathrooms' => 2.0],
-                    'description' => 'Ngôi nhà tre nghệ thuật độc bản nằm giữa thung lũng Ubud xanh mướt. Đắm mình trong bản hòa ca của thiên nhiên và dòng suối róc rách, tận hưởng sự thanh bình tuyệt đối.',
-                    'images' => [
-                        'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80',
-                    ],
-                    'amenity_codes' => ['pool', 'wifi', 'kitchen', 'pet_friendly', 'workspace'],
-                    'radar' => ['cleanliness' => 4.9, 'accuracy' => 5.0, 'communication' => 5.0, 'location' => 4.9, 'checkIn' => 4.9, 'value' => 4.9],
-                ]
-            ],
-            [
-                'host' => $createdHosts[1],
-                'category' => $categories['iconic_cities'],
-                'name_vi' => 'Central Park Tower Panorama Luxury Penthouse',
-                'name_en' => 'Central Park Tower Panorama Luxury Penthouse',
-                'type' => 'apartment',
-                'city' => 'New York',
-                'address' => '217 W 57th St, Manhattan, New York, USA',
-                'distance' => 'Tầm nhìn không giới hạn ôm trọn Central Park',
-                'star' => 5,
-                'room' => [
-                    'title_vi' => 'Penthouse Manhattan Panorama - Central Park View',
-                    'title_en' => 'Penthouse Manhattan Panorama - Central Park View',
-                    'type_code' => 'entire_penthouse',
-                    'space_type' => 'entire_place',
-                    'priceUSD' => 450,
-                    'priceVND' => 11200000,
-                    'rating' => 4.97,
-                    'reviewsCount' => 76,
-                    'isFavorite' => false,
-                    'specs' => ['guests' => 6, 'bedrooms' => 3, 'beds' => 3, 'bathrooms' => 3.5],
-                    'description' => 'Căn Penthouse xa hoa bậc nhất trung tâm Manhattan với tầm nhìn không giới hạn ôm trọn Central Park và đường chân trời New York lộng lẫy về đêm.',
-                    'images' => [
-                        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&auto=format&fit=crop&q=80',
-                    ],
-                    'amenity_codes' => ['ac', 'wifi', 'parking', 'washer', 'workspace', 'jacuzzi'],
-                    'radar' => ['cleanliness' => 5.0, 'accuracy' => 5.0, 'communication' => 5.0, 'location' => 5.0, 'checkIn' => 5.0, 'value' => 4.8],
-                ]
-            ],
-            [
-                'host' => $createdHosts[2],
-                'category' => $categories['cabins'],
-                'name_vi' => 'H’Mông Valley Wooden Chalets Sa Pa',
-                'name_en' => 'H’Mong Valley Wooden Chalets Sa Pa',
-                'type' => 'cabin',
-                'city' => 'Sa Pa',
-                'address' => 'Bản Tả Van, Thị xã Sa Pa, Lào Cai',
-                'distance' => 'View trực diện thung lũng ruộng bậc thang Mường Hoa',
-                'star' => 5,
-                'room' => [
-                    'title_vi' => 'Nhà Gỗ Mộc Cổ Điển Rừng Thông Sa Pa',
-                    'title_en' => 'Classic Wooden Chalet - Sa Pa Valley',
-                    'type_code' => 'entire_chalet',
-                    'space_type' => 'entire_place',
-                    'priceUSD' => 85,
-                    'priceVND' => 2100000,
-                    'rating' => 4.94,
-                    'reviewsCount' => 142,
-                    'isFavorite' => true,
-                    'specs' => ['guests' => 5, 'bedrooms' => 2, 'beds' => 3, 'bathrooms' => 2.0],
-                    'description' => 'Chalet gỗ pơ mu cổ kính nằm e ấp bên sườn núi Tả Van, hướng thẳng ra thung lũng ruộng bậc thang Mường Hoa. Trải nghiệm tắm lá thuốc thư giãn và thưởng thức ẩm thực Tây Bắc chuẩn vị.',
-                    'images' => [
-                        'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
-                    ],
-                    'amenity_codes' => ['fireplace', 'bbq', 'wifi', 'parking', 'pet_friendly'],
-                    'radar' => ['cleanliness' => 4.9, 'accuracy' => 5.0, 'communication' => 5.0, 'location' => 4.9, 'checkIn' => 5.0, 'value' => 4.9],
-                ]
-            ],
-            [
-                'host' => $createdHosts[3],
-                'category' => $categories['countryside'],
-                'name_vi' => 'Hội An Heritage Riverside Villa & Garden',
-                'name_en' => 'Hoi An Heritage Riverside Villa & Garden',
-                'type' => 'villa',
-                'city' => 'Hội An',
-                'address' => 'Cẩm Thanh, Thành phố Hội An, Quảng Nam',
-                'distance' => 'Cách phố cổ Hội An 2 km',
-                'star' => 5,
-                'room' => [
-                    'title_vi' => 'Hội An Heritage Riverside Villa & Garden',
-                    'title_en' => 'Hoi An Heritage Riverside Villa & Garden',
-                    'type_code' => 'heritage_villa',
-                    'space_type' => 'entire_place',
-                    'priceUSD' => 98,
-                    'priceVND' => 2450000,
-                    'rating' => 4.96,
-                    'reviewsCount' => 165,
-                    'isFavorite' => true,
-                    'specs' => ['guests' => 6, 'bedrooms' => 3, 'beds' => 4, 'bathrooms' => 3.0],
-                    'description' => 'Biệt thự kiến trúc Hội An truyền thống kết hợp tiện nghi hiện đại bên dòng sông êm đềm. Khám phá vẻ đẹp cổ kính với những chiếc xe đạp thong dong và khu vườn xanh mát.',
-                    'images' => [
-                        'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80',
-                        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&auto=format&fit=crop&q=80',
-                    ],
-                    'amenity_codes' => ['pool', 'wifi', 'kitchen', 'parking', 'ac', 'washer'],
-                    'radar' => ['cleanliness' => 5.0, 'accuracy' => 4.9, 'communication' => 5.0, 'location' => 4.9, 'checkIn' => 5.0, 'value' => 4.9],
-                ]
-            ],
-        ];
+        // 5. Seed 50 Real Accommodations & 250 Images across Vietnam
+        $this->call(HotelFullDatasetSeeder::class);
 
-        $createdRooms = [];
-        foreach ($accommodationsSeed as $item) {
-            $accom = Accommodation::create([
-                'host_id' => $item['host']->id,
-                'category_id' => $item['category']->id,
-                'name_vi' => $item['name_vi'],
-                'name_en' => $item['name_en'],
-                'accommodation_type' => $item['type'],
-                'star_rating' => $item['star'],
-                'description' => $item['room']['description'],
-                'address' => $item['address'],
-                'city' => $item['city'],
-                'distance_description' => $item['distance'],
-                'is_featured' => true,
-                'status' => 'published',
+        // 5.5 Seed Sample Vouchers
+        $voucherVip = Voucher::create([
+            'code' => 'TRIPNESTVIP',
+            'title' => 'Ưu đãi Đặc quyền Thành viên VIP TripNest',
+            'description' => 'Giảm ngay 10% trên tổng tiền phòng cho đơn đặt phòng từ 1.000.000 ₫',
+            'discount_type' => 'percentage',
+            'discount_value' => 10.00,
+            'min_booking_amount' => 1000000.00,
+            'max_discount_amount' => 1000000.00,
+            'usage_limit' => 500,
+            'used_count' => 1,
+            'start_date' => now()->subMonths(1)->toDateString(),
+            'end_date' => now()->addMonths(6)->toDateString(),
+            'is_active' => true,
+        ]);
+
+        $voucherWelcome = Voucher::create([
+            'code' => 'WELCOME2026',
+            'title' => 'Quà tặng chào mừng Khách hàng mới',
+            'description' => 'Giảm trực tiếp 200.000 ₫ cho chuyến đi đầu tiên',
+            'discount_type' => 'fixed',
+            'discount_value' => 200000.00,
+            'min_booking_amount' => 1500000.00,
+            'usage_limit' => 1000,
+            'used_count' => 0,
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->addYear()->toDateString(),
+            'is_active' => true,
+        ]);
+
+        // 6. Seed Sample Booking for Demo User
+        $firstRoom = Room::first();
+        if ($firstRoom) {
+            $baseTotal = $firstRoom->price_per_night * 3;
+            $discountAmount = $voucherVip->calculateDiscount($baseTotal);
+            $serviceFee = round($baseTotal * 0.12);
+            $cleaningFee = 350000.00;
+            $totalPrice = $baseTotal + $cleaningFee + $serviceFee - $discountAmount;
+
+            $booking = Booking::create([
+                'booking_code' => 'TN-892341',
+                'user_id' => $guestUser->id,
+                'room_id' => $firstRoom->id,
+                'check_in_date' => '2026-10-15',
+                'check_out_date' => '2026-10-18',
+                'nights_count' => 3,
+                'guests_count' => 2,
+                'price_per_night' => $firstRoom->price_per_night,
+                'base_price' => $baseTotal,
+                'cleaning_fee' => $cleaningFee,
+                'service_fee' => $serviceFee,
+                'discount_amount' => $discountAmount,
+                'voucher_id' => $voucherVip->id,
+                'total_price' => $totalPrice,
+                'status' => 'confirmed',
+                'special_requests' => 'Nhận phòng sớm nếu có thể, chuẩn bị phòng hoa chào mừng.',
             ]);
 
-            $rData = $item['room'];
-            $room = Room::create([
-                'accommodation_id' => $accom->id,
-                'room_name_vi' => $rData['title_vi'],
-                'room_name_en' => $rData['title_en'],
-                'room_type_code' => $rData['type_code'],
-                'space_type' => $rData['space_type'],
-                'description' => $rData['description'],
-                'price_usd_per_night' => $rData['priceUSD'],
-                'price_vnd_per_night' => $rData['priceVND'],
-                'cleaning_fee_usd' => 30.00,
-                'cleaning_fee_vnd' => 500000.00,
-                'service_fee_percent' => 12.00,
-                'max_guests' => $rData['specs']['guests'],
-                'bedrooms_count' => $rData['specs']['bedrooms'],
-                'beds_count' => $rData['specs']['beds'],
-                'bathrooms_count' => $rData['specs']['bathrooms'],
-                'rating' => $rData['rating'],
-                'reviews_count' => $rData['reviewsCount'],
-                'is_guest_favorite' => $rData['isFavorite'],
-                'status' => 'available',
-            ]);
-
-            // Seed Room Images
-            foreach ($rData['images'] as $idx => $imgUrl) {
-                RoomImage::create([
-                    'room_id' => $room->id,
-                    'image_url' => $imgUrl,
-                    'caption' => 'Góc nhìn ' . ($idx + 1) . ' - ' . $rData['title_vi'],
-                    'display_order' => $idx + 1,
-                    'is_thumbnail' => $idx === 0,
-                ]);
-
-                if ($idx < 2) {
-                    AccommodationImage::create([
-                        'accommodation_id' => $accom->id,
-                        'image_url' => $imgUrl,
-                        'caption' => 'Khuôn viên ' . $item['name_vi'],
-                        'display_order' => $idx + 1,
-                        'is_thumbnail' => $idx === 0,
-                    ]);
-                }
-            }
-
-            // Seed Amenities pivot
-            foreach ($rData['amenity_codes'] as $code) {
-                if (isset($amenities[$code])) {
-                    $room->amenities()->attach($amenities[$code]->id);
-                    $accom->amenities()->syncWithoutDetaching([$amenities[$code]->id]);
-                }
-            }
-
-            $createdRooms[] = [
-                'room' => $room,
-                'radar' => $rData['radar'],
-            ];
+            // Seed Wishlists for Demo User
+            Wishlist::create(['user_id' => $guestUser->id, 'room_id' => 1]);
+            Wishlist::create(['user_id' => $guestUser->id, 'room_id' => 2]);
+            Wishlist::create(['user_id' => $guestUser->id, 'room_id' => 6]);
         }
-
-        // 6. Seed Sample Bookings & Reviews for Demo User
-        $firstRoom = $createdRooms[0]['room'];
-        $firstRadar = $createdRooms[0]['radar'];
-
-        $booking = Booking::create([
-            'booking_code' => 'TN-892341',
-            'user_id' => $guestUser->id,
-            'room_id' => $firstRoom->id,
-            'check_in_date' => '2026-10-15',
-            'check_out_date' => '2026-10-20',
-            'nights_count' => 5,
-            'guests_count' => 4,
-            'base_price' => $firstRoom->price_vnd_per_night * 5,
-            'cleaning_fee' => 500000.00,
-            'service_fee' => round($firstRoom->price_vnd_per_night * 5 * 0.12),
-            'total_price' => ($firstRoom->price_vnd_per_night * 5) + 500000.00 + round($firstRoom->price_vnd_per_night * 5 * 0.12),
-            'currency' => 'VND',
-            'status' => 'confirmed',
-            'special_requests' => 'Nhận phòng sớm nếu có thể, chuẩn bị thêm củi sưởi.',
-        ]);
-
-        Review::create([
-            'booking_id' => $booking->id,
-            'room_id' => $firstRoom->id,
-            'user_id' => $guestUser->id,
-            'rating_overall' => 5.0,
-            'rating_cleanliness' => $firstRadar['cleanliness'],
-            'rating_accuracy' => $firstRadar['accuracy'],
-            'rating_communication' => $firstRadar['communication'],
-            'rating_location' => $firstRadar['location'],
-            'rating_checkin' => $firstRadar['checkIn'],
-            'rating_value' => $firstRadar['value'],
-            'comment' => 'Kỳ nghỉ trên cả tuyệt vời! View rừng thông và biển mây buổi sáng thực sự kỳ ảo. Chủ nhà Minh Hoàng rất nhiệt tình hỗ trợ.',
-            'host_response' => 'Cảm ơn anh Đăng và gia đình đã tin tưởng lựa chọn biệt thự. Hẹn gặp lại anh trong chuyến đi Đà Lạt lần tới!',
-            'host_responded_at' => now(),
-        ]);
-
-        // Seed Wishlists for Demo User
-        Wishlist::create(['user_id' => $guestUser->id, 'room_id' => $createdRooms[0]['room']->id]);
-        Wishlist::create(['user_id' => $guestUser->id, 'room_id' => $createdRooms[1]['room']->id]);
-        Wishlist::create(['user_id' => $guestUser->id, 'room_id' => $createdRooms[3]['room']->id]);
 
         // 7. Seed 6 Experiences
         $experiencesData = [
             [
                 'host_id' => $createdHosts[0]->id,
                 'title_vi' => 'Tour Khám Phá Văn Hóa & Nghệ Thuật Ẩm Thực',
-                'title_en' => 'Cultural Food Tour with Local Master Chefs',
                 'caption' => 'Thưởng thức 8 món ăn đường phố di sản',
                 'city' => 'Hà Nội & Phố Cổ',
-                'country' => 'Việt Nam',
-                'price_usd_per_person' => 45.00,
-                'price_vnd_per_person' => 1100000.00,
+                'price_per_person' => 1100000.00,
                 'rating' => 4.98,
                 'reviews_count' => 240,
                 'image_url' => 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop&q=80',
@@ -650,12 +427,9 @@ class DatabaseSeeder extends Seeder
             [
                 'host_id' => $createdHosts[0]->id,
                 'title_vi' => 'Lớp Học Pha Chế Cà Phê & Vẽ Tranh Nghệ Thuật',
-                'title_en' => 'Coffee Brewing Masterclass & Paint & Sip',
                 'caption' => 'Học pha cà phê Specialty và vẽ tranh canvas',
                 'city' => 'Đà Lạt',
-                'country' => 'Việt Nam',
-                'price_usd_per_person' => 35.00,
-                'price_vnd_per_person' => 850000.00,
+                'price_per_person' => 850000.00,
                 'rating' => 4.95,
                 'reviews_count' => 180,
                 'image_url' => 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&auto=format&fit=crop&q=80',
@@ -664,12 +438,9 @@ class DatabaseSeeder extends Seeder
             [
                 'host_id' => $createdHosts[1]->id,
                 'title_vi' => 'Tour Chèo SUP & Ngắm Hoàng Hôn Vịnh Biển',
-                'title_en' => 'Sunset Paddleboarding & Coastal Hidden Caves',
                 'caption' => 'Lặn ngắm san hô và chèo SUP hoàng hôn',
                 'city' => 'Phú Quốc',
-                'country' => 'Việt Nam',
-                'price_usd_per_person' => 40.00,
-                'price_vnd_per_person' => 990000.00,
+                'price_per_person' => 990000.00,
                 'rating' => 5.00,
                 'reviews_count' => 310,
                 'image_url' => 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop&q=80',
@@ -678,12 +449,9 @@ class DatabaseSeeder extends Seeder
             [
                 'host_id' => $createdHosts[3]->id,
                 'title_vi' => 'Lớp Học Nấu Ăn Ý & Rượu Vang Spritz Party',
-                'title_en' => 'Italian Cooking Party & Authentic Spritz',
                 'caption' => 'Tự tay làm Pasta tươi cùng đầu bếp Ý',
                 'city' => 'Rome & Florence',
-                'country' => 'Ý',
-                'price_usd_per_person' => 65.00,
-                'price_vnd_per_person' => 1600000.00,
+                'price_per_person' => 1600000.00,
                 'rating' => 4.99,
                 'reviews_count' => 450,
                 'image_url' => 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&auto=format&fit=crop&q=80',
@@ -692,12 +460,9 @@ class DatabaseSeeder extends Seeder
             [
                 'host_id' => $createdHosts[2]->id,
                 'title_vi' => 'Đêm Kỳ Ảo: Ảo Thuật & Trò Chơi Mật Mã Tương Tác',
-                'title_en' => 'Interactive Magic & Mystery Game Night',
                 'caption' => 'Màn trình diễn ảo thuật tâm lý trực tiếp',
                 'city' => 'London',
-                'country' => 'Vương Quốc Anh',
-                'price_usd_per_person' => 30.00,
-                'price_vnd_per_person' => 750000.00,
+                'price_per_person' => 750000.00,
                 'rating' => 4.92,
                 'reviews_count' => 190,
                 'image_url' => 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80',
@@ -706,12 +471,9 @@ class DatabaseSeeder extends Seeder
             [
                 'host_id' => $createdHosts[2]->id,
                 'title_vi' => 'Khám Phá Kim Tự Tháp & Bí Ẩn Văn Minh Maya',
-                'title_en' => 'Maya Civilization & Teotihuacan Exploration',
                 'caption' => 'Chuyến phiêu lưu di tích lịch sử huyền bí',
                 'city' => 'Mexico City',
-                'country' => 'Mexico',
-                'price_usd_per_person' => 55.00,
-                'price_vnd_per_person' => 1350000.00,
+                'price_per_person' => 1350000.00,
                 'rating' => 4.97,
                 'reviews_count' => 160,
                 'image_url' => 'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=800&auto=format&fit=crop&q=80',
@@ -722,5 +484,23 @@ class DatabaseSeeder extends Seeder
         foreach ($experiencesData as $exp) {
             Experience::create($exp);
         }
+
+        // 8. Seed Exchange Rates (Tỷ giá quy đổi)
+        ExchangeRate::create([
+            'base_currency' => 'VND',
+            'target_currency' => 'USD',
+            'rate' => 25450.000000,
+            'effective_date' => now()->toDateString(),
+            'source' => 'manual',
+            'is_active' => true,
+        ]);
+        ExchangeRate::create([
+            'base_currency' => 'VND',
+            'target_currency' => 'EUR',
+            'rate' => 27800.000000,
+            'effective_date' => now()->toDateString(),
+            'source' => 'manual',
+            'is_active' => true,
+        ]);
     }
 }

@@ -17,7 +17,6 @@ class Payment extends Model
         'transaction_code',
         'payment_method',
         'amount',
-        'currency',
         'status',
         'payment_gateway_response',
         'paid_at',

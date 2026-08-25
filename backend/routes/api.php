@@ -20,9 +20,7 @@ use Illuminate\Support\Facades\Route;
 // 1. Xác thực người dùng (Public Auth Routes)
 // ==========================================
 Route::post('/auth/login', [AuthController::class, 'login']);
-Route::post('/auth/not-goole/login', [AuthController::class, 'login']); // Compatibility alias
 Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);

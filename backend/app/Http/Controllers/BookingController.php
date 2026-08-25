@@ -38,7 +38,6 @@ class BookingController extends Controller
         $checkIn = Carbon::parse($request->input('checkIn'))->format('Y-m-d');
         $checkOut = Carbon::parse($request->input('checkOut'))->format('Y-m-d');
         $guests = (int)$request->input('guests');
-        $currency = $request->input('currency', 'VND');
 
         $room = Room::with('accommodation')->findOrFail($roomId);
 
@@ -64,17 +63,41 @@ class BookingController extends Controller
             ], 422);
         }
 
-        // 3. Tính toán tài chính chuẩn xác
+        // 3. Tính toán tài chính chuẩn xác (luôn dùng VND — tiền tệ duy nhất trong DB)
         $d1 = Carbon::parse($checkIn);
         $d2 = Carbon::parse($checkOut);
         $nights = $d1->diffInDays($d2);
         if ($nights < 1) $nights = 1;
 
-        $pricePerNight = ($currency === 'USD') ? (float)$room->price_usd_per_night : (float)$room->price_vnd_per_night;
+        $pricePerNight = (float)$room->price_per_night;
         $baseTotal = $pricePerNight * $nights;
-        $cleaningFee = ($currency === 'USD') ? (float)$room->cleaning_fee_usd : (float)$room->cleaning_fee_vnd;
+        $cleaningFee = (float)$room->cleaning_fee;
         $serviceFee = round($baseTotal * ((float)$room->service_fee_percent / 100));
-        $grandTotal = $baseTotal + $cleaningFee + $serviceFee;
+
+        // Xử lý mã giảm giá Voucher
+        $discountAmount = 0.00;
+        $voucherId = null;
+        if ($request->filled('voucherCode')) {
+            $voucher = \App\Models\Voucher::where('code', strtoupper(trim($request->input('voucherCode'))))->first();
+            if ($voucher) {
+                $discountAmount = $voucher->calculateDiscount($baseTotal);
+                if ($discountAmount > 0) {
+                    $voucherId = $voucher->id;
+                    $voucher->increment('used_count');
+                }
+            }
+        } elseif ($request->filled('voucherId')) {
+            $voucher = \App\Models\Voucher::find($request->input('voucherId'));
+            if ($voucher) {
+                $discountAmount = $voucher->calculateDiscount($baseTotal);
+                if ($discountAmount > 0) {
+                    $voucherId = $voucher->id;
+                    $voucher->increment('used_count');
+                }
+            }
+        }
+
+        $grandTotal = max(0, $baseTotal + $cleaningFee + $serviceFee - $discountAmount);
 
         // 4. Lấy thông tin user từ JWT Token
         $account = \Illuminate\Support\Facades\Auth::guard('api')->user();
@@ -88,7 +111,7 @@ class BookingController extends Controller
             $bookingCode = 'TN-' . rand(100000, 999999);
         } while (Booking::where('booking_code', $bookingCode)->exists());
 
-        // 6. Ghi vào CSDL
+        // 6. Ghi vào CSDL (luôn lưu VND, lưu price_per_night và voucher_id)
         $booking = Booking::create([
             'booking_code' => $bookingCode,
             'user_id' => $user->id,
@@ -97,12 +120,13 @@ class BookingController extends Controller
             'check_out_date' => $checkOut,
             'nights_count' => $nights,
             'guests_count' => $guests,
+            'price_per_night' => $pricePerNight,
             'base_price' => $baseTotal,
             'cleaning_fee' => $cleaningFee,
             'service_fee' => $serviceFee,
-            'discount_amount' => 0.00,
+            'discount_amount' => $discountAmount,
+            'voucher_id' => $voucherId,
             'total_price' => $grandTotal,
-            'currency' => $currency,
             'status' => 'confirmed',
             'special_requests' => $request->input('specialRequests'),
         ]);

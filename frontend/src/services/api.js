@@ -1,7 +1,7 @@
 import { roomsData, experiencesData } from '../data/roomsData';
 import { categories } from '../data/categoriesData';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
 
 const getAuthHeaders = () => {
   let token = localStorage.getItem('token');
@@ -52,23 +52,7 @@ export const apiService = {
     return data;
   },
 
-  // 3. Đăng nhập bằng Google Email (JWT OAuth)
-  async googleLogin(payload) {
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/google`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || 'Xác thực Google không thành công.');
-      }
-      return data;
-    } catch (e) {
-      throw new Error(e.message || 'Không thể kết nối máy chủ đăng nhập.');
-    }
-  },
+
 
   // 4. Lấy thông tin người dùng hiện tại
   async me() {
@@ -146,10 +130,10 @@ export const apiService = {
         );
       }
       if (params.minPrice) {
-        filtered = filtered.filter((r) => r.priceUSD >= Number(params.minPrice));
+        filtered = filtered.filter((r) => (r.priceVND || r.priceUSD * 25450) >= Number(params.minPrice));
       }
       if (params.maxPrice) {
-        filtered = filtered.filter((r) => r.priceUSD <= Number(params.maxPrice));
+        filtered = filtered.filter((r) => (r.priceVND || r.priceUSD * 25450) <= Number(params.maxPrice));
       }
       if (params.guests) {
         filtered = filtered.filter((r) => r.specs.guests >= Number(params.guests));
@@ -167,6 +151,10 @@ export const apiService = {
     } catch (e) {
       return roomsData.find((r) => r.id === Number(id)) || null;
     }
+  },
+
+  async getRoomById(id) {
+    return this.getRoomDetail(id);
   },
 
   // 10. Lấy danh sách trải nghiệm

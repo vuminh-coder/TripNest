@@ -15,6 +15,8 @@ class AccommodationImage extends Model
     protected $fillable = [
         'accommodation_id',
         'image_url',
+        'image_type',
+        'google_search_link',
         'caption',
         'display_order',
         'is_thumbnail',

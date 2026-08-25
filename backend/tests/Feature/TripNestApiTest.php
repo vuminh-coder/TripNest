@@ -42,15 +42,13 @@ class TripNestApiTest extends TestCase
     }
 
     /**
-     * Test đăng nhập 1 chạm bằng Google Email
+     * Test đăng nhập bằng Email và Mật khẩu
      */
-    public function test_can_login_with_google_email(): void
+    public function test_can_login_with_email_and_password(): void
     {
-        $response = $this->postJson('/api/auth/google', [
-            'email' => 'test.google.user@gmail.com',
-            'google_id' => 'google-sub-999888777',
-            'name' => 'Test Google User',
-            'avatar' => 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+        $response = $this->postJson('/api/auth/login', [
+            'email' => 'demo.traveler@gmail.com',
+            'password' => '123456',
         ]);
 
         $response->assertStatus(200)
@@ -66,20 +64,61 @@ class TripNestApiTest extends TestCase
      */
     public function test_can_create_booking(): void
     {
+        $account = \App\Models\Account::first();
         $room = Room::first();
 
-        $response = $this->postJson('/api/bookings', [
+        $response = $this->actingAs($account, 'api')->postJson('/api/bookings', [
             'roomId' => $room->id,
             'checkIn' => date('Y-m-d', strtotime('+10 days')),
             'checkOut' => date('Y-m-d', strtotime('+15 days')),
             'guests' => 2,
-            'currency' => 'VND',
         ]);
 
         $response->assertStatus(201)
                  ->assertJsonStructure([
                      'success',
                      'booking' => ['id', 'roomId', 'roomTitle', 'checkIn', 'checkOut', 'totalPrice', 'status']
+                 ]);
+    }
+
+    /**
+     * Test tạo đơn đặt phòng mới có áp dụng Voucher
+     */
+    public function test_can_create_booking_with_voucher(): void
+    {
+        $account = \App\Models\Account::first();
+        $room = Room::first();
+
+        $response = $this->actingAs($account, 'api')->postJson('/api/bookings', [
+            'roomId' => $room->id,
+            'checkIn' => date('Y-m-d', strtotime('+10 days')),
+            'checkOut' => date('Y-m-d', strtotime('+15 days')),
+            'guests' => 2,
+            'voucherCode' => 'TRIPNESTVIP',
+        ]);
+
+        $response->assertStatus(201)
+                 ->assertJsonStructure([
+                     'success',
+                     'booking' => ['id', 'roomId', 'roomTitle', 'checkIn', 'checkOut', 'totalPrice', 'status']
+                 ]);
+    }
+
+    /**
+     * Test lấy chi tiết phòng kèm Radar Reviews Breakdown
+     */
+    public function test_can_get_room_detail_with_radar_breakdown(): void
+    {
+        $room = Room::first();
+        $response = $this->getJson("/api/rooms/{$room->id}");
+        $response->assertStatus(200)
+                 ->assertJsonStructure([
+                     'id',
+                     'title',
+                     'priceVND',
+                     'priceUSD',
+                     'rating',
+                     'reviewsBreakdown' => ['cleanliness', 'accuracy', 'communication', 'location', 'checkIn', 'value'],
                  ]);
     }
 

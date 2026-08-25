@@ -15,13 +15,10 @@ class Experience extends Model
     protected $fillable = [
         'host_id',
         'title_vi',
-        'title_en',
         'caption',
         'description',
         'city',
-        'country',
-        'price_usd_per_person',
-        'price_vnd_per_person',
+        'price_per_person',
         'rating',
         'reviews_count',
         'image_url',
@@ -32,8 +29,7 @@ class Experience extends Model
     protected function casts(): array
     {
         return [
-            'price_usd_per_person' => 'decimal:2',
-            'price_vnd_per_person' => 'decimal:2',
+            'price_per_person' => 'decimal:2',
             'rating' => 'decimal:2',
             'reviews_count' => 'integer',
             'duration_hours' => 'decimal:1',

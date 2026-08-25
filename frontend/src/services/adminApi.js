@@ -1,7 +1,7 @@
 // Admin API & State Service for TripNest Admin Portal
 import { initialAdminData } from './adminMockData';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
 
 const getAuthHeaders = () => {
   let token = localStorage.getItem('token');

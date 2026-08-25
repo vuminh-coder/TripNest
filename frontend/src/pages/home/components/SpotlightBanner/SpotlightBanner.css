@@ -1,0 +1,134 @@
+/* Spotlight Collection Banner */
+.spotlight-section {
+  margin-bottom: 2.5rem;
+}
+
+.section-headline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.section-title {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--dark);
+  letter-spacing: -0.3px;
+}
+
+.slider-arrows-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-arrow-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--gray-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dark);
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+  background: white;
+}
+
+.nav-arrow-btn:hover {
+  border-color: var(--dark);
+  transform: scale(1.05);
+}
+
+.spotlight-carousel {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+  padding-bottom: 0.5rem;
+}
+
+.spotlight-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.spotlight-card {
+  flex: 0 0 420px;
+  height: 250px;
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+  color: white;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.spotlight-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.spotlight-card-bg {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  transition: transform 0.6s ease;
+}
+
+.spotlight-card:hover .spotlight-card-bg {
+  transform: scale(1.06);
+}
+
+.spotlight-card-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%);
+  z-index: 2;
+}
+
+.spotlight-card-content {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.spotlight-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  opacity: 0.9;
+}
+
+.spotlight-card-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 0.25rem;
+}
+
+.spotlight-action-pill {
+  background: white;
+  color: var(--dark);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-sm);
+  width: fit-content;
+  transition: background var(--transition-fast);
+}
+
+.spotlight-card:hover .spotlight-action-pill {
+  background: #f1f1f1;
+}
+

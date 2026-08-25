@@ -23,10 +23,8 @@ class Room extends Model
         'space_type',
         'description',
         'room_size_m2',
-        'price_usd_per_night',
-        'price_vnd_per_night',
-        'cleaning_fee_usd',
-        'cleaning_fee_vnd',
+        'price_per_night',
+        'cleaning_fee',
         'service_fee_percent',
         'max_guests',
         'bedrooms_count',
@@ -42,10 +40,8 @@ class Room extends Model
     protected function casts(): array
     {
         return [
-            'price_usd_per_night' => 'decimal:2',
-            'price_vnd_per_night' => 'decimal:2',
-            'cleaning_fee_usd' => 'decimal:2',
-            'cleaning_fee_vnd' => 'decimal:2',
+            'price_per_night' => 'decimal:2',
+            'cleaning_fee' => 'decimal:2',
             'service_fee_percent' => 'decimal:2',
             'rating' => 'decimal:2',
             'room_size_m2' => 'decimal:2',

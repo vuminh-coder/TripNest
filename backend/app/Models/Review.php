@@ -16,28 +16,19 @@ class Review extends Model
         'booking_id',
         'room_id',
         'user_id',
-        'rating_overall',
-        'rating_cleanliness',
-        'rating_accuracy',
-        'rating_communication',
-        'rating_location',
-        'rating_checkin',
-        'rating_value',
+        'rating',
+        'rating_breakdown',
         'comment',
         'host_response',
         'host_responded_at',
+        'status',
     ];
 
     protected function casts(): array
     {
         return [
-            'rating_overall' => 'decimal:2',
-            'rating_cleanliness' => 'decimal:2',
-            'rating_accuracy' => 'decimal:2',
-            'rating_communication' => 'decimal:2',
-            'rating_location' => 'decimal:2',
-            'rating_checkin' => 'decimal:2',
-            'rating_value' => 'decimal:2',
+            'rating' => 'decimal:2',
+            'rating_breakdown' => 'array',
             'host_responded_at' => 'datetime',
         ];
     }

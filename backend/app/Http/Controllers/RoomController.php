@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ExchangeRate;
 use App\Models\Room;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -42,12 +43,12 @@ class RoomController extends Controller
             });
         }
 
-        // 3. Lọc theo khoảng giá (USD)
+        // 3. Lọc theo khoảng giá (VND — tiền tệ duy nhất trong DB)
         if ($request->filled('minPrice')) {
-            $query->where('price_usd_per_night', '>=', (float)$request->input('minPrice'));
+            $query->where('price_per_night', '>=', (float)$request->input('minPrice'));
         }
         if ($request->filled('maxPrice')) {
-            $query->where('price_usd_per_night', '<=', (float)$request->input('maxPrice'));
+            $query->where('price_per_night', '<=', (float)$request->input('maxPrice'));
         }
 
         // 4. Lọc theo số lượng khách
@@ -113,16 +114,27 @@ class RoomController extends Controller
 
         $amenityNames = $room->amenities->pluck('name_vi')->toArray();
 
-        // Tính radar reviews breakdown trung bình
+        // Tính radar reviews breakdown trung bình từ JSON rating_breakdown
         $reviews = $room->reviews;
+        $cleanlinessAvg = $reviews->avg(fn($r) => $r->rating_breakdown['cleanliness'] ?? null);
+        $accuracyAvg = $reviews->avg(fn($r) => $r->rating_breakdown['accuracy'] ?? null);
+        $commAvg = $reviews->avg(fn($r) => $r->rating_breakdown['communication'] ?? null);
+        $locAvg = $reviews->avg(fn($r) => $r->rating_breakdown['location'] ?? null);
+        $checkinAvg = $reviews->avg(fn($r) => $r->rating_breakdown['checkin'] ?? null);
+        $valueAvg = $reviews->avg(fn($r) => $r->rating_breakdown['value'] ?? null);
+
         $radar = [
-            'cleanliness' => $reviews->avg('rating_cleanliness') ? round($reviews->avg('rating_cleanliness'), 1) : 4.9,
-            'accuracy' => $reviews->avg('rating_accuracy') ? round($reviews->avg('rating_accuracy'), 1) : 5.0,
-            'communication' => $reviews->avg('rating_communication') ? round($reviews->avg('rating_communication'), 1) : 5.0,
-            'location' => $reviews->avg('rating_location') ? round($reviews->avg('rating_location'), 1) : 4.9,
-            'checkIn' => $reviews->avg('rating_checkin') ? round($reviews->avg('rating_checkin'), 1) : 5.0,
-            'value' => $reviews->avg('rating_value') ? round($reviews->avg('rating_value'), 1) : 4.9,
+            'cleanliness' => $cleanlinessAvg ? round($cleanlinessAvg, 1) : 4.9,
+            'accuracy' => $accuracyAvg ? round($accuracyAvg, 1) : 5.0,
+            'communication' => $commAvg ? round($commAvg, 1) : 5.0,
+            'location' => $locAvg ? round($locAvg, 1) : 4.9,
+            'checkIn' => $checkinAvg ? round($checkinAvg, 1) : 5.0,
+            'value' => $valueAvg ? round($valueAvg, 1) : 4.9,
         ];
+
+        // Giá VND là gốc, quy đổi USD qua bảng tỷ giá
+        $priceVND = (float)$room->price_per_night;
+        $cleaningFeeVND = (float)$room->cleaning_fee;
 
         $data = [
             'id' => $room->id,
@@ -136,10 +148,10 @@ class RoomController extends Controller
             'country' => $accommodation?->country ?: 'Việt Nam',
             'distance' => $accommodation?->distance_description ?: 'Cách trung tâm 4.2 km',
             'dates' => 'Ngày 12 - 17 tháng 10',
-            'priceUSD' => (float)$room->price_usd_per_night,
-            'priceVND' => (float)$room->price_vnd_per_night,
-            'cleaningFeeUSD' => (float)$room->cleaning_fee_usd,
-            'cleaningFeeVND' => (float)$room->cleaning_fee_vnd,
+            'priceVND' => $priceVND,
+            'priceUSD' => ExchangeRate::convert($priceVND, 'USD'),
+            'cleaningFeeVND' => $cleaningFeeVND,
+            'cleaningFeeUSD' => ExchangeRate::convert($cleaningFeeVND, 'USD'),
             'serviceFeePercent' => (float)$room->service_fee_percent,
             'rating' => (float)$room->rating,
             'reviewsCount' => (int)$room->reviews_count,
@@ -175,7 +187,8 @@ class RoomController extends Controller
                     'id' => $rev->id,
                     'userName' => $rev->user?->full_name ?: 'Khách du lịch',
                     'userAvatar' => $rev->user?->avatar_url,
-                    'rating' => (float)$rev->rating_overall,
+                    'rating' => (float)$rev->rating,
+                    'ratingBreakdown' => $rev->rating_breakdown,
                     'comment' => $rev->comment,
                     'createdAt' => $rev->created_at ? $rev->created_at->format('d/m/Y') : '',
                     'hostResponse' => $rev->host_response,

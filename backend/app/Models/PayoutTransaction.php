@@ -20,7 +20,6 @@ class PayoutTransaction extends Model
         'gross_amount',
         'platform_commission_fee',
         'net_payout_amount',
-        'currency',
         'status',
         'transaction_reference',
         'transferred_at',

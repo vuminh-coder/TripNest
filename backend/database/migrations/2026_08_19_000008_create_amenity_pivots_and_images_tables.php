@@ -32,6 +32,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('accommodation_id')->constrained('accommodations')->onDelete('cascade');
             $table->string('image_url', 500);
+            $table->string('image_type', 50)->nullable();
+            $table->text('google_search_link')->nullable();
             $table->string('caption', 255)->nullable();
             $table->integer('display_order')->default(0);
             $table->boolean('is_thumbnail')->default(false);
@@ -43,6 +45,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('room_id')->constrained('rooms')->onDelete('cascade');
             $table->string('image_url', 500);
+            $table->string('image_type', 50)->nullable();
+            $table->text('google_search_link')->nullable();
             $table->string('caption', 255)->nullable();
             $table->integer('display_order')->default(0);
             $table->boolean('is_thumbnail')->default(false);

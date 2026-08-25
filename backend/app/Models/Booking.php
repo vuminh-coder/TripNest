@@ -22,12 +22,13 @@ class Booking extends Model
         'check_out_date',
         'nights_count',
         'guests_count',
+        'price_per_night',
         'base_price',
         'cleaning_fee',
         'service_fee',
         'discount_amount',
+        'voucher_id',
         'total_price',
-        'currency',
         'status',
         'cancellation_reason',
         'cancelled_at',
@@ -41,6 +42,7 @@ class Booking extends Model
             'check_out_date' => 'date',
             'nights_count' => 'integer',
             'guests_count' => 'integer',
+            'price_per_night' => 'decimal:2',
             'base_price' => 'decimal:2',
             'cleaning_fee' => 'decimal:2',
             'service_fee' => 'decimal:2',
@@ -58,6 +60,11 @@ class Booking extends Model
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class, 'room_id');
+    }
+
+    public function voucher(): BelongsTo
+    {
+        return $this->belongsTo(Voucher::class, 'voucher_id');
     }
 
     public function review(): HasOne

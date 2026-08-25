@@ -16,15 +16,10 @@ class HostPayoutAccount extends Model
         'host_id',
         'account_type',
         'bank_name',
-        'bank_code',
-        'bank_branch',
         'account_number',
         'account_holder_name',
-        'swift_code',
-        'currency',
         'is_default',
         'is_verified',
-        'verification_document_url',
     ];
 
     protected function casts(): array

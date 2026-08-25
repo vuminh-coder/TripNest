@@ -1,0 +1,3102 @@
+[
+  {
+    "hotel_id": 1,
+    "hotel_name": "Dalat Palace Heritage Hotel",
+    "city": "Đà Lạt",
+    "images": [
+      {
+        "id": 1,
+        "hotel_id": 1,
+        "hotel_name": "Dalat Palace Heritage Hotel",
+        "city": "Đà Lạt",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền kiến trúc Pháp cổ bên hồ Xuân Hương",
+        "image_url": "https://wnfdiary.com/wp-content/uploads/2022/04/Dalat-palace-heritage-hotel-35.jpg",
+        "google_search_link": "https://www.google.com/search?q=Dalat+Palace+Heritage+Hotel+exterior+facade&tbm=isch"
+      },
+      {
+        "id": 2,
+        "hotel_id": 1,
+        "hotel_name": "Dalat Palace Heritage Hotel",
+        "city": "Đà Lạt",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Palace Deluxe nội thất cổ điển sang trọng",
+        "image_url": "https://www.dalatpalacehotel.com/wp-content/uploads/elementor/thumbs/7-1-r9k5ci4hau1nrf396tsnkd7f847n9tagem0n8s57ho.jpg",
+        "google_search_link": "https://www.google.com/search?q=Dalat+Palace+Heritage+Hotel+deluxe+room&tbm=isch"
+      },
+      {
+        "id": 3,
+        "hotel_id": 1,
+        "hotel_name": "Dalat Palace Heritage Hotel",
+        "city": "Đà Lạt",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Khu vực sảnh chính và vườn hoa",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8eMr0fc5eqgqfUPPf3-uzCcCOTNMWCORFw_urTicG3rSxniLnpSEXqeo&s=10",
+        "google_search_link": "https://www.google.com/search?q=Dalat+Palace+Heritage+Hotel+lobby+garden&tbm=isch"
+      },
+      {
+        "id": 4,
+        "hotel_id": 1,
+        "hotel_name": "Dalat Palace Heritage Hotel",
+        "city": "Đà Lạt",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View hồ Xuân Hương từ khách sạn",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUgvBwTiIrg0SoUl1ZVbQVmdWd1GqbbH2NuSE-dvJsytdkAPeCLQbDub12&s=10",
+        "google_search_link": "https://www.google.com/search?q=Dalat+Palace+Heritage+Hotel+Xuan+Huong+Lake+view&tbm=isch"
+      },
+      {
+        "id": 5,
+        "hotel_id": 1,
+        "hotel_name": "Dalat Palace Heritage Hotel",
+        "city": "Đà Lạt",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng Le Rabelais phong cách Pháp",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0E-JF6TnyT96GVO1d8JrPY0KmoJbT5UoGa0q4P4PFH59wp7CQlthSr9Y&s=10",
+        "google_search_link": "https://www.google.com/search?q=Dalat+Palace+Heritage+Hotel+Le+Rabelais+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 2,
+    "hotel_name": "Ana Mandara Villas Dalat",
+    "city": "Đà Lạt",
+    "images": [
+      {
+        "id": 6,
+        "hotel_id": 2,
+        "hotel_name": "Ana Mandara Villas Dalat",
+        "city": "Đà Lạt",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Biệt thự Pháp cổ giữa đồi thông",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbiKpzD1MKtYn7a0cPcBFXH7qyj3d3Dgdj-zufzL7cuFnXcLtyfdV1Y2E&s=10",
+        "google_search_link": "https://www.google.com/search?q=Ana+Mandara+Villas+Dalat+exterior+villa&tbm=isch"
+      },
+      {
+        "id": 7,
+        "hotel_id": 2,
+        "hotel_name": "Ana Mandara Villas Dalat",
+        "city": "Đà Lạt",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng ngủ vintage trong biệt thự cổ",
+        "image_url": "https://www.anamandara-resort.com/wp-content/uploads/sites/233/2025/07/VILLA-ROOM-1304-1.jpg",
+        "google_search_link": "https://www.google.com/search?q=Ana+Mandara+Villas+Dalat+bedroom+vintage&tbm=isch"
+      },
+      {
+        "id": 8,
+        "hotel_id": 2,
+        "hotel_name": "Ana Mandara Villas Dalat",
+        "city": "Đà Lạt",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi ngoài trời giữa vườn",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGCiws_GBb9GdqLkZLBxZ3DWb-mjcllGgw3lPM6mWK7UokK8E6pMyS66Yp&s=10",
+        "google_search_link": "https://www.google.com/search?q=Ana+Mandara+Villas+Dalat+swimming+pool&tbm=isch"
+      },
+      {
+        "id": 9,
+        "hotel_id": 2,
+        "hotel_name": "Ana Mandara Villas Dalat",
+        "city": "Đà Lạt",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Vườn hoa và đồi thông xung quanh",
+        "image_url": "https://cms.vietnamcoracle.com/wp-content/uploads/2025/01/20241217_124208-title-final-scaled.jpg",
+        "google_search_link": "https://www.google.com/search?q=Ana+Mandara+Villas+Dalat+garden+pine+hill&tbm=isch"
+      },
+      {
+        "id": 10,
+        "hotel_id": 2,
+        "hotel_name": "Ana Mandara Villas Dalat",
+        "city": "Đà Lạt",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Spa và khu thư giãn",
+        "image_url": "https://images.myguide-cdn.com/vietnam/companies/large/ana-mandara-villas-dalat-resort-spa-410472.jpg",
+        "google_search_link": "https://www.google.com/search?q=Ana+Mandara+Villas+Dalat+spa&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 3,
+    "hotel_name": "Dalat Edensee Lake Resort",
+    "city": "Đà Lạt",
+    "images": [
+      {
+        "id": 11,
+        "hotel_id": 3,
+        "hotel_name": "Dalat Edensee Lake Resort",
+        "city": "Đà Lạt",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Toàn cảnh resort bên hồ Tuyền Lâm",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSP179UPKWUFsL397wpGFpS8IJis8lC9ac0DjvSfwqyIxuxXBDGbaqriM&s=10",
+        "google_search_link": "https://www.google.com/search?q=Dalat+Edensee+Lake+Resort+aerial+Tuyen+Lam&tbm=isch"
+      },
+      {
+        "id": 12,
+        "hotel_id": 3,
+        "hotel_name": "Dalat Edensee Lake Resort",
+        "city": "Đà Lạt",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Lake View Deluxe nhìn ra hồ",
+        "image_url": "https://angialand.com.vn/wp-content/uploads/2021/08/hang-phong-junior-resort-dalat-edensee-lake-resort-spa-da-lat-94-bui-thi-xuan-phuong-4-tp-da-lat-2.jpg",
+        "google_search_link": "https://www.google.com/search?q=Dalat+Edensee+Lake+Resort+lake+view+room&tbm=isch"
+      },
+      {
+        "id": 13,
+        "hotel_id": 3,
+        "hotel_name": "Dalat Edensee Lake Resort",
+        "city": "Đà Lạt",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Khu vực hồ bơi và giải trí",
+        "image_url": "https://pix10.agoda.net/property/267272/0/635a0890e616634b6bde001e7772075d.jpeg?ce=0&s=1024x768",
+        "google_search_link": "https://www.google.com/search?q=Dalat+Edensee+Lake+Resort+pool&tbm=isch"
+      },
+      {
+        "id": 14,
+        "hotel_id": 3,
+        "hotel_name": "Dalat Edensee Lake Resort",
+        "city": "Đà Lạt",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View hồ Tuyền Lâm và rừng thông",
+        "image_url": "https://sp-ao.shortpixel.ai/client/to_webp,q_glossy,ret_img,w_2560,h_1238/https://www.dalatedensee.com/wp-content/uploads/2026/02/1-Dalat-Edensee-Resort-scaled.jpg",
+        "google_search_link": "https://www.google.com/search?q=Dalat+Edensee+Lake+Resort+Tuyen+Lam+lake+view&tbm=isch"
+      },
+      {
+        "id": 15,
+        "hotel_id": 3,
+        "hotel_name": "Dalat Edensee Lake Resort",
+        "city": "Đà Lạt",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Cinema riêng và phòng giải trí",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2cfdTD_xTK3adE0inkVt2OKz5PcQzC6yaozADENSNLTWmXkvVxXrlA3M&s=10",
+        "google_search_link": "https://www.google.com/search?q=Dalat+Edensee+Lake+Resort+cinema+entertainment&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 4,
+    "hotel_name": "MerPerle Dalat Hotel",
+    "city": "Đà Lạt",
+    "images": [
+      {
+        "id": 16,
+        "hotel_id": 4,
+        "hotel_name": "MerPerle Dalat Hotel",
+        "city": "Đà Lạt",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền khách sạn kiến trúc bán cổ điển",
+        "image_url": "https://images.trvl-media.com/lodging/100000000/99680000/99670300/99670278/408ba043.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill",
+        "google_search_link": "https://www.google.com/search?q=MerPerle+Dalat+Hotel+exterior+facade&tbm=isch"
+      },
+      {
+        "id": 17,
+        "hotel_id": 4,
+        "hotel_name": "MerPerle Dalat Hotel",
+        "city": "Đà Lạt",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Grand Deluxe hiện đại",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdO9LYzSFJ8OOdtF0y-YgpVYSHwEysyUD31UDGUXtqVw&s",
+        "google_search_link": "https://www.google.com/search?q=MerPerle+Dalat+Hotel+Grand+Deluxe+room&tbm=isch"
+      },
+      {
+        "id": 18,
+        "hotel_id": 4,
+        "hotel_name": "MerPerle Dalat Hotel",
+        "city": "Đà Lạt",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi nước ấm trong nhà",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTirRQmBAyKGmdvqeGCwkZB488gK-Kl3NOuBEODAti-U5fnKNCyjpNXPLs7&s=10",
+        "google_search_link": "https://www.google.com/search?q=MerPerle+Dalat+Hotel+indoor+warm+pool&tbm=isch"
+      },
+      {
+        "id": 19,
+        "hotel_id": 4,
+        "hotel_name": "MerPerle Dalat Hotel",
+        "city": "Đà Lạt",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Sky Bar 360 độ view toàn thành phố",
+        "image_url": "https://merperledalat.vn/wp-content/uploads/2025/04/rooftop-bar.png",
+        "google_search_link": "https://www.google.com/search?q=MerPerle+Dalat+Hotel+Sky+Bar+360+view&tbm=isch"
+      },
+      {
+        "id": 20,
+        "hotel_id": 4,
+        "hotel_name": "MerPerle Dalat Hotel",
+        "city": "Đà Lạt",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Spa Hàn Quốc và nhà hàng buffet",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuE7JsuxzRvn4EVn42AFNpUlJJ1UtC3-EXcx5a1X7fTiGYv9QaFQxFifv5&s=10",
+        "google_search_link": "https://www.google.com/search?q=MerPerle+Dalat+Hotel+spa+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 5,
+    "hotel_name": "Hôtel Colline Đà Lạt",
+    "city": "Đà Lạt",
+    "images": [
+      {
+        "id": 21,
+        "hotel_id": 5,
+        "hotel_name": "Hôtel Colline Đà Lạt",
+        "city": "Đà Lạt",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền boutique hotel trung tâm",
+        "image_url": "https://media-cdn.tripadvisor.com/media/photo-s/19/eb/b7/12/hotel-colline.jpg",
+        "google_search_link": "https://www.google.com/search?q=Hotel+Colline+Da+Lat+exterior&tbm=isch"
+      },
+      {
+        "id": 22,
+        "hotel_id": 5,
+        "hotel_name": "Hôtel Colline Đà Lạt",
+        "city": "Đà Lạt",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Superior City View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBwCqphHPNI29qQi5gidUsaakhGRPVy7MXy9jDUnjxwQ&s",
+        "google_search_link": "https://www.google.com/search?q=Hotel+Colline+Da+Lat+superior+room&tbm=isch"
+      },
+      {
+        "id": 23,
+        "hotel_id": 5,
+        "hotel_name": "Hôtel Colline Đà Lạt",
+        "city": "Đà Lạt",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Sảnh khách sạn thiết kế hiện đại",
+        "image_url": "https://images.trvl-media.com/lodging/34000000/33380000/33375600/33375518/5f94d838.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill",
+        "google_search_link": "https://www.google.com/search?q=Hotel+Colline+Da+Lat+lobby&tbm=isch"
+      },
+      {
+        "id": 24,
+        "hotel_id": 5,
+        "hotel_name": "Hôtel Colline Đà Lạt",
+        "city": "Đà Lạt",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View thành phố Đà Lạt từ ban công",
+        "image_url": "https://images.trvl-media.com/lodging/125000000/124530000/124524000/124523973/63f68212.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill",
+        "google_search_link": "https://www.google.com/search?q=Hotel+Colline+Da+Lat+city+view+balcony&tbm=isch"
+      },
+      {
+        "id": 25,
+        "hotel_id": 5,
+        "hotel_name": "Hôtel Colline Đà Lạt",
+        "city": "Đà Lạt",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng và quầy bar",
+        "image_url": "https://lh5.googleusercontent.com/proxy/5bu0hyn74qRUgAGjDkdTXXugSTr1Mo5Rq7u50s-92bhyTZfSrIoBOXjjFjWg4QwNc7MqBSKywtz-xDc-XnOihyDHsAdc1-_dfn66y75sCvdvt2iJ2fZqWvQ",
+        "google_search_link": "https://www.google.com/search?q=Hotel+Colline+Da+Lat+restaurant+bar&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 6,
+    "hotel_name": "JW Marriott Phu Quoc",
+    "city": "Phú Quốc",
+    "images": [
+      {
+        "id": 26,
+        "hotel_id": 6,
+        "hotel_name": "JW Marriott Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Toàn cảnh kiến trúc Lamarck University",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7ALCD3W8oBbLPM8aEWdGQKHlQFZQ9ouGCZiQFeI9_QamRBbwXXCjs3-SV&s=10",
+        "google_search_link": "https://www.google.com/search?q=JW+Marriott+Phu+Quoc+Emerald+Bay+exterior+aerial&tbm=isch"
+      },
+      {
+        "id": 27,
+        "hotel_id": 6,
+        "hotel_name": "JW Marriott Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Emerald Bay Villa với hồ bơi riêng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSD8AYp1N4yL5knJEjQfXgnCgZPWiPD3rHhxs7RLu40YNbYg2FflHK1kJI6&s=10",
+        "google_search_link": "https://www.google.com/search?q=JW+Marriott+Phu+Quoc+villa+private+pool&tbm=isch"
+      },
+      {
+        "id": 28,
+        "hotel_id": 6,
+        "hotel_name": "JW Marriott Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Shell Pool và hồ bơi vô cực",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT36RFltQ5L9y1UIMM8mgGOXiBYbc5D9I4LhfmH3QtYv8KUaCkBnW4w-C8&s=10",
+        "google_search_link": "https://www.google.com/search?q=JW+Marriott+Phu+Quoc+shell+pool+infinity&tbm=isch"
+      },
+      {
+        "id": 29,
+        "hotel_id": 6,
+        "hotel_name": "JW Marriott Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi Khem biển xanh trong vắt",
+        "image_url": "https://cf.bstatic.com/xdata/images/hotel/max1024x768/604295994.jpg?k=7d5de78184e94eef4a9a3b65461c0ebbe717a9e18f51401c80a70c125bf4474c&o=",
+        "google_search_link": "https://www.google.com/search?q=JW+Marriott+Phu+Quoc+Bai+Khem+beach&tbm=isch"
+      },
+      {
+        "id": 30,
+        "hotel_id": 6,
+        "hotel_name": "JW Marriott Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng Red Rum và ẩm thực",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShsJUshTm96d5EszmjbJUBS90bnWvk1ya5m4-Hp6WFYqhwnJI2OzEzOrZR&s=10",
+        "google_search_link": "https://www.google.com/search?q=JW+Marriott+Phu+Quoc+Red+Rum+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 7,
+    "hotel_name": "Regent Phu Quoc",
+    "city": "Phú Quốc",
+    "images": [
+      {
+        "id": 31,
+        "hotel_id": 7,
+        "hotel_name": "Regent Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền resort ultra luxury hoàng hôn",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQY6uoMB2TG7xR3mdFkndrbnC0lBV3vXoMC0r5nHBPi8w&s",
+        "google_search_link": "https://www.google.com/search?q=Regent+Phu+Quoc+resort+exterior+sunset&tbm=isch"
+      },
+      {
+        "id": 32,
+        "hotel_id": 7,
+        "hotel_name": "Regent Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Suite hướng biển nội thất cao cấp",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuMvhdipuDpbX_qRrwomUWH0MRziCM_SgKJCongpb_iQ&s",
+        "google_search_link": "https://www.google.com/search?q=Regent+Phu+Quoc+suite+ocean+view+room&tbm=isch"
+      },
+      {
+        "id": 33,
+        "hotel_id": 7,
+        "hotel_name": "Regent Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi vô cực view Bãi Trường",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSitoSTOF0ID9P_yxA_Wym9WAOJ4070VPVDENBBVeJitoh4CYcecw7zPKY&s=10",
+        "google_search_link": "https://www.google.com/search?q=Regent+Phu+Quoc+infinity+pool&tbm=isch"
+      },
+      {
+        "id": 34,
+        "hotel_id": 7,
+        "hotel_name": "Regent Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi biển riêng hoàng hôn",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUPi8ZRhCBZ_4zFAz88Xcwf2uUDdBdJrB4qMxg3hvme4fxAriBb9aNhvA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Regent+Phu+Quoc+private+beach+sunset&tbm=isch"
+      },
+      {
+        "id": 35,
+        "hotel_id": 7,
+        "hotel_name": "Regent Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Spa cao cấp và nhà hàng fine-dining",
+        "image_url": "https://phuquoc.regenthotels.com/sites/rpq/files/news_press/Oku_Night%20shoot.jpg",
+        "google_search_link": "https://www.google.com/search?q=Regent+Phu+Quoc+spa+fine+dining&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 8,
+    "hotel_name": "Premier Village Phu Quoc",
+    "city": "Phú Quốc",
+    "images": [
+      {
+        "id": 36,
+        "hotel_id": 8,
+        "hotel_name": "Premier Village Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Biệt thự trên đồi Mũi Ông Đội",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT42B6wSw5vuRSubdiPUri7drCy_zx3_v20CCXIycnYqq8Ss8RlZ5jyRfw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Premier+Village+Phu+Quoc+villa+hill+aerial&tbm=isch"
+      },
+      {
+        "id": 37,
+        "hotel_id": 8,
+        "hotel_name": "Premier Village Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng ngủ biệt thự 2PN view biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTT4SPM3Gm-0D0qDryehU5APQg0I-Bhrwi9h7m7NRsB1SNu9zojzmbSkVc&s=10",
+        "google_search_link": "https://www.google.com/search?q=Premier+Village+Phu+Quoc+villa+bedroom&tbm=isch"
+      },
+      {
+        "id": 38,
+        "hotel_id": 8,
+        "hotel_name": "Premier Village Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi riêng trong biệt thự",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6px6PQ4iZljrmrcCyZjmxbiXV_kmiD2MqMTqUogbHqA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Premier+Village+Phu+Quoc+private+pool+villa&tbm=isch"
+      },
+      {
+        "id": 39,
+        "hotel_id": 8,
+        "hotel_name": "Premier Village Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Hoàng hôn Mũi Ông Đội 2 mặt biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCC5S_-HEEFgZVzNXnJS95Fy9C414ruHOpooldQawyFA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Premier+Village+Phu+Quoc+Mui+Ong+Doi+sunset&tbm=isch"
+      },
+      {
+        "id": 40,
+        "hotel_id": 8,
+        "hotel_name": "Premier Village Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Bếp đầy đủ và khu BBQ",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPdMBfRSNOD2hJjysN2B0NCHqfBzkRYXIjOj7j6AhzOg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Premier+Village+Phu+Quoc+kitchen+BBQ&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 9,
+    "hotel_name": "New World Phu Quoc Resort",
+    "city": "Phú Quốc",
+    "images": [
+      {
+        "id": 41,
+        "hotel_id": 9,
+        "hotel_name": "New World Phu Quoc Resort",
+        "city": "Phú Quốc",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Villa mái lá truyền thống nhiệt đới",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOTMMQmsZXglfCIQxhfeSc55gPBFGO9Ghmr_eDQH2cbw&s=10",
+        "google_search_link": "https://www.google.com/search?q=New+World+Phu+Quoc+Resort+villa+exterior&tbm=isch"
+      },
+      {
+        "id": 42,
+        "hotel_id": 9,
+        "hotel_name": "New World Phu Quoc Resort",
+        "city": "Phú Quốc",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng ngủ Garden Villa",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbNFN1CPhyHo7BgtGfTSN3RN7HEX6NXfCPQ-JWlzIGBg&s=10",
+        "google_search_link": "https://www.google.com/search?q=New+World+Phu+Quoc+Resort+garden+villa+room&tbm=isch"
+      },
+      {
+        "id": 43,
+        "hotel_id": 9,
+        "hotel_name": "New World Phu Quoc Resort",
+        "city": "Phú Quốc",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi chính trong resort",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRubojaHJSzlsjpUSERks2vjqenXvzCAJKY1Nw7y9QUIlFicaFh2X-gxLU7&s=10",
+        "google_search_link": "https://www.google.com/search?q=New+World+Phu+Quoc+Resort+swimming+pool&tbm=isch"
+      },
+      {
+        "id": 44,
+        "hotel_id": 9,
+        "hotel_name": "New World Phu Quoc Resort",
+        "city": "Phú Quốc",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi Khem từ resort",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCbKhrAHDRmTRFS1ZFl7HpTXqqcUJUhTjHQ5AHw0DLMF10J_sAUZyPYiJ5&s=10",
+        "google_search_link": "https://www.google.com/search?q=New+World+Phu+Quoc+Resort+Bai+Khem+beach&tbm=isch"
+      },
+      {
+        "id": 45,
+        "hotel_id": 9,
+        "hotel_name": "New World Phu Quoc Resort",
+        "city": "Phú Quốc",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng và Kids Club",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQEtF2UszITgXx9vr-CZhCPmHPasZj-NAWgCIxKGw532A&s=10",
+        "google_search_link": "https://www.google.com/search?q=New+World+Phu+Quoc+Resort+restaurant+kids+club&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 10,
+    "hotel_name": "Radisson Blu Phu Quoc",
+    "city": "Phú Quốc",
+    "images": [
+      {
+        "id": 46,
+        "hotel_id": 10,
+        "hotel_name": "Radisson Blu Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền resort hiện đại Bãi Dài",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaRWcon6YBLU_pMCy30a4_iTdFRC87GkVVEWPFjkZqu3ItDj4WMZFPTeQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Radisson+Blu+Resort+Phu+Quoc+exterior&tbm=isch"
+      },
+      {
+        "id": 47,
+        "hotel_id": 10,
+        "hotel_name": "Radisson Blu Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Deluxe Ocean View",
+        "image_url": "https://media.radissonhotels.net/image/radisson-blu-resort-phu-quoc/guest-room/16256-116605-f89823055_4K.jpg?impolicy=Card",
+        "google_search_link": "https://www.google.com/search?q=Radisson+Blu+Resort+Phu+Quoc+ocean+view+room&tbm=isch"
+      },
+      {
+        "id": 48,
+        "hotel_id": 10,
+        "hotel_name": "Radisson Blu Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi chính view biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSY2bNvXVNfzcuDUz8D9pi618TSiFIc3l78ugFaHyQ5X7qDbIPVcRe8Oqc&s=10",
+        "google_search_link": "https://www.google.com/search?q=Radisson+Blu+Resort+Phu+Quoc+pool&tbm=isch"
+      },
+      {
+        "id": 49,
+        "hotel_id": 10,
+        "hotel_name": "Radisson Blu Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi biển Bãi Dài",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjltJlkcKlePdnXNxC_Nlx2KwqST08wK5KCKlYKxDvjg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Radisson+Blu+Resort+Phu+Quoc+Bai+Dai+beach&tbm=isch"
+      },
+      {
+        "id": 50,
+        "hotel_id": 10,
+        "hotel_name": "Radisson Blu Phu Quoc",
+        "city": "Phú Quốc",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Lobby và nhà hàng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLA9eelZL4GKzYJOKpkDo1xu94JJLCzuu5W6HI9gQUzwk54pSD9e8bTrg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Radisson+Blu+Resort+Phu+Quoc+lobby+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 11,
+    "hotel_name": "Four Seasons The Nam Hai",
+    "city": "Hội An",
+    "images": [
+      {
+        "id": 51,
+        "hotel_id": 11,
+        "hotel_name": "Four Seasons The Nam Hai",
+        "city": "Hội An",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Hồ bơi bậc thang cascading hướng biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfEA0klTRkRNWMMRfLFZGe76I0AlRYCok-mOz--SZLEoZIoZhTpx3NlIHH&s=10",
+        "google_search_link": "https://www.google.com/search?q=Four+Seasons+Nam+Hai+Hoi+An+cascading+pools&tbm=isch"
+      },
+      {
+        "id": 52,
+        "hotel_id": 11,
+        "hotel_name": "Four Seasons The Nam Hai",
+        "city": "Hội An",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Ocean Villa với hồ bơi riêng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNKSAE4jquQRDD0fD1NbX-qJUNTUSz9jFJWxbgNCDcOQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Four+Seasons+Nam+Hai+Hoi+An+ocean+villa+pool&tbm=isch"
+      },
+      {
+        "id": 53,
+        "hotel_id": 11,
+        "hotel_name": "Four Seasons The Nam Hai",
+        "city": "Hội An",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi Olympic view biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7Gn8eQBArdEivabdnFbct3nYBmX4Na7q2xc9lvWn3WYAMND_k5M-MGVA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Four+Seasons+Nam+Hai+Hoi+An+main+pool+beach&tbm=isch"
+      },
+      {
+        "id": 54,
+        "hotel_id": 11,
+        "hotel_name": "Four Seasons The Nam Hai",
+        "city": "Hội An",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi biển Hà My cát trắng",
+        "image_url": "https://images.trvl-media.com/lodging/2000000/1660000/1659100/1659007/23c55347.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill",
+        "google_search_link": "https://www.google.com/search?q=Four+Seasons+Nam+Hai+Hoi+An+Ha+My+beach&tbm=isch"
+      },
+      {
+        "id": 55,
+        "hotel_id": 11,
+        "hotel_name": "Four Seasons The Nam Hai",
+        "city": "Hội An",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Spa đẳng cấp và nhà hàng La Sen",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyPo4zPvbqemsOxRpyLbBeLd9viMH4jQH0VCmEZXFDwQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Four+Seasons+Nam+Hai+Hoi+An+spa+La+Sen&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 12,
+    "hotel_name": "Victoria Hội An Resort",
+    "city": "Hội An",
+    "images": [
+      {
+        "id": 56,
+        "hotel_id": 12,
+        "hotel_name": "Victoria Hội An Resort",
+        "city": "Hội An",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Kiến trúc Đông Dương ven biển Cửa Đại",
+        "image_url": "https://pix10.agoda.net/hotelImages/2019/-1/41d93bf1419c342a097e376c5ec187b3.jpg?ce=0&s=414x232",
+        "google_search_link": "https://www.google.com/search?q=Victoria+Hoi+An+Beach+Resort+exterior&tbm=isch"
+      },
+      {
+        "id": 57,
+        "hotel_id": 12,
+        "hotel_name": "Victoria Hội An Resort",
+        "city": "Hội An",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Superior Garden View",
+        "image_url": "https://www.victoriahotels.asia/wp-content/uploads/2025/06/Superior-River-View-4.jpg",
+        "google_search_link": "https://www.google.com/search?q=Victoria+Hoi+An+Resort+superior+room&tbm=isch"
+      },
+      {
+        "id": 58,
+        "hotel_id": 12,
+        "hotel_name": "Victoria Hội An Resort",
+        "city": "Hội An",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi lớn hướng biển",
+        "image_url": "https://media-cdn.tripadvisor.com/media/photo-s/2b/ae/e8/6f/caption.jpg",
+        "google_search_link": "https://www.google.com/search?q=Victoria+Hoi+An+Resort+swimming+pool+beach&tbm=isch"
+      },
+      {
+        "id": 59,
+        "hotel_id": 12,
+        "hotel_name": "Victoria Hội An Resort",
+        "city": "Hội An",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Biển Cửa Đại từ resort",
+        "image_url": "https://pix10.agoda.net/hotelImages/2019/-1/8c8b010d857d1e99d556ffcac72646a0.jpg?ce=0&s=414x232&ar=16x9",
+        "google_search_link": "https://www.google.com/search?q=Victoria+Hoi+An+Resort+Cua+Dai+beach&tbm=isch"
+      },
+      {
+        "id": 60,
+        "hotel_id": 12,
+        "hotel_name": "Victoria Hội An Resort",
+        "city": "Hội An",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Xe sidecar dạo phố cổ",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5J51jX8x2JmxGVlKGc2YocxEt6mzmcnmCy8BNwxqoqg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Victoria+Hoi+An+Resort+sidecar+old+town&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 13,
+    "hotel_name": "Hoiana Resort & Golf",
+    "city": "Hội An",
+    "images": [
+      {
+        "id": 61,
+        "hotel_id": 13,
+        "hotel_name": "Hoiana Resort & Golf",
+        "city": "Hội An",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Toàn cảnh quần thể aerial",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRKKjhZa5Qvh1a0LjponDdab5DF0RgzFzl1GgnrQSjkQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hoiana+Resort+Golf+Hoi+An+aerial+view&tbm=isch"
+      },
+      {
+        "id": 62,
+        "hotel_id": 13,
+        "hotel_name": "Hoiana Resort & Golf",
+        "city": "Hội An",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Hoiana Residences phòng ngủ",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIH-4-wqOHyzUHIzE-JjTUxfW9M5ahIIRwLuQNyp7Wdg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hoiana+Resort+Hoi+An+residences+room&tbm=isch"
+      },
+      {
+        "id": 63,
+        "hotel_id": 13,
+        "hotel_name": "Hoiana Resort & Golf",
+        "city": "Hội An",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi chính resort",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUlM3mKJiyF16b5tR_cKFaRkLpJ3SuKXoOT1AtZUNBwA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hoiana+Resort+Hoi+An+swimming+pool&tbm=isch"
+      },
+      {
+        "id": 64,
+        "hotel_id": 13,
+        "hotel_name": "Hoiana Resort & Golf",
+        "city": "Hội An",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Sân golf 18 lỗ quốc tế",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe5ic0nsYj68pTM2e9E_Rlp57TfkD4JnGKmdxQ6IEkEg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hoiana+Resort+Hoi+An+golf+course&tbm=isch"
+      },
+      {
+        "id": 65,
+        "hotel_id": 13,
+        "hotel_name": "Hoiana Resort & Golf",
+        "city": "Hội An",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng và casino giải trí",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIsNspGTNe_TWHketOqJAOWVW8F0nuTueVoqVEIy4fjQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hoiana+Resort+Hoi+An+restaurant+casino&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 14,
+    "hotel_name": "Anantara Hoi An Resort",
+    "city": "Hội An",
+    "images": [
+      {
+        "id": 66,
+        "hotel_id": 14,
+        "hotel_name": "Anantara Hoi An Resort",
+        "city": "Hội An",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Resort phong cách thuộc địa ven sông Thu Bồn",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSbY2-DRLgwbbtrnNb_BU18kLm_RH0uqd_Ryc3TH4vZw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Anantara+Hoi+An+Resort+exterior+Thu+Bon+river&tbm=isch"
+      },
+      {
+        "id": 67,
+        "hotel_id": 14,
+        "hotel_name": "Anantara Hoi An Resort",
+        "city": "Hội An",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Deluxe Garden View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRas0j3rgqCDWVDG0hhe7eXAsAkMYwUx7vT5DI7CwmFKg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Anantara+Hoi+An+Resort+deluxe+room&tbm=isch"
+      },
+      {
+        "id": 68,
+        "hotel_id": 14,
+        "hotel_name": "Anantara Hoi An Resort",
+        "city": "Hội An",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi giữa vườn nhiệt đới",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-h5Q2pwMTHyuuifymPm_muI-C5b43Kj84IelHMv2m8HXUQNUoY-KmQJw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Anantara+Hoi+An+Resort+pool+tropical+garden&tbm=isch"
+      },
+      {
+        "id": 69,
+        "hotel_id": 14,
+        "hotel_name": "Anantara Hoi An Resort",
+        "city": "Hội An",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Sông Thu Bồn buổi chiều",
+        "image_url": "https://q-xx.bstatic.com/xdata/images/hotel/max500/220308997.jpg?k=60cdc91ade38d5bbcc4773501e4dedcb237eab5d80c7704581915fb66942a74a&o=",
+        "google_search_link": "https://www.google.com/search?q=Anantara+Hoi+An+Resort+Thu+Bon+river+view&tbm=isch"
+      },
+      {
+        "id": 70,
+        "hotel_id": 14,
+        "hotel_name": "Anantara Hoi An Resort",
+        "city": "Hội An",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Du thuyền trên sông và lớp nấu ăn",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrk2voo_UUFyBK9MXo1K_kS0QcZtrHbNXw9FO6hG-JWuchZwpSj9Eg4sXN&s=10",
+        "google_search_link": "https://www.google.com/search?q=Anantara+Hoi+An+Resort+boat+cooking+class&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 15,
+    "hotel_name": "Little Riverside Hoi An",
+    "city": "Hội An",
+    "images": [
+      {
+        "id": 71,
+        "hotel_id": 15,
+        "hotel_name": "Little Riverside Hoi An",
+        "city": "Hội An",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền boutique hotel ven sông Hoài",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRos1u5q_kzOHQywAm3Gdl4GYUrV99-_b1wT5x25IYssg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Little+Riverside+Hoi+An+exterior+river&tbm=isch"
+      },
+      {
+        "id": 72,
+        "hotel_id": 15,
+        "hotel_name": "Little Riverside Hoi An",
+        "city": "Hội An",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng River View Deluxe",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcZgQeyf9DVEJxN314cZjEw_e1X0KVE47EFG0xvPiAbw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Little+Riverside+Hoi+An+river+view+room&tbm=isch"
+      },
+      {
+        "id": 73,
+        "hotel_id": 15,
+        "hotel_name": "Little Riverside Hoi An",
+        "city": "Hội An",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi vô cực rooftop view sông",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpWkTnXkuVHEVTJyHxvZAzS4Snp3pOfMpoCOlADGArcg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Little+Riverside+Hoi+An+infinity+pool+rooftop&tbm=isch"
+      },
+      {
+        "id": 74,
+        "hotel_id": 15,
+        "hotel_name": "Little Riverside Hoi An",
+        "city": "Hội An",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View sông Hoài và phố cổ đêm",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbA0hcNju1Dl7zT780R7039a7xUuXRT3wH51kwbywMYQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Little+Riverside+Hoi+An+Hoai+river+night+view&tbm=isch"
+      },
+      {
+        "id": 75,
+        "hotel_id": 15,
+        "hotel_name": "Little Riverside Hoi An",
+        "city": "Hội An",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Bar trên cao và spa",
+        "image_url": "https://q-xx.bstatic.com/xdata/images/hotel/max500/439295971.jpg?k=76387e16728c9eb42f82494675444ff618f46f4b8bd1dc50351934821b528eaa&o=",
+        "google_search_link": "https://www.google.com/search?q=Little+Riverside+Hoi+An+rooftop+bar+spa&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 16,
+    "hotel_name": "InterContinental Nha Trang",
+    "city": "Nha Trang",
+    "images": [
+      {
+        "id": 76,
+        "hotel_id": 16,
+        "hotel_name": "InterContinental Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền đường biển Trần Phú",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/f/ff/InterContinental_Nha_Trang_-_Exterior.png?utm_source=vi.wikipedia.org&utm_campaign=index&utm_content=original",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Nha+Trang+exterior+Tran+Phu&tbm=isch"
+      },
+      {
+        "id": 77,
+        "hotel_id": 16,
+        "hotel_name": "InterContinental Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Classic Ocean View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJfqCQI63OkKmxkpdkilj-uZH0cpeSG2GDF05Jc_ZNkW0Ji-owVLKVXtA&s=10",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Nha+Trang+ocean+view+room&tbm=isch"
+      },
+      {
+        "id": 78,
+        "hotel_id": 16,
+        "hotel_name": "InterContinental Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi vô cực view biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzZZxRXLqRfiZRAniEerXb_sWEOtu1kBOpEIzx1Xqe4LJ1CcE75TnB5Xk&s=10",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Nha+Trang+infinity+pool&tbm=isch"
+      },
+      {
+        "id": 79,
+        "hotel_id": 16,
+        "hotel_name": "InterContinental Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View biển Nha Trang panorama",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyUCveMJvYsQ9NdgXF1XjpDERe9C8liVEY--E9yEYUnTPjmRUGFcO_Sw00&s=10",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Nha+Trang+sea+view+panorama&tbm=isch"
+      },
+      {
+        "id": 80,
+        "hotel_id": 16,
+        "hotel_name": "InterContinental Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Rooftop Bar và nhà hàng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3VqZhbdYzHNMyPPGWBovTmpBW0X23Zadwc7xsgCneaA&s=10",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Nha+Trang+rooftop+bar+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 17,
+    "hotel_name": "Amiana Resort Nha Trang",
+    "city": "Nha Trang",
+    "images": [
+      {
+        "id": 81,
+        "hotel_id": 17,
+        "hotel_name": "Amiana Resort Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Toàn cảnh resort bãi biển riêng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRFxHBJP0H1-RPARWjZr9wnI4qfc1AfVP7857qamMteA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Amiana+Resort+Nha+Trang+aerial+private+beach&tbm=isch"
+      },
+      {
+        "id": 82,
+        "hotel_id": 17,
+        "hotel_name": "Amiana Resort Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Amiana Suite Ocean nội thất",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8zf39JRFP52qwX6ZVtWYgmUI8H4B20kDsHEUIwf1Yqw&s",
+        "google_search_link": "https://www.google.com/search?q=Amiana+Resort+Nha+Trang+suite+ocean+room&tbm=isch"
+      },
+      {
+        "id": 83,
+        "hotel_id": 17,
+        "hotel_name": "Amiana Resort Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi nước mặn ngoài trời",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDjleLrKF28rD8ed5TDFLa93VGGWcWp08AuetULzqerg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Amiana+Resort+Nha+Trang+saltwater+pool&tbm=isch"
+      },
+      {
+        "id": 84,
+        "hotel_id": 17,
+        "hotel_name": "Amiana Resort Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi biển riêng và vịnh",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLJ5LEvb_Xs3Qt5uix8y8AtnZInX6GhxzqP73jq0r6Dg&s",
+        "google_search_link": "https://www.google.com/search?q=Amiana+Resort+Nha+Trang+private+beach+bay&tbm=isch"
+      },
+      {
+        "id": 85,
+        "hotel_id": 17,
+        "hotel_name": "Amiana Resort Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Tắm bùn khoáng và spa",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQBCSBzb_tvUuqbEGqtRJNomwgy7SbBoWYiYZsQhA1Rbw&s",
+        "google_search_link": "https://www.google.com/search?q=Amiana+Resort+Nha+Trang+mud+bath+spa&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 18,
+    "hotel_name": "Vinpearl Luxury Nha Trang",
+    "city": "Nha Trang",
+    "images": [
+      {
+        "id": 86,
+        "hotel_id": 18,
+        "hotel_name": "Vinpearl Luxury Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Resort trên đảo Hòn Tre và cáp treo",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyiHmfQExXc_bSu8d7oyr_Izn34COCLZJ_gzsGomtDBQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Vinpearl+Luxury+Nha+Trang+Hon+Tre+cable+car&tbm=isch"
+      },
+      {
+        "id": 87,
+        "hotel_id": 18,
+        "hotel_name": "Vinpearl Luxury Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Biệt thự Beach Front phòng ngủ",
+        "image_url": "https://vinpearlvoucher.net/wp-content/uploads/2025/04/villa-ocean-view-vinpearl-resort-spa-nha-trang-bay.jpg",
+        "google_search_link": "https://www.google.com/search?q=Vinpearl+Luxury+Nha+Trang+beach+villa+room&tbm=isch"
+      },
+      {
+        "id": 88,
+        "hotel_id": 18,
+        "hotel_name": "Vinpearl Luxury Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi riêng trong biệt thự",
+        "image_url": "https://luxurylifestyleawards.com/wp-content/uploads/2019/07/main2.jpg",
+        "google_search_link": "https://www.google.com/search?q=Vinpearl+Luxury+Nha+Trang+private+pool+villa&tbm=isch"
+      },
+      {
+        "id": 89,
+        "hotel_id": 18,
+        "hotel_name": "Vinpearl Luxury Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View biển từ đảo Hòn Tre",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSZPqgG3FMVQaR1MqeGGXzH3UkFFE1228UaSCwhk6ZCg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Vinpearl+Luxury+Nha+Trang+sea+view+island&tbm=isch"
+      },
+      {
+        "id": 90,
+        "hotel_id": 18,
+        "hotel_name": "Vinpearl Luxury Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "VinWonders và Aquarium",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2V2MoEJNcMvDbw_Il0QTqnUZDm8ypHHhYUkypSl72rg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Vinpearl+Luxury+Nha+Trang+VinWonders+Aquarium&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 19,
+    "hotel_name": "Mia Resort Nha Trang",
+    "city": "Nha Trang",
+    "images": [
+      {
+        "id": 91,
+        "hotel_id": 19,
+        "hotel_name": "Mia Resort Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Resort boutique trên vách đá ven biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRl0vwkH1vVUeuGfQHkECNm9zUXuJAM7ScrXg-FOq-duA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Mia+Resort+Nha+Trang+cliff+exterior&tbm=isch"
+      },
+      {
+        "id": 92,
+        "hotel_id": 19,
+        "hotel_name": "Mia Resort Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Cliff View nội thất",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDn_xfa8J-fB5jrWcm7Mzg5bfOGYULBk0nEHSuxn32CQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Mia+Resort+Nha+Trang+cliff+view+room&tbm=isch"
+      },
+      {
+        "id": 93,
+        "hotel_id": 19,
+        "hotel_name": "Mia Resort Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi vô cực view biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR577GZwZ7BrKShjcz7Hb_15sLZil1EeRaLH-xy35WZIQ&s",
+        "google_search_link": "https://www.google.com/search?q=Mia+Resort+Nha+Trang+infinity+pool+ocean&tbm=isch"
+      },
+      {
+        "id": 94,
+        "hotel_id": 19,
+        "hotel_name": "Mia Resort Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi biển riêng biệt yên tĩnh",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTEnVmXK1Cm6BP92p8avz3YBO7ItJKOH5kM2mqGgfN4g&s=10",
+        "google_search_link": "https://www.google.com/search?q=Mia+Resort+Nha+Trang+private+beach&tbm=isch"
+      },
+      {
+        "id": 95,
+        "hotel_id": 19,
+        "hotel_name": "Mia Resort Nha Trang",
+        "city": "Nha Trang",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng Sandals ven biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyvgsem0Ed8ajohzgFJi_LUH-hmZjDzl0W1BZTADGK4w&s=10",
+        "google_search_link": "https://www.google.com/search?q=Mia+Resort+Nha+Trang+Sandals+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 20,
+    "hotel_name": "Alma Resort Cam Ranh",
+    "city": "Nha Trang",
+    "images": [
+      {
+        "id": 96,
+        "hotel_id": 20,
+        "hotel_name": "Alma Resort Cam Ranh",
+        "city": "Nha Trang",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Toàn cảnh resort Địa Trung Hải aerial",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTG_GRgEZCkPBiJpboKw-yITAiacR1oBS-zmez4WtCc3g&s=10",
+        "google_search_link": "https://www.google.com/search?q=Alma+Resort+Cam+Ranh+aerial+view&tbm=isch"
+      },
+      {
+        "id": 97,
+        "hotel_id": 20,
+        "hotel_name": "Alma Resort Cam Ranh",
+        "city": "Nha Trang",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Căn hộ 2PN phòng khách rộng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTL_2niP8mtaDSOa34AcWkKaiDqKnh2LZGUkKLmcNBmHQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Alma+Resort+Cam+Ranh+2+bedroom+apartment&tbm=isch"
+      },
+      {
+        "id": 98,
+        "hotel_id": 20,
+        "hotel_name": "Alma Resort Cam Ranh",
+        "city": "Nha Trang",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "12 hồ bơi và waterpark",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfq1drfl9GedY8UDvUiokN9002tDmmDjMso1Be8GaZmg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Alma+Resort+Cam+Ranh+pool+waterpark&tbm=isch"
+      },
+      {
+        "id": 99,
+        "hotel_id": 20,
+        "hotel_name": "Alma Resort Cam Ranh",
+        "city": "Nha Trang",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi biển Bãi Dài Cam Ranh",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0HAcB40xwbtiI32ipGmKTL79opQafq-M0HgzbwtXJeg&s",
+        "google_search_link": "https://www.google.com/search?q=Alma+Resort+Cam+Ranh+Bai+Dai+beach&tbm=isch"
+      },
+      {
+        "id": 100,
+        "hotel_id": 20,
+        "hotel_name": "Alma Resort Cam Ranh",
+        "city": "Nha Trang",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Kids Club và nhà hàng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgLo0ylJ3YTMMEkYpJXv5LiAR61t1HDnG2WgFnHttC_g&s=10",
+        "google_search_link": "https://www.google.com/search?q=Alma+Resort+Cam+Ranh+kids+club+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 21,
+    "hotel_name": "Hotel de la Coupole MGallery",
+    "city": "Sa Pa",
+    "images": [
+      {
+        "id": 101,
+        "hotel_id": 21,
+        "hotel_name": "Hotel de la Coupole MGallery",
+        "city": "Sa Pa",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền kiến trúc Pháp cổ điển sương mù",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBssooJnh7tbbUmyuny3KpPG1EBOA6ujy61BJHiBO71W5_uwrEy1GBdI0&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hotel+de+la+Coupole+MGallery+Sapa+exterior&tbm=isch"
+      },
+      {
+        "id": 102,
+        "hotel_id": 21,
+        "hotel_name": "Hotel de la Coupole MGallery",
+        "city": "Sa Pa",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Deluxe Valley View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQBnKBZFOL6brPVbuiFZlNNGAFWuIjizZUy4Kf1bBX7bQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hotel+de+la+Coupole+Sapa+deluxe+valley+room&tbm=isch"
+      },
+      {
+        "id": 103,
+        "hotel_id": 21,
+        "hotel_name": "Hotel de la Coupole MGallery",
+        "city": "Sa Pa",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi nước ấm trong nhà",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZhgGTseqOWW_UwgbNLnZO_r3IwcTUYwLYiy670xwu9Q&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hotel+de+la+Coupole+Sapa+indoor+warm+pool&tbm=isch"
+      },
+      {
+        "id": 104,
+        "hotel_id": 21,
+        "hotel_name": "Hotel de la Coupole MGallery",
+        "city": "Sa Pa",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Sảnh Art Deco và lobby sang trọng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlzmDQpk-XxUsJgcwYB3biRtxp4pojMU28NGAhvUkLRw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hotel+de+la+Coupole+Sapa+Art+Deco+lobby&tbm=isch"
+      },
+      {
+        "id": 105,
+        "hotel_id": 21,
+        "hotel_name": "Hotel de la Coupole MGallery",
+        "city": "Sa Pa",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Kết nối nhà ga cáp treo Fansipan",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGUe7wnECUstaS2hJvi8simwkujP2vifr4o1oG1nzPYNb9zBiw-jYMteM&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hotel+de+la+Coupole+Sapa+Fansipan+cable+car&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 22,
+    "hotel_name": "Silk Path Grand Sapa",
+    "city": "Sa Pa",
+    "images": [
+      {
+        "id": 106,
+        "hotel_id": 22,
+        "hotel_name": "Silk Path Grand Sapa",
+        "city": "Sa Pa",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Resort trên đồi view thung lũng Mường Hoa",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGzpLb0UH9MhbOUN4letK36KKGpOhV520--zOQDlWCBpbq1i5lngshwkkt&s=10",
+        "google_search_link": "https://www.google.com/search?q=Silk+Path+Grand+Resort+Sapa+exterior+hill&tbm=isch"
+      },
+      {
+        "id": 107,
+        "hotel_id": 22,
+        "hotel_name": "Silk Path Grand Sapa",
+        "city": "Sa Pa",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Grand Suite Valley phòng ngủ",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQd12UEwKMSnh7hn1SVQ91BQnfDXwp7ZmyXvu5K9QFtrGhllGjQ_4d1QGQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Silk+Path+Grand+Sapa+suite+valley+room&tbm=isch"
+      },
+      {
+        "id": 108,
+        "hotel_id": 22,
+        "hotel_name": "Silk Path Grand Sapa",
+        "city": "Sa Pa",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi vô cực nước ấm view núi",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrJtTdEfvymbULoVdw27htv4M9WW2p0n0MbcUh4rr2Aw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Silk+Path+Grand+Sapa+infinity+pool+mountain&tbm=isch"
+      },
+      {
+        "id": 109,
+        "hotel_id": 22,
+        "hotel_name": "Silk Path Grand Sapa",
+        "city": "Sa Pa",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Thung lũng Mường Hoa từ resort",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQqk2qvWNWk3juSkYFkQAomJ-PxrZSZ958yE8DQFCtFA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Silk+Path+Grand+Sapa+Muong+Hoa+valley+view&tbm=isch"
+      },
+      {
+        "id": 110,
+        "hotel_id": 22,
+        "hotel_name": "Silk Path Grand Sapa",
+        "city": "Sa Pa",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Vườn hồng cổ và spa",
+        "image_url": "https://silkpathhotel.com/wp-content/uploads/2024/08/silkpath-sapa-travel-guide-goden-season-rice-terace-resort-rose-garden.jpg",
+        "google_search_link": "https://www.google.com/search?q=Silk+Path+Grand+Sapa+rose+garden+spa&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 23,
+    "hotel_name": "Topas Ecolodge Sapa",
+    "city": "Sa Pa",
+    "images": [
+      {
+        "id": 111,
+        "hotel_id": 23,
+        "hotel_name": "Topas Ecolodge Sapa",
+        "city": "Sa Pa",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Bungalow giữa núi rừng Hoàng Liên Sơn",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnTEwlRiR0-X8F-3TXnEBvRXtfLdDYcldOv2iy6Mv15A&s=10",
+        "google_search_link": "https://www.google.com/search?q=Topas+Ecolodge+Sapa+bungalow+mountain&tbm=isch"
+      },
+      {
+        "id": 112,
+        "hotel_id": 23,
+        "hotel_name": "Topas Ecolodge Sapa",
+        "city": "Sa Pa",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Mountain Bungalow phòng ngủ",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5vq_ddbO_Wk8dSISCKbXa6h8uWJbUP-0XAWUvFPyF8g&s=10",
+        "google_search_link": "https://www.google.com/search?q=Topas+Ecolodge+Sapa+bungalow+room+interior&tbm=isch"
+      },
+      {
+        "id": 113,
+        "hotel_id": 23,
+        "hotel_name": "Topas Ecolodge Sapa",
+        "city": "Sa Pa",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi vô cực view thung lũng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9OUAbfOvMnJwepyt2e-s3KX8Tv1FJl6WpOqioSLIknkeoDtcKmVadL-Hq&s=10",
+        "google_search_link": "https://www.google.com/search?q=Topas+Ecolodge+Sapa+infinity+pool+valley&tbm=isch"
+      },
+      {
+        "id": 114,
+        "hotel_id": 23,
+        "hotel_name": "Topas Ecolodge Sapa",
+        "city": "Sa Pa",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Panorama thung lũng và ruộng bậc thang",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0KWpnOkALLRo9NMx9X70Wc4WTN_PRZrVbmg5KNoQ78GJPpm5AkJjAOjI&s=10",
+        "google_search_link": "https://www.google.com/search?q=Topas+Ecolodge+Sapa+panorama+rice+terrace&tbm=isch"
+      },
+      {
+        "id": 115,
+        "hotel_id": 23,
+        "hotel_name": "Topas Ecolodge Sapa",
+        "city": "Sa Pa",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Trekking và bếp lửa trại",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTt6-RxlRrjdwELzTWopGODipVBU8ijr9GQnHC1TuLjmQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Topas+Ecolodge+Sapa+trekking+campfire&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 24,
+    "hotel_name": "Pao's Sapa Leisure Hotel",
+    "city": "Sa Pa",
+    "images": [
+      {
+        "id": 116,
+        "hotel_id": 24,
+        "hotel_name": "Pao's Sapa Leisure Hotel",
+        "city": "Sa Pa",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Kiến trúc ruộng bậc thang độc đáo",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-DVtYQQIh1CtQQeJzVhQbFlJcTr9FH1SvHKIlIkYWWw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pao+Sapa+Leisure+Hotel+exterior+architecture&tbm=isch"
+      },
+      {
+        "id": 117,
+        "hotel_id": 24,
+        "hotel_name": "Pao's Sapa Leisure Hotel",
+        "city": "Sa Pa",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Premier Valley View",
+        "image_url": "https://paoshotel.com/files/images/sd/Room-615-(2).jpg",
+        "google_search_link": "https://www.google.com/search?q=Pao+Sapa+Leisure+Hotel+premier+room&tbm=isch"
+      },
+      {
+        "id": 118,
+        "hotel_id": 24,
+        "hotel_name": "Pao's Sapa Leisure Hotel",
+        "city": "Sa Pa",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi nước ấm",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCuv7fy3glcc0yToj5fzwvahcB8o5XbuRZpK7N83cqhA&s",
+        "google_search_link": "https://www.google.com/search?q=Pao+Sapa+Leisure+Hotel+warm+pool&tbm=isch"
+      },
+      {
+        "id": 119,
+        "hotel_id": 24,
+        "hotel_name": "Pao's Sapa Leisure Hotel",
+        "city": "Sa Pa",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View thung lũng Mường Hoa",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxwivKJJ76ZNvdiFsKl2_d5UErVF4B9ZhFgOX3jeIEXw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pao+Sapa+Leisure+Hotel+valley+view&tbm=isch"
+      },
+      {
+        "id": 120,
+        "hotel_id": 24,
+        "hotel_name": "Pao's Sapa Leisure Hotel",
+        "city": "Sa Pa",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Spa và nhà hàng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTii93d9KleNIR1lBcKnSJKEOkg1KO10BoxAv_Da0CrVg&s",
+        "google_search_link": "https://www.google.com/search?q=Pao+Sapa+Leisure+Hotel+spa+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 25,
+    "hotel_name": "KK Sapa Hotel",
+    "city": "Sa Pa",
+    "images": [
+      {
+        "id": 121,
+        "hotel_id": 25,
+        "hotel_name": "KK Sapa Hotel",
+        "city": "Sa Pa",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền khách sạn 5 sao trung tâm",
+        "image_url": "https://pix10.agoda.net/hotelImages/8099799/0/11b6516e75023783431f83881129749e.jpg?ce=2&s=414x232",
+        "google_search_link": "https://www.google.com/search?q=KK+Sapa+Hotel+exterior&tbm=isch"
+      },
+      {
+        "id": 122,
+        "hotel_id": 25,
+        "hotel_name": "KK Sapa Hotel",
+        "city": "Sa Pa",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Deluxe Mountain View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4lpNHy1NuDtmzxdxhfo8FcLSobcTZ2njNkZpTx8c3SYoW61KjlVxKfOY&s=10",
+        "google_search_link": "https://www.google.com/search?q=KK+Sapa+Hotel+deluxe+mountain+view+room&tbm=isch"
+      },
+      {
+        "id": 123,
+        "hotel_id": 25,
+        "hotel_name": "KK Sapa Hotel",
+        "city": "Sa Pa",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi nước ấm trong nhà",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOODQeiqFf4s2iGrvnbvmS0coZ3r4R5yMm6N2Tsm8qkg&s=10",
+        "google_search_link": "https://www.google.com/search?q=KK+Sapa+Hotel+indoor+pool&tbm=isch"
+      },
+      {
+        "id": 124,
+        "hotel_id": 25,
+        "hotel_name": "KK Sapa Hotel",
+        "city": "Sa Pa",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View dãy Hoàng Liên Sơn",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPT6c3WxP1X03FMGAhmyrhSgJGllJLEyYWHBLvmFMzyQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=KK+Sapa+Hotel+Hoang+Lien+Son+mountain+view&tbm=isch"
+      },
+      {
+        "id": 125,
+        "hotel_id": 25,
+        "hotel_name": "KK Sapa Hotel",
+        "city": "Sa Pa",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Spa tắm lá thuốc và nhà hàng",
+        "image_url": "https://kksapahotel.com/uploads/images/2025/%E1%BA%A3nh%20b%C3%ACa%20WEB%20(1).png",
+        "google_search_link": "https://www.google.com/search?q=KK+Sapa+Hotel+herbal+bath+spa&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 26,
+    "hotel_name": "InterContinental Danang",
+    "city": "Đà Nẵng",
+    "images": [
+      {
+        "id": 126,
+        "hotel_id": 26,
+        "hotel_name": "InterContinental Danang",
+        "city": "Đà Nẵng",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Aerial kiệt tác Bill Bensley Sơn Trà",
+        "image_url": "https://egolandscape.vn/wp-content/uploads/2018/12/thiet-ke-canh-quan-resort-intercontinental-da-nang-01.jpg",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Danang+Sun+Peninsula+aerial&tbm=isch"
+      },
+      {
+        "id": 127,
+        "hotel_id": 26,
+        "hotel_name": "InterContinental Danang",
+        "city": "Đà Nẵng",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Ocean View Classic phòng ngủ",
+        "image_url": "https://www.danang.intercontinental.com/wp-content/uploads/2022/10/Resort-Terrace-Suite-bedroom-1024x703.jpg",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Danang+ocean+view+room&tbm=isch"
+      },
+      {
+        "id": 128,
+        "hotel_id": 26,
+        "hotel_name": "InterContinental Danang",
+        "city": "Đà Nẵng",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi và bãi biển riêng Bãi Bắc",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0laTm3geLaISQVWNFMwxbTha2HDBU30M3kAeJiL1s7Q&s=10",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Danang+pool+private+beach&tbm=isch"
+      },
+      {
+        "id": 129,
+        "hotel_id": 26,
+        "hotel_name": "InterContinental Danang",
+        "city": "Đà Nẵng",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View biển từ bán đảo Sơn Trà",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjbOXb1nQagp3c0byLKpZ5_f8A79MjBItbqF6ryUR5Vg&s=10",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Danang+Son+Tra+sea+view&tbm=isch"
+      },
+      {
+        "id": 130,
+        "hotel_id": 26,
+        "hotel_name": "InterContinental Danang",
+        "city": "Đà Nẵng",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "La Maison 1888 nhà hàng Michelin",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGU0yjabxm73AYdrQuUz9dNkIjO7BObo7BtGKmkjz6Rg&s=10",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Danang+La+Maison+1888+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 27,
+    "hotel_name": "Pullman Danang Beach",
+    "city": "Đà Nẵng",
+    "images": [
+      {
+        "id": 131,
+        "hotel_id": 27,
+        "hotel_name": "Pullman Danang Beach",
+        "city": "Đà Nẵng",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền resort bãi biển Mỹ Khê",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8ztWYVzI5TSv0h6-JXpXo7DLmaeYMKWKGLQcvywqKBQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pullman+Danang+Beach+Resort+exterior&tbm=isch"
+      },
+      {
+        "id": 132,
+        "hotel_id": 27,
+        "hotel_name": "Pullman Danang Beach",
+        "city": "Đà Nẵng",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Deluxe Ocean",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcThQvtRPGTuUmHVCA_IY3hthS7Oi-uGkg7pvwNfa3P4_A&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pullman+Danang+Beach+deluxe+ocean+room&tbm=isch"
+      },
+      {
+        "id": 133,
+        "hotel_id": 27,
+        "hotel_name": "Pullman Danang Beach",
+        "city": "Đà Nẵng",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi vô cực view biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFcLlZg98fyXJow22avxsntpd6PjznGbesHfg4zLBkjg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pullman+Danang+Beach+infinity+pool&tbm=isch"
+      },
+      {
+        "id": 134,
+        "hotel_id": 27,
+        "hotel_name": "Pullman Danang Beach",
+        "city": "Đà Nẵng",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi biển Mỹ Khê nắng vàng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRyZcbarCPq8aTCGP6rskeMTMRBtWydS8eabxfAwdduOKTZ5Tz5kJyZRk&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pullman+Danang+Beach+My+Khe+beach&tbm=isch"
+      },
+      {
+        "id": 135,
+        "hotel_id": 27,
+        "hotel_name": "Pullman Danang Beach",
+        "city": "Đà Nẵng",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Kids Club và Nắng Spa",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLr2zymkBFk8qgSav3CO5RA1na2tvlUb6ib5rovAyTTQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pullman+Danang+Beach+kids+club+Nang+Spa&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 28,
+    "hotel_name": "Hyatt Regency Danang",
+    "city": "Đà Nẵng",
+    "images": [
+      {
+        "id": 136,
+        "hotel_id": 28,
+        "hotel_name": "Hyatt Regency Danang",
+        "city": "Đà Nẵng",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Toàn cảnh resort Non Nước",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSaS6Fxdooij3lPQlaS4QrJr5lGUq6mI9yKkwkAAEgq2kkprPb0j9cnZJU&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hyatt+Regency+Danang+Resort+aerial&tbm=isch"
+      },
+      {
+        "id": 137,
+        "hotel_id": 28,
+        "hotel_name": "Hyatt Regency Danang",
+        "city": "Đà Nẵng",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Regency Suite Sea View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-JJNOXfOupX5MjKCZV9mHJcIJ36IfGAwvAquq09PzGw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hyatt+Regency+Danang+suite+sea+view+room&tbm=isch"
+      },
+      {
+        "id": 138,
+        "hotel_id": 28,
+        "hotel_name": "Hyatt Regency Danang",
+        "city": "Đà Nẵng",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "5 hồ bơi đa dạng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-B60gjvmtmsXMG6j1uiu12vKI1a5-ddPhSjKfSGFnow&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hyatt+Regency+Danang+5+pools&tbm=isch"
+      },
+      {
+        "id": 139,
+        "hotel_id": 28,
+        "hotel_name": "Hyatt Regency Danang",
+        "city": "Đà Nẵng",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi biển Non Nước",
+        "image_url": "http://beachlikes.ru/wp-content/uploads/beachlikes_ru/2022/08/Hyatt-Regency-Danang-Beach-Photo.jpg",
+        "google_search_link": "https://www.google.com/search?q=Hyatt+Regency+Danang+Non+Nuoc+beach&tbm=isch"
+      },
+      {
+        "id": 140,
+        "hotel_id": 28,
+        "hotel_name": "Hyatt Regency Danang",
+        "city": "Đà Nẵng",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Kids Club chuyên nghiệp",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXyeFXT_e0IFgfszJAxVaDv9g1qt_-Cre0SA_2N_k1jg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Hyatt+Regency+Danang+kids+club&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 29,
+    "hotel_name": "Naman Retreat Đà Nẵng",
+    "city": "Đà Nẵng",
+    "images": [
+      {
+        "id": 141,
+        "hotel_id": 29,
+        "hotel_name": "Naman Retreat Đà Nẵng",
+        "city": "Đà Nẵng",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Villa tre tự nhiên kiến trúc độc đáo",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSooyUM0XBV6HhGQOPGsOVC1nlka3dBteK7mhVrU3kKAA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Naman+Retreat+Danang+bamboo+architecture&tbm=isch"
+      },
+      {
+        "id": 142,
+        "hotel_id": 29,
+        "hotel_name": "Naman Retreat Đà Nẵng",
+        "city": "Đà Nẵng",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Naman Pool Villa phòng ngủ",
+        "image_url": "https://www.google.com/search?q=Naman+Retreat+Danang+pool+villa+room&tbm=isch",
+        "google_search_link": "https://www.google.com/search?q=Naman+Retreat+Danang+pool+villa+room&tbm=isch"
+      },
+      {
+        "id": 143,
+        "hotel_id": 29,
+        "hotel_name": "Naman Retreat Đà Nẵng",
+        "city": "Đà Nẵng",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi riêng trong villa tre",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3X-bjrngxzxRO6Avk-HT1TOazsW5aP34ObnOACwS04A&s=10",
+        "google_search_link": "https://www.google.com/search?q=Naman+Retreat+Danang+private+pool+bamboo&tbm=isch"
+      },
+      {
+        "id": 144,
+        "hotel_id": 29,
+        "hotel_name": "Naman Retreat Đà Nẵng",
+        "city": "Đà Nẵng",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi biển và vườn thiền",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUeWU5DVuaxKeIWAxOJP385r_GFrSoa5to9_9Qq0BechYZRyDvfD7iVYRl&s=10",
+        "google_search_link": "https://www.google.com/search?q=Naman+Retreat+Danang+beach+zen+garden&tbm=isch"
+      },
+      {
+        "id": 145,
+        "hotel_id": 29,
+        "hotel_name": "Naman Retreat Đà Nẵng",
+        "city": "Đà Nẵng",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng Hay Hay và Wellness",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLX4uDxf0S2BxEzDvey_f4XvD3vPw724AwFNGaID4rZnWFLc2Tu5cxUNU&s=10",
+        "google_search_link": "https://www.google.com/search?q=Naman+Retreat+Danang+Hay+Hay+restaurant+wellness&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 30,
+    "hotel_name": "Mikazuki Japanese Resorts",
+    "city": "Đà Nẵng",
+    "images": [
+      {
+        "id": 146,
+        "hotel_id": 30,
+        "hotel_name": "Mikazuki Japanese Resorts",
+        "city": "Đà Nẵng",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Resort phong cách Nhật Bản ven biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROYi6tBEiHCo5QwmwI_fu925lcLAO-henLpbFne_3rBw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Da+Nang+Mikazuki+Japanese+Resort+exterior&tbm=isch"
+      },
+      {
+        "id": 147,
+        "hotel_id": 30,
+        "hotel_name": "Mikazuki Japanese Resorts",
+        "city": "Đà Nẵng",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Onsen Deluxe",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMa5yaj8Mgs_iC-6ZldYhEIc32Q4FG_STfsN25-V6idg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Mikazuki+Danang+onsen+deluxe+room&tbm=isch"
+      },
+      {
+        "id": 148,
+        "hotel_id": 30,
+        "hotel_name": "Mikazuki Japanese Resorts",
+        "city": "Đà Nẵng",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Onsen khoáng nóng Nhật Bản",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSN2TVisllOc_qN3uQnZKoPIJqu2Mww_U3jHS5yiYWY5Sw4qN4L4xwoFXI&s=10",
+        "google_search_link": "https://www.google.com/search?q=Mikazuki+Danang+onsen+hot+spring&tbm=isch"
+      },
+      {
+        "id": 149,
+        "hotel_id": 30,
+        "hotel_name": "Mikazuki Japanese Resorts",
+        "city": "Đà Nẵng",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Công viên nước trong nhà",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJge1K8b1_pmZ9vgbSTGCDKvDwkhW8RK8rStTfckTlrQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Mikazuki+Danang+indoor+water+park&tbm=isch"
+      },
+      {
+        "id": 150,
+        "hotel_id": 30,
+        "hotel_name": "Mikazuki Japanese Resorts",
+        "city": "Đà Nẵng",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng Nhật và lớp làm sushi",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSu-62nch52bDG8PxzIq2JjN22ZryZiwqIT2T07KTpYog&s=10",
+        "google_search_link": "https://www.google.com/search?q=Mikazuki+Danang+Japanese+restaurant+sushi&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 31,
+    "hotel_name": "Vinpearl Resort Hạ Long",
+    "city": "Hạ Long",
+    "images": [
+      {
+        "id": 151,
+        "hotel_id": 31,
+        "hotel_name": "Vinpearl Resort Hạ Long",
+        "city": "Hạ Long",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Resort đảo Rều aerial view vịnh",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3gCVN43A3twa1V-YnpC_QjDOL0Myp-F2EDqQMHWMOLg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Vinpearl+Resort+Ha+Long+Reu+island+aerial&tbm=isch"
+      },
+      {
+        "id": 152,
+        "hotel_id": 31,
+        "hotel_name": "Vinpearl Resort Hạ Long",
+        "city": "Hạ Long",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Biệt thự Beach Villa",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsAHt7k7TaAWW6xR87CuRjNzbo0xtEuUpd2ofh0-hINA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Vinpearl+Resort+Ha+Long+beach+villa+room&tbm=isch"
+      },
+      {
+        "id": 153,
+        "hotel_id": 31,
+        "hotel_name": "Vinpearl Resort Hạ Long",
+        "city": "Hạ Long",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi chính view vịnh",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBD3xRNWiRnvA73CJKeIX73UfAobAKAyrYQyCa0Y9JLg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Vinpearl+Resort+Ha+Long+pool+bay+view&tbm=isch"
+      },
+      {
+        "id": 154,
+        "hotel_id": 31,
+        "hotel_name": "Vinpearl Resort Hạ Long",
+        "city": "Hạ Long",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "3 bãi biển riêng trên đảo",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRc4rx8akUqsOde-1zdr--UC-NfAw25xJfAmxMeQoR6hW7-98kV6KpQ3xG-&s=10",
+        "google_search_link": "https://www.google.com/search?q=Vinpearl+Resort+Ha+Long+private+beach&tbm=isch"
+      },
+      {
+        "id": 155,
+        "hotel_id": 31,
+        "hotel_name": "Vinpearl Resort Hạ Long",
+        "city": "Hạ Long",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng view vịnh và golf mini",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfQx7nn-J-sIvwS0cItZTGZwHAXupAwuYXrmogKv_tZA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Vinpearl+Resort+Ha+Long+restaurant+golf&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 32,
+    "hotel_name": "FLC Halong Bay Resort",
+    "city": "Hạ Long",
+    "images": [
+      {
+        "id": 156,
+        "hotel_id": 32,
+        "hotel_name": "FLC Halong Bay Resort",
+        "city": "Hạ Long",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Resort trên đồi panorama vịnh",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9w0QYjRwhU_JxxtWJpOAIknO5YyLRTpNfAbFR3nDhvA&s=10",
+        "google_search_link": "https://www.google.com/search?q=FLC+Halong+Bay+Golf+Resort+aerial+panorama&tbm=isch"
+      },
+      {
+        "id": 157,
+        "hotel_id": 32,
+        "hotel_name": "FLC Halong Bay Resort",
+        "city": "Hạ Long",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Luxury Bay View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQrMW238FaSZ-kjGY5ffqoDEl7Wf_x8uT_SLLBxdCcXYg&s=10",
+        "google_search_link": "https://www.google.com/search?q=FLC+Halong+Bay+Resort+luxury+bay+view+room&tbm=isch"
+      },
+      {
+        "id": 158,
+        "hotel_id": 32,
+        "hotel_name": "FLC Halong Bay Resort",
+        "city": "Hạ Long",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi resort view vịnh",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTYUvaUWzKxHMX8riz1dQGi9ZC17x9Fa6Vk0Afqk1umA&s=10",
+        "google_search_link": "https://www.google.com/search?q=FLC+Halong+Bay+Resort+pool+bay+view&tbm=isch"
+      },
+      {
+        "id": 159,
+        "hotel_id": 32,
+        "hotel_name": "FLC Halong Bay Resort",
+        "city": "Hạ Long",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Sân golf 18 lỗ và vịnh Hạ Long",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_3Ix97wxjj9gRaTg7ZiRNwO2eR65YYLjXUPl2P6YUcA&s=10",
+        "google_search_link": "https://www.google.com/search?q=FLC+Halong+Bay+golf+course+Ha+Long+bay&tbm=isch"
+      },
+      {
+        "id": 160,
+        "hotel_id": 32,
+        "hotel_name": "FLC Halong Bay Resort",
+        "city": "Hạ Long",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng và bar cao cấp",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_hjCWjNAXr19GpPP68u7Tv-SF4z3DHFNMtGXXPkywfw&s=10",
+        "google_search_link": "https://www.google.com/search?q=FLC+Halong+Bay+Resort+restaurant+bar&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 33,
+    "hotel_name": "A La Carte Ha Long Bay",
+    "city": "Hạ Long",
+    "images": [
+      {
+        "id": 161,
+        "hotel_id": 33,
+        "hotel_name": "A La Carte Ha Long Bay",
+        "city": "Hạ Long",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền khách sạn Bãi Cháy",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvz3kZ-1hb3BZy84bwwa6nMtnVLnqbFSBSZ0DFacWXIw&s=10",
+        "google_search_link": "https://www.google.com/search?q=A+La+Carte+Ha+Long+Bay+hotel+exterior&tbm=isch"
+      },
+      {
+        "id": 162,
+        "hotel_id": 33,
+        "hotel_name": "A La Carte Ha Long Bay",
+        "city": "Hạ Long",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Premium Bay View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4_r7R7wMbBBm2ArTDXMubk16mH9FSWhgnhjyuIsIjVQ&s",
+        "google_search_link": "https://www.google.com/search?q=A+La+Carte+Ha+Long+Bay+premium+bay+view+room&tbm=isch"
+      },
+      {
+        "id": 163,
+        "hotel_id": 33,
+        "hotel_name": "A La Carte Ha Long Bay",
+        "city": "Hạ Long",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi vô cực rooftop view vịnh",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5f4X4Ckg18ML_sSPaBQE2LIaWDjDGrs4sJwIyKJAerg&s=10",
+        "google_search_link": "https://www.google.com/search?q=A+La+Carte+Ha+Long+Bay+infinity+rooftop+pool&tbm=isch"
+      },
+      {
+        "id": 164,
+        "hotel_id": 33,
+        "hotel_name": "A La Carte Ha Long Bay",
+        "city": "Hạ Long",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View vịnh Hạ Long từ rooftop",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBcNUnVtXTAnCZMMWaZ-okDxTsDHGYueEmwrwJuqTfhw&s=10",
+        "google_search_link": "https://www.google.com/search?q=A+La+Carte+Ha+Long+Bay+rooftop+bay+view&tbm=isch"
+      },
+      {
+        "id": 165,
+        "hotel_id": 33,
+        "hotel_name": "A La Carte Ha Long Bay",
+        "city": "Hạ Long",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Sky Bar và nhà hàng",
+        "image_url": "https://digital.ihg.com/is/image/ihg/intercontinental-ha-long-city-11209538615-original",
+        "google_search_link": "https://www.google.com/search?q=A+La+Carte+Ha+Long+Bay+sky+bar+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 34,
+    "hotel_name": "InterContinental Ha Long",
+    "city": "Hạ Long",
+    "images": [
+      {
+        "id": 166,
+        "hotel_id": 34,
+        "hotel_name": "InterContinental Ha Long",
+        "city": "Hạ Long",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Resort sang trọng view vịnh",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2thPZsRNnQkBqNgxe_kkIX2iJcqQzGusgZ1oIUaMpgQ&s",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Halong+Bay+Resort+exterior&tbm=isch"
+      },
+      {
+        "id": 167,
+        "hotel_id": 34,
+        "hotel_name": "InterContinental Ha Long",
+        "city": "Hạ Long",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Classic Bay View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnMzckz3OvR6z6xQjq3QdKDOumKnshMrjL-RMKw1XViA&s",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Halong+Bay+classic+bay+room&tbm=isch"
+      },
+      {
+        "id": 168,
+        "hotel_id": 34,
+        "hotel_name": "InterContinental Ha Long",
+        "city": "Hạ Long",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi view vịnh Hạ Long",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbRy82dLLeoFm5S8KxQ8FRGXoIWqoy2ZsNBv0C_AKe6Q&s",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Halong+Bay+pool&tbm=isch"
+      },
+      {
+        "id": 169,
+        "hotel_id": 34,
+        "hotel_name": "InterContinental Ha Long",
+        "city": "Hạ Long",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View vịnh Hạ Long từ resort",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTn2HOppK4y0e6SP9ats--jdoIRIUye_El7H1sM5KLbWw&s=10",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Halong+Bay+view&tbm=isch"
+      },
+      {
+        "id": 170,
+        "hotel_id": 34,
+        "hotel_name": "InterContinental Ha Long",
+        "city": "Hạ Long",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Spa quốc tế và nhà hàng fine-dining",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnquvASEnrwKCg-qgckweWy9MhYBDVuzEqY88Qw2nJ0w&s=10",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Halong+Bay+spa+fine+dining&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 35,
+    "hotel_name": "Oakwood Ha Long Resort",
+    "city": "Hạ Long",
+    "images": [
+      {
+        "id": 171,
+        "hotel_id": 35,
+        "hotel_name": "Oakwood Ha Long Resort",
+        "city": "Hạ Long",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Biệt thự hiện đại trong khuôn viên xanh",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQrzpZDuU4kwn9Ad5XF1D3P42Qhq7KJs_9djgYX19k7ag&s=10",
+        "google_search_link": "https://www.google.com/search?q=Oakwood+Ha+Long+Resort+villa+exterior&tbm=isch"
+      },
+      {
+        "id": 172,
+        "hotel_id": 35,
+        "hotel_name": "Oakwood Ha Long Resort",
+        "city": "Hạ Long",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Villa 2BR phòng ngủ master",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuSlEVBZmG1xgneDP_kmMXGPxG57pRWaR4VCY4fqep0w&s",
+        "google_search_link": "https://www.google.com/search?q=Oakwood+Ha+Long+Resort+villa+bedroom&tbm=isch"
+      },
+      {
+        "id": 173,
+        "hotel_id": 35,
+        "hotel_name": "Oakwood Ha Long Resort",
+        "city": "Hạ Long",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi chính trong resort",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYLM7Y2S0pq_7TwHehOHiw4GVQqwpNB6K20ewCv4xp3w&s=10",
+        "google_search_link": "https://www.google.com/search?q=Oakwood+Ha+Long+Resort+swimming+pool&tbm=isch"
+      },
+      {
+        "id": 174,
+        "hotel_id": 35,
+        "hotel_name": "Oakwood Ha Long Resort",
+        "city": "Hạ Long",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Không gian xanh và vườn",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyNn0NEfDuVYUACwzShmpOAge3qf6F0b1W6FpRMrHieA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Oakwood+Ha+Long+Resort+green+garden&tbm=isch"
+      },
+      {
+        "id": 175,
+        "hotel_id": 35,
+        "hotel_name": "Oakwood Ha Long Resort",
+        "city": "Hạ Long",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Kids Club và khu BBQ",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYV0_c_jRGrNmoIb6A6EXiY2J23tLuc61YTU0F_TyF986dU2MpoYmxhWw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Oakwood+Ha+Long+Resort+kids+club+BBQ&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 36,
+    "hotel_name": "Sofitel Legend Metropole Hanoi",
+    "city": "Hà Nội",
+    "images": [
+      {
+        "id": 176,
+        "hotel_id": 36,
+        "hotel_name": "Sofitel Legend Metropole Hanoi",
+        "city": "Hà Nội",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền Heritage Wing kiến trúc Pháp 1901",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAu4XYD4iUAkCebRIvnNlDUGV-J6V_prqkUmSdaDZduA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Sofitel+Legend+Metropole+Hanoi+exterior+heritage&tbm=isch"
+      },
+      {
+        "id": 177,
+        "hotel_id": 36,
+        "hotel_name": "Sofitel Legend Metropole Hanoi",
+        "city": "Hà Nội",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Premium Room Historical Wing",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5lh-MoR1BwveEExLjFJddIu2F1I9VT3PKNXEjVekSj-e8rU-s0RJtE0vY&s=10",
+        "google_search_link": "https://www.google.com/search?q=Sofitel+Metropole+Hanoi+premium+historical+room&tbm=isch"
+      },
+      {
+        "id": 178,
+        "hotel_id": 36,
+        "hotel_name": "Sofitel Legend Metropole Hanoi",
+        "city": "Hà Nội",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi giữa sân vườn",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUs0nkQRJupW2UodNcXUlSx7WiJr5gEQ17wLNOP21QSQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Sofitel+Metropole+Hanoi+swimming+pool+garden&tbm=isch"
+      },
+      {
+        "id": 179,
+        "hotel_id": 36,
+        "hotel_name": "Sofitel Legend Metropole Hanoi",
+        "city": "Hà Nội",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Hầm trú ẩn lịch sử underground",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaMi5ONcgOW7fFDgpmAEhdw7u_dz58nWhifXm4CdoUag&s=10",
+        "google_search_link": "https://www.google.com/search?q=Sofitel+Metropole+Hanoi+historical+bunker&tbm=isch"
+      },
+      {
+        "id": 180,
+        "hotel_id": 36,
+        "hotel_name": "Sofitel Legend Metropole Hanoi",
+        "city": "Hà Nội",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Le Beaulieu Restaurant và Angelina Bar",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKMDBEuHxSyZDPblw83SSsYDmaRQn0-2ejSz2JCQinyA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Sofitel+Metropole+Hanoi+Le+Beaulieu+Angelina+Bar&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 37,
+    "hotel_name": "InterContinental Westlake Hanoi",
+    "city": "Hà Nội",
+    "images": [
+      {
+        "id": 181,
+        "hotel_id": 37,
+        "hotel_name": "InterContinental Westlake Hanoi",
+        "city": "Hà Nội",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Over-water hotel Hồ Tây",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpp_gLFb5JhDaK5tWftCod_JeOyUKoiaQ9bh1hJZ6KoDya_OOc3JmXC-I&s=10",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Hanoi+Westlake+exterior+lake&tbm=isch"
+      },
+      {
+        "id": 182,
+        "hotel_id": 37,
+        "hotel_name": "InterContinental Westlake Hanoi",
+        "city": "Hà Nội",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Deluxe Lake View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzR38bFtgeWEe2IYW4HhRE-iOMyIKpiKFjSOXPsBDbDA&s=10",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Hanoi+Westlake+lake+view+room&tbm=isch"
+      },
+      {
+        "id": 183,
+        "hotel_id": 37,
+        "hotel_name": "InterContinental Westlake Hanoi",
+        "city": "Hà Nội",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi vô cực bên Hồ Tây",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1IxLL647_NT6bTb7Xnm6blPAuTsQ4e6fRmUYBuasEOg&s=10",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Hanoi+Westlake+infinity+pool&tbm=isch"
+      },
+      {
+        "id": 184,
+        "hotel_id": 37,
+        "hotel_name": "InterContinental Westlake Hanoi",
+        "city": "Hà Nội",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Hoàng hôn Hồ Tây từ Sunset Bar",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDq4_5t4CNwFmcQBG_GqWBgXvhCsZbhoR43N3ONEKNvg&s=10",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Hanoi+Westlake+sunset+bar+view&tbm=isch"
+      },
+      {
+        "id": 185,
+        "hotel_id": 37,
+        "hotel_name": "InterContinental Westlake Hanoi",
+        "city": "Hà Nội",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng Milano và spa",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhEV2i7ZNNvdPib55JFnswAtV6R1capkIkL9TRZliCdw&s",
+        "google_search_link": "https://www.google.com/search?q=InterContinental+Hanoi+Westlake+Milano+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 38,
+    "hotel_name": "Pan Pacific Hanoi",
+    "city": "Hà Nội",
+    "images": [
+      {
+        "id": 186,
+        "hotel_id": 38,
+        "hotel_name": "Pan Pacific Hanoi",
+        "city": "Hà Nội",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền khách sạn cao tầng Hồ Tây",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdwClG-6Bv8Jn6D6_A5ShSEafACT9tAXYrtzVOmxVNpg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pan+Pacific+Hanoi+hotel+exterior&tbm=isch"
+      },
+      {
+        "id": 187,
+        "hotel_id": 38,
+        "hotel_name": "Pan Pacific Hanoi",
+        "city": "Hà Nội",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Deluxe City View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQH11_jGQy-5C6T_3m-H8MtM2T4AEBqSdCytlHcQ2V-DQ&s",
+        "google_search_link": "https://www.google.com/search?q=Pan+Pacific+Hanoi+deluxe+city+view+room&tbm=isch"
+      },
+      {
+        "id": 188,
+        "hotel_id": 38,
+        "hotel_name": "Pan Pacific Hanoi",
+        "city": "Hà Nội",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi bốn mùa",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1JSAtUWM9vB0hm2Ec_9NMA4lnfNqlQqEBxvcEVS3dfw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pan+Pacific+Hanoi+swimming+pool&tbm=isch"
+      },
+      {
+        "id": 189,
+        "hotel_id": 38,
+        "hotel_name": "Pan Pacific Hanoi",
+        "city": "Hà Nội",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Rooftop Bar view panorama thành phố",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6ugYtdtj4fxBA47F_2O4_WCep29hT816F0BkKmgL0zuSWxLWjw4zOwAE&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pan+Pacific+Hanoi+rooftop+bar+panorama&tbm=isch"
+      },
+      {
+        "id": 190,
+        "hotel_id": 38,
+        "hotel_name": "Pan Pacific Hanoi",
+        "city": "Hà Nội",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng Pacifica",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4rt3RBcFY9J3uW8795DjoeRb33PNjY27X1LIMtC2bNA&s",
+        "google_search_link": "https://www.google.com/search?q=Pan+Pacific+Hanoi+Pacifica+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 39,
+    "hotel_name": "The Oriental Jade Hotel Hanoi",
+    "city": "Hà Nội",
+    "images": [
+      {
+        "id": 191,
+        "hotel_id": 39,
+        "hotel_name": "The Oriental Jade Hotel Hanoi",
+        "city": "Hà Nội",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền boutique hotel phố cổ",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVxHViq2n0udUBC6E533fMGe1xmRd9bQ4TKjZ1Q9pTu6iKynATK9ooTqM&s=10",
+        "google_search_link": "https://www.google.com/search?q=Oriental+Jade+Hotel+Hanoi+exterior&tbm=isch"
+      },
+      {
+        "id": 192,
+        "hotel_id": 39,
+        "hotel_name": "The Oriental Jade Hotel Hanoi",
+        "city": "Hà Nội",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Jade Premium Room",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjUZza3rFVDF3pTj69WGls3YwroVDMURWNuiTiNTACZiCI7A1ZdW9ze4xL&s=10",
+        "google_search_link": "https://www.google.com/search?q=Oriental+Jade+Hotel+Hanoi+jade+premium+room&tbm=isch"
+      },
+      {
+        "id": 193,
+        "hotel_id": 39,
+        "hotel_name": "The Oriental Jade Hotel Hanoi",
+        "city": "Hà Nội",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi rooftop view phố cổ",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcThZn0cw42S4h7CZo2cyEfry-dMUItG1R2x6wBJgrTl5Q&s=10",
+        "google_search_link": "https://www.google.com/search?q=Oriental+Jade+Hotel+Hanoi+rooftop+pool&tbm=isch"
+      },
+      {
+        "id": 194,
+        "hotel_id": 39,
+        "hotel_name": "The Oriental Jade Hotel Hanoi",
+        "city": "Hà Nội",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View phố cổ Hà Nội từ ban công",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2PB2HjOPQSQ48eEa710FfJ58w906VXytKfOujd-s0sA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Oriental+Jade+Hotel+Hanoi+old+quarter+view&tbm=isch"
+      },
+      {
+        "id": 195,
+        "hotel_id": 39,
+        "hotel_name": "The Oriental Jade Hotel Hanoi",
+        "city": "Hà Nội",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Spa cao cấp",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZVY9vBuEYagwsfb95B4JPIPqIF6b0ScUr53Gmiqavpg&s",
+        "google_search_link": "https://www.google.com/search?q=Oriental+Jade+Hotel+Hanoi+spa&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 40,
+    "hotel_name": "Dolce Golden Lake Hanoi",
+    "city": "Hà Nội",
+    "images": [
+      {
+        "id": 196,
+        "hotel_id": 40,
+        "hotel_name": "Dolce Golden Lake Hanoi",
+        "city": "Hà Nội",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền khách sạn dát vàng 24K",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZLcw9zg9Xgh8lcxeyn_Tsf0ZXHp5FDVak1QjwYoMz_w&s=10",
+        "google_search_link": "https://www.google.com/search?q=Dolce+Hanoi+Golden+Lake+gold+exterior&tbm=isch"
+      },
+      {
+        "id": 197,
+        "hotel_id": 40,
+        "hotel_name": "Dolce Golden Lake Hanoi",
+        "city": "Hà Nội",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Golden Deluxe dát vàng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRH-mJbwzG96VoBoFHD3NC0rrJsBNYymSSnwipNtLUuAw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Dolce+Hanoi+Golden+Lake+gold+room&tbm=isch"
+      },
+      {
+        "id": 198,
+        "hotel_id": 40,
+        "hotel_name": "Dolce Golden Lake Hanoi",
+        "city": "Hà Nội",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi dát vàng trên tầng thượng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQG70O1mhbpyttRO7XVfjtL_VF9jUnD-kdin55iLs3CPA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Dolce+Hanoi+Golden+Lake+gold+rooftop+pool&tbm=isch"
+      },
+      {
+        "id": 199,
+        "hotel_id": 40,
+        "hotel_name": "Dolce Golden Lake Hanoi",
+        "city": "Hà Nội",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View thành phố từ rooftop",
+        "image_url": "https://media-cdn.tripadvisor.com/media/photo-s/1c/bf/1e/03/dolce-by-wyndham-hanoi.jpg",
+        "google_search_link": "https://www.google.com/search?q=Dolce+Hanoi+Golden+Lake+city+view+rooftop&tbm=isch"
+      },
+      {
+        "id": 200,
+        "hotel_id": 40,
+        "hotel_name": "Dolce Golden Lake Hanoi",
+        "city": "Hà Nội",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Lobby dát vàng và nhà hàng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTT3oJRFCHbXEBhmvbQ25ux64bmB8d_0cWOSpjHdFiE-A&s=10",
+        "google_search_link": "https://www.google.com/search?q=Dolce+Hanoi+Golden+Lake+gold+lobby+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 41,
+    "hotel_name": "FLC Luxury Resort Quy Nhơn",
+    "city": "Quy Nhơn",
+    "images": [
+      {
+        "id": 201,
+        "hotel_id": 41,
+        "hotel_name": "FLC Luxury Resort Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Aerial quần thể resort ven biển Nhơn Lý",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLoodnuf1UY5gwwZa8UPWCY_6_B8WEHoG-vYqb6JMjGw&s=10",
+        "google_search_link": "https://www.google.com/search?q=FLC+Luxury+Resort+Quy+Nhon+aerial&tbm=isch"
+      },
+      {
+        "id": 202,
+        "hotel_id": 41,
+        "hotel_name": "FLC Luxury Resort Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Villa hồ bơi riêng 1BR",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPdZYHFLG1XstHS4ltvULxu-1nzF-KDAZdHK6LmkjzFw&s=10",
+        "google_search_link": "https://www.google.com/search?q=FLC+Luxury+Resort+Quy+Nhon+villa+private+pool&tbm=isch"
+      },
+      {
+        "id": 203,
+        "hotel_id": 41,
+        "hotel_name": "FLC Luxury Resort Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi nước mặn dài nhất",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMIayKH17UyFlWHE0zTan74sr90fiSNyEkxQPh2mtZSQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=FLC+Luxury+Resort+Quy+Nhon+pool&tbm=isch"
+      },
+      {
+        "id": 204,
+        "hotel_id": 41,
+        "hotel_name": "FLC Luxury Resort Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Sân golf 36 lỗ view biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSut5DGlIvdmEFNZ0jjmTfmXOAHIJqRRjgPQiRTYoGftA&s=10",
+        "google_search_link": "https://www.google.com/search?q=FLC+Luxury+Resort+Quy+Nhon+golf+course&tbm=isch"
+      },
+      {
+        "id": 205,
+        "hotel_id": 41,
+        "hotel_name": "FLC Luxury Resort Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Safari và bãi biển Nhơn Lý",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVzLYAdLpq41oBRitkJtVQs9R_Eu8kO6c1t2AL81i2pw&s=10",
+        "google_search_link": "https://www.google.com/search?q=FLC+Luxury+Resort+Quy+Nhon+safari+beach&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 42,
+    "hotel_name": "Avani Quy Nhon Resort",
+    "city": "Quy Nhơn",
+    "images": [
+      {
+        "id": 206,
+        "hotel_id": 42,
+        "hotel_name": "Avani Quy Nhon Resort",
+        "city": "Quy Nhơn",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Resort Bãi Dài view biển trực diện",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSm6vu_WsRnWQUtNWewdRbgTCcj5A5izCNAPWT4kk0kWA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Avani+Quy+Nhon+Resort+Spa+exterior&tbm=isch"
+      },
+      {
+        "id": 207,
+        "hotel_id": 42,
+        "hotel_name": "Avani Quy Nhon Resort",
+        "city": "Quy Nhơn",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Ocean View Deluxe",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1oYvmvaA-0ZGFbBZCANmeNf6Ntrji6xSAkqp02sIfjg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Avani+Quy+Nhon+Resort+ocean+view+room&tbm=isch"
+      },
+      {
+        "id": 208,
+        "hotel_id": 42,
+        "hotel_name": "Avani Quy Nhon Resort",
+        "city": "Quy Nhơn",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi vô cực view biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZf2hDEwM4OAycrb-MqCtpPtIIQz3Hi7daRShEBLQDdg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Avani+Quy+Nhon+Resort+infinity+pool&tbm=isch"
+      },
+      {
+        "id": 209,
+        "hotel_id": 42,
+        "hotel_name": "Avani Quy Nhon Resort",
+        "city": "Quy Nhơn",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi Dài biển xanh trong vắt",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNyBScmBvqk6xxVbcwBDXpyGgcZRIsgDdtgwpv0WhDRkmZFUA35VP_ZXE&s=10",
+        "google_search_link": "https://www.google.com/search?q=Avani+Quy+Nhon+Resort+Bai+Dai+beach&tbm=isch"
+      },
+      {
+        "id": 210,
+        "hotel_id": 42,
+        "hotel_name": "Avani Quy Nhon Resort",
+        "city": "Quy Nhơn",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Bar bãi biển và yoga",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAhj64Mcx4eJPAciRsmUCCzFDewtFxfgNkZyBA5HKJMrcT4THHthFEVvl1&s=10",
+        "google_search_link": "https://www.google.com/search?q=Avani+Quy+Nhon+Resort+beach+bar+yoga&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 43,
+    "hotel_name": "Casa Marina Resort Quy Nhơn",
+    "city": "Quy Nhơn",
+    "images": [
+      {
+        "id": 211,
+        "hotel_id": 43,
+        "hotel_name": "Casa Marina Resort Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Resort ven biển Bãi Xép",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFp14RB9jxCVtKQ6mo01n9huXh7uceMQVtTM5TXPC8dT8iH8cDlG5Mj1Jo&s=10",
+        "google_search_link": "https://www.google.com/search?q=Casa+Marina+Resort+Quy+Nhon+exterior&tbm=isch"
+      },
+      {
+        "id": 212,
+        "hotel_id": 43,
+        "hotel_name": "Casa Marina Resort Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Bungalow Sea View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSdP8e4ZSNyA-l2H-zExu-Umoh0GivBE7aYbxIVtpcWA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Casa+Marina+Resort+Quy+Nhon+bungalow+sea+view&tbm=isch"
+      },
+      {
+        "id": 213,
+        "hotel_id": 43,
+        "hotel_name": "Casa Marina Resort Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi ngoài trời",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQw_84rivau1T0cjYKjL8PX5ixTRLwxWMK7A_TtAsdmUw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Casa+Marina+Resort+Quy+Nhon+pool&tbm=isch"
+      },
+      {
+        "id": 214,
+        "hotel_id": 43,
+        "hotel_name": "Casa Marina Resort Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi biển Bãi Xép",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtRQgK62CYx-BiKxLQgxHyT7e0avpU5cbg62i8OsnzpQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Casa+Marina+Resort+Quy+Nhon+Bai+Xep+beach&tbm=isch"
+      },
+      {
+        "id": 215,
+        "hotel_id": 43,
+        "hotel_name": "Casa Marina Resort Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng hải sản và BBQ",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQE41vNGcM_VQr5KEB91OrfyJLnTweLpy2xwC3EHbNKnfLpm55C9AIimVpC&s=10",
+        "google_search_link": "https://www.google.com/search?q=Casa+Marina+Resort+Quy+Nhon+seafood+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 44,
+    "hotel_name": "Crown Retreat Quy Nhơn",
+    "city": "Quy Nhơn",
+    "images": [
+      {
+        "id": 216,
+        "hotel_id": 44,
+        "hotel_name": "Crown Retreat Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Bungalow ven biển Trung Lương",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiK2Amt9636Il_ks-wZrpC__yJUNEckgA4XgHnKwR8rw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Crown+Retreat+Quy+Nhon+bungalow+beach&tbm=isch"
+      },
+      {
+        "id": 217,
+        "hotel_id": 44,
+        "hotel_name": "Crown Retreat Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Beach Front Bungalow phòng ngủ",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRStHAA3HhS2zdmATUcnKHSuQHSPWHSlUCyS0qpkyOuaA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Crown+Retreat+Quy+Nhon+bungalow+room&tbm=isch"
+      },
+      {
+        "id": 218,
+        "hotel_id": 44,
+        "hotel_name": "Crown Retreat Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi resort",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLGAePCIPuEaIWagtr3cbnSpU34Ge5LyV7hgT7-tT-eg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Crown+Retreat+Quy+Nhon+swimming+pool&tbm=isch"
+      },
+      {
+        "id": 219,
+        "hotel_id": 44,
+        "hotel_name": "Crown Retreat Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi biển và thiên nhiên hoang sơ",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTewO9kPb0k2CzVCIdPlqNquhDcgOLwcs2QGwyiUlozyQ&s",
+        "google_search_link": "https://www.google.com/search?q=Crown+Retreat+Quy+Nhon+beach+nature&tbm=isch"
+      },
+      {
+        "id": 220,
+        "hotel_id": 44,
+        "hotel_name": "Crown Retreat Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Yoga ngoài trời và kayak",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgfxK1UC5kUVdqQMMufWa1KaWl5Bmi8gRHYYQZJL9o9ZRdCmrXzRxDpKc&s=10",
+        "google_search_link": "https://www.google.com/search?q=Crown+Retreat+Quy+Nhon+yoga+kayak&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 45,
+    "hotel_name": "Anya Premier Hotel Quy Nhơn",
+    "city": "Quy Nhơn",
+    "images": [
+      {
+        "id": 221,
+        "hotel_id": 45,
+        "hotel_name": "Anya Premier Hotel Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền 5 sao đường biển Xuân Diệu",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbzkw1pzarxm8_d-ZTdYKYEYvbgoqpFMPhg3lCQmUMzQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Anya+Premier+Hotel+Quy+Nhon+exterior&tbm=isch"
+      },
+      {
+        "id": 222,
+        "hotel_id": 45,
+        "hotel_name": "Anya Premier Hotel Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Premier Ocean",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqRuInGhVSlCKXzKfstJbxIBo-gUZ022JkzEzpOTIwKw&s",
+        "google_search_link": "https://www.google.com/search?q=Anya+Premier+Hotel+Quy+Nhon+ocean+room&tbm=isch"
+      },
+      {
+        "id": 223,
+        "hotel_id": 45,
+        "hotel_name": "Anya Premier Hotel Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi rooftop",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT54y0bng9je1Iz2gpMbJ7YiZV66UD5NrR_1_8Ka41JCQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Anya+Premier+Hotel+Quy+Nhon+rooftop+pool&tbm=isch"
+      },
+      {
+        "id": 224,
+        "hotel_id": 45,
+        "hotel_name": "Anya Premier Hotel Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View biển thành phố Quy Nhơn",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcST7V69tSAFYy709rQY8mjY1dQQaRMD2hkShIFPkVBrHw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Anya+Premier+Hotel+Quy+Nhon+city+sea+view&tbm=isch"
+      },
+      {
+        "id": 225,
+        "hotel_id": 45,
+        "hotel_name": "Anya Premier Hotel Quy Nhơn",
+        "city": "Quy Nhơn",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Sky Bar và nhà hàng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSJY8BRQWTP--tVIIIT8A03EY5cZzVujc3AwlujoUgQA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Anya+Premier+Hotel+Quy+Nhon+sky+bar&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 46,
+    "hotel_name": "The Imperial Hotel Vũng Tàu",
+    "city": "Vũng Tàu",
+    "images": [
+      {
+        "id": 226,
+        "hotel_id": 46,
+        "hotel_name": "The Imperial Hotel Vũng Tàu",
+        "city": "Vũng Tàu",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Kiến trúc lâu đài châu Âu Bãi Sau",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRe9dRRBppCBkNYI0Y3Ufw6HoQ8k8z5Xv-D7v1_bUnERw&s=10",
+        "google_search_link": "https://www.google.com/search?q=The+Imperial+Hotel+Vung+Tau+castle+exterior&tbm=isch"
+      },
+      {
+        "id": 227,
+        "hotel_id": 46,
+        "hotel_name": "The Imperial Hotel Vũng Tàu",
+        "city": "Vũng Tàu",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Imperial Deluxe Sea View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0EMPpF0rq_wQyg5lxAxCdh0Qt85403CSV5Fitl0Yprw&s=10",
+        "google_search_link": "https://www.google.com/search?q=The+Imperial+Hotel+Vung+Tau+sea+view+room&tbm=isch"
+      },
+      {
+        "id": 228,
+        "hotel_id": 46,
+        "hotel_name": "The Imperial Hotel Vũng Tàu",
+        "city": "Vũng Tàu",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi khu vực biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzG2pgy_U80dOgJHPhiraK71MJTzma8bwG4qsA7SCi5A&s=10",
+        "google_search_link": "https://www.google.com/search?q=The+Imperial+Hotel+Vung+Tau+pool+beach&tbm=isch"
+      },
+      {
+        "id": 229,
+        "hotel_id": 46,
+        "hotel_name": "The Imperial Hotel Vũng Tàu",
+        "city": "Vũng Tàu",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi Sau từ khách sạn",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSftJb9iPsKlHjmylFqmoJinkgXYRSAFgiT3Mv9ipIJaw&s",
+        "google_search_link": "https://www.google.com/search?q=The+Imperial+Hotel+Vung+Tau+Back+Beach+view&tbm=isch"
+      },
+      {
+        "id": 230,
+        "hotel_id": 46,
+        "hotel_name": "The Imperial Hotel Vũng Tàu",
+        "city": "Vũng Tàu",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Nhà hàng và spa",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsUGgDmTFh8cTdRRmF1gki6YXlQNR5iAqzI8_xh7oxMQ&s",
+        "google_search_link": "https://www.google.com/search?q=The+Imperial+Hotel+Vung+Tau+restaurant+spa&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 47,
+    "hotel_name": "Pullman Vung Tau",
+    "city": "Vũng Tàu",
+    "images": [
+      {
+        "id": 231,
+        "hotel_id": 47,
+        "hotel_name": "Pullman Vung Tau",
+        "city": "Vũng Tàu",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền 5 sao hiện đại",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgzVSy31t74U_-nnjgwq1zdYVmL1fZFCf7psiRDWZKkQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pullman+Vung+Tau+hotel+exterior&tbm=isch"
+      },
+      {
+        "id": 232,
+        "hotel_id": 47,
+        "hotel_name": "Pullman Vung Tau",
+        "city": "Vũng Tàu",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Deluxe City View",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR57BVOsEBdhvEdZOPRYPyAmd-PGzZfSpNFUUqHDGeggw&s",
+        "google_search_link": "https://www.google.com/search?q=Pullman+Vung+Tau+deluxe+room&tbm=isch"
+      },
+      {
+        "id": 233,
+        "hotel_id": 47,
+        "hotel_name": "Pullman Vung Tau",
+        "city": "Vũng Tàu",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi resort",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpiLJ4XggGKQSHT8pkfrXy_D4UJx2F5f-VRpD6tG2yow&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pullman+Vung+Tau+swimming+pool&tbm=isch"
+      },
+      {
+        "id": 234,
+        "hotel_id": 47,
+        "hotel_name": "Pullman Vung Tau",
+        "city": "Vũng Tàu",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View thành phố biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxOYZKcWBpa_4dxqtODUqFSjU5BmSGGzsEEDZ97WmLRw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pullman+Vung+Tau+city+sea+view&tbm=isch"
+      },
+      {
+        "id": 235,
+        "hotel_id": 47,
+        "hotel_name": "Pullman Vung Tau",
+        "city": "Vũng Tàu",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Spa và nhà hàng quốc tế",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPpAXgjhzk9E2PQF-NOP5PCmOrpK6YaVwgXmbwq7qS0w&s=10",
+        "google_search_link": "https://www.google.com/search?q=Pullman+Vung+Tau+spa+restaurant&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 48,
+    "hotel_name": "Vias Hotel Vũng Tàu",
+    "city": "Vũng Tàu",
+    "images": [
+      {
+        "id": 236,
+        "hotel_id": 48,
+        "hotel_name": "Vias Hotel Vũng Tàu",
+        "city": "Vũng Tàu",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Mặt tiền hotel hiện đại Bãi Sau",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTn2_JTn5zcOkPxW2TB_N5l8vWQe47sE71VR9GfAxJcKA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Vias+Hotel+Vung+Tau+exterior&tbm=isch"
+      },
+      {
+        "id": 237,
+        "hotel_id": 48,
+        "hotel_name": "Vias Hotel Vũng Tàu",
+        "city": "Vũng Tàu",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Ocean Suite",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7_cShzalo0UP2oTOpiobL0L6b3AHdiNhWD2sGHIsI0w&s=10",
+        "google_search_link": "https://www.google.com/search?q=Vias+Hotel+Vung+Tau+ocean+suite+room&tbm=isch"
+      },
+      {
+        "id": 238,
+        "hotel_id": 48,
+        "hotel_name": "Vias Hotel Vũng Tàu",
+        "city": "Vũng Tàu",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi vô cực rooftop view biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRurr_gd1-ZNtT_vyeIphvLh-QgV__JMhwNbxV1gkGyhQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Vias+Hotel+Vung+Tau+infinity+rooftop+pool&tbm=isch"
+      },
+      {
+        "id": 239,
+        "hotel_id": 48,
+        "hotel_name": "Vias Hotel Vũng Tàu",
+        "city": "Vũng Tàu",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "View biển panorama Bãi Sau",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSE72EZ7OmY-FV3XiO6pymh6nZF5-vo7jFIlppEUgvGcg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Vias+Hotel+Vung+Tau+panorama+beach+view&tbm=isch"
+      },
+      {
+        "id": 240,
+        "hotel_id": 48,
+        "hotel_name": "Vias Hotel Vũng Tàu",
+        "city": "Vũng Tàu",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Bar trên cao và nhà hàng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQS9W9qz6BDJzc9xMWdbWzu6mtyqtT0igy5GPgmF40lmw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Vias+Hotel+Vung+Tau+rooftop+bar&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 49,
+    "hotel_name": "Marina Bay Vũng Tàu Resort",
+    "city": "Vũng Tàu",
+    "images": [
+      {
+        "id": 241,
+        "hotel_id": 49,
+        "hotel_name": "Marina Bay Vũng Tàu Resort",
+        "city": "Vũng Tàu",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Biệt thự view biển Long Hải",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWBYN5NeNNhNG7j8sGgQZLC4995UJTEiP-Y6lyaFtVYA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Marina+Bay+Vung+Tau+Resort+villa+exterior&tbm=isch"
+      },
+      {
+        "id": 242,
+        "hotel_id": 49,
+        "hotel_name": "Marina Bay Vũng Tàu Resort",
+        "city": "Vũng Tàu",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Pool Villa Sea View phòng ngủ",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDK07ftZ7XNwGDk8N98z8nnYNAKDVnbz0PNY5_B9I8kQ&s=10",
+        "google_search_link": "https://www.google.com/search?q=Marina+Bay+Vung+Tau+pool+villa+room&tbm=isch"
+      },
+      {
+        "id": 243,
+        "hotel_id": 49,
+        "hotel_name": "Marina Bay Vũng Tàu Resort",
+        "city": "Vũng Tàu",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi riêng trong villa",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQX8A8az--D74Dcd7-e2Bi0VHwZOOHiXycoFXfHR4GKYA&s=10",
+        "google_search_link": "https://www.google.com/search?q=Marina+Bay+Vung+Tau+private+pool+villa&tbm=isch"
+      },
+      {
+        "id": 244,
+        "hotel_id": 49,
+        "hotel_name": "Marina Bay Vũng Tàu Resort",
+        "city": "Vũng Tàu",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi biển Long Hải",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjm3FuH1urReTg96FuJykxIJ5DTwOm916jvPHCm9bpsXP9vyGn7NgrpiR7&s=10",
+        "google_search_link": "https://www.google.com/search?q=Marina+Bay+Vung+Tau+Long+Hai+beach&tbm=isch"
+      },
+      {
+        "id": 245,
+        "hotel_id": 49,
+        "hotel_name": "Marina Bay Vũng Tàu Resort",
+        "city": "Vũng Tàu",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "BBQ ngoài trời và spa",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3MLV0qY_e2aqAiUmmzrXtPsniJoVpLScCcu0YH6IwLdlZ_wnNMagvcY39&s=10",
+        "google_search_link": "https://www.google.com/search?q=Marina+Bay+Vung+Tau+BBQ+spa&tbm=isch"
+      }
+    ]
+  },
+  {
+    "hotel_id": 50,
+    "hotel_name": "Lan Rừng Resort Phước Hải",
+    "city": "Vũng Tàu",
+    "images": [
+      {
+        "id": 246,
+        "hotel_id": 50,
+        "hotel_name": "Lan Rừng Resort Phước Hải",
+        "city": "Vũng Tàu",
+        "image_order": 1,
+        "image_type": "exterior",
+        "image_description": "Kiến trúc Santorini xanh trắng",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDmagJvdgQpiqvDZEoSA0DqsBlevdI4McTVfaKjZKW1uhLajT7-SVhHqmk&s=10",
+        "google_search_link": "https://www.google.com/search?q=Lan+Rung+Resort+Phuoc+Hai+Santorini+exterior&tbm=isch"
+      },
+      {
+        "id": 247,
+        "hotel_id": 50,
+        "hotel_name": "Lan Rừng Resort Phước Hải",
+        "city": "Vũng Tàu",
+        "image_order": 2,
+        "image_type": "room",
+        "image_description": "Phòng Santorini View Biển",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFMJcXqXHN95lfNC8pcdod-VUrimgkHEJ63WnUE_ybDw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Lan+Rung+Resort+Phuoc+Hai+room+sea+view&tbm=isch"
+      },
+      {
+        "id": 248,
+        "hotel_id": 50,
+        "hotel_name": "Lan Rừng Resort Phước Hải",
+        "city": "Vũng Tàu",
+        "image_order": 3,
+        "image_type": "pool",
+        "image_description": "Hồ bơi phong cách Địa Trung Hải",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT48BIJjkqLELOIJNoTBM8eu_mAiaWVkTycc17nwLoL6GCbf9DZVRbpRx7M&s=10",
+        "google_search_link": "https://www.google.com/search?q=Lan+Rung+Resort+Phuoc+Hai+Mediterranean+pool&tbm=isch"
+      },
+      {
+        "id": 249,
+        "hotel_id": 50,
+        "hotel_name": "Lan Rừng Resort Phước Hải",
+        "city": "Vũng Tàu",
+        "image_order": 4,
+        "image_type": "view",
+        "image_description": "Bãi biển Phước Hải",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDun3kNWgJqOIlmW2S6N_X99P1tNiun9IL8cv0uh-2Nw&s=10",
+        "google_search_link": "https://www.google.com/search?q=Lan+Rung+Resort+Phuoc+Hai+beach&tbm=isch"
+      },
+      {
+        "id": 250,
+        "hotel_id": 50,
+        "hotel_name": "Lan Rừng Resort Phước Hải",
+        "city": "Vũng Tàu",
+        "image_order": 5,
+        "image_type": "amenity",
+        "image_description": "Bar bãi biển Santorini",
+        "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpupyCq8mx4NORsty29HLa_5g9MJDdPsjMWyMvUd4Ssg&s=10",
+        "google_search_link": "https://www.google.com/search?q=Lan+Rung+Resort+Phuoc+Hai+beach+bar&tbm=isch"
+      }
+    ]
+  }
+]
