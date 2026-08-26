@@ -12,14 +12,17 @@ return [
 
     'allowed_methods' => ['*'],
 
-    // Liệt kê chính xác domain của Frontend thay vì để dấu '*'
     'allowed_origins' => [
         'http://localhost:3000',
         'http://localhost:5173',
         'http://127.0.0.1:5173',
+        'https://tripnestvn.vercel.app',
     ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '#^https://.*\.vercel\.app$#',
+        '#^https://tripnest.*\.vercel\.app$#',
+    ],
 
     'allowed_headers' => ['*'],
 
