@@ -15,7 +15,9 @@
   ],
   "env": {
     "APP_ENV": "production",
-    "APP_DEBUG": "false",
+    "APP_DEBUG": "true",
+    "APP_KEY": "base64:IZQ59oYhEKTCbq7+d7YgY+hnUTW6NL3svT2djur5Psc=",
+    "JWT_SECRET": "q0brzy8tNCwqALlB1HG7Nr8gCzDyn6KPoScLajYOM6MCFkS1P8S8KXRVpgAqh3Sl",
     "APP_CONFIG_CACHE": "/tmp/config.php",
     "APP_EVENTS_CACHE": "/tmp/events.php",
     "APP_PACKAGES_CACHE": "/tmp/packages.php",
