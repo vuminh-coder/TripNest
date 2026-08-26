@@ -1,1 +1,3 @@
-*.sqlite*
+# Allow database.sqlite to be tracked for Vercel deployment
+!database.sqlite
+*.sqlite-journal
