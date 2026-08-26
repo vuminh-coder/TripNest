@@ -35,9 +35,17 @@ $app = require_once __DIR__ . '/../bootstrap/app.php';
 
 // Auto-run migrations and seeders if tables are not yet created in serverless SQLite
 try {
-    if (!\Illuminate\Support\Facades\Schema::hasTable('rooms')) {
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+    if (!\Illuminate\Support\Facades\Schema::connection('sqlite')->hasTable('rooms')) {
+        \Illuminate\Support\Facades\Artisan::call('migrate', [
+            '--database' => 'sqlite',
+            '--path' => 'database/migrations',
+            '--force' => true,
+        ]);
+        \Illuminate\Support\Facades\Artisan::call('db:seed', [
+            '--database' => 'sqlite',
+            '--class' => 'Database\\Seeders\\DatabaseSeeder',
+            '--force' => true,
+        ]);
     }
 } catch (\Throwable $e) {
     error_log('Auto migration/seed notice: ' . $e->getMessage());
