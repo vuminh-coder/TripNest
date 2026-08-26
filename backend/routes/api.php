@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccommodationController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
@@ -29,10 +30,16 @@ Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 // 2. Tra cứu dữ liệu công khai (Public Catalog)
 // ==========================================
 Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/accommodations', [AccommodationController::class, 'index']);
+Route::get('/accommodations/{id}', [AccommodationController::class, 'show']);
 Route::get('/rooms', [RoomController::class, 'index']);
 Route::get('/rooms/{id}', [RoomController::class, 'show']);
 Route::get('/experiences', [ExperienceController::class, 'index']);
 Route::get('/host/estimate', [HostController::class, 'estimate']);
+Route::post('/bookings', [BookingController::class, 'store']);
+Route::match(['post', 'patch'], '/bookings/{id}/check-in', [BookingController::class, 'checkIn']);
+Route::match(['post', 'patch'], '/bookings/{id}/check-out', [BookingController::class, 'checkOut']);
+Route::match(['post', 'patch'], '/bookings/{id}/cancel', [BookingController::class, 'cancel']);
 
 // ==========================================
 // 3. API yêu cầu đăng nhập (JWT Authenticated: auth:api)
@@ -46,8 +53,6 @@ Route::middleware(['auth:api'])->group(function () {
 
     // Chuyến đi & Đặt phòng
     Route::get('/my-bookings', [BookingController::class, 'myBookings']);
-    Route::post('/bookings', [BookingController::class, 'store']);
-    Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
 
     // Danh sách yêu thích (Wishlist)
     Route::get('/wishlist', [WishlistController::class, 'index']);
@@ -76,4 +81,9 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
     Route::post('/admin/users/{id}/update', [UserController::class, 'update']);
     Route::delete('/admin/users/{id}', [UserController::class, 'destroy']);
     Route::delete('/admin/users/by-email/{email}', [UserController::class, 'destroy']);
+
+    // Tài chính, Doanh thu & Duyệt Giải Ngân (Payouts)
+    Route::get('/admin/financials/stats', [\App\Http\Controllers\admin\FinancialController::class, 'getStats']);
+    Route::get('/admin/payouts', [\App\Http\Controllers\admin\FinancialController::class, 'getPayouts']);
+    Route::post('/admin/payouts/{id}/approve', [\App\Http\Controllers\admin\FinancialController::class, 'approvePayout']);
 });

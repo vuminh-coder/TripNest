@@ -10,7 +10,7 @@ export const BookingsTab = ({ bookings, onOpenDetailModal, onUpdateStatus }) => 
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  const formatVND = (val) => `${(val || 0).toLocaleString()} ₫`;
+  const formatVND = (val) => `${(val || 0).toLocaleString('vi-VN')} ₫`;
 
   const filtered = bookings.filter((b) => {
     if (statusFilter !== 'all' && b.status !== statusFilter) return false;

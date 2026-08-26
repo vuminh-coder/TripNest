@@ -1337,96 +1337,98 @@
    ========================================================================= */
 .reviews-hub-2col-layout {
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 2rem;
   align-items: center;
-  margin-bottom: 1.25rem;
-  padding: 1.15rem 1.35rem;
-  background: #fbfbfb;
-  border: 1px solid #f0f0f0;
-  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem 1.75rem;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
 }
 
 .reviews-big-score-col {
   text-align: center;
-  border-right: 1px solid #ebebeb;
-  padding-right: 1.5rem;
+  border-right: 1.5px solid #f1f5f9;
+  padding-right: 1.75rem;
 }
 
 .reviews-huge-number {
-  font-size: 2.4rem;
+  font-size: 2.8rem;
   font-weight: 900;
-  color: var(--dark);
+  color: #0f172a;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 .reviews-huge-stars {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  font-size: 1.05rem;
-  margin: 4px 0;
+  gap: 4px;
+  font-size: 1.15rem;
+  margin: 6px 0;
 }
 
 .reviews-overall-label {
-  font-size: 0.92rem;
+  font-size: 1rem;
   font-weight: 800;
-  color: var(--dark);
-  margin-bottom: 2px;
+  color: #0f172a;
+  margin-bottom: 3px;
 }
 
 .reviews-overall-sub {
-  font-size: 0.78rem;
-  color: #717171;
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
 }
 
 .reviews-criteria-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.65rem 1.5rem;
+  gap: 0.85rem 2rem;
 }
 
 .criteria-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
 }
 
 .criteria-label {
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: #444;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #334155;
 }
 
 .criteria-progress-wrap {
   display: flex;
   align-items: center;
-  gap: 6px;
-  width: 110px;
+  gap: 8px;
+  width: 140px;
 }
 
 .criteria-progress-bar {
   flex: 1;
-  height: 4px;
-  background: #e9ecef;
+  height: 7px;
+  background: #e2e8f0;
   border-radius: 999px;
   overflow: hidden;
 }
 
 .criteria-progress-fill {
   height: 100%;
-  background: var(--dark);
+  background: var(--primary-gradient, linear-gradient(135deg, #ff385c, #e00b41));
   border-radius: 999px;
 }
 
 .criteria-val {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--dark);
-  width: 22px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f172a;
+  width: 26px;
   text-align: right;
 }
 

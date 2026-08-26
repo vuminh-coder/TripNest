@@ -448,8 +448,8 @@ export const initialAdminData = {
       host_name: 'Minh Hoàng',
       booking_code: 'TN-892145',
       gross_amount: 11700000,
-      commission_fee: 1287000, // 11%
-      net_payout: 10413000,
+      commission_fee: 1404000, // 12%
+      net_payout: 10296000,
       currency: 'VND',
       bank_name: 'Vietcombank',
       account_number: '0071001234567',
@@ -463,8 +463,8 @@ export const initialAdminData = {
       host_name: 'Trần Thanh Hà',
       booking_code: 'TN-654812',
       gross_amount: 28500000,
-      commission_fee: 3135000,
-      net_payout: 25365000,
+      commission_fee: 3420000, // 12%
+      net_payout: 25080000,
       currency: 'VND',
       bank_name: 'Techcombank',
       account_number: '19033445566778',
@@ -478,8 +478,8 @@ export const initialAdminData = {
       host_name: 'Captain Quang Vũ',
       booking_code: 'TN-431908',
       gross_amount: 14400000,
-      commission_fee: 1584000,
-      net_payout: 12816000,
+      commission_fee: 1728000, // 12%
+      net_payout: 12672000,
       currency: 'VND',
       bank_name: 'MB Bank',
       account_number: '0888999777666',

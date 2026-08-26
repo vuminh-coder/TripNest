@@ -13,7 +13,28 @@ export const BookingsPage = ({ bookings, onOpenDetailModal, onUpdateStatus }) =>
   // Confirm cancel booking state
   const [cancelTarget, setCancelTarget] = useState(null);
 
-  const formatVND = (val) => `${(val || 0).toLocaleString()} ₫`;
+  const formatVND = (val) => `${(val || 0).toLocaleString('vi-VN')} ₫`;
+
+  const formatDateVN = (dateStr) => {
+    if (!dateStr) return '';
+    if (dateStr.includes('/')) return dateStr;
+    const parts = dateStr.split(' ')[0].split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return dateStr;
+  };
+
+  const getStatusLabel = (st) => {
+    switch (st) {
+      case 'confirmed': return 'ĐÃ XÁC NHẬN';
+      case 'checked_in': return 'ĐANG LƯU TRÚ';
+      case 'completed': return 'HOÀN TẤT';
+      case 'pending': return 'CHỜ DUYỆT';
+      case 'cancelled': return 'ĐÃ HỦY';
+      default: return (st || '').toUpperCase();
+    }
+  };
 
   const filtered = bookings.filter((b) => {
     if (statusFilter !== 'all' && b.status !== statusFilter) return false;
@@ -144,10 +165,10 @@ export const BookingsPage = ({ bookings, onOpenDetailModal, onUpdateStatus }) =>
                   <td className="td-nowrap">
                     <div style={{ fontWeight: 600, fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '3px' }}>
                       <TbCalendar style={{ color: '#64748b' }} />
-                      <span>{b.check_in} ➔ {b.check_out}</span>
+                      <span>{formatDateVN(b.check_in)} ➔ {formatDateVN(b.check_out)}</span>
                     </div>
                     <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
-                      {b.nights} đêm • {b.guests_count} khách
+                      {b.nights} đêm • {b.guests_count || b.guests || 2} khách
                     </div>
                   </td>
 
@@ -167,8 +188,8 @@ export const BookingsPage = ({ bookings, onOpenDetailModal, onUpdateStatus }) =>
 
                   {/* Status */}
                   <td className="td-nowrap">
-                    <span className={`status-pill ${b.status}`}>
-                      {b.status.toUpperCase()}
+                    <span className={`status-pill ${b.status}`} style={{ fontWeight: 700 }}>
+                      {getStatusLabel(b.status)}
                     </span>
                   </td>
 

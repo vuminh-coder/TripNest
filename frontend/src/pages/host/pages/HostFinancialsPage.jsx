@@ -13,6 +13,7 @@ export const HostFinancialsPage = ({
   bankInfo,
   setBankInfo,
   payoutHistory = [],
+  availableBalance = 14500000,
   onRequestPayout,
   isRequestingPayout = false,
   currency = 'VND',
@@ -181,7 +182,7 @@ export const HostFinancialsPage = ({
                 Số dư khả dụng
               </span>
               <strong style={{ fontSize: '1.4rem', color: 'var(--host-emerald)', fontWeight: 900, whiteSpace: 'nowrap', display: 'block' }}>
-                {formatPrice(14500000)}
+                {formatPrice(availableBalance)}
               </strong>
             </div>
 

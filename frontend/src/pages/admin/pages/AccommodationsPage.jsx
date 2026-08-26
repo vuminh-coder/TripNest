@@ -28,7 +28,7 @@ export const AccommodationsPage = ({
   // Confirm delete dialog state
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const formatVND = (val) => `${(val || 0).toLocaleString()} ₫`;
+  const formatVND = (val) => `${(val || 0).toLocaleString('vi-VN')} ₫`;
 
   const filtered = accommodations.filter((acc) => {
     if (cityFilter !== 'all' && acc.city !== cityFilter) return false;

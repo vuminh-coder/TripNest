@@ -179,6 +179,16 @@ class RoomController extends Controller
             'amenities' => $amenityNames,
             'description' => $room->description,
             'reviewsBreakdown' => $radar,
+            'accommodation' => [
+                'id' => $accommodation?->id,
+                'nameVi' => $accommodation?->name_vi,
+                'nameEn' => $accommodation?->name_en,
+                'accommodationType' => $accommodation?->accommodation_type,
+                'starRating' => $accommodation?->star_rating ?? 5,
+                'address' => $accommodation?->address,
+                'city' => $accommodation?->city,
+                'images' => $accommodation?->images->pluck('image_url')->toArray() ?: [],
+            ],
         ];
 
         if ($detailed) {
@@ -194,6 +204,28 @@ class RoomController extends Controller
                     'hostResponse' => $rev->host_response,
                 ];
             });
+
+            // Get sibling rooms in same accommodation
+            if ($accommodation) {
+                $data['siblingRooms'] = $accommodation->rooms()
+                    ->where('id', '!=', $room->id)
+                    ->where('status', 'available')
+                    ->with('images', 'amenities')
+                    ->get()
+                    ->map(function ($sr) {
+                        return [
+                            'id' => $sr->id,
+                            'title' => $sr->room_name_vi,
+                            'pricePerNight' => (float)$sr->price_per_night,
+                            'priceVND' => (float)$sr->price_per_night,
+                            'priceUSD' => round((float)$sr->price_per_night / 25450),
+                            'maxGuests' => $sr->max_guests,
+                            'roomSizeM2' => (float)$sr->room_size_m2,
+                            'rating' => (float)$sr->rating,
+                            'images' => $sr->images->pluck('image_url')->toArray(),
+                        ];
+                    });
+            }
         }
 
         return $data;

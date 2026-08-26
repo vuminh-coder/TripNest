@@ -602,6 +602,20 @@
   border: 1px solid var(--host-emerald-border);
 }
 
+.host-chip.info {
+  background: #e0f2fe;
+  color: #0284c7;
+  border: 1px solid #bae6fd;
+  font-weight: 800;
+}
+
+.host-chip.completed {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  font-weight: 800;
+}
+
 .host-chip.warning {
   background: var(--host-amber-soft);
   color: #d97706;

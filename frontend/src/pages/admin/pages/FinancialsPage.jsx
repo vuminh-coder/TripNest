@@ -7,7 +7,7 @@ export const FinancialsPage = ({ payouts, stats, onOpenPayoutModal }) => {
   const [page, setPage] = useState(1);
   const pageSize = 8;
 
-  const formatVND = (val) => `${(val || 0).toLocaleString()} ₫`;
+  const formatVND = (val) => `${(val || 0).toLocaleString('vi-VN')} ₫`;
   const paginated = payouts.slice((page - 1) * pageSize, page * pageSize);
 
   return (
@@ -15,7 +15,7 @@ export const FinancialsPage = ({ payouts, stats, onOpenPayoutModal }) => {
       {/* Header */}
       <AdminPageHeader
         title="Tài Chính & Đối Soát Giải Ngân"
-        subtitle="Quản lý dòng tiền GMV, hoa hồng sàn 11% và lệnh chi trả Payout cho Host"
+        subtitle="Quản lý dòng tiền GMV, hoa hồng sàn 12% và lệnh chi trả Payout cho Host"
       />
 
       {/* Financial Summary Cards */}
@@ -32,7 +32,7 @@ export const FinancialsPage = ({ payouts, stats, onOpenPayoutModal }) => {
 
         <div className="stat-card-glass">
           <div>
-            <span className="stat-label">Hoa Hồng Nền Tảng (11%)</span>
+            <span className="stat-label">Hoa Hồng Nền Tảng (12%)</span>
             <div className="stat-value" style={{ color: '#059669' }}>
               {formatVND(stats.commissionRevenueVND)}
             </div>
@@ -63,18 +63,18 @@ export const FinancialsPage = ({ payouts, stats, onOpenPayoutModal }) => {
         onPageChange={setPage}
         label="lệnh"
       >
-        <table className="admin-table">
+        <table className="admin-table" style={{ minWidth: '920px' }}>
           <thead>
             <tr>
-              <th>Mã Lệnh</th>
+              <th style={{ width: '90px' }}>Mã Lệnh</th>
               <th>Chủ Nhà</th>
-              <th>Mã Booking</th>
+              <th style={{ width: '100px' }}>Mã Booking</th>
               <th>Doanh Thu</th>
               <th>Hoa Hồng Sàn</th>
               <th>Thực Chuyển</th>
               <th>Tài Khoản Thụ Hưởng</th>
               <th>Trạng Thái</th>
-              <th style={{ textAlign: 'right' }}>Thao Tác</th>
+              <th style={{ textAlign: 'right', width: '120px' }}>Thao Tác</th>
             </tr>
           </thead>
           <tbody>

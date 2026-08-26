@@ -6,7 +6,7 @@ import {
 } from 'react-icons/tb';
 
 export const ExperiencesTab = ({ experiences, onToggleActive }) => {
-  const formatVND = (val) => `${(val || 0).toLocaleString()} ₫`;
+  const formatVND = (val) => `${(val || 0).toLocaleString('vi-VN')} ₫`;
 
   return (
     <div>

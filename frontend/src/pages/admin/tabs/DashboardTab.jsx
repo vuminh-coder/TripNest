@@ -13,7 +13,7 @@ import {
 } from 'react-icons/tb';
 
 export const DashboardTab = ({ stats, bookings, hosts, setActiveTab, onOpenKycModal }) => {
-  const formatVND = (val) => `${(val || 0).toLocaleString()} ₫`;
+  const formatVND = (val) => `${(val || 0).toLocaleString('vi-VN')} ₫`;
 
   const pendingKycList = hosts.filter((h) => h.kyc_status === 'pending');
   const recentBookings = bookings.slice(0, 5);
@@ -53,7 +53,7 @@ export const DashboardTab = ({ stats, bookings, hosts, setActiveTab, onOpenKycMo
 
         <div className="stat-card-glass">
           <div>
-            <span className="stat-label">Hoa Hồng Sàn (11%)</span>
+            <span className="stat-label">Hoa Hồng Sàn (12%)</span>
             <div className="stat-value" style={{ color: '#059669' }}>
               {formatVND(stats.commissionRevenueVND)}
             </div>

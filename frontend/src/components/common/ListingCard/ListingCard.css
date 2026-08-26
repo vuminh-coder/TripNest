@@ -195,17 +195,23 @@
   margin-top: 0.35rem;
   font-size: 0.95rem;
   color: #0f172a;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
 }
 
 .listing-price-bold {
   font-weight: 800;
   color: #0f172a;
   font-size: 1.05rem;
+  white-space: nowrap;
 }
 
 .listing-price-period {
   font-weight: 500;
   color: #64748b;
+  white-space: nowrap;
 }
 
 .listing-total-search-price {
@@ -299,5 +305,44 @@
   color: #ff385c;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 56, 92, 0.15);
+}
+
+/* Accommodation Meta Row & Badges */
+.listing-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  margin-bottom: 3px;
+  flex-wrap: wrap;
+}
+
+.listing-type-tag {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0284c7;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.listing-rooms-badge {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #059669;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.listing-price-from-label {
+  font-size: 0.88rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-right: 2px;
 }
 

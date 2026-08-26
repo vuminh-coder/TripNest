@@ -13,10 +13,21 @@ import {
 import AdminPageHeader from '../common/AdminPageHeader';
 
 export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycModal }) => {
-  const formatVND = (val) => `${(val || 0).toLocaleString()} ₫`;
+  const formatVND = (val) => `${(Number(val) || 0).toLocaleString('vi-VN')} ₫`;
+
+  const formatDateVN = (dateStr) => {
+    if (!dateStr) return '';
+    if (dateStr.includes('/')) return dateStr;
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return dateStr;
+  };
 
   const pendingKycList = hosts.filter((h) => h.kyc_status === 'pending');
   const recentBookings = bookings.slice(0, 5);
+  const commission12 = Math.round((stats.totalRevenueVND || 0) * 0.12);
 
   return (
     <div>
@@ -50,9 +61,9 @@ export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycMod
 
         <div className="stat-card-glass">
           <div>
-            <span className="stat-label">Hoa Hồng Sàn (11%)</span>
+            <span className="stat-label">Hoa Hồng Nền Tảng (12%)</span>
             <div className="stat-value" style={{ color: '#059669' }}>
-              {formatVND(stats.commissionRevenueVND)}
+              {formatVND(commission12 || stats.commissionRevenueVND)}
             </div>
             <div className="stat-trend trend-up">
               <TbSparkles />
@@ -197,12 +208,31 @@ export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycMod
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <strong style={{ fontSize: '0.88rem', color: '#0f172a' }}>#{b.id}</strong>
-                      <span className={`status-pill ${b.status}`} style={{ fontSize: '0.68rem', padding: '2px 7px' }}>
-                        {b.status.toUpperCase()}
+                      <span
+                        className={`status-pill ${b.status}`}
+                        style={{
+                          fontSize: '0.68rem',
+                          padding: '2px 7px',
+                          ...(b.status === 'checked_in'
+                            ? { background: '#e0f2fe', color: '#0284c7', borderColor: '#bae6fd' }
+                            : b.status === 'completed'
+                            ? { background: '#ecfdf5', color: '#059669', borderColor: '#a7f3d0' }
+                            : {}),
+                        }}
+                      >
+                        {b.status === 'confirmed'
+                          ? 'ĐÃ XÁC NHẬN'
+                          : b.status === 'checked_in'
+                          ? 'ĐANG LƯU TRÚ'
+                          : b.status === 'completed'
+                          ? 'HOÀN TẤT'
+                          : b.status === 'pending'
+                          ? 'CHỜ DUYỆT'
+                          : 'ĐÃ HỦY'}
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px' }}>
-                      {b.guest_name} • {b.check_in}
+                    <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px', whiteSpace: 'nowrap' }}>
+                      {b.guest_name || b.guestName} • {formatDateVN(b.check_in || b.checkIn)}
                     </div>
                   </div>
 

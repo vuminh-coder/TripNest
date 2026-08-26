@@ -123,8 +123,8 @@ export const ListingCard = ({
       {/* Information Row */}
       <div className="listing-info">
         <div className="listing-header-row">
-          <h3 className="listing-hotel-title" title={room.title}>
-            {room.title}
+          <h3 className="listing-hotel-title" title={room.nameVi || room.title}>
+            {room.nameVi || room.title}
           </h3>
           <div className="listing-rating-pill">
             <TbStarFilled style={{ fontSize: '0.85rem', color: '#ff385c' }} />
@@ -135,30 +135,52 @@ export const ListingCard = ({
           </div>
         </div>
 
+        <div className="listing-meta-row">
+          <span className="listing-type-tag">
+            {room.accommodationType === 'resort'
+              ? 'Khu nghỉ dưỡng 5⭐'
+              : room.accommodationType === 'hotel'
+              ? 'Khách sạn cao cấp'
+              : room.accommodationType === 'villa'
+              ? 'Biệt thự nghỉ dưỡng'
+              : room.accommodationType === 'homestay'
+              ? 'Homestay nguyên căn'
+              : 'Cơ sở lưu trú cao cấp'}
+          </span>
+          {room.roomsCount > 1 && (
+            <span className="listing-rooms-badge">
+              {room.roomsCount} hạng phòng
+            </span>
+          )}
+        </div>
+
         <span className="listing-distance-text">{room.distance || `Cách trung tâm ${room.city}`}</span>
         <span className="listing-date-text">
           {searchParams.checkInDate && searchParams.checkOutDate
             ? `${searchParams.checkInDate} - ${searchParams.checkOutDate}`
-            : room.dates || 'Có phòng cho mọi ngày nghỉ'}
+            : room.dates || 'Khả dụng cho mọi ngày nghỉ'}
         </span>
 
         <div className="listing-price-row">
           {searchNights > 0 ? (
             <div>
-              <span className="listing-price-bold">{formatPrice(room.priceUSD, room.priceVND, 1)}</span>
+              <span className="listing-price-from-label">Từ </span>
+              <span className="listing-price-bold">{formatPrice(room.priceUSD, room.priceFrom || room.priceVND, 1)}</span>
               <span className="listing-price-period"> / đêm</span>
               <div className="listing-total-search-price">
-                Tổng {formatPrice(room.priceUSD, room.priceVND, searchNights)} cho {searchNights} đêm
+                Tổng ~{formatPrice(room.priceUSD, room.priceFrom || room.priceVND, searchNights)} cho {searchNights} đêm
               </div>
             </div>
           ) : showTotalBeforeTaxes ? (
             <div>
-              <span className="listing-price-bold">{formatPrice(room.priceUSD, room.priceVND, 5)}</span>
+              <span className="listing-price-from-label">Từ </span>
+              <span className="listing-price-bold">{formatPrice(room.priceUSD, room.priceFrom || room.priceVND, 5)}</span>
               <span className="listing-price-period"> / 5 đêm trước thuế</span>
             </div>
           ) : (
             <div>
-              <span className="listing-price-bold">{formatPrice(room.priceUSD, room.priceVND, 1)}</span>
+              <span className="listing-price-from-label">Từ </span>
+              <span className="listing-price-bold">{formatPrice(room.priceUSD, room.priceFrom || room.priceVND, 1)}</span>
               <span className="listing-price-period"> / đêm</span>
             </div>
           )}

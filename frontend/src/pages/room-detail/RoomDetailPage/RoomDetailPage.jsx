@@ -70,6 +70,7 @@ export const RoomDetailPage = ({
   experiences = [],
   searchParams = {},
   onBack,
+  onBackToAccommodation,
   onSelectRoom,
   currency = 'VND',
   isFavorite = false,
@@ -428,17 +429,43 @@ export const RoomDetailPage = ({
       {/* 0. SENSIBLE TOP NAVIGATION: Back Button & Contextual Breadcrumbs */}
       {/* ========================================================================= */}
       <div className="room-top-nav-bar">
-        <button className="room-top-back-btn" onClick={onBack} title="Quay lại danh sách phòng">
+        <button
+          className="room-top-back-btn"
+          onClick={() => {
+            if ((room.accommodation || room.accommodationId) && onBackToAccommodation) {
+              onBackToAccommodation(room.accommodationId || room.accommodation?.id);
+            } else if (onBack) {
+              onBack();
+            }
+          }}
+          title="Quay lại cơ sở lưu trú"
+        >
           <TbArrowLeft className="back-arrow-icon" />
-          <span>Quay lại tất cả chỗ ở</span>
+          <span>
+            {(room.accommodation?.nameVi || room.accommodationTitle)
+              ? `Quay lại ${room.accommodation?.nameVi || room.accommodationTitle}`
+              : 'Quay lại trang chủ'}
+          </span>
         </button>
 
         <div className="room-breadcrumbs">
-          <span className="bc-item" onClick={onBack}>Khám phá</span>
+          <span className="bc-item" onClick={onBack}>Trang chủ</span>
           <TbChevronRight className="bc-separator" />
           <span className="bc-item" onClick={onBack}>{room.city || 'Việt Nam'}</span>
+          {(room.accommodation?.nameVi || room.accommodationTitle) && (
+            <>
+              <TbChevronRight className="bc-separator" />
+              <span
+                className="bc-item"
+                style={{ color: '#0284c7', fontWeight: 600 }}
+                onClick={() => onBackToAccommodation && onBackToAccommodation(room.accommodationId || room.accommodation?.id)}
+              >
+                {room.accommodation?.nameVi || room.accommodationTitle}
+              </span>
+            </>
+          )}
           <TbChevronRight className="bc-separator" />
-          <span className="bc-current">{room.type || 'Chỗ ở nghỉ dưỡng'}</span>
+          <span className="bc-current">{room.roomNameVi || room.title}</span>
         </div>
       </div>
 

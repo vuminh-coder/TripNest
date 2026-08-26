@@ -588,10 +588,13 @@
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  position: relative;
+  display: block;
 }
 
 .admin-table {
   width: 100%;
+  min-width: 980px;
   border-collapse: collapse;
   text-align: left;
   font-size: 0.84rem;
@@ -629,10 +632,10 @@
   display: inline-flex !important;
   align-items: center !important;
   justify-content: flex-end !important;
-  gap: 4px !important;
+  gap: 6px !important;
   white-space: nowrap !important;
   flex-wrap: nowrap !important;
-  min-width: 100px;
+  min-width: 110px;
 }
 
 /* ================== STATUS PILLS & BADGES (SIDEBAR-ALIGNED) ================== */

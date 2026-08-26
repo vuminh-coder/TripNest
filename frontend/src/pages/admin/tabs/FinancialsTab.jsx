@@ -9,7 +9,7 @@ import {
 } from 'react-icons/tb';
 
 export const FinancialsTab = ({ payouts, stats, onOpenPayoutModal }) => {
-  const formatVND = (val) => `${(val || 0).toLocaleString()} ₫`;
+  const formatVND = (val) => `${(val || 0).toLocaleString('vi-VN')} ₫`;
   const [page, setPage] = useState(1);
   const pageSize = 8;
 

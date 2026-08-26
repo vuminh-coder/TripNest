@@ -17,7 +17,7 @@ export const AccommodationsTab = ({
   const [page, setPage] = useState(1);
   const pageSize = 8;
 
-  const formatVND = (val) => `${(val || 0).toLocaleString()} ₫`;
+  const formatVND = (val) => `${(val || 0).toLocaleString('vi-VN')} ₫`;
 
   const filtered = accommodations.filter((acc) => {
     if (cityFilter !== 'all' && acc.city !== cityFilter) return false;

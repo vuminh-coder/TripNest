@@ -56,7 +56,7 @@ export const adminService = {
     const totalRev = data.bookings
       .filter((b) => b.status !== 'cancelled')
       .reduce((sum, b) => sum + (b.total_price || 0), 0);
-    const commission = Math.round(totalRev * 0.11);
+    const commission = Math.round(totalRev * 0.12);
     const pendingKyc = data.hosts.filter((h) => h.kyc_status === 'pending').length;
 
     return {
@@ -359,18 +359,52 @@ export const adminService = {
 
   async completePayout(payoutId, transactionRef) {
     const data = getStoredData();
+    let approvedPayout = null;
+    const ref = transactionRef || 'FT' + Date.now();
     data.payouts = data.payouts.map((p) => {
       if (p.id === payoutId) {
-        return {
+        approvedPayout = {
           ...p,
           status: 'completed',
-          transaction_ref: transactionRef || 'FT' + Date.now(),
+          transaction_ref: ref,
           transferred_at: new Date().toISOString(),
         };
+        return approvedPayout;
       }
       return p;
     });
     saveStoredData(data);
+
+    // 1. Asynchronously update backend CSDL
+    try {
+      fetch(`${API_BASE_URL}/admin/payouts/${payoutId}/approve`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ transactionRef: ref }),
+      }).catch(() => {});
+    } catch {
+      // ignore
+    }
+
+    // 2. Đồng bộ sang Host Payout History (tripnest_host_payout_history)
+    if (approvedPayout) {
+      try {
+        const hostHistory = JSON.parse(localStorage.getItem('tripnest_host_payout_history') || '[]');
+        const hostItem = {
+          id: approvedPayout.id,
+          date: new Date().toLocaleDateString('vi-VN'),
+          amount: approvedPayout.net_payout,
+          note: `Chuyển khoản ${approvedPayout.bank_name || 'Ngân hàng'} (Đơn ${approvedPayout.booking_code || approvedPayout.id})`,
+          status: 'completed',
+          ref: approvedPayout.transaction_ref,
+        };
+        const filtered = hostHistory.filter((h) => h.id !== approvedPayout.id && h.note !== hostItem.note);
+        localStorage.setItem('tripnest_host_payout_history', JSON.stringify([hostItem, ...filtered]));
+      } catch (e) {
+        console.warn('Sync to host payout history failed', e);
+      }
+    }
+
     return data.payouts;
   },
 

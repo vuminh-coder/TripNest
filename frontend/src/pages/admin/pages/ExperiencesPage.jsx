@@ -3,7 +3,7 @@ import { TbClock, TbMapPin } from 'react-icons/tb';
 import AdminPageHeader from '../common/AdminPageHeader';
 
 export const ExperiencesPage = ({ experiences, onToggleActive }) => {
-  const formatVND = (val) => `${(val || 0).toLocaleString()} ₫`;
+  const formatVND = (val) => `${(val || 0).toLocaleString('vi-VN')} ₫`;
 
   return (
     <div>

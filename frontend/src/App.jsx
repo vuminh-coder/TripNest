@@ -20,6 +20,7 @@ import { CategoryBar } from '@/pages/home/components/CategoryBar/CategoryBar';
 import { SpotlightBanner } from '@/pages/home/components/SpotlightBanner/SpotlightBanner';
 import { ExperienceSection } from '@/pages/home/components/ExperienceSection/ExperienceSection';
 import { RoomDetailPage } from '@/pages/room-detail/RoomDetailPage/RoomDetailPage';
+import { AccommodationDetailPage } from '@/pages/accommodation-detail/AccommodationDetailPage';
 import { BookingCheckoutPage } from '@/pages/checkout/BookingCheckoutPage/BookingCheckoutPage';
 import HostLayout from '@/pages/host/HostLayout';
 import AdminLayout from '@/pages/admin/AdminLayout';
@@ -52,6 +53,18 @@ const getInitialSearchParams = () => {
     }
   } catch (e) {}
   return {};
+};
+
+// Helper to extract accommodation ID from URL
+const getAccommodationIdFromUrl = () => {
+  const path = window.location.pathname;
+  const match = path.match(/^\/accommodation(?:s)?\/([a-zA-Z0-9_-]+)/);
+  if (match) return match[1];
+  const searchParam = new URLSearchParams(window.location.search).get('accommodation');
+  if (searchParam) return searchParam;
+  const hashMatch = window.location.hash.match(/^#accommodation-?([a-zA-Z0-9_-]+)/);
+  if (hashMatch) return hashMatch[1];
+  return null;
 };
 
 // Helper to extract room ID from URL
@@ -100,6 +113,7 @@ function App() {
   const [currency, setCurrency] = useState('VND');
 
   // Modals state
+  const [selectedAccommodation, setSelectedAccommodation] = useState(null);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [authModal, setAuthModal] = useState({ isOpen: false, tab: 'login' });
@@ -166,11 +180,13 @@ function App() {
         if (found) {
           setCheckoutData({ room: found, bookingParams: {} });
           setSelectedRoom(found);
+          setSelectedAccommodation(null);
         } else {
           apiService.getRoomById(bId).then((single) => {
             if (single && (single.id || single.title)) {
               setCheckoutData({ room: single, bookingParams: {} });
               setSelectedRoom(single);
+              setSelectedAccommodation(null);
             }
           });
         }
@@ -180,17 +196,37 @@ function App() {
           const found = rooms.find((r) => String(r.id) === String(rId));
           if (found) {
             setSelectedRoom(found);
+            setSelectedAccommodation(null);
             setCheckoutData(null);
           }
           apiService.getRoomById(rId).then((single) => {
             if (single && (single.id || single.title)) {
               setSelectedRoom(single);
+              setSelectedAccommodation(null);
               setCheckoutData(null);
             }
           });
-        } else if (!isAdm && !isHost) {
-          setSelectedRoom(null);
-          setCheckoutData(null);
+        } else {
+          const aId = getAccommodationIdFromUrl();
+          if (aId) {
+            const found = rooms.find((r) => String(r.id) === String(aId));
+            if (found) {
+              setSelectedAccommodation(found);
+              setSelectedRoom(null);
+              setCheckoutData(null);
+            }
+            apiService.getAccommodationById(aId).then((single) => {
+              if (single && (single.id || single.title)) {
+                setSelectedAccommodation(single);
+                setSelectedRoom(null);
+                setCheckoutData(null);
+              }
+            });
+          } else if (!isAdm && !isHost) {
+            setSelectedAccommodation(null);
+            setSelectedRoom(null);
+            setCheckoutData(null);
+          }
         }
       }
     };
@@ -212,27 +248,76 @@ function App() {
     setIsAdminOpen(false);
   };
 
-  // Select room and navigate to /room/:id (with backend detail hydration)
-  const handleSelectRoom = async (room) => {
-    setSelectedRoom(room);
+  // Level 2: Select accommodation and navigate to /accommodation/:id
+  const handleSelectAccommodation = async (accom) => {
+    setSelectedAccommodation(accom);
+    setSelectedRoom(null);
     setCheckoutData(null);
-    window.history.pushState({}, '', `/room/${room.id}`);
+    window.history.pushState({}, '', `/accommodation/${accom.id}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     try {
-      const detailed = await apiService.getRoomById(room.id);
+      const detailed = await apiService.getAccommodationById(accom.id);
+      if (detailed && (detailed.id || detailed.title)) {
+        setSelectedAccommodation(detailed);
+      }
+    } catch (e) {}
+  };
+
+  // Level 3: Select child room and navigate to /room/:id
+  const handleSelectRoom = async (roomOrId) => {
+    const roomId = typeof roomOrId === 'object' && roomOrId !== null ? roomOrId.id : roomOrId;
+    const roomObj = typeof roomOrId === 'object' && roomOrId !== null ? roomOrId : { id: roomId };
+    setSelectedRoom(roomObj);
+    setSelectedAccommodation(null);
+    setCheckoutData(null);
+    window.history.pushState({}, '', `/room/${roomId}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    try {
+      const detailed = await apiService.getRoomById(roomId);
       if (detailed && (detailed.id || detailed.title)) {
         setSelectedRoom(detailed);
       }
     } catch (e) {}
   };
 
-  // Back to home listing
-  const handleBackFromRoomDetail = () => {
+  // Back from Accommodation Detail to Home
+  const handleBackFromAccommodation = () => {
+    setSelectedAccommodation(null);
     setSelectedRoom(null);
     setCheckoutData(null);
     window.history.pushState({}, '', '/');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Back from Room Detail to Parent Accommodation
+  const handleBackToAccommodation = async (accomId) => {
+    setSelectedRoom(null);
+    setCheckoutData(null);
+    const targetId = accomId || (selectedRoom?.accommodationId || selectedRoom?.accommodation?.id || 1);
+    window.history.pushState({}, '', `/accommodation/${targetId}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    try {
+      const detailed = await apiService.getAccommodationById(targetId);
+      if (detailed) {
+        setSelectedAccommodation(detailed);
+      }
+    } catch (e) {}
+  };
+
+  // Back from room detail to home
+  const handleBackFromRoomDetail = () => {
+    if (selectedRoom?.accommodationId || selectedRoom?.accommodation?.id) {
+      handleBackToAccommodation(selectedRoom.accommodationId || selectedRoom.accommodation?.id);
+    } else {
+      setSelectedRoom(null);
+      setSelectedAccommodation(null);
+      setCheckoutData(null);
+      window.history.pushState({}, '', '/');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Checkout navigation
@@ -245,22 +330,27 @@ function App() {
   };
 
   const handleBackFromCheckout = () => {
+    const prevRoom = checkoutData?.room;
     setCheckoutData(null);
-    if (selectedRoom) {
+    if (prevRoom && prevRoom.accommodationId) {
+      handleBackToAccommodation(prevRoom.accommodationId);
+    } else if (selectedRoom) {
       window.history.pushState({}, '', `/room/${selectedRoom.id}`);
+    } else if (selectedAccommodation) {
+      window.history.pushState({}, '', `/accommodation/${selectedAccommodation.id}`);
     } else {
       window.history.pushState({}, '', '/');
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Load initial data & auto-fetch room detail if on /room/:id
+  // Load initial data & auto-fetch accommodation/room if on detail URL
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       const [cats, rms, exps] = await Promise.all([
         apiService.getCategories(),
-        apiService.getRooms(),
+        apiService.getAccommodations(),
         apiService.getExperiences(),
       ]);
       setCategories(cats);
@@ -268,7 +358,25 @@ function App() {
       setExperiences(exps);
       setLoading(false);
 
-      // Check if URL has roomId to open directly from backend
+      // Check if URL has accommodationId
+      const urlAccomId = getAccommodationIdFromUrl();
+      if (urlAccomId) {
+        try {
+          const single = await apiService.getAccommodationById(urlAccomId);
+          if (single && (single.id || single.title)) {
+            setSelectedAccommodation(single);
+          } else {
+            const found = rms.find((r) => String(r.id) === String(urlAccomId));
+            if (found) setSelectedAccommodation(found);
+          }
+        } catch (e) {
+          const found = rms.find((r) => String(r.id) === String(urlAccomId));
+          if (found) setSelectedAccommodation(found);
+        }
+        return;
+      }
+
+      // Check if URL has roomId
       const urlRoomId = getRoomIdFromUrl();
       if (urlRoomId) {
         try {
@@ -307,34 +415,110 @@ function App() {
 
   // Create booking
   const handleBookRoom = (bookingData) => {
-    const bookingCode = 'TN-' + Math.floor(100000 + Math.random() * 900000);
+    const bookingCode = bookingData.id || bookingData.code || ('TN-' + Math.floor(100000 + Math.random() * 900000));
+    const totalPrice = bookingData.totalPrice || bookingData.total_price || bookingData.totalAmount || 7500000;
+    const hostEarnings = Math.round(totalPrice * 0.88);
+    const guestName = bookingData.fullName || bookingData.guest_name || bookingData.customerName || bookingData.guestName || user?.full_name || 'Khách du lịch TripNest';
+    const guestPhone = bookingData.phone || bookingData.guest_phone || bookingData.guestPhone || '0912 345 678';
+    const guestEmail = bookingData.email || bookingData.guest_email || 'guest@tripnest.vn';
+    const roomTitle = bookingData.roomTitle || bookingData.room?.title || bookingData.room?.name || 'Chỗ nghỉ cao cấp TripNest';
+    const checkIn = bookingData.checkIn || bookingData.check_in_date || bookingData.checkInDate || '25/08/2026';
+    const checkOut = bookingData.checkOut || bookingData.check_out_date || bookingData.checkOutDate || '28/08/2026';
+    const nights = bookingData.nights || 3;
+    const guests = bookingData.guests || bookingData.guests_count || 2;
+
     const newBooking = {
       id: bookingCode,
       code: bookingCode,
+      roomId: bookingData.roomId || bookingData.room_id || 1,
+      roomTitle,
+      guestName,
+      guestPhone,
+      guestEmail,
+      checkIn,
+      checkOut,
+      nights,
+      guests,
+      totalPrice,
+      hostEarnings,
+      paymentMethod: bookingData.paymentMethod || bookingData.payment_method || 'Credit Card (Visa)',
       status: 'confirmed',
       createdAt: new Date().toISOString(),
       ...bookingData,
     };
     setBookings((prev) => [newBooking, ...prev]);
 
-    // Đồng bộ tức thời vào danh sách đơn của Kênh Chủ Nhà
+    // 1. Đồng bộ tức thời vào danh sách đơn của Kênh Chủ Nhà (tripnest_host_bookings)
     try {
       const existingHostBookings = JSON.parse(localStorage.getItem('tripnest_host_bookings') || '[]');
       const hostEntry = {
         id: 'BK-' + Date.now().toString().slice(-4),
         code: bookingCode,
-        guestName: bookingData.customerName || bookingData.guestName || user?.full_name || 'Khách du lịch TripNest',
-        guestPhone: bookingData.phone || bookingData.guestPhone || '0912 345 678',
-        roomTitle: bookingData.roomTitle || bookingData.room?.title || bookingData.room?.name || 'Chỗ nghỉ cao cấp TripNest',
-        checkIn: bookingData.checkInDate || bookingData.checkIn || '25/08/2026',
-        checkOut: bookingData.checkOutDate || bookingData.checkOut || '28/08/2026',
-        nights: bookingData.nights || 3,
-        guests: bookingData.guests || 2,
-        totalAmount: bookingData.totalAmount || 7500000,
-        hostEarnings: Math.round((bookingData.totalAmount || 7500000) * 0.88),
+        guestName,
+        guestPhone,
+        guestEmail,
+        roomTitle,
+        checkIn,
+        checkOut,
+        nights,
+        guests,
+        totalAmount: totalPrice,
+        hostEarnings,
         status: 'confirmed',
+        created_at: new Date().toISOString().replace('T', ' ').slice(0, 16),
       };
-      localStorage.setItem('tripnest_host_bookings', JSON.stringify([hostEntry, ...existingHostBookings]));
+      const filteredHost = existingHostBookings.filter((b) => b.code !== bookingCode && b.id !== bookingCode);
+      localStorage.setItem('tripnest_host_bookings', JSON.stringify([hostEntry, ...filteredHost]));
+    } catch {
+      // ignore
+    }
+
+    // 2. Đồng bộ tức thời vào danh sách đơn của Admin Portal (tripnest_admin_data_v1)
+    try {
+      const STORAGE_KEY = 'tripnest_admin_data_v1';
+      const raw = localStorage.getItem(STORAGE_KEY);
+      let adminData = raw ? JSON.parse(raw) : null;
+      if (adminData) {
+        const adminBookingEntry = {
+          id: bookingCode,
+          room_name: roomTitle,
+          room_id: bookingData.roomId || bookingData.room_id || 1,
+          guest_name: guestName,
+          guest_email: guestEmail,
+          guest_phone: guestPhone,
+          host_name: 'Minh Vũ',
+          check_in: checkIn.includes('/') ? checkIn.split('/').reverse().join('-') : checkIn,
+          check_out: checkOut.includes('/') ? checkOut.split('/').reverse().join('-') : checkOut,
+          nights,
+          guests_count: guests,
+          base_price: hostEarnings,
+          cleaning_fee: bookingData.cleaning_fee || 0,
+          service_fee: Math.round(totalPrice * 0.12),
+          total_price: totalPrice,
+          currency: 'VND',
+          payment_method: bookingData.paymentMethod || 'Credit Card (Visa)',
+          payment_status: 'paid',
+          status: 'confirmed',
+          special_requests: bookingData.guestNote || bookingData.special_requests || '',
+          created_at: new Date().toISOString().replace('T', ' ').slice(0, 16),
+        };
+        const filteredAdmin = (adminData.bookings || []).filter((b) => b.id !== bookingCode);
+        adminData.bookings = [adminBookingEntry, ...filteredAdmin];
+
+        // Recalculate stats dynamically
+        const totalRev = adminData.bookings
+          .filter((b) => b.status !== 'cancelled')
+          .reduce((sum, b) => sum + (b.total_price || 0), 0);
+        const commission = Math.round(totalRev * 0.12);
+        adminData.stats = {
+          ...adminData.stats,
+          totalRevenueVND: totalRev,
+          commissionRevenueVND: commission,
+          totalBookings: adminData.bookings.length,
+          completedBookings: adminData.bookings.filter((b) => b.status === 'completed').length,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(adminData));
+      }
     } catch {
       // ignore
     }
@@ -589,13 +773,14 @@ function App() {
             }}
           />
         ) : selectedRoom ? (
-          /* Dedicated Standalone Room Detail Page */
+          /* Dedicated Standalone Room Detail Page (Level 3 Child Room) */
           <RoomDetailPage
             room={selectedRoom}
             allRooms={rooms}
             experiences={experiences}
             searchParams={searchParams}
             onBack={handleBackFromRoomDetail}
+            onBackToAccommodation={handleBackToAccommodation}
             onSelectRoom={handleSelectRoom}
             currency={currency}
             isFavorite={wishlistIds.includes(selectedRoom.id)}
@@ -603,8 +788,22 @@ function App() {
             onBookRoom={handleBookRoom}
             onStartCheckout={handleStartCheckout}
           />
+        ) : selectedAccommodation ? (
+          /* Dedicated Standalone Accommodation Detail Page (Level 2 Parent Accommodation) */
+          <AccommodationDetailPage
+            accommodation={selectedAccommodation}
+            allAccommodations={rooms}
+            searchParams={searchParams}
+            onBack={handleBackFromAccommodation}
+            onSelectAccommodation={handleSelectAccommodation}
+            onOpenRoomDetail={handleSelectRoom}
+            currency={currency}
+            isFavorite={wishlistIds.includes(selectedAccommodation.id)}
+            onToggleFavorite={handleToggleFavorite}
+            onStartCheckout={({ room, bookingParams }) => handleStartCheckout(room, bookingParams)}
+          />
         ) : (
-          /* Standard Home Explore & Listing View */
+          /* Standard Home Explore & Listing View (Level 1 Accommodations List) */
           <>
             {/* Category Navigation Bar & Filters */}
             <CategoryBar
@@ -723,7 +922,7 @@ function App() {
                       key={room.id}
                       room={room}
                       searchParams={searchParams}
-                      onOpenDetail={(r) => handleSelectRoom(r)}
+                      onOpenDetail={(r) => handleSelectAccommodation(r)}
                       isFavorite={wishlistIds.includes(room.id)}
                       onToggleFavorite={handleToggleFavorite}
                       currency={currency}

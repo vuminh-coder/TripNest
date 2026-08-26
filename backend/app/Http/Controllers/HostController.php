@@ -186,39 +186,40 @@ class HostController extends Controller
 
         $bookingsQuery = Booking::whereIn('room_id', $roomIds);
         $totalBookings = (clone $bookingsQuery)->count();
-        $activeBookings = (clone $bookingsQuery)->whereIn('status', ['confirmed', 'checked_in'])->count();
+        $activeBookings = (clone $bookingsQuery)->where('status', 'checked_in')->count();
+        $pendingBookings = (clone $bookingsQuery)->where('status', 'pending')->count();
         $completedBookings = (clone $bookingsQuery)->where('status', 'completed')->count();
 
-        $totalRevenueVND = (clone $bookingsQuery)->whereIn('status', ['confirmed', 'checked_in', 'completed'])->sum('total_amount_vnd');
-        $netEarningsVND = round($totalRevenueVND * 0.88); // 88% sau khi trừ 12% phí sàn
+        // Host nhận = Base Price + Cleaning Fee của các đơn confirmed, checked_in, completed
+        $validBookings = (clone $bookingsQuery)->whereIn('status', ['confirmed', 'checked_in', 'completed'])->get();
+        $netEarningsVND = $validBookings->reduce(function ($carry, $b) {
+            return $carry + (float)($b->base_price + $b->cleaning_fee);
+        }, 0);
 
-        // 6 Tháng doanh thu gần nhất
-        $monthlyEarnings = [
-            ['month' => 'Thg 3', 'revenue' => 18500000, 'bookings' => 5],
-            ['month' => 'Thg 4', 'revenue' => 24200000, 'bookings' => 7],
-            ['month' => 'Thg 5', 'revenue' => 31000000, 'bookings' => 9],
-            ['month' => 'Thg 6', 'revenue' => 45800000, 'bookings' => 14],
-            ['month' => 'Thg 7', 'revenue' => 52600000, 'bookings' => 16],
-            ['month' => 'Thg 8', 'revenue' => max($netEarningsVND, 38900000), 'bookings' => max($totalBookings, 11)],
-        ];
+        $totalRevenueVND = $validBookings->sum(function ($b) {
+            return (float)$b->total_price;
+        });
 
-        // 5 đơn đặt mới nhất
+        // Đơn đặt mới nhất từ CSDL thực
         $recentBookings = Booking::whereIn('room_id', $roomIds)
             ->with(['room.accommodation', 'user'])
             ->orderBy('created_at', 'desc')
-            ->limit(5)
+            ->limit(10)
             ->get()
             ->map(function ($b) {
+                $hostEarnings = (float)($b->base_price + $b->cleaning_fee);
                 return [
                     'id' => $b->id,
-                    'bookingCode' => $b->booking_code ?: ('TN-' . $b->id),
+                    'code' => $b->booking_code ?: ('TN-' . $b->id),
                     'guestName' => $b->guest_name ?: $b->user?->full_name ?: 'Khách TripNest',
-                    'guestPhone' => $b->guest_phone ?: $b->user?->phone_number ?: '0912***',
+                    'guestPhone' => $b->guest_phone ?: $b->user?->phone_number ?: '0912 345 678',
                     'roomTitle' => $b->room?->room_name_vi ?: $b->room?->accommodation?->name_vi ?: 'Biệt thự nghỉ dưỡng',
                     'checkIn' => $b->check_in_date?->format('Y-m-d') ?: '2026-08-25',
                     'checkOut' => $b->check_out_date?->format('Y-m-d') ?: '2026-08-28',
-                    'nights' => $b->nights_count ?: 3,
-                    'totalAmount' => (float)$b->total_amount_vnd,
+                    'nights' => (int)($b->nights_count ?: 1),
+                    'guests' => (int)($b->guests_count ?: 2),
+                    'totalAmount' => (float)$b->total_price,
+                    'hostEarnings' => $hostEarnings > 0 ? $hostEarnings : (float)$b->total_price,
                     'status' => $b->status ?: 'confirmed',
                     'createdAt' => $b->created_at?->format('d/m/Y H:i'),
                 ];
@@ -241,12 +242,12 @@ class HostController extends Controller
                 'totalRooms' => $roomIds->count(),
                 'totalBookings' => $totalBookings,
                 'activeBookings' => $activeBookings,
+                'pendingBookings' => $pendingBookings,
                 'completedBookings' => $completedBookings,
                 'totalRevenueVND' => (float)$totalRevenueVND,
                 'netEarningsVND' => (float)$netEarningsVND,
-                'occupancyRate' => 86, // 86%
+                'occupancyRate' => $totalBookings > 0 ? 86 : 0,
             ],
-            'monthlyEarnings' => $monthlyEarnings,
             'recentBookings' => $recentBookings,
         ]);
     }
@@ -524,8 +525,10 @@ class HostController extends Controller
         }
 
         $bookings = $query->orderBy('created_at', 'desc')->get()->map(function ($b) {
+            $hostEarnings = (float)($b->base_price + $b->cleaning_fee);
             return [
                 'id' => $b->id,
+                'code' => $b->booking_code ?: ('TN-' . $b->id),
                 'bookingCode' => $b->booking_code ?: ('TN-' . $b->id),
                 'guestName' => $b->guest_name ?: $b->user?->full_name ?: 'Khách TripNest',
                 'guestEmail' => $b->guest_email ?: $b->user?->account?->email ?: 'guest@email.com',
@@ -533,10 +536,11 @@ class HostController extends Controller
                 'roomTitle' => $b->room?->room_name_vi ?: $b->room?->accommodation?->name_vi ?: 'Biệt thự nghỉ dưỡng',
                 'checkIn' => $b->check_in_date?->format('Y-m-d') ?: '2026-08-25',
                 'checkOut' => $b->check_out_date?->format('Y-m-d') ?: '2026-08-28',
-                'nights' => $b->nights_count ?: 3,
-                'guests' => $b->guests_count ?: 2,
-                'totalAmount' => (float)$b->total_amount_vnd,
-                'hostPayoutAmount' => (float)($b->host_payout_amount_vnd ?: ($b->total_amount_vnd * 0.88)),
+                'nights' => (int)($b->nights_count ?: 3),
+                'guests' => (int)($b->guests_count ?: 2),
+                'totalAmount' => (float)$b->total_price,
+                'hostEarnings' => $hostEarnings > 0 ? $hostEarnings : (float)($b->total_price * 0.88),
+                'hostPayoutAmount' => $hostEarnings > 0 ? $hostEarnings : (float)($b->total_price * 0.88),
                 'status' => $b->status ?: 'confirmed',
                 'createdAt' => $b->created_at?->format('d/m/Y H:i'),
             ];

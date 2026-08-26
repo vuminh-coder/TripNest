@@ -4,46 +4,109 @@ import {
   TbCalendarEvent,
   TbStarFilled,
   TbBuildingCastle,
-  TbTrendingUp,
-  TbCalendarCheck,
-  TbAward,
-  TbChartBar,
-  TbClock,
+  TbArrowRight,
+  TbLogin,
+  TbLogout,
   TbCheck,
   TbPlus,
-  TbArrowRight,
   TbSparkles,
+  TbInbox,
 } from 'react-icons/tb';
 
 export const HostDashboardPage = ({
   listings = [],
   bookings = [],
+  bankInfo = { bankName: 'Vietcombank (VCB)', accountNumber: '9988776655', accountHolder: 'MINH VŨ' },
   onNavigate,
   onOpenWizard,
   onApproveBooking,
+  onCheckInBooking,
+  onCheckOutBooking,
   currency = 'VND',
 }) => {
   const formatPrice = (val) => {
-    if (currency === 'USD') return `$${Math.round(val / 25000).toLocaleString()}`;
-    return `${Number(val).toLocaleString('vi-VN')} ₫`;
+    if (currency === 'USD') return `$${Math.round((val || 0) / 25000).toLocaleString()}`;
+    return `${Number(val || 0).toLocaleString('vi-VN')} ₫`;
   };
 
-  const confirmedBookings = bookings.filter((b) => b.status === 'confirmed');
-  const totalHostEarnings =
-    confirmedBookings.reduce((sum, b) => sum + (b.hostEarnings || 0), 0) +
-    44200000;
-  const pendingBookings = bookings.filter((b) => b.status === 'pending');
+  // Helper chuyển đổi định dạng ngày sang DD/MM/YYYY chuẩn tiếng Việt
+  const formatDateVN = (dateStr) => {
+    if (!dateStr) return '';
+    if (dateStr.includes('/')) return dateStr;
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return dateStr;
+  };
+
+  const validBookings = bookings.filter(
+    (b) => b.status === 'confirmed' || b.status === 'checked_in' || b.status === 'completed'
+  );
+  const totalHostEarnings = validBookings.reduce(
+    (sum, b) => sum + (b.hostEarnings || b.totalAmount || 0),
+    0
+  );
+  const activeStayCount = bookings.filter((b) => b.status === 'checked_in').length;
+  const pendingCount = bookings.filter((b) => b.status === 'pending').length;
 
   return (
-    <div>
-      {/* 4 Standard SaaS Stat KPI Cards */}
-      <div className="host-stats-grid">
-        <div className="host-stat-card">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      {/* 1. Header Tinh Gọn: Tiêu đề & Nút Tạo chỗ ở mới */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          paddingBottom: '0.25rem',
+        }}
+      >
+        <div>
+          <h2
+            style={{
+              fontSize: '1.35rem',
+              fontWeight: 800,
+              color: '#0f172a',
+              letterSpacing: '-0.3px',
+              margin: 0,
+            }}
+          >
+            Tổng Quan Hoạt Động
+          </h2>
+          <p style={{ fontSize: '0.84rem', color: '#64748b', margin: '3px 0 0 0' }}>
+            Hiệu suất kinh doanh và quản lý lưu trú thời gian thực của bạn
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="host-btn-primary"
+          onClick={onOpenWizard}
+          style={{ padding: '0.55rem 1.15rem', fontSize: '0.84rem', gap: '6px' }}
+        >
+          <TbPlus style={{ fontSize: '1.1rem' }} /> Đăng Ký Chỗ Ở Mới
+        </button>
+      </div>
+
+      {/* 2. Lưới 3 Thẻ Chỉ Số Cốt Lõi (Minimalist KPI Cards) */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          gap: '1.1rem',
+        }}
+      >
+        {/* Thẻ 1: Doanh thu thực nhận */}
+        <div className="host-stat-card" style={{ margin: 0 }}>
           <div>
-            <div className="host-stat-label">Tổng doanh thu thực nhận</div>
-            <div className="host-stat-value">{formatPrice(totalHostEarnings)}</div>
-            <span className="host-stat-trend positive">
-              <TbTrendingUp /> +18.4% tháng này
+            <div className="host-stat-label">Doanh thu thực nhận</div>
+            <div className="host-stat-value" style={{ color: '#059669', whiteSpace: 'nowrap' }}>
+              {formatPrice(totalHostEarnings)}
+            </div>
+            <span style={{ fontSize: '0.76rem', color: '#64748b', marginTop: '3px', display: 'block', whiteSpace: 'nowrap' }}>
+              {validBookings.length > 0 ? `Từ ${validBookings.length} lượt đặt phòng thành công` : 'Chưa phát sinh doanh thu'}
             </span>
           </div>
           <div className="host-stat-icon-wrap earnings">
@@ -51,15 +114,30 @@ export const HostDashboardPage = ({
           </div>
         </div>
 
-        <div className="host-stat-card">
+        {/* Thẻ 2: Lượt khách & Tình trạng lưu trú */}
+        <div className="host-stat-card" style={{ margin: 0 }}>
           <div>
-            <div className="host-stat-label">Lượt khách đặt phòng</div>
-            <div className="host-stat-value">{bookings.length} đơn</div>
-            <span className="host-stat-trend positive">
-              <TbCalendarCheck />{' '}
-              {pendingBookings.length > 0
-                ? `${pendingBookings.length} đơn chờ duyệt`
-                : 'Tất cả đã xác nhận'}
+            <div className="host-stat-label">Đơn đặt & Lưu trú</div>
+            <div className="host-stat-value" style={{ whiteSpace: 'nowrap' }}>
+              {bookings.length} đơn
+            </div>
+            <span
+              style={{
+                fontSize: '0.76rem',
+                color: activeStayCount > 0 ? '#0284c7' : pendingCount > 0 ? '#d97706' : '#64748b',
+                fontWeight: activeStayCount > 0 || pendingCount > 0 ? 700 : 500,
+                marginTop: '3px',
+                display: 'block',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {activeStayCount > 0
+                ? `● ${activeStayCount} phòng đang lưu trú`
+                : pendingCount > 0
+                ? `● ${pendingCount} đơn chờ duyệt`
+                : bookings.length > 0
+                ? 'Tất cả đã xác nhận'
+                : 'Sẵn sàng đón khách mới'}
             </span>
           </div>
           <div className="host-stat-icon-wrap bookings">
@@ -67,135 +145,291 @@ export const HostDashboardPage = ({
           </div>
         </div>
 
-        <div className="host-stat-card">
+        {/* Thẻ 3: Chỗ ở & Đánh giá uy tín */}
+        <div className="host-stat-card" style={{ margin: 0 }}>
           <div>
-            <div className="host-stat-label">Điểm đánh giá uy tín</div>
-            <div className="host-stat-value">4.96 ★</div>
-            <span className="host-stat-trend" style={{ color: '#d97706' }}>
-              <TbAward /> Chủ nhà Siêu cấp
+            <div className="host-stat-label">Chỗ ở & Đánh giá</div>
+            <div className="host-stat-value" style={{ whiteSpace: 'nowrap' }}>
+              {listings.length} chỗ {listings.length > 0 && <span style={{ color: '#d97706', fontSize: '1.25rem' }}>· 4.96 ★</span>}
+            </div>
+            <span style={{ fontSize: '0.76rem', color: '#d97706', fontWeight: 700, marginTop: '3px', display: 'inline-flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }}>
+              <TbSparkles /> Danh hiệu Superhost 5 sao
             </span>
           </div>
           <div className="host-stat-icon-wrap rating">
-            <TbStarFilled />
-          </div>
-        </div>
-
-        <div className="host-stat-card">
-          <div>
-            <div className="host-stat-label">Tỷ lệ lấp đầy phòng</div>
-            <div className="host-stat-value">86%</div>
-            <span className="host-stat-trend positive">
-              <TbTrendingUp /> Vượt 12% so với kỳ trước
-            </span>
-          </div>
-          <div className="host-stat-icon-wrap occupancy">
             <TbBuildingCastle />
           </div>
         </div>
       </div>
 
-      {/* Grid: Revenue Chart Visualizer & Recent Bookings Activity */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '1.25rem', marginBottom: '1.5rem' }}>
-        {/* Monthly Earnings Chart */}
-        <div className="host-panel-card" style={{ margin: 0 }}>
-          <div className="host-panel-header">
-            <h3 className="host-panel-title">
-              <TbChartBar style={{ color: 'var(--host-primary)' }} /> Doanh Thu 6 Tháng Gần Nhất
+      {/* 3. Bảng Quản Lý Đơn Đặt Phòng Cốt Lõi (Anti-Wrapping Protected) */}
+      <div className="host-panel-card" style={{ margin: 0 }}>
+        <div className="host-panel-header">
+          <div>
+            <h3 className="host-panel-title" style={{ fontSize: '0.95rem' }}>
+              <TbCalendarEvent style={{ color: 'var(--host-indigo)' }} /> Đơn Đặt Phòng Cần Xử Lý
             </h3>
-            <span style={{ fontSize: '0.8rem', color: 'var(--host-text-muted)' }}>Đơn vị: Triệu VNĐ</span>
           </div>
 
-          <div style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '190px', borderBottom: '1px solid var(--host-border-subtle)', paddingBottom: '0.5rem' }}>
-              {[
-                { month: 'Thg 3', val: 18.5, heightPercent: '38%' },
-                { month: 'Thg 4', val: 24.2, heightPercent: '50%' },
-                { month: 'Thg 5', val: 31.0, heightPercent: '64%' },
-                { month: 'Thg 6', val: 45.8, heightPercent: '88%' },
-                { month: 'Thg 7', val: 52.6, heightPercent: '100%' },
-                { month: 'Thg 8', val: 48.9, heightPercent: '92%' },
-              ].map((bar) => (
-                <div key={bar.month} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, height: '100%', justifyContent: 'flex-end', position: 'relative' }}>
-                  <div
-                    style={{
-                      width: '38px',
-                      background: 'linear-gradient(180deg, #ff385c 0%, #fda4af 100%)',
-                      borderRadius: '6px 6px 0 0',
-                      height: bar.heightPercent,
-                      cursor: 'pointer',
-                      transition: 'height 0.4s ease, opacity 0.2s ease',
-                    }}
-                    title={`${bar.val} Triệu VNĐ`}
-                  />
-                  <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--host-text-muted)', marginTop: '8px' }}>
-                    {bar.month}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Bookings Feed & Quick Approval */}
-        <div className="host-panel-card" style={{ margin: 0 }}>
-          <div className="host-panel-header">
-            <h3 className="host-panel-title">
-              <TbClock style={{ color: 'var(--host-indigo)' }} /> Đơn Đặt Phòng Mới
-            </h3>
+          {bookings.length > 0 && (
             <button
               type="button"
-              style={{ background: 'none', border: 'none', color: 'var(--host-primary)', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--host-primary)',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
               onClick={() => onNavigate('bookings')}
             >
-              Xem tất cả ➔
+              Xem toàn bộ ({bookings.length}) <TbArrowRight />
             </button>
-          </div>
+          )}
+        </div>
 
-          <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {bookings.slice(0, 3).map((b) => (
+        <div className="host-table-wrap">
+          {bookings.length === 0 ? (
+            /* Luxury Empty State Khi Chưa Có Đơn */
+            <div style={{ padding: '3.5rem 1.5rem', textAlign: 'center' }}>
               <div
-                key={b.id}
                 style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '50%',
+                  background: '#fff1f2',
+                  color: '#ff385c',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.75rem 0.9rem',
-                  borderRadius: 'var(--host-radius-md)',
-                  background: '#f8fafc',
-                  border: '1px solid var(--host-border-subtle)',
+                  justifyContent: 'center',
+                  fontSize: '1.8rem',
+                  margin: '0 auto 1rem',
                 }}
               >
-                <div>
-                  <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--host-text-main)' }}>
-                    {b.guestName}
-                  </div>
-                  <div style={{ fontSize: '0.76rem', color: 'var(--host-text-muted)' }}>
-                    {b.checkIn} ➔ {b.checkOut} ({b.nights} đêm)
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'right', flexShrink: 0, whiteSpace: 'nowrap', marginLeft: '12px' }}>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--host-text-main)', whiteSpace: 'nowrap' }}>
-                    {formatPrice(b.totalAmount)}
-                  </div>
-                  {b.status === 'pending' ? (
-                    <button
-                      type="button"
-                      className="host-btn-primary"
-                      style={{ padding: '2px 8px', fontSize: '0.72rem', marginTop: '2px' }}
-                      onClick={() => onApproveBooking(b.id)}
-                    >
-                      <TbCheck /> Duyệt đơn
-                    </button>
-                  ) : (
-                    <span className={`host-chip ${b.status === 'confirmed' ? 'success' : 'neutral'}`}>
-                      {b.status === 'confirmed' ? 'Đã xác nhận' : 'Đã hủy'}
-                    </span>
-                  )}
-                </div>
+                <TbInbox />
               </div>
-            ))}
-          </div>
+              <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.4rem 0' }}>
+                Chưa có đơn đặt phòng nào
+              </h4>
+              <p style={{ fontSize: '0.84rem', color: '#64748b', maxWidth: '420px', margin: '0 auto 1.25rem', lineHeight: 1.5 }}>
+                Chỗ nghỉ của bạn đã mở bán và sẵn sàng đón tiếp khách. Các đơn đặt phòng mới cần xử lý sẽ xuất hiện tại đây.
+              </p>
+              <button
+                type="button"
+                className="host-btn-primary"
+                onClick={onOpenWizard}
+                style={{ padding: '0.45rem 1rem', fontSize: '0.82rem' }}
+              >
+                <TbPlus /> Đăng Ký Thêm Chỗ Ở
+              </button>
+            </div>
+          ) : (
+            <table className="host-saas-table" style={{ width: '100%', minWidth: '940px' }}>
+              <thead>
+                <tr>
+                  <th style={{ width: '130px', whiteSpace: 'nowrap' }}>MÃ ĐẶT</th>
+                  <th style={{ minWidth: '150px', whiteSpace: 'nowrap' }}>KHÁCH HÀNG</th>
+                  <th style={{ minWidth: '220px', whiteSpace: 'nowrap' }}>CHỖ NGHỈ</th>
+                  <th style={{ minWidth: '200px', whiteSpace: 'nowrap' }}>THỜI GIAN LƯU TRÚ</th>
+                  <th style={{ minWidth: '130px', whiteSpace: 'nowrap' }}>THỰC NHẬN</th>
+                  <th style={{ minWidth: '110px', whiteSpace: 'nowrap' }}>TRẠNG THÁI</th>
+                  <th style={{ textAlign: 'right', minWidth: '130px', whiteSpace: 'nowrap' }}>THAO TÁC NHANH</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bookings.slice(0, 5).map((b) => (
+                  <tr key={b.id}>
+                    {/* Mã đặt phòng: Luôn liền mạch 1 dòng */}
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      <strong
+                        style={{
+                          color: 'var(--host-primary)',
+                          fontSize: '0.88rem',
+                          fontFamily: 'monospace',
+                          display: 'inline-block',
+                          whiteSpace: 'nowrap',
+                          letterSpacing: '0.3px',
+                        }}
+                      >
+                        {b.code || b.id}
+                      </strong>
+                    </td>
+
+                    {/* Khách hàng */}
+                    <td>
+                      <div style={{ fontWeight: 700, color: 'var(--host-text-main)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                        {b.guestName || 'Khách hàng TripNest'}
+                      </div>
+                      <div style={{ fontSize: '0.74rem', color: 'var(--host-text-muted)', whiteSpace: 'nowrap' }}>
+                        {b.guestPhone || '0912 345 678'}
+                      </div>
+                    </td>
+
+                    {/* Chỗ nghỉ */}
+                    <td>
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          color: '#334155',
+                          maxWidth: '260px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          fontSize: '0.85rem',
+                        }}
+                        title={b.roomTitle}
+                      >
+                        {b.roomTitle || 'Không gian nghỉ dưỡng'}
+                      </div>
+                    </td>
+
+                    {/* Thời gian lưu trú: Luôn liền mạch 1 dòng */}
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      <div
+                        style={{
+                          fontSize: '0.82rem',
+                          fontWeight: 600,
+                          color: '#0f172a',
+                          display: 'inline-block',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {formatDateVN(b.checkIn)} ➔ {formatDateVN(b.checkOut)}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--host-text-muted)', whiteSpace: 'nowrap', marginTop: '1px' }}>
+                        {b.nights || 1} đêm · {b.guests || 2} khách
+                      </div>
+                    </td>
+
+                    {/* Thực nhận: Luôn liền mạch 1 dòng */}
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      <strong
+                        style={{
+                          color: '#059669',
+                          fontSize: '0.92rem',
+                          display: 'inline-block',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        +{formatPrice(b.hostEarnings || b.totalAmount || 2500000)}
+                      </strong>
+                    </td>
+
+                    {/* Trạng thái */}
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      <span
+                        className={`host-chip ${
+                          b.status === 'confirmed'
+                            ? 'success'
+                            : b.status === 'checked_in'
+                            ? 'info'
+                            : b.status === 'completed'
+                            ? 'completed'
+                            : b.status === 'pending'
+                            ? 'warning'
+                            : 'neutral'
+                        }`}
+                        style={{
+                          fontSize: '0.7rem',
+                          padding: '2px 7px',
+                          whiteSpace: 'nowrap',
+                          display: 'inline-block',
+                          ...(b.status === 'checked_in'
+                            ? { background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd', fontWeight: 800 }
+                            : b.status === 'completed'
+                            ? { background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontWeight: 800 }
+                            : {}),
+                        }}
+                      >
+                        {b.status === 'confirmed'
+                          ? 'Đã xác nhận'
+                          : b.status === 'checked_in'
+                          ? 'Đang lưu trú'
+                          : b.status === 'completed'
+                          ? 'Đã hoàn tất'
+                          : b.status === 'pending'
+                          ? 'Chờ duyệt'
+                          : 'Đã hủy'}
+                      </span>
+                    </td>
+
+                    {/* Thao tác nhanh */}
+                    <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: '5px', whiteSpace: 'nowrap' }}>
+                        {b.status === 'pending' && (
+                          <button
+                            type="button"
+                            className="host-btn-primary"
+                            style={{ padding: '4px 10px', fontSize: '0.74rem', whiteSpace: 'nowrap' }}
+                            onClick={() => onApproveBooking && onApproveBooking(b.id || b.code)}
+                          >
+                            <TbCheck /> Duyệt đơn
+                          </button>
+                        )}
+
+                        {b.status === 'confirmed' && (
+                          <button
+                            type="button"
+                            className="host-btn-primary"
+                            style={{
+                              padding: '4px 10px',
+                              fontSize: '0.74rem',
+                              background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                              whiteSpace: 'nowrap',
+                            }}
+                            onClick={() => onCheckInBooking && onCheckInBooking(b.id || b.code)}
+                            title="Xác nhận khách đã tới nhận phòng"
+                          >
+                            <TbLogin /> Check-in
+                          </button>
+                        )}
+
+                        {b.status === 'checked_in' && (
+                          <button
+                            type="button"
+                            className="host-btn-primary"
+                            style={{
+                              padding: '4px 10px',
+                              fontSize: '0.74rem',
+                              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                              whiteSpace: 'nowrap',
+                            }}
+                            onClick={() => onCheckOutBooking && onCheckOutBooking(b.id || b.code)}
+                            title="Xác nhận khách trả phòng & tạo Payout"
+                          >
+                            <TbLogout /> Check-out
+                          </button>
+                        )}
+
+                        {b.status === 'completed' && (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '0.74rem',
+                              color: '#059669',
+                              fontWeight: 800,
+                              padding: '3px 7px',
+                              background: '#ecfdf5',
+                              borderRadius: '4px',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            ✓ Payout Đã Tạo
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

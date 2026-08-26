@@ -15,6 +15,7 @@ import HostFinancialsPage from './pages/HostFinancialsPage';
 import { TbX, TbCheck } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
 import { useConfirm } from '@/context/ConfirmContext';
+import { apiService } from '@/services/api';
 
 const DEFAULT_LISTINGS = [
   {
@@ -185,18 +186,20 @@ export const HostLayout = ({
   const [bankInfo, setBankInfo] = useState(() => {
     try {
       const saved = localStorage.getItem('tripnest_host_bank');
+      const currentUser = JSON.parse(localStorage.getItem('tripnest_user') || '{}');
+      const defaultName = (currentUser?.name || currentUser?.full_name || 'MINH VŨ').toUpperCase();
       return saved
         ? JSON.parse(saved)
         : {
             bankName: 'Vietcombank (VCB)',
             accountNumber: '9988776655',
-            accountHolder: 'NGUYEN VAN AN',
+            accountHolder: defaultName,
           };
     } catch {
       return {
         bankName: 'Vietcombank (VCB)',
         accountNumber: '9988776655',
-        accountHolder: 'NGUYEN VAN AN',
+        accountHolder: 'MINH VŨ',
       };
     }
   });
@@ -248,6 +251,27 @@ export const HostLayout = ({
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Fetch Live Data from Backend API on Mount
+  useEffect(() => {
+    let isMounted = true;
+    const fetchHostBackend = async () => {
+      try {
+        const statsRes = await apiService.getHostDashboardStats();
+        if (isMounted && statsRes?.success) {
+          if (statsRes.recentBookings && statsRes.recentBookings.length > 0) {
+            setBookings(statsRes.recentBookings);
+          }
+        }
+      } catch (err) {
+        console.warn('Sync Host Backend Data:', err);
+      }
+    };
+    fetchHostBackend();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Listing Handlers
@@ -310,6 +334,109 @@ export const HostLayout = ({
     toast.success('Duyệt đơn thành công', 'Đã xác nhận đơn đặt phòng cho khách.');
   };
 
+  const handleCheckInBooking = async (id) => {
+    setBookings((prev) =>
+      prev.map((b) => (b.id === id || b.code === id ? { ...b, status: 'checked_in' } : b))
+    );
+
+    // 1. Asynchronous backend check-in
+    try {
+      apiService.checkIn(id).catch(() => {});
+    } catch {
+      // ignore
+    }
+
+    // 2. Đồng bộ sang Admin Portal bookings store
+    try {
+      const STORAGE_KEY = 'tripnest_admin_data_v1';
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const adminData = JSON.parse(raw);
+        if (adminData.bookings) {
+          adminData.bookings = adminData.bookings.map((b) =>
+            b.id === id || b.code === id ? { ...b, status: 'checked_in' } : b
+          );
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(adminData));
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    toast.success('Khách đã nhận phòng!', 'Đã cập nhật trạng thái đơn thành Đang lưu trú.');
+  };
+
+  const handleCheckOutBooking = async (id) => {
+    const target = bookings.find((b) => b.id === id || b.code === id);
+    const updatedBookings = bookings.map((b) =>
+      b.id === id || b.code === id ? { ...b, status: 'completed' } : b
+    );
+    setBookings(updatedBookings);
+
+    const grossAmount = target?.totalAmount || 7500000;
+    const commissionFee = Math.round(grossAmount * 0.12);
+    const netPayoutAmount = target?.hostEarnings || (grossAmount - commissionFee);
+
+    // 1. Asynchronous backend check-out
+    try {
+      apiService.checkOut(id).catch(() => {});
+    } catch {
+      // ignore
+    }
+
+    // 2. Tạo lệnh Payout trong Host Payout History
+    const hostPayoutId = 'POT-' + Math.floor(100000 + Math.random() * 900000);
+    const newPayout = {
+      id: hostPayoutId,
+      date: new Date().toLocaleDateString('vi-VN'),
+      amount: netPayoutAmount,
+      note: `Doanh thu đơn ${target?.code || target?.id || id}`,
+      status: 'pending',
+    };
+    setPayoutHistory((prev) => [newPayout, ...prev]);
+
+    // 3. Đồng bộ tạo bản ghi Payout mới trong Admin Portal (tripnest_admin_data_v1)
+    try {
+      const STORAGE_KEY = 'tripnest_admin_data_v1';
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const adminData = JSON.parse(raw);
+        if (adminData.bookings) {
+          adminData.bookings = adminData.bookings.map((b) =>
+            b.id === id || b.code === id ? { ...b, status: 'completed' } : b
+          );
+        }
+        if (adminData.payouts) {
+          const adminPayoutId = 'PO-' + Math.floor(10000 + Math.random() * 90000);
+          const newAdminPayout = {
+            id: adminPayoutId,
+            host_name: bankInfo.accountHolder || 'Minh Vũ',
+            booking_code: target?.code || target?.id || id,
+            gross_amount: grossAmount,
+            commission_fee: commissionFee,
+            net_payout: netPayoutAmount,
+            currency: 'VND',
+            bank_name: bankInfo.bankName || 'Vietcombank',
+            account_number: bankInfo.accountNumber || '9988776655',
+            account_holder: bankInfo.accountHolder || 'MINH VŨ',
+            status: 'pending',
+            transaction_ref: '',
+            created_at: new Date().toISOString().replace('T', ' ').slice(0, 16),
+          };
+          adminData.payouts = [newAdminPayout, ...adminData.payouts];
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(adminData));
+      }
+    } catch {
+      // ignore
+    }
+
+    toast.success(
+      'Check-out thành công & Đã tạo Lệnh Payout!',
+      `Đã hoàn tất kỳ nghỉ và tạo lệnh giải ngân ${netPayoutAmount.toLocaleString('vi-VN')} ₫ cho bạn.`
+    );
+  };
+
   const handleCancelBooking = async (id) => {
     const isConfirmed = await confirm({
       title: 'Hủy đơn đặt phòng?',
@@ -327,15 +454,19 @@ export const HostLayout = ({
     }
   };
 
-  // Payout Handlers
+  // Payout Handlers & Dynamic Balance
+  const completedEarnings = bookings
+    .filter((b) => b.status === 'completed')
+    .reduce((sum, b) => sum + (b.hostEarnings || Math.round((b.totalAmount || 0) * 0.88)), 0);
+  const availableBalance = completedEarnings > 0 ? (14500000 + completedEarnings) : 14500000;
+
   const handleRequestPayout = () => {
-    const availableAmount = 14500000;
     setIsRequestingPayout(true);
     setTimeout(() => {
       const newTransaction = {
         id: 'PO-' + Date.now().toString().slice(-4),
         date: new Date().toLocaleDateString('vi-VN'),
-        amount: availableAmount,
+        amount: availableBalance,
         note: `Chuyển khoản ${bankInfo.bankName}`,
         status: 'completed',
       };
@@ -379,9 +510,12 @@ export const HostLayout = ({
             <HostDashboardPage
               listings={listings}
               bookings={bookings}
+              bankInfo={bankInfo}
               onNavigate={handleNavigate}
               onOpenWizard={() => handleNavigate('new_listing')}
               onApproveBooking={handleApproveBooking}
+              onCheckInBooking={handleCheckInBooking}
+              onCheckOutBooking={handleCheckOutBooking}
               currency={currency}
             />
           )}
@@ -413,6 +547,8 @@ export const HostLayout = ({
               bookings={bookings}
               onApproveBooking={handleApproveBooking}
               onCancelBooking={handleCancelBooking}
+              onCheckInBooking={handleCheckInBooking}
+              onCheckOutBooking={handleCheckOutBooking}
               currency={currency}
             />
           )}
@@ -424,6 +560,7 @@ export const HostLayout = ({
               bankInfo={bankInfo}
               setBankInfo={setBankInfo}
               payoutHistory={payoutHistory}
+              availableBalance={availableBalance}
               onRequestPayout={handleRequestPayout}
               isRequestingPayout={isRequestingPayout}
               currency={currency}

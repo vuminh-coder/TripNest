@@ -14,7 +14,7 @@ export const PayoutConfirmModal = ({ payout, onClose, onConfirm }) => {
 
   if (!payout) return null;
 
-  const formatVND = (val) => `${(val || 0).toLocaleString()} ₫`;
+  const formatVND = (val) => `${(val || 0).toLocaleString('vi-VN')} ₫`;
 
   return (
     <div className="modal-overlay" onClick={onClose} style={{ zIndex: 110 }}>
@@ -60,7 +60,7 @@ export const PayoutConfirmModal = ({ payout, onClose, onConfirm }) => {
               <span>{formatVND(payout.gross_amount)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.88rem' }}>
-              <span style={{ color: '#64748b' }}>Khấu trừ hoa hồng sàn (11%):</span>
+              <span style={{ color: '#64748b' }}>Khấu trừ hoa hồng sàn (12%):</span>
               <span style={{ color: '#b91c1c' }}>- {formatVND(payout.commission_fee)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', fontWeight: 800, color: '#16a34a', paddingTop: '4px' }}>

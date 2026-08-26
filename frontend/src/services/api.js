@@ -20,7 +20,9 @@ const getAuthHeaders = () => {
 };
 
 export const apiService = {
-  // 1. Đăng nhập thông thường bằng Email + Mật khẩu
+  // ==========================================
+  // 1. Xác thực & Tài khoản người dùng (Auth)
+  // ==========================================
   async login(payload) {
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
@@ -33,10 +35,15 @@ export const apiService = {
       error.response = data;
       throw error;
     }
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+    }
+    if (data.user) {
+      localStorage.setItem('tripnest_user', JSON.stringify(data.user));
+    }
     return data;
   },
 
-  // 2. Đăng ký tài khoản người dùng mới
   async register(payload) {
     const res = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
@@ -49,12 +56,15 @@ export const apiService = {
       error.response = data;
       throw error;
     }
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+    }
+    if (data.user) {
+      localStorage.setItem('tripnest_user', JSON.stringify(data.user));
+    }
     return data;
   },
 
-
-
-  // 4. Lấy thông tin người dùng hiện tại
   async me() {
     const res = await fetch(`${API_BASE_URL}/auth/me`, {
       headers: getAuthHeaders(),
@@ -66,7 +76,6 @@ export const apiService = {
     return data;
   },
 
-  // 5. Đăng xuất
   async logout() {
     try {
       await fetch(`${API_BASE_URL}/auth/logout`, {
@@ -79,7 +88,6 @@ export const apiService = {
     }
   },
 
-  // 6. Đổi mật khẩu tài khoản
   async updatePassword(payload) {
     const res = await fetch(`${API_BASE_URL}/auth/password`, {
       method: 'PUT',
@@ -95,7 +103,9 @@ export const apiService = {
     return data;
   },
 
-  // 7. Lấy danh mục
+  // ==========================================
+  // 2. Tra cứu Danh mục & Cơ sở lưu trú
+  // ==========================================
   async getCategories() {
     try {
       const res = await fetch(`${API_BASE_URL}/categories`);
@@ -106,11 +116,33 @@ export const apiService = {
     }
   },
 
-  // 8. Lấy danh sách phòng với bộ lọc đa tiêu chí
+  async getAccommodations(params = {}) {
+    try {
+      const query = new URLSearchParams(params).toString();
+      const res = await fetch(`${API_BASE_URL}/accommodations?${query}`);
+      if (!res.ok) throw new Error('Network response not ok');
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) return data;
+      return roomsData;
+    } catch (e) {
+      return this.getRooms(params);
+    }
+  },
+
+  async getAccommodationById(id) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/accommodations/${id}`);
+      if (!res.ok) throw new Error('Accommodation detail error');
+      return await res.json();
+    } catch (e) {
+      return roomsData.find((r) => String(r.id) === String(id) || String(r.accommodationId) === String(id)) || null;
+    }
+  },
+
   async getRooms(params = {}) {
     try {
       const query = new URLSearchParams(params).toString();
-      const res = await fetch(`${API_BASE_URL}/rooms?${query}`);
+      const res = await fetch(`${API_BASE_URL}/accommodations?${query}`);
       if (!res.ok) throw new Error('Network response not ok');
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) return data;
@@ -124,9 +156,9 @@ export const apiService = {
         const s = params.search.toLowerCase();
         filtered = filtered.filter(
           (r) =>
-            r.title.toLowerCase().includes(s) ||
-            r.city.toLowerCase().includes(s) ||
-            r.location.toLowerCase().includes(s)
+            r.title?.toLowerCase().includes(s) ||
+            r.city?.toLowerCase().includes(s) ||
+            r.location?.toLowerCase().includes(s)
         );
       }
       if (params.minPrice) {
@@ -136,20 +168,19 @@ export const apiService = {
         filtered = filtered.filter((r) => (r.priceVND || r.priceUSD * 25450) <= Number(params.maxPrice));
       }
       if (params.guests) {
-        filtered = filtered.filter((r) => r.specs.guests >= Number(params.guests));
+        filtered = filtered.filter((r) => (r.specs?.guests || r.maxGuests || 2) >= Number(params.guests));
       }
       return filtered;
     }
   },
 
-  // 9. Lấy chi tiết phòng
   async getRoomDetail(id) {
     try {
       const res = await fetch(`${API_BASE_URL}/rooms/${id}`);
       if (!res.ok) throw new Error('Room detail error');
       return await res.json();
     } catch (e) {
-      return roomsData.find((r) => r.id === Number(id)) || null;
+      return roomsData.find((r) => String(r.id) === String(id)) || null;
     }
   },
 
@@ -157,7 +188,6 @@ export const apiService = {
     return this.getRoomDetail(id);
   },
 
-  // 10. Lấy danh sách trải nghiệm
   async getExperiences() {
     try {
       const res = await fetch(`${API_BASE_URL}/experiences`);
@@ -168,7 +198,9 @@ export const apiService = {
     }
   },
 
-  // 11. Tạo đơn đặt phòng mới
+  // ==========================================
+  // 3. Đặt phòng, Chuyến đi & Thanh toán
+  // ==========================================
   async createBooking(bookingPayload) {
     try {
       const res = await fetch(`${API_BASE_URL}/bookings`, {
@@ -182,7 +214,7 @@ export const apiService = {
       }
       return await res.json();
     } catch (e) {
-      // Local fallback
+      // Local storage fallback for seamless offline testing
       const savedBookings = JSON.parse(localStorage.getItem('tripnest_bookings') || '[]');
       const newBooking = {
         id: 'TN-' + Math.floor(100000 + Math.random() * 900000),
@@ -196,7 +228,6 @@ export const apiService = {
     }
   },
 
-  // 12. Lấy danh sách phòng đã đặt của user
   async getMyBookings() {
     try {
       const res = await fetch(`${API_BASE_URL}/my-bookings`, {
@@ -209,7 +240,6 @@ export const apiService = {
     }
   },
 
-  // 13. Hủy đơn đặt phòng
   async cancelBooking(bookingId) {
     try {
       const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel`, {
@@ -222,7 +252,30 @@ export const apiService = {
     }
   },
 
-  // 14. Lấy danh sách Wishlist
+  async checkIn(bookingId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/check-in`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+      return await res.json();
+    } catch (e) {
+      return { success: true };
+    }
+  },
+
+  async checkOut(bookingId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/check-out`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+      return await res.json();
+    } catch (e) {
+      return { success: true };
+    }
+  },
+
   async getWishlist() {
     try {
       const res = await fetch(`${API_BASE_URL}/wishlist`, {
@@ -235,7 +288,6 @@ export const apiService = {
     }
   },
 
-  // 15. Bật/tắt yêu thích
   async toggleWishlist(roomId) {
     try {
       const res = await fetch(`${API_BASE_URL}/wishlist/toggle`, {
@@ -249,7 +301,9 @@ export const apiService = {
     }
   },
 
-  // 16. Đăng ký trở thành Chủ nhà (Host)
+  // ==========================================
+  // 4. Host Portal & Quản lý Chỗ nghỉ (Partner)
+  // ==========================================
   async registerHost(hostData) {
     try {
       const res = await fetch(`${API_BASE_URL}/host/register`, {
@@ -262,4 +316,173 @@ export const apiService = {
       return { success: true, message: 'Đăng ký chủ nhà thành công!' };
     }
   },
+
+  async getHostDashboardStats() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/dashboard-stats`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Host dashboard stats error');
+      return await res.json();
+    } catch (e) {
+      return {
+        totalRevenueVND: 148500000,
+        totalBookings: 24,
+        occupancyRate: 85,
+        averageRating: 4.96,
+        accommodationsCount: 6,
+      };
+    }
+  },
+
+  async getHostAccommodations() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/accommodations`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Host accommodations error');
+      return await res.json();
+    } catch (e) {
+      return [];
+    }
+  },
+
+  async createHostAccommodation(payload) {
+    const res = await fetch(`${API_BASE_URL}/host/accommodations`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const err = new Error(data.message || 'Không thể tạo chỗ nghỉ.');
+      err.response = data;
+      throw err;
+    }
+    return data;
+  },
+
+  async toggleAccommodationStatus(id) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/accommodations/${id}/status`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+      });
+      return await res.json();
+    } catch (e) {
+      return { success: true };
+    }
+  },
+
+  async deleteAccommodation(id) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/accommodations/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      return await res.json();
+    } catch (e) {
+      return { success: true };
+    }
+  },
+
+  async getHostBookings() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/bookings`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Host bookings error');
+      return await res.json();
+    } catch (e) {
+      return [];
+    }
+  },
+
+  async getHostPayouts() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/payouts`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Host payouts error');
+      return await res.json();
+    } catch (e) {
+      return [];
+    }
+  },
+
+  async updatePayoutAccount(payload) {
+    const res = await fetch(`${API_BASE_URL}/host/payout-account`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return await res.json();
+  },
+
+  async checkInBooking(bookingId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/check-in`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+      });
+      return await res.json();
+    } catch (e) {
+      return { success: true, message: 'Đã check-in thành công.' };
+    }
+  },
+
+  async checkOutBooking(bookingId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/check-out`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+      });
+      return await res.json();
+    } catch (e) {
+      return { success: true, message: 'Đã check-out và tạo lệnh giải ngân thành công.' };
+    }
+  },
+
+  // ==========================================
+  // 5. Quản trị Tài chính & Giải Ngân (Admin)
+  // ==========================================
+  async getAdminFinancialStats() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/financials/stats`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Admin stats error');
+      return await res.json();
+    } catch (e) {
+      return {
+        totalRevenueVND: 186500000,
+        commissionRevenueVND: 22380000,
+        escrowPendingVND: 42500000,
+        payoutsCompletedVND: 121620000,
+        pendingPayoutsCount: 4,
+      };
+    }
+  },
+
+  async getAdminPayouts() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/payouts`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Admin payouts error');
+      return await res.json();
+    } catch (e) {
+      return [];
+    }
+  },
+
+  async approveAdminPayout(payoutId, payload = {}) {
+    const res = await fetch(`${API_BASE_URL}/admin/payouts/${payoutId}/approve`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return await res.json();
+  },
 };
+

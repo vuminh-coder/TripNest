@@ -1,5 +1,6 @@
 import './BookingCheckoutPage.css';
 import React, { useState } from 'react';
+import { apiService } from '../../../services/api';
 import {
   TbArrowLeft,
   TbArrowRight,
@@ -192,35 +193,63 @@ export const BookingCheckoutPage = ({
   };
 
   // Step 3 Final Submission
-  const handleFinalConfirmBooking = (e) => {
+  const handleFinalConfirmBooking = async (e) => {
     if (e) e.preventDefault();
     setIsProcessing(true);
     const generatedId = 'TN-' + Math.floor(100000 + Math.random() * 900000);
+
+    const bookingPayload = {
+      id: generatedId,
+      code: generatedId,
+      room_id: room.id,
+      roomId: room.id,
+      roomTitle: room.title || room.name,
+      check_in_date: checkIn,
+      check_out_date: checkOut,
+      checkIn,
+      checkOut,
+      nights,
+      guests,
+      guests_count: guests,
+      total_price: grandTotal,
+      totalPrice: grandTotal,
+      base_price: baseTotal,
+      cleaning_fee: cleaningFee,
+      service_fee: serviceFee,
+      discount_amount: promoDiscount,
+      payment_method: paymentMethod,
+      paymentMethod,
+      fullName,
+      full_name: fullName,
+      guest_name: fullName,
+      email,
+      guest_email: email,
+      phone,
+      guest_phone: phone,
+      guestNote,
+      special_requests: guestNote,
+      isVATRequested,
+      isBookingForOther,
+    };
+
+    // Asynchronously send to backend API
+    try {
+      apiService.createBooking(bookingPayload).catch((err) => {
+        console.warn('Backend booking sync notice (will use client state):', err);
+      });
+    } catch {
+      // ignore
+    }
+
     setTimeout(() => {
       setIsProcessing(false);
       setIsConfirmed(true);
       setBookingId(generatedId);
       if (onBookingComplete) {
-        onBookingComplete({
-          id: generatedId,
-          roomId: room.id,
-          roomTitle: room.title,
-          checkIn,
-          checkOut,
-          nights,
-          guests,
-          totalPrice: grandTotal,
-          paymentMethod,
-          fullName,
-          email,
-          phone,
-          guestNote,
-          isVATRequested,
-          isBookingForOther,
-        });
+        onBookingComplete(bookingPayload);
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 1000);
+    }, 900);
   };
 
   const handleCopyBookingId = () => {
