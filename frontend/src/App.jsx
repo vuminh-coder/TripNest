@@ -113,8 +113,7 @@ function App() {
       window.location.pathname.startsWith('/become-a-host') ||
       window.location.hash.startsWith('#host') ||
       new URLSearchParams(window.location.search).get('view') === 'host';
-    const isHostUser = localStorage.getItem('tripnest_is_host') === 'true';
-    return isHostRoute && isHostUser;
+    return isHostRoute;
   });
 
   // User & Wishlist & Bookings
@@ -159,20 +158,7 @@ function App() {
         return;
       }
 
-      const isHostUser =
-        user?.role === 'host' ||
-        (user?.role !== 'admin' && localStorage.getItem('tripnest_is_host') === 'true');
-
-      if (isHost && !isHostUser) {
-        setIsHostOpen(false);
-        if (!user || (!user.id && !user.email)) {
-          setAuthModal({ isOpen: true, tab: 'login' });
-        } else {
-          setIsHostModalOpen(true);
-        }
-      } else {
-        setIsHostOpen(isHost);
-      }
+      setIsHostOpen(isHost);
 
       const bId = getBookingRoomIdFromUrl();
       if (bId) {
