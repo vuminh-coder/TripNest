@@ -1,10 +1,6 @@
-import React from 'react';
-import {
-  TbSearch,
-  TbArrowLeft,
-  TbRotateClockwise,
-  TbBell,
-} from 'react-icons/tb';
+import { TbSearch, TbArrowLeft, TbRotateClockwise, TbBell } from 'react-icons/tb';
+import { useConfirm } from '@/context/ConfirmContext';
+import { useToast } from '@/context/ToastContext';
 
 export const AdminHeader = ({
   searchTerm,
@@ -13,6 +9,24 @@ export const AdminHeader = ({
   onResetData,
   pendingKycCount = 0,
 }) => {
+  const confirm = useConfirm();
+  const toast = useToast();
+
+  const handleReset = async () => {
+    const isConfirmed = await confirm({
+      title: 'Đặt lại dữ liệu mẫu?',
+      message: 'Đặt lại toàn bộ dữ liệu mẫu Admin về trạng thái ban đầu?',
+      type: 'warning',
+      confirmText: 'Xác nhận đặt lại',
+      cancelText: 'Hủy bỏ',
+    });
+
+    if (isConfirmed) {
+      onResetData();
+      toast.success('Dữ liệu mẫu', 'Đã đặt lại toàn bộ dữ liệu mẫu Admin về trạng thái ban đầu.');
+    }
+  };
+
   return (
     <header className="admin-topbar">
       {/* Left Search */}
@@ -33,11 +47,7 @@ export const AdminHeader = ({
         {/* Reset Demo Data Button */}
         <button
           className="btn-quick-reset"
-          onClick={() => {
-            if (window.confirm('Đặt lại toàn bộ dữ liệu mẫu Admin về trạng thái ban đầu?')) {
-              onResetData();
-            }
-          }}
+          onClick={handleReset}
           title="Đặt lại dữ liệu mẫu"
         >
           <TbRotateClockwise />

@@ -16,11 +16,12 @@ import {
   TbHome,
 } from 'react-icons/tb';
 import { apiService } from '@/services/api';
-import Swal from 'sweetalert2';
+import { useToast } from '@/context/ToastContext';
 import { useDispatch } from 'react-redux';
 import { ForgotPasswordModal } from '@/components/modals/ForgotPasswordModal/ForgotPasswordModal';
 
 export const AuthModal = ({ isOpen, onClose, initialTab = 'login', onAuthSuccess }) => {
+  const toast = useToast();
   const [tab, setTab] = useState(initialTab); // 'login' | 'register'
   const [isForgotOpen, setIsForgotOpen] = useState(false);
   const [fullName, setFullName] = useState('');
@@ -83,6 +84,7 @@ export const AuthModal = ({ isOpen, onClose, initialTab = 'login', onAuthSuccess
 
     if (!email.trim() || !password) {
       setError('Vui lòng nhập đầy đủ email và mật khẩu.');
+      toast.warning('Thiếu thông tin', 'Vui lòng nhập đầy đủ email và mật khẩu.');
       return;
     }
 
@@ -95,36 +97,23 @@ export const AuthModal = ({ isOpen, onClose, initialTab = 'login', onAuthSuccess
 
       setLoading(false);
       if (data.success) {
-        Swal.fire({
-          icon: 'success',
-          title: '🎉 Đăng nhập thành công!',
-          text: `Chào mừng bạn quay trở lại, ${data.user?.full_name || 'Quý khách'}!`,
-          position: 'top-end',
-          toast: true,
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-        });
+        toast.success(
+          'Đăng nhập thành công!',
+          `Chào mừng bạn quay trở lại, ${data.user?.full_name || 'Quý khách'}!`
+        );
 
         saveAuthSession(data);
         onClose();
       } else {
-        setError(data.message || 'Đăng nhập thất bại.');
+        const msg = data.message || 'Đăng nhập thất bại.';
+        setError(msg);
+        toast.error('Đăng nhập thất bại', msg);
       }
     } catch (err) {
       setLoading(false);
       const msg = err.response?.message || err.message || 'Email hoặc mật khẩu không chính xác.';
       setError(msg);
-      Swal.fire({
-        icon: 'error',
-        title: '❌ Đăng nhập thất bại!',
-        text: msg,
-        position: 'top-end',
-        toast: true,
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-      });
+      toast.error('Đăng nhập thất bại', msg);
     }
   };
 
@@ -135,18 +124,22 @@ export const AuthModal = ({ isOpen, onClose, initialTab = 'login', onAuthSuccess
 
     if (!fullName.trim()) {
       setError('Vui lòng nhập họ và tên.');
+      toast.warning('Thiếu thông tin', 'Vui lòng nhập họ và tên.');
       return;
     }
     if (!email.trim()) {
       setError('Vui lòng nhập địa chỉ email.');
+      toast.warning('Thiếu thông tin', 'Vui lòng nhập địa chỉ email.');
       return;
     }
     if (!password || password.length < 6) {
       setError('Mật khẩu phải có ít nhất 6 ký tự.');
+      toast.warning('Mật khẩu không hợp lệ', 'Mật khẩu phải có ít nhất 6 ký tự.');
       return;
     }
     if (password !== passwordConfirmation) {
       setError('Mật khẩu xác nhận không khớp. Vui lòng kiểm tra lại.');
+      toast.warning('Không khớp mật khẩu', 'Mật khẩu xác nhận không khớp.');
       return;
     }
 
@@ -161,36 +154,23 @@ export const AuthModal = ({ isOpen, onClose, initialTab = 'login', onAuthSuccess
 
       setLoading(false);
       if (data.success) {
-        Swal.fire({
-          icon: 'success',
-          title: '🎉 Đăng ký thành công!',
-          text: `Chào mừng ${data.user?.full_name || ''} đã gia nhập cộng đồng TripNest!`,
-          position: 'top-end',
-          toast: true,
-          showConfirmButton: false,
-          timer: 3500,
-          timerProgressBar: true,
-        });
+        toast.success(
+          'Đăng ký thành công!',
+          `Chào mừng ${data.user?.full_name || ''} đã gia nhập cộng đồng TripNest!`
+        );
 
         saveAuthSession(data);
         onClose();
       } else {
-        setError(data.message || 'Đăng ký không thành công.');
+        const msg = data.message || 'Đăng ký không thành công.';
+        setError(msg);
+        toast.error('Đăng ký thất bại', msg);
       }
     } catch (err) {
       setLoading(false);
       const msg = err.response?.message || err.message || 'Đăng ký tài khoản thất bại.';
       setError(msg);
-      Swal.fire({
-        icon: 'error',
-        title: '❌ Đăng ký thất bại!',
-        text: msg,
-        position: 'top-end',
-        toast: true,
-        showConfirmButton: false,
-        timer: 3500,
-        timerProgressBar: true,
-      });
+      toast.error('Đăng ký thất bại', msg);
     }
   };
 
@@ -214,24 +194,22 @@ export const AuthModal = ({ isOpen, onClose, initialTab = 'login', onAuthSuccess
       const res = await apiService.login({ email: demoEmail, password: demoPass });
       setLoading(false);
       if (res.token && res.user) {
-        Swal.fire({
-          icon: 'success',
-          title: '🎉 Đăng nhập thành công!',
-          text: `Chào mừng ${res.user?.full_name || 'bạn'} đến với TripNest!`,
-          position: 'top-end',
-          toast: true,
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-        });
+        toast.success(
+          'Đăng nhập thành công!',
+          `Chào mừng ${res.user?.full_name || 'bạn'} đến với TripNest!`
+        );
         saveAuthSession(res);
         onClose();
       } else {
-        setError(res.message || 'Đăng nhập không thành công.');
+        const msg = res.message || 'Đăng nhập không thành công.';
+        setError(msg);
+        toast.error('Đăng nhập thất bại', msg);
       }
     } catch (err) {
       setLoading(false);
-      setError(err.response?.message || err.message || 'Đăng nhập thất bại.');
+      const msg = err.response?.message || err.message || 'Đăng nhập thất bại.';
+      setError(msg);
+      toast.error('Đăng nhập thất bại', msg);
     }
   };
 

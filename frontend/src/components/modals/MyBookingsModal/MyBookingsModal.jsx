@@ -1,9 +1,13 @@
 import './MyBookingsModal.css';
 import React from 'react';
 import { TbX, TbCalendarCheck, TbTrash, TbReceipt, TbMapPin, TbClock, TbUsers, TbPlaneDeparture } from 'react-icons/tb';
-import Swal from 'sweetalert2';
+import { useToast } from '@/context/ToastContext';
+import { useConfirm } from '@/context/ConfirmContext';
 
 export const MyBookingsModal = ({ isOpen, onClose, bookings = [], onCancelBooking, currency = 'VND' }) => {
+  const toast = useToast();
+  const confirm = useConfirm();
+
   if (!isOpen) return null;
 
   const formatPrice = (val, cur) => {
@@ -12,31 +16,22 @@ export const MyBookingsModal = ({ isOpen, onClose, bookings = [], onCancelBookin
     return `${Number(val).toLocaleString()} ₫`;
   };
 
-  const handleCancel = (booking) => {
-    Swal.fire({
+  const handleCancel = async (booking) => {
+    const isConfirmed = await confirm({
       title: 'Hủy đơn đặt phòng?',
       html: `Bạn có chắc chắn muốn hủy đặt phòng <b>${booking.roomTitle}</b> (Mã: <code>${booking.id}</code>)?<br><span style="color: #64748b; font-size: 0.85rem;">Chính sách hủy phòng linh hoạt áp dụng theo quy định của chỗ ở.</span>`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#64748b',
-      confirmButtonText: 'Xác nhận hủy phòng',
-      cancelButtonText: 'Giữ lại lịch trình',
-      reverseButtons: true,
-    }).then((res) => {
-      if (res.isConfirmed) {
-        onCancelBooking(booking.id);
-        Swal.fire({
-          icon: 'success',
-          title: 'Đã hủy đơn đặt phòng',
-          text: `Đơn đặt chỗ #${booking.id} đã được hủy thành công.`,
-          position: 'top-end',
-          toast: true,
-          showConfirmButton: false,
-          timer: 3000,
-        });
-      }
+      type: 'danger',
+      confirmText: 'Xác nhận hủy phòng',
+      cancelText: 'Giữ lại lịch trình',
     });
+
+    if (isConfirmed) {
+      onCancelBooking(booking.id);
+      toast.success(
+        'Đã hủy đơn đặt phòng',
+        `Đơn đặt chỗ #${booking.id} đã được hủy thành công.`
+      );
+    }
   };
 
   return (

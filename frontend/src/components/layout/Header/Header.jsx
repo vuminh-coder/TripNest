@@ -16,6 +16,7 @@ import {
   TbMapPin,
 } from 'react-icons/tb';
 import { useDispatch, useSelector } from 'react-redux';
+import { useToast } from '@/context/ToastContext';
 
 export const Header = ({
   onSearch,
@@ -31,6 +32,7 @@ export const Header = ({
   wishlistCount = 0,
   onLogout,
 }) => {
+  const toast = useToast();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -495,7 +497,7 @@ export const Header = ({
                     <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenHost(); }}>
                       <TbHomePlus /> Cho thuê chỗ ở trên TripNest
                     </button>
-                    <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); alert('Trung tâm trợ giúp khách hàng TripNest 24/7 Hotline: 1900 6868'); }}>
+                    <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); toast.info('Trung tâm trợ giúp khách hàng TripNest', 'Hotline 24/7: 1900 6868 (Hỗ trợ miễn phí)'); }}>
                       <TbHelpCircle /> Trợ giúp
                     </button>
                   </>

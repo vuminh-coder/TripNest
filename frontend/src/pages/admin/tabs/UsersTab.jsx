@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Pagination from '../Pagination';
-import Swal from 'sweetalert2';
+import { useConfirm } from '@/context/ConfirmContext';
+import { useToast } from '@/context/ToastContext';
 import {
   TbSearch,
   TbLock,
@@ -25,6 +26,8 @@ export const UsersTab = ({
   onDeleteUser,
   onApproveUpgrade,
 }) => {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [activeSubTab, setActiveSubTab] = useState('all'); // 'all', 'pending_upgrade', 'guest', 'host', 'admin'
   const [searchUser, setSearchUser] = useState('');
   const [page, setPage] = useState(1);
@@ -53,40 +56,34 @@ export const UsersTab = ({
     return true;
   });
 
-  const handleDeleteClick = (user) => {
-    Swal.fire({
+  const handleDeleteClick = async (user) => {
+    const isConfirmed = await confirm({
       title: 'Xác nhận xóa tài khoản?',
       html: `Bạn có chắc chắn muốn xóa tài khoản <b>${user.name}</b> (<code>${user.email}</code>)?<br><span style="color: #ef4444; font-size: 0.85rem;">Hành động này sẽ được ghi nhận vào cơ sở dữ liệu!</span>`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#64748b',
-      confirmButtonText: 'Đúng, xóa vĩnh viễn',
-      cancelButtonText: 'Hủy bỏ',
-      reverseButtons: true,
-    }).then((res) => {
-      if (res.isConfirmed) {
-        onDeleteUser(user);
-      }
+      type: 'danger',
+      confirmText: 'Đúng, xóa vĩnh viễn',
+      cancelText: 'Hủy bỏ',
     });
+
+    if (isConfirmed) {
+      onDeleteUser(user);
+    }
   };
 
-  const handleRejectUpgradeClick = (user) => {
-    Swal.fire({
+  const handleRejectUpgradeClick = async (user) => {
+    const reason = 'Hồ sơ định danh chưa đầy đủ hoặc không hợp lệ';
+    const isConfirmed = await confirm({
       title: 'Từ chối yêu cầu làm Host',
-      input: 'text',
-      inputLabel: 'Lý do từ chối gửi tới thành viên:',
-      inputValue: 'Hồ sơ định danh chưa đầy đủ hoặc không hợp lệ',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#64748b',
-      confirmButtonText: 'Xác nhận từ chối',
-      cancelButtonText: 'Đóng',
-    }).then((res) => {
-      if (res.isConfirmed && res.value) {
-        onApproveUpgrade(user.id, false, res.value);
-      }
+      message: `Từ chối yêu cầu nâng cấp vai trò của ${user.name}? Lý do: ${reason}`,
+      type: 'warning',
+      confirmText: 'Xác nhận từ chối',
+      cancelText: 'Đóng',
     });
+
+    if (isConfirmed) {
+      onApproveUpgrade(user.id, false, reason);
+      toast.info('Từ chối yêu cầu', `Đã từ chối đơn nâng cấp Host của ${user.name}.`);
+    }
   };
 
   return (

@@ -28,6 +28,7 @@ import AdminLayout from '@/pages/admin/AdminLayout';
 import { apiService } from '@/services/api';
 import { removeVietnameseTones } from '@/utils/textUtils';
 import { useDispatch, useSelector } from 'react-redux';
+import { useToast } from '@/context/ToastContext';
 import {
   TbSearch,
   TbMapPin,
@@ -76,6 +77,7 @@ const getBookingRoomIdFromUrl = () => {
 };
 
 function App() {
+  const toast = useToast();
   const [categories, setCategories] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [experiences, setExperiences] = useState([]);
@@ -173,21 +175,34 @@ function App() {
       }
 
       const bId = getBookingRoomIdFromUrl();
-      if (bId && rooms.length > 0) {
+      if (bId) {
         const found = rooms.find((r) => String(r.id) === String(bId));
         if (found) {
           setCheckoutData({ room: found, bookingParams: {} });
           setSelectedRoom(found);
+        } else {
+          apiService.getRoomById(bId).then((single) => {
+            if (single && (single.id || single.title)) {
+              setCheckoutData({ room: single, bookingParams: {} });
+              setSelectedRoom(single);
+            }
+          });
         }
       } else {
         const rId = getRoomIdFromUrl();
-        if (rId && rooms.length > 0) {
+        if (rId) {
           const found = rooms.find((r) => String(r.id) === String(rId));
           if (found) {
             setSelectedRoom(found);
             setCheckoutData(null);
           }
-        } else if (!rId && !isAdm && !isHost) {
+          apiService.getRoomById(rId).then((single) => {
+            if (single && (single.id || single.title)) {
+              setSelectedRoom(single);
+              setCheckoutData(null);
+            }
+          });
+        } else if (!isAdm && !isHost) {
           setSelectedRoom(null);
           setCheckoutData(null);
         }
@@ -211,12 +226,19 @@ function App() {
     setIsAdminOpen(false);
   };
 
-  // Select room and navigate to /room/:id
-  const handleSelectRoom = (room) => {
+  // Select room and navigate to /room/:id (with backend detail hydration)
+  const handleSelectRoom = async (room) => {
     setSelectedRoom(room);
     setCheckoutData(null);
     window.history.pushState({}, '', `/room/${room.id}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    try {
+      const detailed = await apiService.getRoomById(room.id);
+      if (detailed && (detailed.id || detailed.title)) {
+        setSelectedRoom(detailed);
+      }
+    } catch (e) {}
   };
 
   // Back to home listing
@@ -246,7 +268,7 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Load initial data
+  // Load initial data & auto-fetch room detail if on /room/:id
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -260,17 +282,20 @@ function App() {
       setExperiences(exps);
       setLoading(false);
 
-      // Check if URL has roomId to open directly
+      // Check if URL has roomId to open directly from backend
       const urlRoomId = getRoomIdFromUrl();
       if (urlRoomId) {
-        const found = rms.find((r) => String(r.id) === String(urlRoomId));
-        if (found) {
-          setSelectedRoom(found);
-        } else {
-          try {
-            const single = await apiService.getRoomById(urlRoomId);
-            if (single && single.id) setSelectedRoom(single);
-          } catch (e) {}
+        try {
+          const single = await apiService.getRoomById(urlRoomId);
+          if (single && (single.id || single.title)) {
+            setSelectedRoom(single);
+          } else {
+            const found = rms.find((r) => String(r.id) === String(urlRoomId));
+            if (found) setSelectedRoom(found);
+          }
+        } catch (e) {
+          const found = rms.find((r) => String(r.id) === String(urlRoomId));
+          if (found) setSelectedRoom(found);
         }
       }
     };
@@ -531,7 +556,10 @@ function App() {
         onOpenChangePassword={() => setIsChangePasswordOpen(true)}
         onOpenHost={() => {
           if (user?.role === 'admin') {
-            alert('Tài khoản Quản trị viên (Admin) không thuộc vai trò Chủ nhà. Đang chuyển hướng bạn đến Cổng Quản Trị Admin.');
+            toast.info(
+              'Tài khoản Quản trị viên (Admin)',
+              'Tài khoản Admin không thuộc vai trò Chủ nhà. Đang chuyển hướng bạn đến Cổng Quản Trị Admin.'
+            );
             handleOpenAdmin();
             return;
           }
@@ -726,7 +754,10 @@ function App() {
                 experiences={experiences}
                 currency={currency}
                 onSelectExperience={(exp) => {
-                  alert(`Bạn đã chọn trải nghiệm: "${exp.caption}" tại ${exp.city}. Tính năng đặt tour chi tiết đang sẵn sàng!`);
+                  toast.info(
+                    'Trải nghiệm du lịch',
+                    `Bạn đã chọn trải nghiệm: "${exp.caption}" tại ${exp.city}. Tính năng đặt tour chi tiết đang sẵn sàng!`
+                  );
                 }}
               />
             )}

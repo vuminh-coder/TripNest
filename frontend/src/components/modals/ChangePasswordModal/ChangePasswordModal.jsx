@@ -2,9 +2,10 @@ import './ChangePasswordModal.css';
 import React, { useState } from 'react';
 import { TbCheck, TbEye, TbEyeOff, TbLock, TbX, TbShieldCheck, TbAlertCircle } from 'react-icons/tb';
 import { apiService } from '@/services/api';
-import Swal from 'sweetalert2';
+import { useToast } from '@/context/ToastContext';
 
 export const ChangePasswordModal = ({ isOpen, onClose }) => {
+  const toast = useToast();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -37,19 +38,27 @@ export const ChangePasswordModal = ({ isOpen, onClose }) => {
     setError('');
 
     if (!newPassword || !confirmation) {
-      setError('Vui lòng điền đầy đủ mật khẩu mới và xác nhận mật khẩu.');
+      const msg = 'Vui lòng điền đầy đủ mật khẩu mới và xác nhận mật khẩu.';
+      setError(msg);
+      toast.warning('Thiếu thông tin', msg);
       return;
     }
     if (newPassword.length < 6) {
-      setError('Mật khẩu mới phải có ít nhất 6 ký tự.');
+      const msg = 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+      setError(msg);
+      toast.warning('Mật khẩu không hợp lệ', msg);
       return;
     }
     if (newPassword !== confirmation) {
-      setError('Mật khẩu xác nhận không khớp.');
+      const msg = 'Mật khẩu xác nhận không khớp.';
+      setError(msg);
+      toast.warning('Không khớp mật khẩu', msg);
       return;
     }
     if (currentPassword && currentPassword === newPassword) {
-      setError('Mật khẩu mới phải khác mật khẩu hiện tại.');
+      const msg = 'Mật khẩu mới phải khác mật khẩu hiện tại.';
+      setError(msg);
+      toast.warning('Mật khẩu trùng lặp', msg);
       return;
     }
 
@@ -61,21 +70,16 @@ export const ChangePasswordModal = ({ isOpen, onClose }) => {
         new_password_confirmation: confirmation,
       });
 
-      Swal.fire({
-        icon: 'success',
-        title: '🎉 Đổi mật khẩu thành công!',
-        text: 'Mật khẩu của bạn đã được cập nhật an toàn trên hệ thống.',
-        position: 'top-end',
-        toast: true,
-        showConfirmButton: false,
-        timer: 3500,
-        timerProgressBar: true,
-      });
+      toast.success(
+        'Đổi mật khẩu thành công!',
+        'Mật khẩu của bạn đã được cập nhật an toàn trên hệ thống.'
+      );
 
       handleClose();
     } catch (submitError) {
       const msg = submitError.response?.message || submitError.message || 'Không thể đổi mật khẩu.';
       setError(msg);
+      toast.error('Đổi mật khẩu thất bại', msg);
     } finally {
       setIsSubmitting(false);
     }

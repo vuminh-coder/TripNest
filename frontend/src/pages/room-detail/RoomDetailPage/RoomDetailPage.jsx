@@ -1,5 +1,6 @@
 import './RoomDetailPage.css';
 import React, { useState, useEffect, useMemo } from 'react';
+import { removeVietnameseTones } from '@/utils/textUtils';
 import {
   TbArrowLeft,
   TbStarFilled,
@@ -205,86 +206,137 @@ export const RoomDetailPage = ({
   // Alias for lightbox and reserve functions
   const images = galleryPhotos;
 
-  // 6 Curated Demo Recommendations for the side panel
+  // 6 Curated Recommendations prioritized by exact same location/city:
+  // 1. First find all other rooms in the SAME destination/city (excluding current room).
+  // 2. If fewer than 6, fill remaining slots with rooms from OTHER destinations.
+  // 3. If still fewer than 6, backfill with high-quality styled cards.
   const sideRecommendations = useMemo(() => {
-    const demoList = [
-      {
-        id: 'rec-demo-1',
-        title: 'The Forest Wooden Villa Dalat',
-        city: room.city || 'Đà Lạt',
-        type: 'Biệt thự sân vườn',
-        rating: 4.98,
-        reviewsCount: 142,
-        priceUSD: 95,
-        priceVND: 2350000,
-        images: ['https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400'],
-      },
-      {
-        id: 'rec-demo-2',
-        title: 'Pine Hill Retreat & Onsen Spa',
-        city: room.city || 'Đà Lạt',
-        type: 'Resort nghỉ dưỡng',
-        rating: 4.95,
-        reviewsCount: 98,
-        priceUSD: 120,
-        priceVND: 2950000,
-        images: ['https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400'],
-      },
-      {
-        id: 'rec-demo-3',
-        title: 'Sunset Panorama Sky Villa',
-        city: room.city || 'Đà Lạt',
-        type: 'Penthouse view mây',
-        rating: 4.96,
-        reviewsCount: 116,
-        priceUSD: 145,
-        priceVND: 3600000,
-        images: ['https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=400'],
-      },
-      {
-        id: 'rec-demo-4',
-        title: 'Valley Garden Eco Bungalow',
-        city: room.city || 'Đà Lạt',
-        type: 'Bungalow sinh thái',
-        rating: 4.92,
-        reviewsCount: 75,
-        priceUSD: 78,
-        priceVND: 1950000,
-        images: ['https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400'],
-      },
-      {
-        id: 'rec-demo-5',
-        title: 'Cloud Mountain Boutique Lodge',
-        city: room.city || 'Đà Lạt',
-        type: 'Lodge thung lũng',
-        rating: 4.97,
-        reviewsCount: 130,
-        priceUSD: 110,
-        priceVND: 2750000,
-        images: ['https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400'],
-      },
-      {
-        id: 'rec-demo-6',
-        title: 'Luxury Lakeview Glass House',
-        city: room.city || 'Đà Lạt',
-        type: 'Nhà kính ven hồ',
-        rating: 4.99,
-        reviewsCount: 168,
-        priceUSD: 160,
-        priceVND: 4000000,
-        images: ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400'],
-      },
-    ];
+    if (!room) return [];
 
-    const realList = allRooms.filter((r) => r.id !== room.id);
-    const combined = [...realList];
-    for (const demo of demoList) {
-      if (combined.length < 6 && !combined.some((c) => c.title === demo.title || c.id === demo.id)) {
-        combined.push(demo);
+    const norm = (str) => removeVietnameseTones(str || '');
+    const curCity = norm(room.city);
+    const curLoc = norm(room.location);
+
+    const isMatchLocation = (r) => {
+      if (!r) return false;
+      const rCity = norm(r.city);
+      const rLoc = norm(r.location);
+
+      if (curCity && rCity && (rCity.includes(curCity) || curCity.includes(rCity))) return true;
+      if (curCity && rLoc && rLoc.includes(curCity)) return true;
+      if (curLoc && rCity && curLoc.includes(rCity)) return true;
+      if (curLoc && rLoc && (rLoc.includes(curLoc) || curLoc.includes(rLoc))) return true;
+      return false;
+    };
+
+    const sourceRooms = (allRooms && allRooms.length > 0 ? allRooms : []).filter(
+      (r) => String(r.id) !== String(room.id)
+    );
+
+    // Group 1: Rooms in the exact same location/city
+    const sameLocRooms = sourceRooms.filter(isMatchLocation);
+
+    // Group 2: Rooms in other locations
+    const otherLocRooms = sourceRooms.filter((r) => !isMatchLocation(r));
+
+    // Combine: same location first, then pad with other locations
+    let results = [...sameLocRooms];
+
+    if (results.length < 6) {
+      const needed = 6 - results.length;
+      results = [...results, ...otherLocRooms.slice(0, needed)];
+    }
+
+    // Dynamic demo fallback if total list is still < 6
+    if (results.length < 6) {
+      const demoList = [
+        {
+          id: `rec-demo-${room.id}-1`,
+          title: `Chalet Gỗ Mộc View Đồi ${room.city || 'Nghỉ Dưỡng'}`,
+          city: room.city || 'Sa Pa',
+          type: 'Bungalow view mây',
+          rating: 4.98,
+          reviewsCount: 142,
+          priceUSD: Math.round((room.priceUSD || 80) * 0.95),
+          priceVND: Math.round((room.priceVND || 2000000) * 0.95),
+          images: ['https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400'],
+        },
+        {
+          id: `rec-demo-${room.id}-2`,
+          title: `Boutique Ecolodge & Spa ${room.city || 'Nghỉ Dưỡng'}`,
+          city: room.city || 'Sa Pa',
+          type: 'Resort nghỉ dưỡng',
+          rating: 4.96,
+          reviewsCount: 118,
+          priceUSD: Math.round((room.priceUSD || 80) * 1.1),
+          priceVND: Math.round((room.priceVND || 2000000) * 1.1),
+          images: ['https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400'],
+        },
+        {
+          id: `rec-demo-${room.id}-3`,
+          title: `Villa Sân Vườn Biệt Lập ${room.city || 'Nghỉ Dưỡng'}`,
+          city: room.city || 'Sa Pa',
+          type: 'Biệt thự riêng tư',
+          rating: 4.95,
+          reviewsCount: 96,
+          priceUSD: Math.round((room.priceUSD || 80) * 1.25),
+          priceVND: Math.round((room.priceVND || 2000000) * 1.25),
+          images: ['https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=400'],
+        },
+        {
+          id: `rec-demo-${room.id}-4`,
+          title: `Panorama Skyview Studio ${room.city || 'Nghỉ Dưỡng'}`,
+          city: room.city || 'Sa Pa',
+          type: 'Studio view toàn cảnh',
+          rating: 4.92,
+          reviewsCount: 75,
+          priceUSD: Math.round((room.priceUSD || 80) * 0.85),
+          priceVND: Math.round((room.priceVND || 2000000) * 0.85),
+          images: ['https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400'],
+        },
+        {
+          id: `rec-demo-${room.id}-5`,
+          title: `Riverside Bamboo House ${room.city || 'Nghỉ Dưỡng'}`,
+          city: room.city || 'Sa Pa',
+          type: 'Nhà tre ven suối',
+          rating: 4.97,
+          reviewsCount: 130,
+          priceUSD: Math.round((room.priceUSD || 80) * 0.9),
+          priceVND: Math.round((room.priceVND || 2000000) * 0.9),
+          images: ['https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400'],
+        },
+        {
+          id: `rec-demo-${room.id}-6`,
+          title: `Luxury Glass Heritage Villa ${room.city || 'Nghỉ Dưỡng'}`,
+          city: room.city || 'Sa Pa',
+          type: 'Biệt thự kính panorama',
+          rating: 4.99,
+          reviewsCount: 168,
+          priceUSD: Math.round((room.priceUSD || 80) * 1.4),
+          priceVND: Math.round((room.priceVND || 2000000) * 1.4),
+          images: ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400'],
+        },
+      ];
+
+      for (const fallback of demoList) {
+        if (results.length < 6 && !results.some((r) => r.title === fallback.title || r.id === fallback.id)) {
+          results.push(fallback);
+        }
       }
     }
-    return combined.slice(0, 6);
+
+    return results.slice(0, 6);
   }, [allRooms, room]);
+
+  const hasSameLocationRooms = useMemo(() => {
+    if (!room || !sideRecommendations || sideRecommendations.length === 0) return false;
+    const norm = (str) => removeVietnameseTones(str || '');
+    const curCity = norm(room.city);
+    return sideRecommendations.some((rec) => {
+      const rCity = norm(rec.city);
+      return curCity && rCity && (rCity.includes(curCity) || curCity.includes(rCity));
+    });
+  }, [room, sideRecommendations]);
 
   // Calculate nights with auto-adjustment
   const calculateNights = () => {
@@ -481,9 +533,11 @@ export const RoomDetailPage = ({
             <div className="side-rec-header">
               <div>
                 <span className="side-rec-tag">
-                  <TbSparkles style={{ color: '#ff385c' }} /> GỢI Ý TƯƠNG TỰ
+                  <TbSparkles style={{ color: '#ff385c' }} /> {hasSameLocationRooms ? `GỢI Ý TẠI ${(room.city || 'Khu vực này').toUpperCase()}` : 'GỢI Ý TƯƠNG TỰ'}
                 </span>
-                <h3 className="side-rec-title">Chỗ ở nổi bật khác</h3>
+                <h3 className="side-rec-title">
+                  {hasSameLocationRooms ? `Chỗ ở tại ${room.city || 'khu vực'}` : 'Chỗ ở nổi bật khác'}
+                </h3>
               </div>
               <button
                 type="button"
@@ -959,57 +1013,90 @@ export const RoomDetailPage = ({
             ))}
           </div>
 
-          {/* 2 Featured Quote Cards with Host Response */}
+          {/* Guest Reviews Cards (Dynamic from Backend or Curated Testimonials) */}
           <div className="guest-reviews-grid">
-            <div className="guest-review-card">
-              <div className="reviewer-meta">
-                <img
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80"
-                  alt="Hoàng Anh"
-                  className="reviewer-avatar"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80';
-                  }}
-                />
-                <div>
-                  <h5 className="reviewer-name">Hoàng Anh</h5>
-                  <span className="review-date">Tháng 9 năm 2026 · Kỳ nghỉ 4 đêm</span>
+            {room.reviewsList && room.reviewsList.length > 0 ? (
+              room.reviewsList.map((rev) => (
+                <div key={rev.id} className="guest-review-card">
+                  <div className="reviewer-meta">
+                    <img
+                      src={rev.userAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80'}
+                      alt={rev.userName}
+                      className="reviewer-avatar"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80';
+                      }}
+                    />
+                    <div>
+                      <h5 className="reviewer-name">{rev.userName}</h5>
+                      <span className="review-date">
+                        {rev.createdAt ? `${rev.createdAt}` : 'Kỳ nghỉ thực tế'} · Đánh giá {rev.rating || 5}⭐
+                      </span>
+                    </div>
+                  </div>
+                  <p className="review-comment">"{rev.comment}"</p>
+                  {rev.hostResponse && (
+                    <div className="host-response-box">
+                      <strong>Phản hồi từ chủ nhà {room.host?.name || 'Chủ nhà'}:</strong>
+                      <p>"{rev.hostResponse}"</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <p className="review-comment">
-                "Không gian tuyệt vời hơn cả mong đợi! View bình minh đẹp mê hồn, phòng sạch sẽ và chủ nhà hỗ trợ cực kỳ chu đáo. Chắc chắn sẽ quay lại!"
-              </p>
-              <div className="host-response-box">
-                <strong>Phản hồi từ chủ nhà {room.host?.name || 'Minh Hoàng'}:</strong>
-                <p>"Cảm ơn bạn Hoàng Anh rất nhiều! Rất vui được đón tiếp bạn và hẹn gặp lại bạn trong chuyến đi tới nhé!"</p>
-              </div>
-            </div>
+              ))
+            ) : (
+              <>
+                <div className="guest-review-card">
+                  <div className="reviewer-meta">
+                    <img
+                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80"
+                      alt="Hoàng Anh"
+                      className="reviewer-avatar"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80';
+                      }}
+                    />
+                    <div>
+                      <h5 className="reviewer-name">Hoàng Anh</h5>
+                      <span className="review-date">Tháng 9 năm 2026 · Kỳ nghỉ 4 đêm</span>
+                    </div>
+                  </div>
+                  <p className="review-comment">
+                    "Không gian tuyệt vời hơn cả mong đợi! View bình minh đẹp mê hồn, phòng sạch sẽ và chủ nhà hỗ trợ cực kỳ chu đáo. Chắc chắn sẽ quay lại!"
+                  </p>
+                  <div className="host-response-box">
+                    <strong>Phản hồi từ chủ nhà {room.host?.name || 'Minh Hoàng'}:</strong>
+                    <p>"Cảm ơn bạn Hoàng Anh rất nhiều! Rất vui được đón tiếp bạn và hẹn gặp lại bạn trong chuyến đi tới nhé!"</p>
+                  </div>
+                </div>
 
-            <div className="guest-review-card">
-              <div className="reviewer-meta">
-                <img
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80"
-                  alt="Tuấn Kiệt"
-                  className="reviewer-avatar"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80';
-                  }}
-                />
-                <div>
-                  <h5 className="reviewer-name">Tuấn Kiệt</h5>
-                  <span className="review-date">Tháng 8 năm 2026 · Đi cùng gia đình</span>
+                <div className="guest-review-card">
+                  <div className="reviewer-meta">
+                    <img
+                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80"
+                      alt="Tuấn Kiệt"
+                      className="reviewer-avatar"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80';
+                      }}
+                    />
+                    <div>
+                      <h5 className="reviewer-name">Tuấn Kiệt</h5>
+                      <span className="review-date">Tháng 8 năm 2026 · Đi cùng gia đình</span>
+                    </div>
+                  </div>
+                  <p className="review-comment">
+                    "Biệt thự rất rộng rãi, các bé nhà mình thích mê hồ bơi và khu BBQ ngoài trời. Đầy đủ tiện nghi nấu nướng tiện lợi."
+                  </p>
+                  <div className="host-response-box">
+                    <strong>Phản hồi từ chủ nhà {room.host?.name || 'Minh Hoàng'}:</strong>
+                    <p>"Cảm ơn gia đình anh Kiệt! Chúc các bé luôn ngoan và có thật nhiều kỷ niệm đẹp tại {room.city || 'kỳ nghỉ'} ạ."</p>
+                  </div>
                 </div>
-              </div>
-              <p className="review-comment">
-                "Biệt thự rất rộng rãi, các bé nhà mình thích mê hồ bơi và khu BBQ ngoài trời. Đầy đủ tiện nghi nấu nướng tiện lợi."
-              </p>
-              <div className="host-response-box">
-                <strong>Phản hồi từ chủ nhà {room.host?.name || 'Minh Hoàng'}:</strong>
-                <p>"Cảm ơn gia đình anh Kiệt! Chúc các bé luôn ngoan và có thật nhiều kỷ niệm đẹp tại {room.city || 'kỳ nghỉ'} ạ."</p>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </section>
 
@@ -1111,17 +1198,14 @@ export const RoomDetailPage = ({
                 type="button"
                 className="contact-host-btn"
                 onClick={() => {
-                  setContactToast(true);
-                  setTimeout(() => setContactToast(false), 3500);
+                  toast.success(
+                    'Kết nối trò chuyện an toàn',
+                    `Đã kết nối trò chuyện an toàn với Chủ nhà ${room.host?.name || 'Minh Hoàng'} (Phản hồi dự kiến trong vòng 1 giờ)`
+                  );
                 }}
               >
                 <TbMessageCircle style={{ verticalAlign: 'middle', marginRight: '6px', fontSize: '1.05rem' }} /> Nhắn tin trực tiếp cho chủ nhà
               </button>
-              {contactToast && (
-                <div className="contact-host-toast">
-                  <TbMessageCheck style={{ color: '#10b981', verticalAlign: 'middle', marginRight: '6px', fontSize: '1.15rem' }} /> Đã kết nối trò chuyện an toàn với Chủ nhà <strong>{room.host?.name || 'Minh Hoàng'}</strong> (Phản hồi trong 1 giờ)
-                </div>
-              )}
             </div>
 
             {/* Right: House Rules & Safety */}

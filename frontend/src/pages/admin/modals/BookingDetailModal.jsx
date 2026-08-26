@@ -1,17 +1,10 @@
-import React from 'react';
-import {
-  TbX,
-  TbCalendarEvent,
-  TbUser,
-  TbHome,
-  TbReceipt,
-  TbCheck,
-  TbBan,
-  TbCreditCard,
-  TbClock,
-} from 'react-icons/tb';
+import { TbX, TbCalendarEvent, TbUser, TbHome, TbReceipt, TbCheck, TbBan, TbCreditCard, TbClock } from 'react-icons/tb';
+import { useConfirm } from '@/context/ConfirmContext';
+import { useToast } from '@/context/ToastContext';
 
 export const BookingDetailModal = ({ booking, onClose, onUpdateStatus }) => {
+  const confirm = useConfirm();
+  const toast = useToast();
   if (!booking) return null;
 
   const formatVND = (val) => `${(val || 0).toLocaleString()} ₫`;
@@ -143,9 +136,17 @@ export const BookingDetailModal = ({ booking, onClose, onUpdateStatus }) => {
             {booking.status !== 'cancelled' && (
               <button
                 style={{ padding: '0.65rem 1.1rem', borderRadius: '10px', border: '1.5px solid #fecaca', background: '#fef2f2', color: '#b91c1c', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}
-                onClick={() => {
-                  if (window.confirm(`Hủy đơn đặt phòng ${booking.id} và hoàn tiền cho khách?`)) {
+                onClick={async () => {
+                  const isConfirmed = await confirm({
+                    title: 'Hủy đơn & hoàn tiền?',
+                    message: `Hủy đơn đặt phòng ${booking.id} và hoàn tiền cho khách lưu trú?`,
+                    type: 'danger',
+                    confirmText: 'Xác nhận hủy & hoàn tiền',
+                    cancelText: 'Đóng',
+                  });
+                  if (isConfirmed) {
                     onUpdateStatus(booking.id, 'cancelled', 'Admin can thiệp hủy theo yêu cầu');
+                    toast.info('Hủy đơn phòng', `Đã hủy đơn ${booking.id} và kích hoạt hoàn tiền.`);
                     onClose();
                   }
                 }}

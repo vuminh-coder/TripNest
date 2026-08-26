@@ -1,14 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import Pagination from '../Pagination';
-import {
-  TbPlus,
-  TbEdit,
-  TbTrash,
-  TbStar,
-  TbFlame,
-  TbSearch,
-  TbMapPin,
-} from 'react-icons/tb';
+import { TbPlus, TbEdit, TbTrash, TbStar, TbFlame, TbSearch, TbMapPin } from 'react-icons/tb';
+import { useConfirm } from '@/context/ConfirmContext';
+import { useToast } from '@/context/ToastContext';
 
 export const AccommodationsTab = ({
   accommodations,
@@ -17,6 +9,8 @@ export const AccommodationsTab = ({
   onOpenEditModal,
   onDelete,
 }) => {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [cityFilter, setCityFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [localSearch, setLocalSearch] = useState('');
@@ -206,9 +200,17 @@ export const AccommodationsTab = ({
                         <button
                           className="btn-action-icon danger"
                           title="Xóa"
-                          onClick={() => {
-                            if (window.confirm(`Xóa chỗ ở "${acc.name_vi}"?`)) {
+                          onClick={async () => {
+                            const isConfirmed = await confirm({
+                              title: 'Xóa chỗ ở?',
+                              message: `Bạn có chắc chắn muốn xóa chỗ ở "${acc.name_vi}" khỏi hệ thống?`,
+                              type: 'danger',
+                              confirmText: 'Xác nhận xóa',
+                              cancelText: 'Hủy bỏ',
+                            });
+                            if (isConfirmed) {
                               onDelete(acc.id);
+                              toast.success('Đã xóa chỗ ở', `Đã xóa chỗ ở "${acc.name_vi}" thành công.`);
                             }
                           }}
                         >

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './admin.css';
 import { adminService } from '../../services/adminApi';
-import Swal from 'sweetalert2';
+import { useToast } from '@/context/ToastContext';
 
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
@@ -27,6 +27,7 @@ import UserEditModal from './modals/UserEditModal';
 import UserDetailModal from './modals/UserDetailModal';
 
 export const AdminLayout = ({ onExitAdmin }) => {
+  const toast = useToast();
   // Determine initial page from URL path
   const getInitialTabFromUrl = () => {
     const path = window.location.pathname.replace('/admin', '').replace('/', '');
@@ -203,23 +204,14 @@ export const AdminLayout = ({ onExitAdmin }) => {
     try {
       const updated = await adminService.deleteUser(userId);
       setUsers(updated);
-      Swal.fire({
-        icon: 'success',
-        title: '🎉 Đã xóa người dùng thành công!',
-        text: 'Dữ liệu tài khoản đã được xóa an toàn khỏi hệ thống.',
-        position: 'top-end',
-        toast: true,
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-      });
+      toast.success(
+        'Đã xóa người dùng thành công!',
+        'Dữ liệu tài khoản đã được xóa an toàn khỏi hệ thống.'
+      );
     } catch (error) {
-      setUserDeleteError(error.message || 'Không thể xóa người dùng.');
-      Swal.fire({
-        icon: 'error',
-        title: '❌ Không thể xóa tài khoản!',
-        text: error.message || 'Có lỗi xảy ra khi xóa người dùng trên máy chủ.',
-      });
+      const errMsg = error.message || 'Có lỗi xảy ra khi xóa người dùng trên máy chủ.';
+      setUserDeleteError(errMsg);
+      toast.error('Không thể xóa tài khoản', errMsg);
     }
   };
 

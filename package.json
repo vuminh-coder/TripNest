@@ -1,0 +1,7 @@
+{
+  "name": "tripnest-workspace",
+  "private": true,
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build"
+  }
+}

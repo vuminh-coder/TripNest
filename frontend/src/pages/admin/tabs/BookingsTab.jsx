@@ -1,14 +1,10 @@
-import React, { useState } from 'react';
-import Pagination from '../Pagination';
-import {
-  TbSearch,
-  TbEye,
-  TbBan,
-  TbCheck,
-  TbCalendar,
-} from 'react-icons/tb';
+import { TbSearch, TbEye, TbBan, TbCheck, TbCalendar } from 'react-icons/tb';
+import { useConfirm } from '@/context/ConfirmContext';
+import { useToast } from '@/context/ToastContext';
 
 export const BookingsTab = ({ bookings, onOpenDetailModal, onUpdateStatus }) => {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchCode, setSearchCode] = useState('');
   const [page, setPage] = useState(1);
@@ -150,9 +146,17 @@ export const BookingsTab = ({ bookings, onOpenDetailModal, onUpdateStatus }) => 
                           <button
                             className="btn-action-icon danger"
                             title="Hủy đơn"
-                            onClick={() => {
-                              if (window.confirm(`Hủy đơn ${b.id}?`)) {
+                            onClick={async () => {
+                              const isConfirmed = await confirm({
+                                title: 'Hủy đơn đặt phòng?',
+                                message: `Bạn có chắc chắn muốn hủy đơn đặt phòng mã ${b.id}?`,
+                                type: 'danger',
+                                confirmText: 'Xác nhận hủy',
+                                cancelText: 'Đóng',
+                              });
+                              if (isConfirmed) {
                                 onUpdateStatus(b.id, 'cancelled', 'Hủy bởi Admin');
+                                toast.info('Hủy đơn đặt phòng', `Đã hủy đơn ${b.id}.`);
                               }
                             }}
                           >

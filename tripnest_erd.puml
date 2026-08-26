@@ -1,0 +1,384 @@
+@startuml tripnest_erd
+!theme plain
+skinparam linetype ortho
+skinparam roundcorner 8
+skinparam shadowing false
+skinparam classFontSize 12
+skinparam classFontName "Segoe UI", Arial, sans-serif
+
+entity "accounts" as accounts {
+  * id : bigint <<generated>>
+  --
+  * email : varchar(191) <<unique>>
+  * password : varchar(255)
+  * role : enum('guest','host','admin')
+  * status : enum('active','inactive','banned')
+  email_verified_at : timestamp
+  last_login_at : timestamp
+  created_at : timestamp
+  updated_at : timestamp
+  deleted_at : timestamp
+}
+
+entity "users" as users {
+  * id : bigint <<generated>>
+  --
+  * account_id : bigint <<FK, unique>>
+  * full_name : varchar(100)
+  phone_number : varchar(20)
+  avatar_url : varchar(500)
+  gender : enum('male','female','other')
+  date_of_birth : date
+  id_card_number : varchar(30)
+  nationality : varchar(50)
+  address : varchar(255)
+  bio : text
+  emergency_contact : varchar(150)
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "hosts" as hosts {
+  * id : bigint <<generated>>
+  --
+  * user_id : bigint <<FK, unique>>
+  * host_display_name : varchar(100)
+  host_avatar_url : varchar(500)
+  host_introduction : text
+  languages_spoken : json
+  * contact_phone : varchar(20)
+  contact_email : varchar(191)
+  emergency_phone : varchar(20)
+  business_type : enum('individual','household','company')
+  business_name : varchar(150)
+  tax_id : varchar(50)
+  * id_card_number : varchar(30)
+  * id_card_front_url : varchar(500)
+  * id_card_back_url : varchar(500)
+  portrait_photo_url : varchar(500)
+  business_license_url : varchar(500)
+  kyc_status : enum('unverified','pending','verified','rejected')
+  kyc_rejection_reason : text
+  verified_at : timestamp
+  verified_by : bigint <<FK>>
+  is_superhost : boolean
+  host_rating : decimal(3,2)
+  host_reviews_count : int
+  response_rate_percent : tinyint
+  response_time_text : varchar(50)
+  terms_accepted_at : timestamp
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "host_payout_accounts" as host_payout_accounts {
+  * id : bigint <<generated>>
+  --
+  * host_id : bigint <<FK>>
+  account_type : enum('bank_transfer','momo','vnpay','paypal','stripe')
+  * bank_name : varchar(100)
+  bank_code : varchar(20)
+  bank_branch : varchar(150)
+  * account_number : varchar(50)
+  * account_holder_name : varchar(100)
+  swift_code : varchar(20)
+  currency : varchar(10)
+  is_default : boolean
+  is_verified : boolean
+  verification_document_url : varchar(500)
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "categories" as categories {
+  * id : bigint <<generated>>
+  --
+  * slug : varchar(50) <<unique>>
+  * label_vi : varchar(100)
+  * label_en : varchar(100)
+  * icon : varchar(50)
+  description : text
+  display_order : int
+  is_active : boolean
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "amenities" as amenities {
+  * id : bigint <<generated>>
+  --
+  * code : varchar(50) <<unique>>
+  * name_vi : varchar(100)
+  * name_en : varchar(100)
+  * icon : varchar(50)
+  target_type : enum('both','accommodation','room')
+  category : enum('basic','standout','safety','luxury')
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "accommodations" as accommodations {
+  * id : bigint <<generated>>
+  --
+  * host_id : bigint <<FK>>
+  * category_id : bigint <<FK>>
+  * name_vi : varchar(255)
+  name_en : varchar(255)
+  accommodation_type : enum('hotel','resort','villa','homestay','apartment','cabin','yacht')
+  star_rating : tinyint
+  * description : longtext
+  * address : varchar(255)
+  * city : varchar(100)
+  district : varchar(100)
+  country : varchar(100)
+  latitude : decimal(10,8)
+  longitude : decimal(11,8)
+  distance_description : varchar(255)
+  check_in_time : time
+  check_out_time : time
+  house_rules : text
+  cancellation_policy : text
+  is_featured : boolean
+  status : enum('draft','published','paused','archived')
+  created_at : timestamp
+  updated_at : timestamp
+  deleted_at : timestamp
+}
+
+entity "rooms" as rooms {
+  * id : bigint <<generated>>
+  --
+  * accommodation_id : bigint <<FK>>
+  * room_name_vi : varchar(255)
+  room_name_en : varchar(255)
+  room_type_code : varchar(50)
+  space_type : enum('entire_place','private_room','shared_room')
+  * description : longtext
+  room_size_m2 : decimal(6,2)
+  * price_per_night : decimal(14,2)
+  cleaning_fee : decimal(14,2)
+  service_fee_percent : decimal(4,2)
+  max_guests : tinyint
+  bedrooms_count : tinyint
+  beds_count : tinyint
+  bathrooms_count : decimal(3,1)
+  total_inventory : int
+  rating : decimal(3,2)
+  reviews_count : int
+  is_guest_favorite : boolean
+  status : enum('available','maintenance','hidden')
+  created_at : timestamp
+  updated_at : timestamp
+  deleted_at : timestamp
+}
+
+entity "accommodation_images" as accommodation_images {
+  * id : bigint <<generated>>
+  --
+  * accommodation_id : bigint <<FK>>
+  image_type : varchar(50)
+  * image_url : varchar(500)
+  google_search_link : text
+  caption : varchar(255)
+  display_order : int
+  is_thumbnail : boolean
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "room_images" as room_images {
+  * id : bigint <<generated>>
+  --
+  * room_id : bigint <<FK>>
+  image_type : varchar(50)
+  * image_url : varchar(500)
+  google_search_link : text
+  caption : varchar(255)
+  display_order : int
+  is_thumbnail : boolean
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "accommodation_amenity" as accommodation_amenity {
+  * id : bigint <<generated>>
+  --
+  * accommodation_id : bigint <<FK>>
+  * amenity_id : bigint <<FK>>
+}
+
+entity "room_amenity" as room_amenity {
+  * id : bigint <<generated>>
+  --
+  * room_id : bigint <<FK>>
+  * amenity_id : bigint <<FK>>
+}
+
+entity "vouchers" as vouchers {
+  * id : bigint <<generated>>
+  --
+  * code : varchar(50) <<unique>>
+  * title : varchar(150)
+  description : text
+  discount_type : enum('percent','fixed_amount')
+  * discount_value : decimal(14,2)
+  min_booking_amount : decimal(14,2)
+  max_discount_amount : decimal(14,2)
+  usage_limit : int
+  used_count : int
+  * start_date : datetime
+  * end_date : datetime
+  is_active : boolean
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "bookings" as bookings {
+  * id : bigint <<generated>>
+  --
+  * booking_code : varchar(20) <<unique>>
+  * user_id : bigint <<FK>>
+  * room_id : bigint <<FK>>
+  voucher_id : bigint <<FK>>
+  * check_in_date : date
+  * check_out_date : date
+  * nights_count : int
+  * guests_count : int
+  * price_per_night : decimal(14,2)
+  * base_price : decimal(14,2)
+  * cleaning_fee : decimal(14,2)
+  * service_fee : decimal(14,2)
+  discount_amount : decimal(14,2)
+  * total_price : decimal(14,2)
+  currency : varchar(10)
+  status : enum('pending','confirmed','completed','cancelled','refunded')
+  cancellation_reason : varchar(255)
+  cancelled_at : timestamp
+  special_requests : text
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "reviews" as reviews {
+  * id : bigint <<generated>>
+  --
+  booking_id : bigint <<FK, unique>>
+  * room_id : bigint <<FK>>
+  * user_id : bigint <<FK>>
+  * rating_overall : decimal(3,2)
+  * rating_cleanliness : decimal(3,2)
+  * rating_accuracy : decimal(3,2)
+  * rating_communication : decimal(3,2)
+  * rating_location : decimal(3,2)
+  * rating_checkin : decimal(3,2)
+  * rating_value : decimal(3,2)
+  * comment : text
+  host_response : text
+  host_responded_at : timestamp
+  status : enum('visible','hidden')
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "wishlists" as wishlists {
+  * id : bigint <<generated>>
+  --
+  * user_id : bigint <<FK>>
+  * room_id : bigint <<FK>>
+  created_at : timestamp
+}
+
+entity "experiences" as experiences {
+  * id : bigint <<generated>>
+  --
+  host_id : bigint <<FK>>
+  * title_vi : varchar(255)
+  title_en : varchar(255)
+  * caption : varchar(255)
+  description : text
+  * city : varchar(100)
+  country : varchar(100)
+  * price_vnd_per_person : decimal(14,2)
+  rating : decimal(3,2)
+  reviews_count : int
+  * image_url : varchar(500)
+  duration_hours : decimal(3,1)
+  is_active : boolean
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "payments" as payments {
+  * id : bigint <<generated>>
+  --
+  * booking_id : bigint <<FK>>
+  * transaction_code : varchar(100) <<unique>>
+  * payment_method : enum('credit_card','vnpay','momo','bank_transfer','cash')
+  * amount : decimal(14,2)
+  currency : varchar(10)
+  status : enum('pending','successful','failed','refunded')
+  payment_gateway_response : json
+  paid_at : timestamp
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "payout_transactions" as payout_transactions {
+  * id : bigint <<generated>>
+  --
+  * payout_code : varchar(30) <<unique>>
+  * host_id : bigint <<FK>>
+  booking_id : bigint <<FK>>
+  * payout_account_id : bigint <<FK>>
+  * gross_amount : decimal(14,2)
+  * platform_commission_fee : decimal(14,2)
+  * net_payout_amount : decimal(14,2)
+  currency : varchar(10)
+  status : enum('pending','processing','completed','failed')
+  transaction_reference : varchar(100)
+  transferred_at : timestamp
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "exchange_rates" as exchange_rates {
+  * id : bigint <<generated>>
+  --
+  * base_currency : varchar(10)
+  * target_currency : varchar(10)
+  * rate : decimal(14,6)
+  * effective_date : date
+  is_active : boolean
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+' Relationships
+accounts ||--|| users : "1 : 1"
+users ||--o| hosts : "1 : 0..1"
+hosts ||--o{ host_payout_accounts : "1 : N"
+hosts ||--o{ accommodations : "1 : N"
+hosts ||--o{ experiences : "1 : N"
+categories ||--o{ accommodations : "1 : N"
+accommodations ||--o{ rooms : "1 : N"
+accommodations ||--o{ accommodation_images : "1 : N"
+rooms ||--o{ room_images : "1 : N"
+accommodations ||--o{ accommodation_amenity : "1 : N"
+amenities ||--o{ accommodation_amenity : "1 : N"
+rooms ||--o{ room_amenity : "1 : N"
+amenities ||--o{ room_amenity : "1 : N"
+users ||--o{ bookings : "1 : N"
+rooms ||--o{ bookings : "1 : N"
+vouchers ||--o{ bookings : "0..1 : N"
+bookings ||--o| reviews : "1 : 0..1"
+rooms ||--o{ reviews : "1 : N"
+users ||--o{ reviews : "1 : N"
+users ||--o{ wishlists : "1 : N"
+rooms ||--o{ wishlists : "1 : N"
+bookings ||--o{ payments : "1 : N"
+hosts ||--o{ payout_transactions : "1 : N"
+bookings ||--o{ payout_transactions : "0..1 : N"
+host_payout_accounts ||--o{ payout_transactions : "1 : N"
+accounts ||--o{ hosts : "verifies"
+
+@enduml

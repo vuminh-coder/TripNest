@@ -14,10 +14,11 @@ import {
   TbEyeOff,
   TbUpload,
 } from 'react-icons/tb';
-import Swal from 'sweetalert2';
+import { useToast } from '@/context/ToastContext';
 import './UserEditModal.css';
 
 export const UserEditModal = ({ user, onClose, onSave }) => {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -92,81 +93,46 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
     }
   };
 
-  const showToast = (icon, title, text, timer = 3000) => {
-    Swal.fire({
-      icon,
-      title,
-      text,
-      position: 'top-end',
-      toast: true,
-      showConfirmButton: false,
-      timer,
-      timerProgressBar: true,
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.name.trim() || !formData.email.trim()) {
-      showToast(
-        'warning',
-        'Thiếu thông tin!',
-        'Vui lòng nhập họ tên và email.'
-      );
+      toast.warning('Thiếu thông tin!', 'Vui lòng nhập họ tên và email.');
       return;
     }
 
     if (formData.password && formData.password.length < 6) {
-      showToast(
-        'warning',
-        'Mật khẩu quá ngắn!',
-        'Mật khẩu phải có tối thiểu 6 ký tự.'
-      );
+      toast.warning('Mật khẩu quá ngắn!', 'Mật khẩu phải có tối thiểu 6 ký tự.');
       return;
     }
 
     setSubmitting(true);
 
-    const data = new FormData();
+    const token = localStorage.getItem('token');
+    const url = user
+      ? `http://127.0.0.1:8000/api/admin/users/${user.id}`
+      : 'http://127.0.0.1:8000/api/admin/users';
 
-    data.append('full_name', formData.name.trim());
+    const data = new FormData();
+    data.append('name', formData.name.trim());
     data.append('email', formData.email.trim());
-    data.append(
-      'phone_number',
-      formData.phone ? formData.phone.trim() : ''
-    );
-    data.append(
-      'id_card_number',
-      formData.id_card_number
-        ? formData.id_card_number.trim()
-        : ''
-    );
-    data.append(
-      'address',
-      formData.address ? formData.address.trim() : ''
-    );
+    data.append('phone', formData.phone ? formData.phone.trim() : '');
+    data.append('id_card_number', formData.id_card_number ? formData.id_card_number.trim() : '');
+    data.append('address', formData.address ? formData.address.trim() : '');
     data.append('role', formData.role);
     data.append('status', formData.status);
 
-    if (formData.password.trim()) {
-      data.append('password', formData.password.trim());
+    if (formData.password) {
+      data.append('password', formData.password);
     }
 
     if (formData.avatar instanceof File) {
       data.append('avatar', formData.avatar);
     }
 
-    let token = localStorage.getItem('token');
-    if (!token) {
-      const storedUser = JSON.parse(localStorage.getItem('tripnest_user') || 'null');
-      token = storedUser?.token;
+    if (user) {
+      data.append('_method', 'PUT');
     }
-
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
-    const url = user
-      ? `${API_BASE_URL}/admin/users/${user.id}/update`
-      : `${API_BASE_URL}/admin/user/create`;
 
     try {
       const response = await fetch(url, {
@@ -179,33 +145,23 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
       });
 
       const result = await response.json();
-      console.log(result);
       if (result.success && result.data) {
-        showToast(
-          'success',
-          user
-            ? '🎉 Cập nhật thành công!'
-            : '🎉 Thêm người dùng thành công!',
+        toast.success(
+          user ? 'Cập nhật thành công!' : 'Thêm người dùng thành công!',
           result.message || 'Dữ liệu người dùng đã được lưu vào hệ thống.'
         );
 
         onSave(result.data);
       } else {
-        showToast(
-          'error',
-          user
-            ? '❌ Cập nhật thất bại!'
-            : '❌ Thêm người dùng thất bại!',
-          result.message || 'Không thể lưu dữ liệu.',
-          3500
+        toast.error(
+          user ? 'Cập nhật thất bại!' : 'Thêm người dùng thất bại!',
+          result.message || 'Không thể lưu dữ liệu.'
         );
       }
     } catch (err) {
-      showToast(
-        'error',
-        '❌ Lỗi kết nối API!',
-        'Không thể kết nối đến máy chủ Backend: ' + err.message,
-        3500
+      toast.error(
+        'Lỗi kết nối API!',
+        'Không thể kết nối đến máy chủ Backend: ' + err.message
       );
     } finally {
       setSubmitting(false);

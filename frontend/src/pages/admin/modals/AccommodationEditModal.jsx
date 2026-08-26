@@ -1,12 +1,8 @@
-import React, { useState } from 'react';
-import {
-  TbX,
-  TbBuildingCastle,
-  TbPhoto,
-  TbCheck,
-} from 'react-icons/tb';
+import { TbX, TbBuildingCastle, TbPhoto, TbCheck } from 'react-icons/tb';
+import { useToast } from '@/context/ToastContext';
 
 export const AccommodationEditModal = ({ accommodation, onClose, onSave }) => {
+  const toast = useToast();
   const [formData, setFormData] = useState(
     accommodation || {
       name_vi: '',
@@ -30,10 +26,11 @@ export const AccommodationEditModal = ({ accommodation, onClose, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.name_vi.trim()) {
-      alert('Vui lòng nhập tên chỗ ở.');
+      toast.warning('Thiếu tên chỗ ở', 'Vui lòng nhập tên chỗ ở.');
       return;
     }
     onSave(formData);
+    toast.success('Lưu chỗ ở', 'Đã lưu thông tin chỗ ở thành công.');
     onClose();
   };
 

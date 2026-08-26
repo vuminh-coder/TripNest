@@ -13,6 +13,8 @@ import HostReviewsPage from './pages/HostReviewsPage';
 import HostFinancialsPage from './pages/HostFinancialsPage';
 
 import { TbX, TbCheck } from 'react-icons/tb';
+import { useToast } from '@/context/ToastContext';
+import { useConfirm } from '@/context/ConfirmContext';
 
 const DEFAULT_LISTINGS = [
   {
@@ -150,11 +152,13 @@ export const HostLayout = ({
     return validTabs.includes(path) ? path : 'dashboard';
   };
 
+  const toast = useToast();
+  const confirm = useConfirm();
+
   const [activeTab, setActiveTab] = useState(getInitialTabFromUrl);
   const [collapsed, setCollapsed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingListing, setEditingListing] = useState(null);
-  const [toastMessage, setToastMessage] = useState(null);
   const [isRequestingPayout, setIsRequestingPayout] = useState(false);
 
   // Listings State
@@ -233,11 +237,6 @@ export const HostLayout = ({
     localStorage.setItem('tripnest_host_payout_history', JSON.stringify(payoutHistory));
   }, [payoutHistory]);
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
-
   const handleNavigate = (tabId) => {
     setActiveTab(tabId);
     window.history.pushState({}, '', `/host${tabId === 'dashboard' ? '' : `/${tabId}`}`);
@@ -257,11 +256,11 @@ export const HostLayout = ({
       listings.map((item) => {
         if (item.id === id) {
           const nextStatus = item.status === 'published' ? 'paused' : 'published';
-          showToast(
-            nextStatus === 'published'
-              ? 'Đã kích hoạt mở bán chỗ ở thành công!'
-              : 'Đã tạm dừng nhận khách cho chỗ ở.'
-          );
+          if (nextStatus === 'published') {
+            toast.success('Mở bán chỗ ở', 'Đã kích hoạt mở bán chỗ ở thành công!');
+          } else {
+            toast.info('Tạm dừng kinh doanh', 'Đã tạm dừng nhận khách cho chỗ ở.');
+          }
           return { ...item, status: nextStatus };
         }
         return item;
@@ -269,17 +268,28 @@ export const HostLayout = ({
     );
   };
 
-  const handleDeleteListing = (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa chỗ ở này khỏi danh sách cho thuê không?')) {
+  const handleDeleteListing = async (id) => {
+    const isConfirmed = await confirm({
+      title: 'Xóa chỗ ở cho thuê?',
+      message: 'Bạn có chắc chắn muốn xóa chỗ ở này khỏi danh sách cho thuê? Hành động này sẽ gỡ bỏ chỗ nghỉ khỏi kết quả tìm kiếm.',
+      type: 'danger',
+      confirmText: 'Xác nhận xóa',
+      cancelText: 'Hủy bỏ',
+    });
+
+    if (isConfirmed) {
       setListings(listings.filter((item) => item.id !== id));
-      showToast('Đã xóa chỗ ở thành công.');
+      toast.success('Đã xóa chỗ ở', 'Đã xóa chỗ ở thành công khỏi danh sách.');
     }
   };
 
   const handleListingCreated = (newListing) => {
     setListings([newListing, ...listings]);
     setActiveTab('accommodations');
-    showToast('🎉 Đăng bán chỗ ở mới thành công! Chỗ nghỉ của bạn đã sẵn sàng đón khách.');
+    toast.success(
+      'Đăng bán chỗ ở thành công!',
+      'Chỗ nghỉ của bạn đã sẵn sàng đón tiếp khách du lịch trên TripNest.'
+    );
   };
 
   const handleSaveEditListing = (e) => {
@@ -289,7 +299,7 @@ export const HostLayout = ({
       listings.map((l) => (l.id === editingListing.id ? editingListing : l))
     );
     setEditingListing(null);
-    showToast('Đã cập nhật thông tin chỗ ở thành công!');
+    toast.success('Cập nhật thành công', 'Đã lưu thông tin chỗ ở.');
   };
 
   // Booking Handlers
@@ -297,15 +307,23 @@ export const HostLayout = ({
     setBookings(
       bookings.map((b) => (b.id === id ? { ...b, status: 'confirmed' } : b))
     );
-    showToast('Đã duyệt đơn đặt phòng thành công!');
+    toast.success('Duyệt đơn thành công', 'Đã xác nhận đơn đặt phòng cho khách.');
   };
 
-  const handleCancelBooking = (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn từ chối / hủy đơn đặt phòng này?')) {
+  const handleCancelBooking = async (id) => {
+    const isConfirmed = await confirm({
+      title: 'Hủy đơn đặt phòng?',
+      message: 'Bạn có chắc chắn muốn từ chối / hủy đơn đặt phòng này?',
+      type: 'danger',
+      confirmText: 'Xác nhận hủy',
+      cancelText: 'Giữ lại',
+    });
+
+    if (isConfirmed) {
       setBookings(
         bookings.map((b) => (b.id === id ? { ...b, status: 'cancelled' } : b))
       );
-      showToast('Đã hủy đơn đặt phòng.');
+      toast.info('Đã hủy đơn', 'Đã hủy đơn đặt phòng thành công.');
     }
   };
 
@@ -323,7 +341,10 @@ export const HostLayout = ({
       };
       setPayoutHistory([newTransaction, ...payoutHistory]);
       setIsRequestingPayout(false);
-      showToast(`Đã chuyển tiền về tài khoản ${bankInfo.accountNumber} thành công!`);
+      toast.success(
+        'Rút tiền thành công!',
+        `Đã chuyển tiền về số tài khoản ${bankInfo.accountNumber} thành công.`
+      );
     }, 900);
   };
 
@@ -331,31 +352,6 @@ export const HostLayout = ({
 
   return (
     <div className="host-portal-wrapper">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            background: 'var(--host-text-main)',
-            color: '#ffffff',
-            padding: '0.85rem 1.25rem',
-            borderRadius: 'var(--host-radius-lg)',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '0.88rem',
-            fontWeight: 700,
-          }}
-        >
-          <TbCheck style={{ color: '#10b981', fontSize: '1.2rem' }} />
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
       {/* 1. Collapsible Sidebar */}
       <HostSidebar
         activeTab={activeTab}

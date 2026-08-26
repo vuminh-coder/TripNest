@@ -1,19 +1,8 @@
-import React, { useState } from 'react';
-import {
-  TbX,
-  TbShieldCheck,
-  TbShieldX,
-  TbBuildingBank,
-  TbCheck,
-  TbAlertTriangle,
-  TbZoomIn,
-  TbUser,
-  TbId,
-  TbPhone,
-  TbMail,
-} from 'react-icons/tb';
+import { TbX, TbShieldCheck, TbShieldX, TbBuildingBank, TbCheck, TbAlertTriangle, TbZoomIn, TbUser, TbId, TbPhone, TbMail } from 'react-icons/tb';
+import { useToast } from '@/context/ToastContext';
 
 export const KycDetailModal = ({ host, onClose, onApprove, onReject }) => {
+  const toast = useToast();
   const [rejectReason, setRejectReason] = useState('');
   const [isRejecting, setIsRejecting] = useState(false);
   const [activeImageZoom, setActiveImageZoom] = useState(null);
@@ -22,10 +11,11 @@ export const KycDetailModal = ({ host, onClose, onApprove, onReject }) => {
 
   const handleConfirmReject = () => {
     if (!rejectReason.trim()) {
-      alert('Vui lòng nhập lý do từ chối để thông báo cho chủ nhà.');
+      toast.warning('Thiếu lý do từ chối', 'Vui lòng nhập lý do từ chối để thông báo cho chủ nhà.');
       return;
     }
     onReject(host.id, rejectReason);
+    toast.info('Từ chối hồ sơ KYC', `Đã từ chối hồ sơ của ${host.name || 'chủ nhà'}.`);
     onClose();
   };
 

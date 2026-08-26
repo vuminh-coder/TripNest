@@ -1,37 +1,10 @@
 import React, { useState } from 'react';
 import './host.css';
-import {
-  TbX,
-  TbArrowLeft,
-  TbArrowRight,
-  TbHome,
-  TbBuildingCastle,
-  TbBuildingCommunity,
-  TbSailboat,
-  TbTrees,
-  TbBuilding,
-  TbMapPin,
-  TbUsers,
-  TbBed,
-  TbBath,
-  TbSparkles,
-  TbWifi,
-  TbSwimming,
-  TbToolsKitchen2,
-  TbAirConditioning,
-  TbCar,
-  TbFlame,
-  TbDeviceTv,
-  TbPhoto,
-  TbPlus,
-  TbTrash,
-  TbCheck,
-  TbEye,
-  TbLockCheck,
-  TbCoin,
-} from 'react-icons/tb';
+import { TbX, TbArrowLeft, TbArrowRight, TbHome, TbBuildingCastle, TbBuildingCommunity, TbSailboat, TbTrees, TbBuilding, TbMapPin, TbUsers, TbBed, TbBath, TbSparkles, TbWifi, TbSwimming, TbToolsKitchen2, TbAirConditioning, TbCar, TbFlame, TbDeviceTv, TbPhoto, TbPlus, TbTrash, TbCheck, TbEye, TbLockCheck, TbCoin } from 'react-icons/tb';
+import { useToast } from '@/context/ToastContext';
 
 export const HostListingWizard = ({ isOpen, onClose, onListingCreated, currency = 'VND' }) => {
+  const toast = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 6;
 
@@ -115,7 +88,7 @@ export const HostListingWizard = ({ isOpen, onClose, onListingCreated, currency 
 
   const handleRemoveImage = (index) => {
     if (images.length <= 1) {
-      alert('Chỗ ở cần ít nhất 1 ảnh đại diện.');
+      toast.warning('Yêu cầu hình ảnh', 'Chỗ ở cần ít nhất 1 ảnh đại diện.');
       return;
     }
     setImages(images.filter((_, i) => i !== index));

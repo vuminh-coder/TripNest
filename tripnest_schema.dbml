@@ -1,0 +1,392 @@
+// =============================================================================
+// DATABASE MARKUP LANGUAGE (DBML) - TRIPNEST BOOKING SYSTEM
+// Sử dụng tại: https://dbdiagram.io hoặc https://dbdocs.io
+// =============================================================================
+
+Project TripNest {
+  database_type: 'MySQL 9.x'
+  Note: 'Hệ thống Quản lý & Đặt phòng du lịch nghỉ dưỡng cao cấp TripNest'
+}
+
+// -----------------------------------------------------------------------------
+// 1. NHÓM NGƯỜI DÙNG & XÁC THỰC
+// -----------------------------------------------------------------------------
+
+Table accounts {
+  id bigint [pk, increment]
+  email varchar(191) [unique, not null]
+  password varchar(255) [not null, note: 'Mật khẩu mã hóa Bcrypt']
+  role enum('guest', 'host', 'admin') [default: 'guest', not null]
+  status enum('active', 'inactive', 'banned') [default: 'active', not null]
+  email_verified_at timestamp
+  last_login_at timestamp
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+
+  Note: 'Tài khoản đăng nhập hệ thống'
+}
+
+Table users {
+  id bigint [pk, increment]
+  account_id bigint [unique, not null, ref: - accounts.id]
+  full_name varchar(100) [not null]
+  phone_number varchar(20)
+  avatar_url varchar(500)
+  gender enum('male', 'female', 'other') [default: 'other']
+  date_of_birth date
+  id_card_number varchar(30)
+  nationality varchar(50) [default: 'Việt Nam']
+  address varchar(255)
+  bio text
+  emergency_contact varchar(150)
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Thông tin hồ sơ cá nhân người dùng'
+}
+
+Table hosts {
+  id bigint [pk, increment]
+  user_id bigint [unique, not null, ref: - users.id]
+  host_display_name varchar(100) [not null]
+  host_avatar_url varchar(500)
+  host_introduction text
+  languages_spoken json [note: '["vi", "en"]']
+  contact_phone varchar(20) [not null]
+  contact_email varchar(191)
+  emergency_phone varchar(20)
+  business_type enum('individual', 'household', 'company') [default: 'individual']
+  business_name varchar(150)
+  tax_id varchar(50)
+  id_card_number varchar(30) [not null]
+  id_card_front_url varchar(500) [not null]
+  id_card_back_url varchar(500) [not null]
+  portrait_photo_url varchar(500)
+  business_license_url varchar(500)
+  kyc_status enum('unverified', 'pending', 'verified', 'rejected') [default: 'pending']
+  kyc_rejection_reason text
+  verified_at timestamp
+  verified_by bigint [ref: > accounts.id]
+  is_superhost boolean [default: false]
+  host_rating decimal(3,2) [default: 5.00]
+  host_reviews_count int [default: 0]
+  response_rate_percent tinyint [default: 100]
+  response_time_text varchar(50) [default: 'trong vòng 1 giờ']
+  terms_accepted_at timestamp
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Hồ sơ đối tác chủ nhà cho thuê'
+}
+
+Table host_payout_accounts {
+  id bigint [pk, increment]
+  host_id bigint [not null, ref: > hosts.id]
+  account_type enum('bank_transfer', 'momo', 'vnpay', 'paypal', 'stripe') [default: 'bank_transfer']
+  bank_name varchar(100) [not null]
+  bank_code varchar(20)
+  bank_branch varchar(150)
+  account_number varchar(50) [not null]
+  account_holder_name varchar(100) [not null]
+  swift_code varchar(20)
+  currency varchar(10) [default: 'VND']
+  is_default boolean [default: false]
+  is_verified boolean [default: true]
+  verification_document_url varchar(500)
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Tài khoản ngân hàng/ví điện tử thụ hưởng của chủ nhà'
+}
+
+// -----------------------------------------------------------------------------
+// 2. NHÓM DANH MỤC & TIỆN NGHI
+// -----------------------------------------------------------------------------
+
+Table categories {
+  id bigint [pk, increment]
+  slug varchar(50) [unique, not null]
+  label_vi varchar(100) [not null]
+  label_en varchar(100) [not null]
+  icon varchar(50) [not null]
+  description text
+  display_order int [default: 0]
+  is_active boolean [default: true]
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Danh mục phong cách chỗ nghỉ'
+}
+
+Table amenities {
+  id bigint [pk, increment]
+  code varchar(50) [unique, not null]
+  name_vi varchar(100) [not null]
+  name_en varchar(100) [not null]
+  icon varchar(50) [not null]
+  target_type enum('both', 'accommodation', 'room') [default: 'both']
+  category enum('basic', 'standout', 'safety', 'luxury') [default: 'basic']
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Danh mục tiện nghi (Wifi, Hồ bơi, Bếp...)'
+}
+
+// -----------------------------------------------------------------------------
+// 3. NHÓM KHÁCH SẠN & PHÒNG NGHỈ
+// -----------------------------------------------------------------------------
+
+Table accommodations {
+  id bigint [pk, increment]
+  host_id bigint [not null, ref: > hosts.id]
+  category_id bigint [not null, ref: > categories.id]
+  name_vi varchar(255) [not null]
+  name_en varchar(255)
+  accommodation_type enum('hotel', 'resort', 'villa', 'homestay', 'apartment', 'cabin', 'yacht') [default: 'hotel']
+  star_rating tinyint [default: 0]
+  description longtext [not null]
+  address varchar(255) [not null]
+  city varchar(100) [not null]
+  district varchar(100)
+  country varchar(100) [default: 'Việt Nam']
+  latitude decimal(10,8)
+  longitude decimal(11,8)
+  distance_description varchar(255)
+  check_in_time time [default: '14:00:00']
+  check_out_time time [default: '12:00:00']
+  house_rules text
+  cancellation_policy text
+  is_featured boolean [default: false]
+  status enum('draft', 'published', 'paused', 'archived') [default: 'published']
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+
+  Note: 'Bất động sản / Khách sạn / Resort'
+}
+
+Table rooms {
+  id bigint [pk, increment]
+  accommodation_id bigint [not null, ref: > accommodations.id]
+  room_name_vi varchar(255) [not null]
+  room_name_en varchar(255)
+  room_type_code varchar(50) [default: 'entire_villa']
+  space_type enum('entire_place', 'private_room', 'shared_room') [default: 'entire_place']
+  description longtext [not null]
+  room_size_m2 decimal(6,2)
+  price_per_night decimal(14,2) [not null, note: 'Giá gốc niêm yết theo VNĐ']
+  cleaning_fee decimal(14,2) [default: 500000.00]
+  service_fee_percent decimal(4,2) [default: 12.00]
+  max_guests tinyint [default: 2]
+  bedrooms_count tinyint [default: 1]
+  beds_count tinyint [default: 1]
+  bathrooms_count decimal(3,1) [default: 1.0]
+  total_inventory int [default: 1]
+  rating decimal(3,2) [default: 5.00]
+  reviews_count int [default: 0]
+  is_guest_favorite boolean [default: false]
+  status enum('available', 'maintenance', 'hidden') [default: 'available']
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+
+  Note: 'Hạng phòng nghỉ dưỡng cụ thể'
+}
+
+Table accommodation_images {
+  id bigint [pk, increment]
+  accommodation_id bigint [not null, ref: > accommodations.id]
+  image_type varchar(50) [default: 'exterior', note: 'exterior, room, pool, view, amenity']
+  image_url varchar(500) [not null]
+  google_search_link text
+  caption varchar(255)
+  display_order int [default: 0]
+  is_thumbnail boolean [default: false]
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Ảnh tổng thể khách sạn'
+}
+
+Table room_images {
+  id bigint [pk, increment]
+  room_id bigint [not null, ref: > rooms.id]
+  image_type varchar(50) [default: 'room', note: 'exterior, room, pool, view, amenity']
+  image_url varchar(500) [not null]
+  google_search_link text
+  caption varchar(255)
+  display_order int [default: 0]
+  is_thumbnail boolean [default: false]
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Ảnh nội thất chi tiết phòng'
+}
+
+Table accommodation_amenity {
+  id bigint [pk, increment]
+  accommodation_id bigint [not null, ref: > accommodations.id]
+  amenity_id bigint [not null, ref: > amenities.id]
+}
+
+Table room_amenity {
+  id bigint [pk, increment]
+  room_id bigint [not null, ref: > rooms.id]
+  amenity_id bigint [not null, ref: > amenities.id]
+}
+
+// -----------------------------------------------------------------------------
+// 4. NHÓM ĐẶT PHÒNG, VOUCHER & ĐÁNH GIÁ
+// -----------------------------------------------------------------------------
+
+Table vouchers {
+  id bigint [pk, increment]
+  code varchar(50) [unique, not null]
+  title varchar(150) [not null]
+  description text
+  discount_type enum('percent', 'fixed_amount') [default: 'percent']
+  discount_value decimal(14,2) [not null]
+  min_booking_amount decimal(14,2) [default: 0.00]
+  max_discount_amount decimal(14,2)
+  usage_limit int [default: 100]
+  used_count int [default: 0]
+  start_date datetime [not null]
+  end_date datetime [not null]
+  is_active boolean [default: true]
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Mã giảm giá ưu đãi đặt phòng'
+}
+
+Table bookings {
+  id bigint [pk, increment]
+  booking_code varchar(20) [unique, not null]
+  user_id bigint [not null, ref: > users.id]
+  room_id bigint [not null, ref: > rooms.id]
+  voucher_id bigint [ref: > vouchers.id]
+  check_in_date date [not null]
+  check_out_date date [not null]
+  nights_count int [not null]
+  guests_count int [not null]
+  price_per_night decimal(14,2) [not null]
+  base_price decimal(14,2) [not null]
+  cleaning_fee decimal(14,2) [not null]
+  service_fee decimal(14,2) [not null]
+  discount_amount decimal(14,2) [default: 0.00]
+  total_price decimal(14,2) [not null]
+  currency varchar(10) [default: 'VND']
+  status enum('pending', 'confirmed', 'completed', 'cancelled', 'refunded') [default: 'confirmed']
+  cancellation_reason varchar(255)
+  cancelled_at timestamp
+  special_requests text
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Đơn đặt phòng nghỉ dưỡng'
+}
+
+Table reviews {
+  id bigint [pk, increment]
+  booking_id bigint [unique, ref: - bookings.id]
+  room_id bigint [not null, ref: > rooms.id]
+  user_id bigint [not null, ref: > users.id]
+  rating_overall decimal(3,2) [not null, note: 'Điểm tổng thể (1.0 - 5.0)']
+  rating_cleanliness decimal(3,2) [not null, note: 'Tiêu chí Sạch sẽ']
+  rating_accuracy decimal(3,2) [not null, note: 'Tiêu chí Độ chính xác']
+  rating_communication decimal(3,2) [not null, note: 'Tiêu chí Giao tiếp']
+  rating_location decimal(3,2) [not null, note: 'Tiêu chí Vị trí']
+  rating_checkin decimal(3,2) [not null, note: 'Tiêu chí Nhận phòng']
+  rating_value decimal(3,2) [not null, note: 'Tiêu chí Giá trị tương xứng']
+  comment text [not null]
+  host_response text
+  host_responded_at timestamp
+  status enum('visible', 'hidden') [default: 'visible']
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Đánh giá chi tiết 6 tiêu chí radar'
+}
+
+Table wishlists {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  room_id bigint [not null, ref: > rooms.id]
+  created_at timestamp
+
+  Note: 'Danh sách phòng yêu thích'
+}
+
+// -----------------------------------------------------------------------------
+// 5. TRẢI NGHIỆM, THANH TOÁN & TỶ GIÁ
+// -----------------------------------------------------------------------------
+
+Table experiences {
+  id bigint [pk, increment]
+  host_id bigint [ref: > hosts.id]
+  title_vi varchar(255) [not null]
+  title_en varchar(255)
+  caption varchar(255) [not null]
+  description text
+  city varchar(100) [not null]
+  country varchar(100) [default: 'Việt Nam']
+  price_vnd_per_person decimal(14,2) [not null]
+  rating decimal(3,2) [default: 5.00]
+  reviews_count int [default: 0]
+  image_url varchar(500) [not null]
+  duration_hours decimal(3,1)
+  is_active boolean [default: true]
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Tour và trải nghiệm du lịch địa phương'
+}
+
+Table payments {
+  id bigint [pk, increment]
+  booking_id bigint [not null, ref: > bookings.id]
+  transaction_code varchar(100) [unique, not null]
+  payment_method enum('credit_card', 'vnpay', 'momo', 'bank_transfer', 'cash') [not null]
+  amount decimal(14,2) [not null]
+  currency varchar(10) [default: 'VND']
+  status enum('pending', 'successful', 'failed', 'refunded') [default: 'successful']
+  payment_gateway_response json
+  paid_at timestamp
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Giao dịch thanh toán của khách du lịch'
+}
+
+Table payout_transactions {
+  id bigint [pk, increment]
+  payout_code varchar(30) [unique, not null]
+  host_id bigint [not null, ref: > hosts.id]
+  booking_id bigint [ref: > bookings.id]
+  payout_account_id bigint [not null, ref: > host_payout_accounts.id]
+  gross_amount decimal(14,2) [not null]
+  platform_commission_fee decimal(14,2) [not null]
+  net_payout_amount decimal(14,2) [not null]
+  currency varchar(10) [default: 'VND']
+  status enum('pending', 'processing', 'completed', 'failed') [default: 'completed']
+  transaction_reference varchar(100)
+  transferred_at timestamp
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Giao dịch chi trả doanh thu cho chủ nhà'
+}
+
+Table exchange_rates {
+  id bigint [pk, increment]
+  base_currency varchar(10) [default: 'VND', not null]
+  target_currency varchar(10) [not null, note: 'USD, EUR...']
+  rate decimal(14,6) [not null]
+  effective_date date [not null]
+  is_active boolean [default: true]
+  created_at timestamp
+  updated_at timestamp
+
+  Note: 'Bảng tỷ giá quy đổi tiền tệ linh hoạt'
+}
