@@ -25,6 +25,23 @@ $tmpDb = '/tmp/database/database.sqlite';
 if (file_exists($sourceDb) && !file_exists($tmpDb)) {
     @copy($sourceDb, $tmpDb);
 }
+if (!file_exists($tmpDb)) {
+    @touch($tmpDb);
+}
 
-// Forward execution to standard Laravel entry point
-require __DIR__ . '/../public/index.php';
+// Bootstrap Laravel application
+require __DIR__ . '/../vendor/autoload.php';
+$app = require_once __DIR__ . '/../bootstrap/app.php';
+
+// Auto-run migrations and seeders if tables are not yet created in serverless SQLite
+try {
+    if (!\Illuminate\Support\Facades\Schema::hasTable('rooms')) {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+    }
+} catch (\Throwable $e) {
+    error_log('Auto migration/seed notice: ' . $e->getMessage());
+}
+
+// Handle HTTP Request
+$app->handleRequest(\Illuminate\Http\Request::capture());
