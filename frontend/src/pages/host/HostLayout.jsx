@@ -12,7 +12,7 @@ import HostBookingsPage from './pages/HostBookingsPage';
 import HostReviewsPage from './pages/HostReviewsPage';
 import HostFinancialsPage from './pages/HostFinancialsPage';
 
-import { TbX, TbCheck } from 'react-icons/tb';
+import { TbX, TbCheck, TbPlus, TbTrash } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
 import { useConfirm } from '@/context/ConfirmContext';
 import { apiService } from '@/services/api';
@@ -117,9 +117,12 @@ export const HostLayout = ({
   const [collapsed, setCollapsed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingListing, setEditingListing] = useState(null);
+  const [editImageUrl, setEditImageUrl] = useState('');
   const [isRequestingPayout, setIsRequestingPayout] = useState(false);
+  const [availableBalance, setAvailableBalance] = useState(0);
+  const [loadingListings, setLoadingListings] = useState(false);
 
-  // Listings State
+  // Listings State with LocalStorage cache fallback
   const [listings, setListings] = useState(() => {
     try {
       const saved = localStorage.getItem('tripnest_host_listings');
@@ -129,8 +132,15 @@ export const HostLayout = ({
     }
   });
 
-  // Bookings State (Synchronized with Backend API)
-  const [bookings, setBookings] = useState([]);
+  // Bookings State with LocalStorage cache fallback
+  const [bookings, setBookings] = useState(() => {
+    try {
+      const saved = localStorage.getItem('tripnest_host_bookings');
+      return saved ? JSON.parse(saved) : DEFAULT_BOOKINGS;
+    } catch {
+      return DEFAULT_BOOKINGS;
+    }
+  });
 
   // Bank Info State
   const [bankInfo, setBankInfo] = useState(() => {
@@ -162,6 +172,78 @@ export const HostLayout = ({
       return [];
     }
   });
+
+  // Fetch Accommodations, Bookings, Payouts from Backend
+  const refreshAccommodations = async () => {
+    try {
+      setLoadingListings(true);
+      const data = await apiService.getHostAccommodations();
+      if (Array.isArray(data) && data.length > 0) {
+        setListings(data);
+      }
+    } catch (e) {
+      console.error('Error loading host accommodations:', e);
+    } finally {
+      setLoadingListings(false);
+    }
+  };
+
+  const refreshBookings = async () => {
+    try {
+      const data = await apiService.getHostBookings();
+      if (Array.isArray(data) && data.length > 0) {
+        setBookings(data);
+      }
+    } catch (e) {
+      console.error('Error loading host bookings:', e);
+    }
+  };
+
+  const refreshPayouts = async () => {
+    try {
+      const data = await apiService.getHostPayouts();
+      if (data) {
+        if (data.payoutAccount) {
+          setBankInfo({
+            bankName: data.payoutAccount.bank_name || 'Vietcombank (VCB)',
+            accountNumber: data.payoutAccount.account_number || '9988776655',
+            accountHolder: data.payoutAccount.account_holder_name || 'NGUYEN VAN AN',
+          });
+        }
+        if (Array.isArray(data.transactions) && data.transactions.length > 0) {
+          setPayoutHistory(data.transactions);
+        }
+        if (typeof data.availableBalance === 'number') {
+          setAvailableBalance(data.availableBalance);
+        }
+      }
+    } catch (e) {
+      console.error('Error loading host payouts:', e);
+    }
+  };
+
+  useEffect(() => {
+    refreshAccommodations();
+    refreshBookings();
+    refreshPayouts();
+  }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'financials') return undefined;
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') refreshPayouts();
+    };
+    const intervalId = window.setInterval(refreshPayouts, 30000);
+    window.addEventListener('focus', refreshWhenVisible);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refreshWhenVisible);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
+  }, [activeTab]);
 
   // LocalStorage sync
   useEffect(() => {
@@ -210,22 +292,26 @@ export const HostLayout = ({
     };
   }, []);
 
-  // Listing Handlers
-  const handleToggleStatus = (id) => {
-    setListings(
-      listings.map((item) => {
-        if (item.id === id) {
-          const nextStatus = item.status === 'published' ? 'paused' : 'published';
-          if (nextStatus === 'published') {
-            toast.success('Mở bán chỗ ở', 'Đã kích hoạt mở bán chỗ ở thành công!');
-          } else {
-            toast.info('Tạm dừng kinh doanh', 'Đã tạm dừng nhận khách cho chỗ ở.');
+  // Listing Handlers with Real Backend Integration
+  const handleToggleStatus = async (id) => {
+    try {
+      const res = await apiService.toggleHostAccommodationStatus(id);
+      setListings((prev) =>
+        prev.map((item) => {
+          if (item.id === id) {
+            const nextStatus = res.status || (item.status === 'published' ? 'paused' : 'published');
+            return { ...item, status: nextStatus };
           }
-          return { ...item, status: nextStatus };
-        }
-        return item;
-      })
-    );
+          return item;
+        })
+      );
+      toast.success(
+        'Cập nhật trạng thái',
+        res.message || 'Đã cập nhật trạng thái mở bán chỗ ở thành công!'
+      );
+    } catch (e) {
+      toast.error('Lỗi', 'Không thể cập nhật trạng thái chỗ ở.');
+    }
   };
 
   const handleDeleteListing = async (id) => {
@@ -238,13 +324,18 @@ export const HostLayout = ({
     });
 
     if (isConfirmed) {
-      setListings(listings.filter((item) => item.id !== id));
-      toast.success('Đã xóa chỗ ở', 'Đã xóa chỗ ở thành công khỏi danh sách.');
+      try {
+        await apiService.deleteHostAccommodation(id);
+        setListings((prev) => prev.filter((item) => item.id !== id));
+        toast.success('Đã xóa chỗ ở', 'Đã xóa chỗ ở thành công khỏi danh sách.');
+      } catch (e) {
+        toast.error('Lỗi xóa', 'Không thể xóa chỗ ở.');
+      }
     }
   };
 
-  const handleListingCreated = (newListing) => {
-    setListings([newListing, ...listings]);
+  const handleListingCreated = async (newListing) => {
+    await refreshAccommodations();
     setActiveTab('accommodations');
     toast.success(
       'Đăng bán chỗ ở thành công!',
@@ -252,14 +343,54 @@ export const HostLayout = ({
     );
   };
 
-  const handleSaveEditListing = (e) => {
+  const handleSaveEditListing = async (e) => {
     e.preventDefault();
     if (!editingListing) return;
-    setListings(
-      listings.map((l) => (l.id === editingListing.id ? editingListing : l))
-    );
-    setEditingListing(null);
-    toast.success('Cập nhật thành công', 'Đã lưu thông tin chỗ ở.');
+    try {
+      await apiService.updateHostAccommodation(editingListing.id, editingListing);
+      setListings((prev) =>
+        prev.map((l) => (l.id === editingListing.id ? { ...l, ...editingListing } : l))
+      );
+      setEditingListing(null);
+      toast.success('Cập nhật thành công', 'Đã lưu thông tin chỗ ở lên hệ thống.');
+      refreshAccommodations();
+    } catch (err) {
+      toast.error('Lỗi lưu', err.message || 'Không thể lưu thay đổi thông tin chỗ ở.');
+    }
+  };
+
+  const handleAddEditImage = (e) => {
+    e.preventDefault();
+    const imageUrl = editImageUrl.trim();
+    if (!imageUrl || !editingListing) return;
+
+    const images = editingListing.images || (editingListing.thumbnail ? [editingListing.thumbnail] : []);
+    if (images.includes(imageUrl)) {
+      toast.info('Ảnh đã tồn tại', 'Vui lòng sử dụng một đường dẫn ảnh khác.');
+      return;
+    }
+
+    setEditingListing({
+      ...editingListing,
+      images: [...images, imageUrl],
+      thumbnail: editingListing.thumbnail || imageUrl,
+    });
+    setEditImageUrl('');
+  };
+
+  const handleRemoveEditImage = (index) => {
+    const images = editingListing?.images || [];
+    if (images.length <= 1) {
+      toast.warning('Yêu cầu hình ảnh', 'Chỗ ở cần ít nhất 1 ảnh đại diện.');
+      return;
+    }
+
+    const updatedImages = images.filter((_, imageIndex) => imageIndex !== index);
+    setEditingListing({
+      ...editingListing,
+      images: updatedImages,
+      thumbnail: updatedImages[0],
+    });
   };
 
   // Booking Handlers
@@ -404,23 +535,21 @@ export const HostLayout = ({
     .filter((p) => p.status === 'pending' || !p.status)
     .reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
-  const handleRequestPayout = () => {
+  const handleRequestPayout = async () => {
     setIsRequestingPayout(true);
-    setTimeout(() => {
-      const newTransaction = {
-        id: 'PO-' + Date.now().toString().slice(-4),
-        date: new Date().toLocaleDateString('vi-VN'),
-        amount: availableBalance,
-        note: `Chuyển khoản ${bankInfo.bankName}`,
-        status: 'completed',
-      };
-      setPayoutHistory([newTransaction, ...payoutHistory]);
-      setIsRequestingPayout(false);
+    try {
+      const result = await apiService.requestHostPayout();
+      setAvailableBalance(Number(result.availableBalance || 0));
+      await refreshPayouts();
       toast.success(
         'Rút tiền thành công!',
-        `Đã chuyển tiền về số tài khoản ${bankInfo.accountNumber} thành công.`
+        result.message || `Đã tạo yêu cầu chuyển tiền về số tài khoản ${bankInfo.accountNumber}.`
       );
-    }, 900);
+    } catch (err) {
+      toast.error('Lỗi rút tiền', err.message || 'Không thể tạo yêu cầu rút tiền.');
+    } finally {
+      setIsRequestingPayout(false);
+    }
   };
 
   const pendingCount = bookings.filter((b) => b.status === 'pending').length;
@@ -470,7 +599,13 @@ export const HostLayout = ({
             <HostAccommodationsPage
               listings={listings}
               onOpenWizard={() => handleNavigate('new_listing')}
-              onEditListing={(item) => setEditingListing({ ...item })}
+              onEditListing={(item) => {
+                setEditingListing({
+                  ...item,
+                  images: item.images?.length ? [...item.images] : item.thumbnail ? [item.thumbnail] : [],
+                });
+                setEditImageUrl('');
+              }}
               onToggleStatus={handleToggleStatus}
               onDeleteListing={handleDeleteListing}
               onOpenRoomDetail={onOpenRoomDetail}
@@ -669,6 +804,63 @@ export const HostLayout = ({
                     boxSizing: 'border-box',
                   }}
                 />
+              </div>
+
+              <div>
+                <label
+                  style={{
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    color: 'var(--host-text-main)',
+                    display: 'block',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Hình ảnh chỗ ở
+                </label>
+                <form onSubmit={handleAddEditImage} style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="url"
+                    value={editImageUrl}
+                    onChange={(e) => setEditImageUrl(e.target.value)}
+                    placeholder="Dán URL ảnh mới..."
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      padding: '0.6rem',
+                      borderRadius: 'var(--host-radius-sm)',
+                      border: '1.5px solid var(--host-border-strong)',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                  <button type="submit" className="host-btn-client" title="Thêm ảnh">
+                    <TbPlus /> Thêm
+                  </button>
+                </form>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px', marginTop: '10px' }}>
+                  {(editingListing.images || []).map((image, index) => (
+                    <div key={`${image}-${index}`} style={{ position: 'relative' }}>
+                      <img
+                        src={image}
+                        alt={`Ảnh chỗ ở ${index + 1}`}
+                        style={{ width: '100%', height: '78px', objectFit: 'cover', borderRadius: 'var(--host-radius-sm)', display: 'block' }}
+                      />
+                      {index === 0 && (
+                        <span style={{ position: 'absolute', left: '4px', bottom: '4px', background: 'rgba(15, 23, 42, 0.78)', color: 'white', borderRadius: '4px', padding: '2px 5px', fontSize: '0.68rem' }}>
+                          Ảnh bìa
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveEditImage(index)}
+                        title="Xóa ảnh"
+                        style={{ position: 'absolute', top: '4px', right: '4px', width: '24px', height: '24px', border: 'none', borderRadius: '50%', background: 'rgba(15, 23, 42, 0.78)', color: 'white', display: 'grid', placeItems: 'center', cursor: 'pointer' }}
+                      >
+                        <TbTrash />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div

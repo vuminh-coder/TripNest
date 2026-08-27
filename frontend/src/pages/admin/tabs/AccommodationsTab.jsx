@@ -38,13 +38,8 @@ export const AccommodationsTab = ({
       <div className="page-header-row">
         <div className="page-title-group">
           <h1>Cơ Sở Lưu Trú & Hạng Phòng</h1>
-          <p>Quản lý {accommodations.length} cơ sở trên hệ thống</p>
+          <p>Quản lý và kiểm duyệt {accommodations.length} cơ sở trên hệ thống</p>
         </div>
-
-        <button className="btn-admin-primary" onClick={() => onOpenEditModal(null)}>
-          <TbPlus style={{ fontSize: '1.1rem' }} />
-          <span>Thêm Chỗ Ở</span>
-        </button>
       </div>
 
       {/* Filter Bar */}

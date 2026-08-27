@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './host.css';
 import { TbX, TbArrowLeft, TbArrowRight, TbHome, TbBuildingCastle, TbBuildingCommunity, TbSailboat, TbTrees, TbBuilding, TbMapPin, TbUsers, TbBed, TbBath, TbSparkles, TbWifi, TbSwimming, TbToolsKitchen2, TbAirConditioning, TbCar, TbFlame, TbDeviceTv, TbPhoto, TbPlus, TbTrash, TbCheck, TbEye, TbLockCheck, TbCoin } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
+import { apiService } from '@/services/api';
 
 export const HostListingWizard = ({ isOpen, onClose, onListingCreated, currency = 'VND' }) => {
   const toast = useToast();
@@ -16,6 +17,7 @@ export const HostListingWizard = ({ isOpen, onClose, onListingCreated, currency 
   const [spaceType, setSpaceType] = useState('entire_place');
   
   // Counters
+  const [roomTypeCode, setRoomTypeCode] = useState('entire_villa');
   const [maxGuests, setMaxGuests] = useState(4);
   const [bedrooms, setBedrooms] = useState(2);
   const [beds, setBeds] = useState(2);
@@ -99,22 +101,50 @@ export const HostListingWizard = ({ isOpen, onClose, onListingCreated, currency 
     return `${Number(val).toLocaleString('vi-VN')} ₫`;
   };
 
-  const handlePublishListing = () => {
+  const handlePublishListing = async () => {
     setIsPublishing(true);
-    setTimeout(() => {
+    try {
+      const payload = {
+        nameVi,
+        accommodationType,
+        spaceType,
+        city,
+        district,
+        address,
+        description,
+        priceVND: Number(priceVND),
+        cleaningFeeVND: Number(cleaningFeeVND),
+        maxGuests: Number(maxGuests),
+        bedrooms: Number(bedrooms),
+        beds: Number(beds),
+        bathrooms: Number(bathrooms),
+        roomSizeM2: Number(roomSizeM2),
+        roomTypeCode: roomTypeCode,
+        images,
+        amenities: selectedAmenities,
+        houseRules: 'Không hút thuốc trong phòng, giữ gìn vệ sinh chung.',
+        cancellationPolicy: 'Hủy miễn phí 100% trước 48h nhận phòng.',
+      };
+
+      const result = await apiService.createHostAccommodation(payload);
+
       const newListing = {
-        id: 'ACC-' + Date.now(),
+        id: result?.data?.accommodationId || ('ACC-' + Date.now()),
+        roomId: result?.data?.roomId,
         nameVi,
         accommodationType,
         city,
         district,
         address,
+        description,
         priceVND,
         priceUSD: Math.round(priceVND / 25000),
+        cleaningFeeVND,
         maxGuests,
         bedrooms,
         beds,
         bathrooms,
+        roomSizeM2,
         rating: 5.0,
         reviewsCount: 0,
         status: 'published',
@@ -124,10 +154,14 @@ export const HostListingWizard = ({ isOpen, onClose, onListingCreated, currency 
         createdAt: new Date().toLocaleDateString('vi-VN'),
       };
 
-      setIsPublishing(false);
+      toast.success('Đăng bài thành công!', result?.message || 'Chỗ nghỉ của bạn đã sẵn sàng đón khách.');
       if (onListingCreated) onListingCreated(newListing);
       onClose();
-    }, 800);
+    } catch (err) {
+      toast.error('Lỗi lưu', err.message || 'Không thể đăng bán chỗ ở.');
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   return (
@@ -238,6 +272,22 @@ export const HostListingWizard = ({ isOpen, onClose, onListingCreated, currency 
               <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.5rem' }}>
                 Thiết lập số lượng khách và các tiện nghi phòng ngủ để khách dễ dàng lựa chọn.
               </p>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                  Hạng phòng (Tier)
+                </label>
+                <select
+                  value={roomTypeCode}
+                  onChange={(e) => setRoomTypeCode(e.target.value)}
+                  style={{ width: '100%', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1.5px solid #e2e8f0', fontSize: '0.9rem', outline: 'none' }}
+                >
+                  <option value="entire_villa">Nguyên căn (Entire Villa/Place)</option>
+                  <option value="deluxe_king">Phòng Deluxe (Deluxe Room)</option>
+                  <option value="executive_suite">Suite Cao Cấp (Executive Suite)</option>
+                  <option value="pool_villa">Villa Hồ Bơi Riêng (Pool Villa)</option>
+                </select>
+              </div>
 
               <div className="counter-row-item">
                 <div className="counter-label-wrap">

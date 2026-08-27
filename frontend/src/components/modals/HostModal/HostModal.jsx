@@ -1,15 +1,36 @@
 import './HostModal.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TbX, TbHomePlus, TbShieldCheck, TbCoins, TbHeadset } from 'react-icons/tb';
+import { apiService } from '@/services/api';
 
 export const HostModal = ({ isOpen, onClose, onStartHosting, currency = 'VND' }) => {
   const [nights, setNights] = useState(7);
   const [location, setLocation] = useState('Đà Lạt');
+  const [estimateData, setEstimateData] = useState(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let isCancelled = false;
+    const fetchEstimate = async () => {
+      try {
+        const res = await apiService.getHostEstimate(nights, location);
+        if (!isCancelled && res) {
+          setEstimateData(res);
+        }
+      } catch (e) {
+        // use fallback
+      }
+    };
+    fetchEstimate();
+    return () => {
+      isCancelled = true;
+    };
+  }, [nights, location, isOpen]);
 
   if (!isOpen) return null;
 
-  const basePricePerNight = location === 'Hà Nội' ? 1200000 : location === 'Phú Quốc' ? 2500000 : 1800000;
-  const estimatedTotal = nights * basePricePerNight;
+  const basePricePerNight = estimateData?.basePricePerNightVND || (location === 'Hà Nội' ? 1200000 : location === 'Phú Quốc' ? 2500000 : 1800000);
+  const estimatedTotal = estimateData?.estimatedTotalVND || (nights * basePricePerNight);
 
   const formatPrice = (val) => {
     if (currency === 'USD') return `$${Math.round(val / 25000).toLocaleString()}`;
@@ -17,8 +38,20 @@ export const HostModal = ({ isOpen, onClose, onStartHosting, currency = 'VND' })
     return `${val.toLocaleString()} ₫`;
   };
 
-  const handleStartHosting = () => {
+  const handleStartHosting = async () => {
     localStorage.setItem('tripnest_is_host', 'true');
+    try {
+      await apiService.registerHost({
+        hostDisplayName: 'Chủ nhà TripNest',
+        contactPhone: '0912345678',
+        idCardNumber: '001200012345',
+        bankName: 'Vietcombank',
+        accountNumber: '9988776655',
+        accountHolderName: 'CHỦ NHÀ TRIPNEST',
+      });
+    } catch (e) {
+      // Continue anyway
+    }
     onClose();
     if (onStartHosting) {
       onStartHosting();

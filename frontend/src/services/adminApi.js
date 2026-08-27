@@ -70,17 +70,45 @@ export const adminService = {
     } catch (e) {
       console.warn('Failed to fetch admin stats from backend, fallback', e);
     }
-    const data = getStoredData();
-    return data.stats || {
-      totalRevenueVND: 0,
-      commissionRevenueVND: 0,
-      totalBookings: 0,
-      completedBookings: 0,
+    const data = getStoredData() || {};
+
+    const bookings = data.bookings || [];
+    const hosts = data.hosts || [];
+    const stats = data.stats || {};
+
+    const totalBookings = bookings.length;
+    const completedBookings = bookings.filter((b) => b?.status === 'completed').length;
+    const totalRev = bookings
+      .filter((b) => b?.status !== 'cancelled')
+      .reduce((sum, b) => sum + (b?.total_price || 0), 0);
+    const commission = Math.round(totalRev * 0.12);
+    const pendingKyc = hosts.filter((h) => h?.kyc_status === 'pending').length;
+
+    return {
+      ...stats,
+      totalRevenueVND: totalRev > 0 ? totalRev : (stats.totalRevenueVND || 0),
+      commissionRevenueVND: commission > 0 ? commission : (stats.commissionRevenueVND || 0),
+      totalBookings: totalBookings > 0 ? totalBookings : (stats.totalBookings || 0),
+      completedBookings: completedBookings > 0 ? completedBookings : (stats.completedBookings || 0),
+      pendingKycCount: pendingKyc > 0 ? pendingKyc : (stats.pendingKycCount || 0),
     };
   },
 
   // 2. Accommodations
   async getAccommodations() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/accommodations`, {
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.accommodations) && json.accommodations.length > 0) {
+          return json.accommodations;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch admin accommodations from backend, fallback to local', e);
+    }
     const data = getStoredData();
     return data.accommodations || [];
   },
@@ -446,6 +474,17 @@ export const adminService = {
     const data = getStoredData();
     let approvedPayout = null;
     const ref = transactionRef || 'FT' + Date.now();
+
+    const backendResponse = await fetch(`${API_BASE_URL}/admin/payouts/${payoutId}/approve`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ transactionRef: ref }),
+    });
+    const backendData = await backendResponse.json();
+    if (!backendResponse.ok || backendData.success === false) {
+      throw new Error(backendData.message || 'Không thể xác nhận lệnh giải ngân trên máy chủ.');
+    }
+
     data.payouts = data.payouts.map((p) => {
       if (p.id === payoutId) {
         approvedPayout = {

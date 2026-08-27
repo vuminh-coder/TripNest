@@ -22,12 +22,14 @@ import ExperiencesPage from './pages/ExperiencesPage';
 import KycDetailModal from './modals/KycDetailModal';
 import BookingDetailModal from './modals/BookingDetailModal';
 import AccommodationEditModal from './modals/AccommodationEditModal';
+import AccommodationDetailModal from './modals/AccommodationDetailModal';
 import PayoutConfirmModal from './modals/PayoutConfirmModal';
 import UserEditModal from './modals/UserEditModal';
 import UserDetailModal from './modals/UserDetailModal';
 
 export const AdminLayout = ({ onExitAdmin }) => {
   const toast = useToast();
+
   // Determine initial page from URL path
   const getInitialTabFromUrl = () => {
     const path = window.location.pathname.replace('/admin', '').replace('/', '');
@@ -69,6 +71,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [editAccommodation, setEditAccommodation] = useState(null);
   const [isEditAccOpen, setIsEditAccOpen] = useState(false);
+  const [selectedDetailAcc, setSelectedDetailAcc] = useState(null);
   const [selectedPayout, setSelectedPayout] = useState(null);
   const [editUser, setEditUser] = useState(null);
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
@@ -91,41 +94,47 @@ export const AdminLayout = ({ onExitAdmin }) => {
   // Load all admin data
   const loadData = async () => {
     setLoading(true);
-    const [
-      st,
-      accs,
-      bks,
-      hsts,
-      usrs,
-      cats,
-      amns,
-      revs,
-      pyts,
-      exps,
-    ] = await Promise.all([
-      adminService.getDashboardStats(),
-      adminService.getAccommodations(),
-      adminService.getBookings(),
-      adminService.getHosts(),
-      adminService.getUsers(),
-      adminService.getCategories(),
-      adminService.getAmenities(),
-      adminService.getReviews(),
-      adminService.getPayouts(),
-      adminService.getExperiences(),
-    ]);
+    try {
+      const [
+        st,
+        accs,
+        bks,
+        hsts,
+        usrs,
+        cats,
+        amns,
+        revs,
+        pyts,
+        exps,
+      ] = await Promise.all([
+        adminService.getDashboardStats(),
+        adminService.getAccommodationAdmin(),
+        adminService.getBookings(),
+        adminService.getHosts(),
+        adminService.getUsers(),
+        adminService.getCategories(),
+        adminService.getAmenities(),
+        adminService.getReviews(),
+        adminService.getPayouts(),
+        adminService.getExperiences(),
+      ]);
 
-    setStats(st);
-    setAccommodations(accs);
-    setBookings(bks);
-    setHosts(hsts);
-    setUsers(usrs);
-    setCategories(cats);
-    setAmenities(amns);
-    setReviews(revs);
-    setPayouts(pyts);
-    setExperiences(exps);
-    setLoading(false);
+      setStats(st);
+      setAccommodations(accs);
+      setBookings(bks);
+      setHosts(hsts);
+      setUsers(usrs);
+      setCategories(cats);
+      setAmenities(amns);
+      setReviews(revs);
+      setPayouts(pyts);
+      setExperiences(exps);
+    } catch (error) {
+      console.error('Lỗi khi tải dữ liệu admin:', error);
+      toast.error('Không thể tải dữ liệu quản trị');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -305,6 +314,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
                   accommodations={accommodations}
                   onUpdateStatus={handleUpdateAccStatus}
                   onToggleFlag={handleToggleAccFlag}
+                  onOpenDetailModal={(acc) => setSelectedDetailAcc(acc)}
                   onOpenEditModal={(acc) => {
                     setEditAccommodation(acc);
                     setIsEditAccOpen(true);
@@ -403,6 +413,14 @@ export const AdminLayout = ({ onExitAdmin }) => {
           booking={selectedBooking}
           onClose={() => setSelectedBooking(null)}
           onUpdateStatus={handleUpdateBookingStatus}
+        />
+      )}
+
+      {selectedDetailAcc && (
+        <AccommodationDetailModal
+          accommodation={selectedDetailAcc}
+          onClose={() => setSelectedDetailAcc(null)}
+          onUpdateStatus={handleUpdateAccStatus}
         />
       )}
 
