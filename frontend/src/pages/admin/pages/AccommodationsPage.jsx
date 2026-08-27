@@ -19,7 +19,7 @@ export const AccommodationsPage = ({
   onOpenEditModal,
   onDelete,
 }) => {
-  console.log("Data nhận đc: ",accommodations);
+  console.log(accommodations);
   const [cityFilter, setCityFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
@@ -38,7 +38,7 @@ export const AccommodationsPage = ({
       const q = search.toLowerCase();
       const matchName = acc.name_vi.toLowerCase().includes(q) || (acc.name_en && acc.name_en.toLowerCase().includes(q));
       const matchCity = acc.city.toLowerCase().includes(q);
-      const matchHost = acc.host_name.toLowerCase().includes(q);
+      const matchHost = acc.host.user.full_name?.toLowerCase().includes(q);
       if (!matchName && !matchCity && !matchHost) return false;
     }
     return true;
