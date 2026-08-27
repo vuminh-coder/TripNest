@@ -361,6 +361,17 @@ export const adminService = {
     const data = getStoredData();
     let approvedPayout = null;
     const ref = transactionRef || 'FT' + Date.now();
+
+    const backendResponse = await fetch(`${API_BASE_URL}/admin/payouts/${payoutId}/approve`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ transactionRef: ref }),
+    });
+    const backendData = await backendResponse.json();
+    if (!backendResponse.ok || backendData.success === false) {
+      throw new Error(backendData.message || 'Không thể xác nhận lệnh giải ngân trên máy chủ.');
+    }
+
     data.payouts = data.payouts.map((p) => {
       if (p.id === payoutId) {
         approvedPayout = {
@@ -375,18 +386,7 @@ export const adminService = {
     });
     saveStoredData(data);
 
-    // 1. Asynchronously update backend CSDL
-    try {
-      fetch(`${API_BASE_URL}/admin/payouts/${payoutId}/approve`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ transactionRef: ref }),
-      }).catch(() => {});
-    } catch {
-      // ignore
-    }
-
-    // 2. Đồng bộ sang Host Payout History (tripnest_host_payout_history)
+    // Đồng bộ sang Host Payout History (tripnest_host_payout_history)
     if (approvedPayout) {
       try {
         const hostHistory = JSON.parse(localStorage.getItem('tripnest_host_payout_history') || '[]');

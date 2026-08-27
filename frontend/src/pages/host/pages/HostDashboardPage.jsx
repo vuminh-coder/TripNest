@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   TbCoin,
   TbCalendarEvent,
@@ -12,6 +12,7 @@ import {
   TbSparkles,
   TbInbox,
 } from 'react-icons/tb';
+import { apiService } from '@/services/api';
 
 export const HostDashboardPage = ({
   listings = [],
@@ -24,6 +25,22 @@ export const HostDashboardPage = ({
   onCheckOutBooking,
   currency = 'VND',
 }) => {
+  const [statsData, setStatsData] = useState(null);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const res = await apiService.getHostDashboardStats();
+        if (res && res.success) {
+          setStatsData(res);
+        }
+      } catch (e) {
+        // Fallback to computed props
+      }
+    };
+    loadStats();
+  }, []);
+
   const formatPrice = (val) => {
     if (currency === 'USD') return `$${Math.round((val || 0) / 25000).toLocaleString()}`;
     return `${Number(val || 0).toLocaleString('vi-VN')} ₫`;

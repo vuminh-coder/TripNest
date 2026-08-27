@@ -8,6 +8,8 @@ import {
   TbCheck,
   TbHistory,
 } from 'react-icons/tb';
+import { apiService } from '@/services/api';
+import { useToast } from '@/context/ToastContext';
 
 export const HostFinancialsPage = ({
   bankInfo,
@@ -18,18 +20,33 @@ export const HostFinancialsPage = ({
   isRequestingPayout = false,
   currency = 'VND',
 }) => {
+  const toast = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [tempBank, setTempBank] = useState({ ...bankInfo });
+  const [isSaving, setIsSaving] = useState(false);
 
   const formatPrice = (val) => {
     if (currency === 'USD') return `$${Math.round(val / 25000).toLocaleString()}`;
     return `${Number(val).toLocaleString('vi-VN')} ₫`;
   };
 
-  const handleSaveBank = (e) => {
+  const handleSaveBank = async (e) => {
     e.preventDefault();
-    setBankInfo(tempBank);
-    setIsEditing(false);
+    setIsSaving(true);
+    try {
+      const res = await apiService.updateHostPayoutAccount({
+        bankName: tempBank.bankName,
+        accountNumber: tempBank.accountNumber,
+        accountHolderName: tempBank.accountHolder,
+      });
+      setBankInfo(tempBank);
+      setIsEditing(false);
+      toast.success('Thành công', res?.message || 'Đã lưu thông tin tài khoản ngân hàng nhận tiền.');
+    } catch (err) {
+      toast.error('Lỗi', err.message || 'Không thể cập nhật tài khoản ngân hàng.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
