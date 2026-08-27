@@ -113,6 +113,10 @@ export const adminService = {
     return data.accommodations || [];
   },
 
+  async getAccommodationAdmin() {
+    return this.getAccommodations();
+  },
+
   async updateAccommodationStatus(id, newStatus) {
     const data = getStoredData();
     data.accommodations = data.accommodations.map((item) =>
@@ -475,16 +479,22 @@ export const adminService = {
     let approvedPayout = null;
     const ref = transactionRef || 'FT' + Date.now();
 
-    const backendResponse = await fetch(`${API_BASE_URL}/admin/payouts/${payoutId}/approve`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ transactionRef: ref }),
-    });
-    const backendData = await backendResponse.json();
-    if (!backendResponse.ok || backendData.success === false) {
-      throw new Error(backendData.message || 'Không thể xác nhận lệnh giải ngân trên máy chủ.');
+    // 1. Sync with backend API if available
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/payouts/${payoutId}/approve`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ transactionRef: ref }),
+      });
+      if (response.ok) {
+        const resJson = await response.json();
+        console.log('Backend approved payout response:', resJson);
+      }
+    } catch (e) {
+      console.warn('Backend payout approval failed, updating local store:', e);
     }
 
+    // 2. Update local state store
     data.payouts = data.payouts.map((p) => {
       if (p.id === payoutId) {
         approvedPayout = {
@@ -499,18 +509,7 @@ export const adminService = {
     });
     saveStoredData(data);
 
-    // 1. Asynchronously update backend CSDL
-    try {
-      fetch(`${API_BASE_URL}/admin/payouts/${payoutId}/approve`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ transactionRef: ref }),
-      }).catch(() => {});
-    } catch {
-      // ignore
-    }
-
-    // 2. Đồng bộ sang Host Payout History (tripnest_host_payout_history)
+    // 3. Synchronize to Host Payout History (tripnest_host_payout_history) for real-time reactivity
     if (approvedPayout) {
       try {
         const hostHistory = JSON.parse(localStorage.getItem('tripnest_host_payout_history') || '[]');
@@ -529,7 +528,7 @@ export const adminService = {
       }
     }
 
-    return data.payouts;
+    return await this.getPayouts();
   },
 
   // 7. Reviews

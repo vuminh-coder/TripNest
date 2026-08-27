@@ -739,6 +739,7 @@ class HostController extends Controller
     public function getPayouts(Request $request): JsonResponse
     {
         $host = $this->getCurrentHost();
+        $payoutAccount = $host->defaultPayoutAccount;
         $payoutQuery = PayoutTransaction::where('host_id', $host->id)->with('booking.room.accommodation');
 
         $availableBalance = (float)(clone $payoutQuery)->where('status', 'completed')->sum('net_payout_amount');
@@ -756,6 +757,7 @@ class HostController extends Controller
                     'amount' => (float)$po->net_payout_amount,
                     'note' => 'Doanh thu đơn ' . ($po->booking?->booking_code ?: ('#' . $po->booking_id)),
                     'status' => $po->status ?: 'pending',
+                    'ref' => $po->transaction_reference,
                     'transferredAt' => $po->transferred_at ? $po->transferred_at->format('d/m/Y H:i') : null,
                 ];
             });

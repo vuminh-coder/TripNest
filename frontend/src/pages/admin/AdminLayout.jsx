@@ -240,6 +240,8 @@ export const AdminLayout = ({ onExitAdmin }) => {
   const handleCompletePayout = async (payoutId, ref) => {
     const updated = await adminService.completePayout(payoutId, ref);
     setPayouts(updated);
+    const st = await adminService.getDashboardStats();
+    setStats(st);
   };
 
   // Reviews Actions

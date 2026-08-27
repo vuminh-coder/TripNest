@@ -274,8 +274,13 @@ export const HostFinancialsPage = ({
                   <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--host-text-main)' }}>
                     {po.note}
                   </div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--host-text-muted)' }}>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--host-text-muted)', marginTop: '2px' }}>
                     Ngày {po.date} · #{po.id}
+                    {(po.ref || po.transaction_ref) && (
+                      <span style={{ marginLeft: '6px', color: '#0284c7', fontWeight: 700, fontFamily: 'monospace' }}>
+                        (Mã GD: {po.ref || po.transaction_ref})
+                      </span>
+                    )}
                   </div>
                 </div>
 
