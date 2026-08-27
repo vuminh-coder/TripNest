@@ -19,6 +19,7 @@ export const AccommodationsPage = ({
   onOpenEditModal,
   onDelete,
 }) => {
+  console.log("Data nhận đc: ",accommodations);
   const [cityFilter, setCityFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');

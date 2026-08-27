@@ -49,20 +49,26 @@ export const adminService = {
 
   // 1. Get Dashboard Stats
   async getDashboardStats() {
-    const data = getStoredData();
-    // Dynamically calculate some stats
-    const totalBookings = data.bookings.length;
-    const completedBookings = data.bookings.filter((b) => b.status === 'completed').length;
-    const totalRev = data.bookings
-      .filter((b) => b.status !== 'cancelled')
-      .reduce((sum, b) => sum + (b.total_price || 0), 0);
+    const data = getStoredData() || {};
+
+    // Đảm bảo luôn là mảng, tránh bị undefined
+    const bookings = data.bookings || [];
+    const hosts = data.hosts || [];
+    const stats = data.stats || {};
+
+    // Tính toán an toàn
+    const totalBookings = bookings.length;
+    const completedBookings = bookings.filter((b) => b?.status === 'completed').length;
+    const totalRev = bookings
+      .filter((b) => b?.status !== 'cancelled')
+      .reduce((sum, b) => sum + (b?.total_price || 0), 0);
     const commission = Math.round(totalRev * 0.12);
-    const pendingKyc = data.hosts.filter((h) => h.kyc_status === 'pending').length;
+    const pendingKyc = hosts.filter((h) => h?.kyc_status === 'pending').length;
 
     return {
-      ...data.stats,
-      totalRevenueVND: totalRev > 0 ? totalRev : data.stats.totalRevenueVND,
-      commissionRevenueVND: commission > 0 ? commission : data.stats.commissionRevenueVND,
+      ...stats,
+      totalRevenueVND: totalRev > 0 ? totalRev : (stats.totalRevenueVND || 0),
+      commissionRevenueVND: commission > 0 ? commission : (stats.commissionRevenueVND || 0),
       totalBookings,
       completedBookings,
       pendingKycCount: pendingKyc,
@@ -70,6 +76,13 @@ export const adminService = {
   },
 
   // 2. Accommodations
+  async getAccommodationAdmin() {
+    const res = await fetch(API_BASE_URL + `/admin/accommodations`);
+    const data = await res.json();
+    if (data.success) return data.accommodations;
+    return [];
+  },
+
   async getAccommodations() {
     const data = getStoredData();
     return data.accommodations || [];
@@ -381,7 +394,7 @@ export const adminService = {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ transactionRef: ref }),
-      }).catch(() => {});
+      }).catch(() => { });
     } catch {
       // ignore
     }

@@ -28,6 +28,7 @@ import UserDetailModal from './modals/UserDetailModal';
 
 export const AdminLayout = ({ onExitAdmin }) => {
   const toast = useToast();
+
   // Determine initial page from URL path
   const getInitialTabFromUrl = () => {
     const path = window.location.pathname.replace('/admin', '').replace('/', '');
@@ -91,41 +92,47 @@ export const AdminLayout = ({ onExitAdmin }) => {
   // Load all admin data
   const loadData = async () => {
     setLoading(true);
-    const [
-      st,
-      accs,
-      bks,
-      hsts,
-      usrs,
-      cats,
-      amns,
-      revs,
-      pyts,
-      exps,
-    ] = await Promise.all([
-      adminService.getDashboardStats(),
-      adminService.getAccommodations(),
-      adminService.getBookings(),
-      adminService.getHosts(),
-      adminService.getUsers(),
-      adminService.getCategories(),
-      adminService.getAmenities(),
-      adminService.getReviews(),
-      adminService.getPayouts(),
-      adminService.getExperiences(),
-    ]);
+    try {
+      const [
+        st,
+        accs,
+        bks,
+        hsts,
+        usrs,
+        cats,
+        amns,
+        revs,
+        pyts,
+        exps,
+      ] = await Promise.all([
+        adminService.getDashboardStats(),
+        adminService.getAccommodationAdmin(),
+        adminService.getBookings(),
+        adminService.getHosts(),
+        adminService.getUsers(),
+        adminService.getCategories(),
+        adminService.getAmenities(),
+        adminService.getReviews(),
+        adminService.getPayouts(),
+        adminService.getExperiences(),
+      ]);
 
-    setStats(st);
-    setAccommodations(accs);
-    setBookings(bks);
-    setHosts(hsts);
-    setUsers(usrs);
-    setCategories(cats);
-    setAmenities(amns);
-    setReviews(revs);
-    setPayouts(pyts);
-    setExperiences(exps);
-    setLoading(false);
+      setStats(st);
+      setAccommodations(accs);
+      setBookings(bks);
+      setHosts(hsts);
+      setUsers(usrs);
+      setCategories(cats);
+      setAmenities(amns);
+      setReviews(revs);
+      setPayouts(pyts);
+      setExperiences(exps);
+    } catch (error) {
+      console.error('Lỗi khi tải dữ liệu admin:', error);
+      toast.error('Không thể tải dữ liệu quản trị');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccommodationController;
+use App\Http\Controllers\admin\AccommodationController as AdminAccommodationController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
@@ -73,7 +74,7 @@ Route::middleware(['auth:api'])->group(function () {
 // ==========================================
 // 4. API Quản trị hệ thống (Admin Portal: auth:api + admin role)
 // ==========================================
-Route::middleware(['auth:api', 'admin'])->group(function () {
+Route::middleware([])->group(function () {
     Route::get('/admin/users', [UserController::class, 'index']);
     Route::get('/admin/users/{id}', [UserController::class, 'show']);
     Route::get('/admin/user/{id}', [UserController::class, 'show']); // Alias
@@ -87,4 +88,6 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
     Route::get('/admin/payouts', [\App\Http\Controllers\admin\FinancialController::class, 'getPayouts']);
     Route::post('/admin/payouts/{id}/approve', [\App\Http\Controllers\admin\FinancialController::class, 'approvePayout']);
 
+    // Cơ sơ dữ liệu
+    Route::get("/admin/accommodations",[AdminAccommodationController::class,'index']);
 });
