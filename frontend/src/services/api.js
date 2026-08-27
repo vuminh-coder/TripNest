@@ -524,7 +524,6 @@ export const apiService = {
       return data;
     } catch (e) {
       return { success: true, message: 'Cập nhật tài khoản ngân hàng thành công!' };
->>>>>>> fca055e1a26a4d5aef27667aa365cf1fc422c075
     }
   },
 

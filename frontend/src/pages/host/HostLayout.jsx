@@ -527,13 +527,17 @@ export const HostLayout = ({
   };
 
   // Payout Handlers & Dynamic Balance strictly based on Admin Payout Lifecycle
-  const availableBalance = payoutHistory
-    .filter((p) => p.status === 'completed')
-    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const dynamicAvailableBalance =
+    availableBalance > 0
+      ? availableBalance
+      : payoutHistory
+          .filter((p) => p.status === 'completed')
+          .reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
-  const pendingEscrowBalance = payoutHistory
-    .filter((p) => p.status === 'pending' || !p.status)
-    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const dynamicPendingBalance =
+    payoutHistory
+      .filter((p) => p.status === 'pending' || !p.status)
+      .reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
   const handleRequestPayout = async () => {
     setIsRequestingPayout(true);
@@ -584,8 +588,8 @@ export const HostLayout = ({
               listings={listings}
               bookings={bookings}
               bankInfo={bankInfo}
-              availableBalance={availableBalance}
-              pendingEscrowBalance={pendingEscrowBalance}
+              availableBalance={dynamicAvailableBalance}
+              pendingEscrowBalance={dynamicPendingBalance}
               onNavigate={handleNavigate}
               onOpenWizard={() => handleNavigate('new_listing')}
               onApproveBooking={handleApproveBooking}
@@ -641,8 +645,8 @@ export const HostLayout = ({
               bankInfo={bankInfo}
               setBankInfo={setBankInfo}
               payoutHistory={payoutHistory}
-              availableBalance={availableBalance}
-              pendingEscrowBalance={pendingEscrowBalance}
+              availableBalance={dynamicAvailableBalance}
+              pendingEscrowBalance={dynamicPendingBalance}
               onRequestPayout={handleRequestPayout}
               isRequestingPayout={isRequestingPayout}
               currency={currency}
