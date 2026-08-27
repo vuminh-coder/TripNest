@@ -123,14 +123,48 @@ class TripNestApiTest extends TestCase
     }
 
     /**
-     * Test lấy danh sách trải nghiệm
+     * Test admin lấy danh sách đánh giá từ database
      */
-    public function test_can_get_experiences(): void
+    public function test_admin_can_get_reviews_from_database(): void
     {
-        $response = $this->getJson('/api/experiences');
+        $response = $this->getJson('/api/admin/reviews');
         $response->assertStatus(200)
                  ->assertJsonStructure([
-                     '*' => ['id', 'title', 'city', 'rentUSD', 'rentVND', 'background']
+                     'success',
+                     'total',
+                     'reviews' => [
+                         '*' => [
+                             'id',
+                             'guest_name',
+                             'guest_avatar',
+                             'room_name',
+                             'rating_overall',
+                             'radar' => ['cleanliness', 'accuracy', 'communication', 'location', 'checkin', 'value'],
+                             'comment',
+                             'status',
+                             'created_at',
+                         ]
+                     ]
                  ]);
     }
+
+    /**
+     * Test admin cập nhật trạng thái đánh giá (ẩn/hiển thị)
+     */
+    public function test_admin_can_update_review_status(): void
+    {
+        $review = \App\Models\Review::first();
+        $response = $this->postJson("/api/admin/reviews/{$review->id}/status", [
+            'status' => 'hidden'
+        ]);
+
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success' => true,
+                     'status' => 'hidden'
+                 ]);
+
+        $this->assertEquals('hidden', $review->fresh()->status);
+    }
 }
+

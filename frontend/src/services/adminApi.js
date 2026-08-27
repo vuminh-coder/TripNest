@@ -399,7 +399,7 @@ export const adminService = {
     });
     saveStoredData(data);
 
-<<<<<<< HEAD
+
     // 1. Asynchronously update backend CSDL
     try {
       fetch(`${API_BASE_URL}/admin/payouts/${payoutId}/approve`, {
@@ -412,9 +412,9 @@ export const adminService = {
     }
 
     // 2. Đồng bộ sang Host Payout History (tripnest_host_payout_history)
-=======
-    // Đồng bộ sang Host Payout History (tripnest_host_payout_history)
->>>>>>> 0cf8b323187ffcbcde8960688ca46a5c2ba0a43d
+
+    
+
     if (approvedPayout) {
       try {
         const hostHistory = JSON.parse(localStorage.getItem('tripnest_host_payout_history') || '[]');
@@ -437,16 +437,102 @@ export const adminService = {
   },
 
   // 7. Reviews
-  async getReviews() {
+  async getReviews(params = {}) {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params.status && params.status !== 'all') queryParams.append('status', params.status);
+      if (params.search) queryParams.append('search', params.search);
+      const url = `${API_BASE_URL}/admin/reviews${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      
+      const response = await fetch(url, {
+        headers: getAuthHeaders(),
+      });
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && Array.isArray(result.reviews || result.data)) {
+          const list = result.reviews || result.data;
+          const data = getStoredData();
+          data.reviews = list;
+          saveStoredData(data);
+          return list;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch reviews from backend, fallback to local store', e);
+    }
     const data = getStoredData();
     return data.reviews || [];
   },
 
   async updateReviewStatus(reviewId, status) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/reviews/${reviewId}/status`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        console.warn('Update review status server error:', errData);
+      }
+    } catch (e) {
+      console.warn('Failed to update review status on server:', e);
+    }
+
     const data = getStoredData();
-    data.reviews = data.reviews.map((r) => {
+    data.reviews = (data.reviews || []).map((r) => {
       if (r.id === reviewId) {
         return { ...r, status };
+      }
+      return r;
+    });
+    saveStoredData(data);
+    return data.reviews;
+  },
+
+  async deleteReview(reviewId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || 'Không thể xóa đánh giá.');
+      }
+    } catch (e) {
+      console.warn('Failed to delete review on server:', e);
+    }
+
+    const data = getStoredData();
+    data.reviews = (data.reviews || []).filter((r) => r.id !== reviewId);
+    saveStoredData(data);
+    return data.reviews;
+  },
+
+  async respondToReview(reviewId, hostResponse) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/reviews/${reviewId}/respond`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ host_response: hostResponse }),
+      });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || 'Không thể gửi phản hồi.');
+      }
+    } catch (e) {
+      console.warn('Failed to respond to review on server:', e);
+    }
+
+    const data = getStoredData();
+    data.reviews = (data.reviews || []).map((r) => {
+      if (r.id === reviewId) {
+        return {
+          ...r,
+          host_response: hostResponse,
+          host_responded_at: new Date().toISOString().replace('T', ' ').substring(0, 16),
+        };
       }
       return r;
     });
