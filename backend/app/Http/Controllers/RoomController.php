@@ -133,8 +133,8 @@ class RoomController extends Controller
         ];
 
         // Giá VND là gốc, quy đổi USD qua bảng tỷ giá
-        $priceVND = (float)$room->price_per_night;
-        $cleaningFeeVND = (float)$room->cleaning_fee;
+        $priceVND = (float)($room->price_per_night ?: 2500000);
+        $cleaningFeeVND = (float)($room->cleaning_fee ?: 350000);
 
         $data = [
             'id' => $room->id,

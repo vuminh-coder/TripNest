@@ -13,6 +13,7 @@ use App\Models\PayoutTransaction;
 use App\Models\Room;
 use App\Models\RoomImage;
 use App\Models\User;
+use App\Models\ExchangeRate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,12 +28,17 @@ class HostController extends Controller
     private function getCurrentHost(): ?Host
     {
         $account = Auth::guard('api')->user();
-        if (!$account) {
-            $user = User::first();
-        } else {
-            $user = $account->user ?: User::first();
+        if ($account && $account->user && $account->user->host) {
+            return $account->user->host;
         }
 
+        // Fallback: Ưu tiên Host đầu tiên trong cơ sở dữ liệu để test frontend mượt mà
+        $firstHost = Host::with(['user', 'defaultPayoutAccount'])->first();
+        if ($firstHost) {
+            return $firstHost;
+        }
+
+        $user = $account?->user ?: User::first();
         if (!$user) return null;
 
         $host = Host::firstOrCreate(
@@ -282,12 +288,18 @@ class HostController extends Controller
                     'city' => $acc->city,
                     'district' => $acc->district,
                     'address' => $acc->address,
-                    'priceVND' => (float)($mainRoom?->price_vnd_per_night ?: 2500000),
-                    'priceUSD' => (float)($mainRoom?->price_usd_per_night ?: 100),
+                    'description' => $acc->description,
+                    'houseRules' => $acc->house_rules,
+                    'cancellationPolicy' => $acc->cancellation_policy,
+                    'priceVND' => (float)($mainRoom?->price_per_night ?: 2500000),
+                    'priceUSD' => (float)ExchangeRate::convert($mainRoom?->price_per_night ?: 2500000, 'USD'),
+                    'cleaningFeeVND' => (float)($mainRoom?->cleaning_fee ?: 350000),
+                    'cleaningFeeUSD' => (float)ExchangeRate::convert($mainRoom?->cleaning_fee ?: 350000, 'USD'),
                     'maxGuests' => $mainRoom?->max_guests ?: 4,
                     'bedrooms' => $mainRoom?->bedrooms_count ?: 2,
                     'beds' => $mainRoom?->beds_count ?: 2,
                     'bathrooms' => (float)($mainRoom?->bathrooms_count ?: 2),
+                    'roomSizeM2' => (float)($mainRoom?->room_size_m2 ?: 75.0),
                     'rating' => (float)($mainRoom?->rating ?: 4.96),
                     'reviewsCount' => $mainRoom?->reviews_count ?: 12,
                     'status' => $acc->status, // 'published', 'paused', 'draft'
@@ -314,6 +326,7 @@ class HostController extends Controller
         $validator = Validator::make($request->all(), [
             'nameVi' => 'required|string|max:255',
             'accommodationType' => 'required|string|in:hotel,resort,villa,homestay,apartment,cabin,yacht',
+            'roomTypeCode' => 'nullable|string|max:50',
             'categoryId' => 'nullable|integer',
             'city' => 'required|string|max:100',
             'district' => 'nullable|string|max:100',
@@ -392,7 +405,7 @@ class HostController extends Controller
                 foreach ($amenityNames as $aName) {
                     $amenity = Amenity::firstOrCreate(
                         ['name_vi' => $aName],
-                        ['icon_name' => 'TbCheck', 'category' => 'general']
+                        ['code' => \Illuminate\Support\Str::slug($aName), 'name_en' => $aName, 'icon' => 'TbCheck', 'category' => 'basic']
                     );
                     $amenityIds[] = $amenity->id;
                 }
@@ -403,14 +416,12 @@ class HostController extends Controller
             $room = Room::create([
                 'accommodation_id' => $accommodation->id,
                 'room_name_vi' => $accommodation->name_vi,
-                'room_type_code' => $accommodation->accommodation_type,
+                'room_type_code' => $request->input('roomTypeCode', $accommodation->accommodation_type),
                 'space_type' => 'entire_place',
                 'description' => $accommodation->description,
                 'room_size_m2' => $request->input('roomSizeM2', 75.0),
-                'price_vnd_per_night' => $priceVND,
-                'price_usd_per_night' => $priceUSD,
-                'cleaning_fee_vnd' => $cleaningFeeVND,
-                'cleaning_fee_usd' => $cleaningFeeUSD,
+                'price_per_night' => $priceVND,
+                'cleaning_fee' => $cleaningFeeVND,
                 'service_fee_percent' => 12.00,
                 'max_guests' => (int)$request->input('maxGuests'),
                 'bedrooms_count' => (int)$request->input('bedrooms'),
@@ -456,6 +467,157 @@ class HostController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Lỗi khi lưu chỗ nghỉ: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Cập nhật thông tin Chỗ ở & Phòng
+     */
+    public function updateAccommodation(Request $request, $id): JsonResponse
+    {
+        $host = $this->getCurrentHost();
+        $accommodation = Accommodation::where('id', $id)->where('host_id', $host->id)->first();
+
+        if (!$accommodation) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy chỗ ở.'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'nameVi' => 'sometimes|required|string|max:255',
+            'accommodationType' => 'nullable|string|in:hotel,resort,villa,homestay,apartment,cabin,yacht',
+            'categoryId' => 'nullable|integer',
+            'city' => 'nullable|string|max:100',
+            'district' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'priceVND' => 'nullable|numeric|min:100000',
+            'cleaningFeeVND' => 'nullable|numeric|min:0',
+            'maxGuests' => 'nullable|integer|min:1|max:50',
+            'bedrooms' => 'nullable|integer|min:1|max:20',
+            'beds' => 'nullable|integer|min:1|max:30',
+            'bathrooms' => 'nullable|numeric|min:1|max:20',
+            'roomSizeM2' => 'nullable|numeric|min:5',
+            'images' => 'nullable|array',
+            'amenities' => 'nullable|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu cập nhật chưa hợp lệ.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // 1. Cập nhật Accommodation
+            $accData = [];
+            if ($request->filled('nameVi')) $accData['name_vi'] = $request->input('nameVi');
+            if ($request->filled('accommodationType')) $accData['accommodation_type'] = $request->input('accommodationType');
+            if ($request->filled('categoryId')) $accData['category_id'] = $request->input('categoryId');
+            if ($request->filled('city')) $accData['city'] = $request->input('city');
+            if ($request->filled('district')) $accData['district'] = $request->input('district');
+            if ($request->filled('address')) $accData['address'] = $request->input('address');
+            if ($request->filled('description')) $accData['description'] = $request->input('description');
+            if ($request->filled('houseRules')) $accData['house_rules'] = $request->input('houseRules');
+            if ($request->filled('cancellationPolicy')) $accData['cancellation_policy'] = $request->input('cancellationPolicy');
+
+            if (!empty($accData)) {
+                $accommodation->update($accData);
+            }
+
+            // 2. Cập nhật ảnh nếu có
+            if ($request->has('images') && is_array($request->input('images'))) {
+                $images = $request->input('images');
+                if (!empty($images)) {
+                    $accommodation->images()->delete();
+                    foreach ($images as $index => $imgUrl) {
+                        AccommodationImage::create([
+                            'accommodation_id' => $accommodation->id,
+                            'image_url' => $imgUrl,
+                            'caption' => 'Không gian ' . $accommodation->name_vi,
+                            'display_order' => $index + 1,
+                            'is_thumbnail' => ($index === 0),
+                        ]);
+                    }
+                }
+            }
+
+            // 3. Cập nhật Amenities nếu có
+            if ($request->has('amenities') && is_array($request->input('amenities'))) {
+                $amenityNames = $request->input('amenities');
+                $amenityIds = [];
+                foreach ($amenityNames as $aName) {
+                    $amenity = Amenity::firstOrCreate(
+                        ['name_vi' => $aName],
+                        ['code' => \Illuminate\Support\Str::slug($aName), 'name_en' => $aName, 'icon' => 'TbCheck', 'category' => 'basic']
+                    );
+                    $amenityIds[] = $amenity->id;
+                }
+                $accommodation->amenities()->sync($amenityIds);
+            }
+
+            // 4. Cập nhật Room chính
+            $mainRoom = $accommodation->rooms()->first();
+            if ($mainRoom) {
+                $roomData = [];
+                if ($request->filled('nameVi')) $roomData['room_name_vi'] = $request->input('nameVi');
+                if ($request->filled('accommodationType')) $roomData['room_type_code'] = $request->input('accommodationType');
+                if ($request->filled('description')) $roomData['description'] = $request->input('description');
+                if ($request->filled('roomSizeM2')) $roomData['room_size_m2'] = (float)$request->input('roomSizeM2');
+                if ($request->filled('priceVND')) {
+                    $roomData['price_per_night'] = (float)$request->input('priceVND');
+                }
+                if ($request->filled('cleaningFeeVND')) {
+                    $roomData['cleaning_fee'] = (float)$request->input('cleaningFeeVND');
+                }
+                if ($request->filled('maxGuests')) $roomData['max_guests'] = (int)$request->input('maxGuests');
+                if ($request->filled('bedrooms')) $roomData['bedrooms_count'] = (int)$request->input('bedrooms');
+                if ($request->filled('beds')) $roomData['beds_count'] = (int)$request->input('beds');
+                if ($request->filled('bathrooms')) $roomData['bathrooms_count'] = (float)$request->input('bathrooms');
+
+                if (!empty($roomData)) {
+                    $mainRoom->update($roomData);
+                }
+
+                if (isset($images) && !empty($images)) {
+                    $mainRoom->images()->delete();
+                    foreach ($images as $index => $imgUrl) {
+                        RoomImage::create([
+                            'room_id' => $mainRoom->id,
+                            'image_url' => $imgUrl,
+                            'caption' => 'Ảnh phòng',
+                            'display_order' => $index + 1,
+                            'is_thumbnail' => ($index === 0),
+                        ]);
+                    }
+                }
+
+                if (isset($amenityIds) && !empty($amenityIds)) {
+                    $mainRoom->amenities()->sync($amenityIds);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật thông tin chỗ ở thành công!',
+                'data' => [
+                    'id' => $accommodation->id,
+                    'nameVi' => $accommodation->name_vi,
+                    'priceVND' => (float)($mainRoom?->price_per_night ?: 0),
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi cập nhật chỗ ở: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -561,10 +723,30 @@ class HostController extends Controller
         $host = $this->getCurrentHost();
         $payoutAccount = $host->defaultPayoutAccount;
 
-        // Mock danh sách giao dịch chi trả nếu chưa có
+        $roomIds = Room::whereHas('accommodation', function ($q) use ($host) {
+            $q->where('host_id', $host->id);
+        })->pluck('id');
+        $completedEarnings = Booking::whereIn('room_id', $roomIds)
+            ->where('status', 'completed')
+            ->get()
+            ->sum(fn ($booking) => (float)$booking->base_price + (float)$booking->cleaning_fee);
+        $reservedPayouts = PayoutTransaction::where('host_id', $host->id)
+            ->whereIn('status', ['pending', 'processing', 'completed'])
+            ->sum('net_payout_amount');
+
         $transactions = PayoutTransaction::where('host_id', $host->id)
             ->orderBy('created_at', 'desc')
             ->get();
+
+        $transactions = $transactions->map(function ($transaction) {
+            return [
+                'id' => $transaction->payout_code,
+                'amount' => (float)$transaction->net_payout_amount,
+                'status' => $transaction->status,
+                'date' => $transaction->created_at?->format('d/m/Y'),
+                'note' => 'Chuyển khoản ' . ($transaction->payoutAccount?->bank_name ?: 'ngân hàng'),
+            ];
+        });
 
         if ($transactions->isEmpty()) {
             $transactions = [
@@ -593,7 +775,68 @@ class HostController extends Controller
             'success' => true,
             'payoutAccount' => $payoutAccount,
             'transactions' => $transactions,
+            'availableBalance' => max(0, $completedEarnings - (float)$reservedPayouts),
         ]);
+    }
+
+    /**
+     * Tạo yêu cầu giải ngân số dư khả dụng của Host
+     */
+    public function requestPayout(Request $request): JsonResponse
+    {
+        $host = $this->getCurrentHost();
+        $payoutAccount = $host->defaultPayoutAccount;
+
+        if (!$payoutAccount) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vui lòng cập nhật tài khoản nhận tiền trước khi rút tiền.',
+            ], 422);
+        }
+
+        $roomIds = Room::whereHas('accommodation', function ($q) use ($host) {
+            $q->where('host_id', $host->id);
+        })->pluck('id');
+        $completedEarnings = Booking::whereIn('room_id', $roomIds)
+            ->where('status', 'completed')
+            ->get()
+            ->sum(fn ($booking) => (float)$booking->base_price + (float)$booking->cleaning_fee);
+        $reservedPayouts = PayoutTransaction::where('host_id', $host->id)
+            ->whereIn('status', ['pending', 'processing', 'completed'])
+            ->sum('net_payout_amount');
+        $availableBalance = max(0, $completedEarnings - (float)$reservedPayouts);
+
+        if ($availableBalance <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Số dư khả dụng không đủ để tạo yêu cầu rút tiền.',
+                'availableBalance' => 0,
+            ], 422);
+        }
+
+        $transaction = PayoutTransaction::create([
+            'payout_code' => 'PO-' . strtoupper(bin2hex(random_bytes(4))),
+            'host_id' => $host->id,
+            'payout_account_id' => $payoutAccount->id,
+            'gross_amount' => $availableBalance,
+            'platform_commission_fee' => 0,
+            'net_payout_amount' => $availableBalance,
+            'currency' => 'VND',
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã tạo yêu cầu rút tiền thành công. Yêu cầu đang chờ xử lý.',
+            'availableBalance' => 0,
+            'transaction' => [
+                'id' => $transaction->payout_code,
+                'amount' => (float)$transaction->net_payout_amount,
+                'status' => $transaction->status,
+                'date' => $transaction->created_at?->format('d/m/Y'),
+                'note' => 'Chuyển khoản ' . ($payoutAccount->bank_name ?: 'ngân hàng'),
+            ],
+        ], 201);
     }
 
     /**

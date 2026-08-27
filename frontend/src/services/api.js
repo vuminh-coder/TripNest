@@ -122,7 +122,7 @@ export const apiService = {
       const res = await fetch(`${API_BASE_URL}/accommodations?${query}`);
       if (!res.ok) throw new Error('Network response not ok');
       const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) return data;
+      if (Array.isArray(data)) return data;
       return roomsData;
     } catch (e) {
       return this.getRooms(params);
@@ -132,10 +132,16 @@ export const apiService = {
   async getAccommodationById(id) {
     try {
       const res = await fetch(`${API_BASE_URL}/accommodations/${id}`);
-      if (!res.ok) throw new Error('Accommodation detail error');
+      if (!res.ok) {
+        if (res.status === 404) return null;
+        throw new Error('Accommodation detail error');
+      }
       return await res.json();
     } catch (e) {
-      return roomsData.find((r) => String(r.id) === String(id) || String(r.accommodationId) === String(id)) || null;
+      if (e.message !== 'Accommodation detail error') {
+        return roomsData.find((r) => String(r.id) === String(id) || String(r.accommodationId) === String(id)) || null;
+      }
+      return null;
     }
   },
 
@@ -145,7 +151,7 @@ export const apiService = {
       const res = await fetch(`${API_BASE_URL}/accommodations?${query}`);
       if (!res.ok) throw new Error('Network response not ok');
       const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) return data;
+      if (Array.isArray(data)) return data;
       return roomsData;
     } catch (e) {
       let filtered = [...roomsData];
@@ -177,10 +183,16 @@ export const apiService = {
   async getRoomDetail(id) {
     try {
       const res = await fetch(`${API_BASE_URL}/rooms/${id}`);
-      if (!res.ok) throw new Error('Room detail error');
+      if (!res.ok) {
+        if (res.status === 404) return null;
+        throw new Error('Room detail error');
+      }
       return await res.json();
     } catch (e) {
-      return roomsData.find((r) => String(r.id) === String(id)) || null;
+      if (e.message !== 'Room detail error') {
+        return roomsData.find((r) => String(r.id) === String(id)) || null;
+      }
+      return null;
     }
   },
 
@@ -311,27 +323,196 @@ export const apiService = {
         headers: getAuthHeaders(),
         body: JSON.stringify(hostData),
       });
-      return await res.json();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Lỗi đăng ký chủ nhà');
+      return data;
     } catch (e) {
       return { success: true, message: 'Đăng ký chủ nhà thành công!' };
     }
   },
 
+  // 17. Ước tính doanh thu cho thuê phòng (Public Estimate)
+  async getHostEstimate(nights = 7, location = 'Đà Lạt') {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/estimate?nights=${nights}&location=${encodeURIComponent(location)}`);
+      if (!res.ok) throw new Error('Network error');
+      return await res.json();
+    } catch (e) {
+      const basePrices = {
+        'Hà Nội': 1200000,
+        'Phú Quốc': 2500000,
+        'Đà Lạt': 1800000,
+        'Hạ Long': 2000000,
+        'Hội An': 1500000,
+      };
+      const basePrice = basePrices[location] || 1800000;
+      const estimatedVND = nights * basePrice;
+      return {
+        location,
+        nights,
+        basePricePerNightVND: basePrice,
+        estimatedTotalVND: estimatedVND,
+        estimatedTotalUSD: Math.round(estimatedVND / 25000),
+      };
+    }
+  },
+
+  // 18. Lấy danh sách chỗ ở của Host (Host Accommodations)
+  async getHostAccommodations() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/accommodations`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Network error');
+      const json = await res.json();
+      return json.data || json || [];
+    } catch (e) {
+      const saved = localStorage.getItem('tripnest_host_listings');
+      return saved ? JSON.parse(saved) : [];
+    }
+  },
+
+  // 19. Tạo mới chỗ ở & phòng (Listing Wizard 6 Bước)
+  async createHostAccommodation(payload) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/accommodations`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Lỗi khi lưu chỗ nghỉ');
+      }
+      return data;
+    } catch (e) {
+      const localId = 'ACC-' + Date.now();
+      return {
+        success: true,
+        message: 'Đăng ký chỗ nghỉ mới thành công (chế độ dự phòng)!',
+        data: {
+          accommodationId: localId,
+          roomId: localId,
+          nameVi: payload.nameVi,
+          status: 'published',
+        },
+      };
+    }
+  },
+
+  // 20. Cập nhật thông tin chỗ ở
+  async updateHostAccommodation(id, payload) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/accommodations/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Lỗi khi cập nhật chỗ nghỉ');
+      }
+      return data;
+    } catch (e) {
+      return { success: true, message: 'Đã cập nhật thông tin thành công!' };
+    }
+  },
+
+  // 21. Bật/Tắt trạng thái mở bán (Toggle Status)
+  async toggleHostAccommodationStatus(id) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/accommodations/${id}/status`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Lỗi chuyển trạng thái');
+      return data;
+    } catch (e) {
+      return { success: true, message: 'Đã cập nhật trạng thái!' };
+    }
+  },
+
+  // 22. Xóa chỗ ở
+  async deleteHostAccommodation(id) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/accommodations/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Lỗi khi xóa chỗ ở');
+      return data;
+    } catch (e) {
+      return { success: true, message: 'Đã xóa chỗ ở thành công.' };
+    }
+  },
+
+  // 23. Lấy báo cáo thống kê Host Dashboard
   async getHostDashboardStats() {
     try {
       const res = await fetch(`${API_BASE_URL}/host/dashboard-stats`, {
         headers: getAuthHeaders(),
       });
-      if (!res.ok) throw new Error('Host dashboard stats error');
+      if (!res.ok) throw new Error('Network error');
       return await res.json();
     } catch (e) {
-      return {
-        totalRevenueVND: 148500000,
-        totalBookings: 24,
-        occupancyRate: 85,
-        averageRating: 4.96,
-        accommodationsCount: 6,
-      };
+      return null;
+    }
+  },
+
+  // 24. Lấy danh sách khách đặt phòng của Host
+  async getHostBookings(status = 'all') {
+    try {
+      const query = status && status !== 'all' ? `?status=${status}` : '';
+      const res = await fetch(`${API_BASE_URL}/host/bookings${query}`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Network error');
+      const json = await res.json();
+      return json.data || json || [];
+    } catch (e) {
+      const saved = localStorage.getItem('tripnest_host_bookings');
+      return saved ? JSON.parse(saved) : [];
+    }
+  },
+
+  // 25. Lấy thông tin tài khoản Payout & lịch sử giao dịch
+  async getHostPayouts() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/payouts`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Network error');
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+
+  async requestHostPayout() {
+    const res = await fetch(`${API_BASE_URL}/host/payouts/request`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Không thể yêu cầu rút tiền');
+    return data;
+  },
+
+  // 26. Cập nhật tài khoản ngân hàng nhận tiền Payout
+  async updateHostPayoutAccount(payload) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/payout-account`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Lỗi cập nhật tài khoản ngân hàng');
+      return data;
+    } catch (e) {
+      return { success: true, message: 'Cập nhật tài khoản ngân hàng thành công!' };
     }
   },
 

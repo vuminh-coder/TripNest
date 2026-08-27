@@ -14,6 +14,8 @@ import {
 
 export const HostAccommodationsPage = ({
   listings = [],
+  isLoading = false,
+  onRefresh,
   onOpenWizard,
   onEditListing,
   onToggleStatus,
@@ -132,7 +134,22 @@ export const HostAccommodationsPage = ({
 
       {/* SaaS Data Table */}
       <div className="host-table-wrap">
-        {filteredListings.length === 0 ? (
+        {isLoading ? (
+          <div style={{ padding: '4rem 1.5rem', textAlign: 'center', color: 'var(--host-text-muted)' }}>
+            <div
+              style={{
+                width: '40px',
+                height: '40px',
+                border: '3px solid var(--host-border-strong)',
+                borderTopColor: 'var(--host-primary)',
+                borderRadius: '50%',
+                margin: '0 auto 1rem',
+                animation: 'spin 0.8s linear infinite',
+              }}
+            />
+            <p style={{ fontSize: '0.92rem', fontWeight: 600 }}>Đang tải danh sách chỗ ở từ hệ thống...</p>
+          </div>
+        ) : filteredListings.length === 0 ? (
           <div style={{ padding: '3.5rem 1.5rem', textAlign: 'center' }}>
             <div
               style={{

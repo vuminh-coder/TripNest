@@ -4,6 +4,7 @@ import HostListingWizard from './HostListingWizard';
 import { TbCompass, TbBuildingCastle, TbArrowLeft, TbPlus, TbChartBar, TbHome, TbCalendarEvent, TbWallet, TbCoin, TbCalendarCheck, TbStarFilled, TbTrendingUp, TbToggleLeft, TbToggleRight, TbTrash, TbEye, TbEdit, TbCheck, TbBuildingBank, TbShieldCheck, TbClock, TbAward, TbUsers, TbSearch, TbFilter, TbX, TbDownload, TbChecklist, TbAlertCircle } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
 import { useConfirm } from '@/context/ConfirmContext';
+import { apiService } from '@/services/api';
 
 const DEFAULT_LISTINGS = [
   {
@@ -147,7 +148,8 @@ export const HostDashboard = ({
   const [bookingFilterStatus, setBookingFilterStatus] = useState('all');
   const [bookingSearch, setBookingSearch] = useState('');
 
-  // Listings State with LocalStorage
+  // Listings State - initialized from localStorage, then refreshed from API
+  const [isLoading, setIsLoading] = useState(true);
   const [listings, setListings] = useState(() => {
     try {
       const saved = localStorage.getItem('tripnest_host_listings');
@@ -156,6 +158,25 @@ export const HostDashboard = ({
       return DEFAULT_LISTINGS;
     }
   });
+
+  // Fetch listings from backend API on mount
+  const fetchListings = async () => {
+    setIsLoading(true);
+    try {
+      const data = await apiService.getHostAccommodations();
+      if (Array.isArray(data) && data.length > 0) {
+        setListings(data);
+      }
+    } catch (e) {
+      console.warn('Failed to fetch accommodations from API, using local data:', e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchListings();
+  }, []);
 
   // Bookings State with LocalStorage
   const [bookings, setBookings] = useState(() => {
@@ -237,25 +258,31 @@ export const HostDashboard = ({
   const totalHostEarnings = confirmedBookings.reduce((sum, b) => sum + (b.hostEarnings || 0), 0) + 44200000;
   const pendingCount = bookings.filter((b) => b.status === 'pending').length;
 
-  // Toggle listing status
-  const handleToggleStatus = (id) => {
-    setListings(
-      listings.map((item) => {
-        if (item.id === id) {
-          const nextStatus = item.status === 'published' ? 'paused' : 'published';
-          if (nextStatus === 'published') {
-            toast.success('Mở bán chỗ ở', 'Đã kích hoạt mở bán chỗ ở thành công!');
-          } else {
-            toast.info('Tạm dừng kinh doanh', 'Đã tạm dừng nhận khách cho chỗ ở.');
+  // Toggle listing status via API
+  const handleToggleStatus = async (id) => {
+    try {
+      const result = await apiService.toggleHostAccommodationStatus(id);
+      const newStatus = result?.status;
+      setListings(
+        listings.map((item) => {
+          if (item.id === id) {
+            const status = newStatus || (item.status === 'published' ? 'paused' : 'published');
+            if (status === 'published') {
+              toast.success('Mở bán chỗ ở', 'Đã kích hoạt mở bán chỗ ở thành công!');
+            } else {
+              toast.info('Tạm dừng kinh doanh', 'Đã tạm dừng nhận khách cho chỗ ở.');
+            }
+            return { ...item, status };
           }
-          return { ...item, status: nextStatus };
-        }
-        return item;
-      })
-    );
+          return item;
+        })
+      );
+    } catch (err) {
+      toast.error('Lỗi', err.message || 'Không thể chuyển trạng thái chỗ ở.');
+    }
   };
 
-  // Delete listing
+  // Delete listing via API
   const handleDeleteListing = async (id) => {
     const isConfirmed = await confirm({
       title: 'Xóa chỗ ở cho thuê?',
@@ -266,12 +293,17 @@ export const HostDashboard = ({
     });
 
     if (isConfirmed) {
-      setListings(listings.filter((item) => item.id !== id));
-      toast.success('Đã xóa chỗ ở', 'Đã xóa chỗ ở thành công khỏi danh sách.');
+      try {
+        await apiService.deleteHostAccommodation(id);
+        setListings(listings.filter((item) => item.id !== id));
+        toast.success('Đã xóa chỗ ở', 'Đã xóa chỗ ở thành công khỏi danh sách.');
+      } catch (err) {
+        toast.error('Lỗi xóa', err.message || 'Không thể xóa chỗ ở.');
+      }
     }
   };
 
-  // Create new listing from wizard
+  // Create new listing from wizard - refresh from API
   const handleListingCreated = (newListing) => {
     setListings([newListing, ...listings]);
     setActiveTab('listings');
@@ -279,17 +311,38 @@ export const HostDashboard = ({
       'Đăng bán chỗ ở mới thành công!',
       'Chỗ nghỉ của bạn đã sẵn sàng đón tiếp khách du lịch trên TripNest.'
     );
+    // Refresh from backend to get authoritative data
+    fetchListings();
   };
 
-  // Update existing listing
-  const handleSaveEditListing = (e) => {
+  // Update existing listing via API
+  const handleSaveEditListing = async (e) => {
     e.preventDefault();
     if (!editingListing) return;
-    setListings(
-      listings.map((l) => (l.id === editingListing.id ? editingListing : l))
-    );
-    setEditingListing(null);
-    toast.success('Cập nhật thành công', 'Đã cập nhật thông tin chỗ ở thành công!');
+    try {
+      const payload = {
+        nameVi: editingListing.nameVi,
+        priceVND: editingListing.priceVND,
+        maxGuests: editingListing.maxGuests,
+        address: editingListing.address,
+        city: editingListing.city,
+        accommodationType: editingListing.accommodationType,
+        bedrooms: editingListing.bedrooms,
+        beds: editingListing.beds,
+        bathrooms: editingListing.bathrooms,
+        description: editingListing.description,
+      };
+      await apiService.updateHostAccommodation(editingListing.id, payload);
+      setListings(
+        listings.map((l) => (l.id === editingListing.id ? editingListing : l))
+      );
+      setEditingListing(null);
+      toast.success('Cập nhật thành công', 'Đã cập nhật thông tin chỗ ở thành công!');
+      // Refresh from backend
+      fetchListings();
+    } catch (err) {
+      toast.error('Lỗi cập nhật', err.message || 'Không thể cập nhật chỗ ở.');
+    }
   };
 
   // Booking Actions

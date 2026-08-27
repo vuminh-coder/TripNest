@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TbArrowLeft, TbArrowRight, TbHome, TbBuildingCastle, TbBuildingCommunity, TbSailboat, TbTrees, TbBuilding, TbMapPin, TbUsers, TbBed, TbBath, TbSparkles, TbWifi, TbSwimming, TbToolsKitchen2, TbAirConditioning, TbCar, TbFlame, TbDeviceTv, TbPhoto, TbPlus, TbTrash, TbCheck, TbEye, TbCoin, TbX } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
+import { apiService } from '@/services/api';
 
 export const HostListingWizardPage = ({
   onCancel,
@@ -110,22 +111,48 @@ export const HostListingWizardPage = ({
     return `${Number(val).toLocaleString('vi-VN')} ₫`;
   };
 
-  const handlePublishListing = () => {
+  const handlePublishListing = async () => {
     setIsPublishing(true);
-    setTimeout(() => {
-      const newListing = {
-        id: 'ACC-' + Date.now(),
+    try {
+      const payload = {
         nameVi,
         accommodationType,
         city,
         district,
         address,
+        description,
+        priceVND: Number(priceVND),
+        cleaningFeeVND: Number(cleaningFeeVND),
+        maxGuests: Number(maxGuests),
+        bedrooms: Number(bedrooms),
+        beds: Number(beds),
+        bathrooms: Number(bathrooms),
+        roomSizeM2: Number(roomSizeM2),
+        images,
+        amenities: selectedAmenities,
+        houseRules: 'Không hút thuốc trong phòng, giữ gìn không gian chung.',
+        cancellationPolicy: 'Hủy miễn phí 100% trước 48h nhận phòng.',
+      };
+
+      const result = await apiService.createHostAccommodation(payload);
+
+      const newListing = {
+        id: result?.data?.accommodationId || ('ACC-' + Date.now()),
+        roomId: result?.data?.roomId,
+        nameVi,
+        accommodationType,
+        city,
+        district,
+        address,
+        description,
         priceVND,
         priceUSD: Math.round(priceVND / 25000),
+        cleaningFeeVND,
         maxGuests,
         bedrooms,
         beds,
         bathrooms,
+        roomSizeM2,
         rating: 5.0,
         reviewsCount: 0,
         status: 'published',
@@ -135,9 +162,12 @@ export const HostListingWizardPage = ({
         createdAt: new Date().toLocaleDateString('vi-VN'),
       };
 
-      setIsPublishing(false);
       if (onListingCreated) onListingCreated(newListing);
-    }, 600);
+    } catch (err) {
+      toast.error('Lỗi lưu chỗ ở', err.message || 'Không thể đăng bán chỗ ở lúc này.');
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   return (

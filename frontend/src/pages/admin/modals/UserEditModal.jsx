@@ -109,14 +109,15 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
     setSubmitting(true);
 
     const token = localStorage.getItem('token');
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
     const url = user
-      ? `http://127.0.0.1:8000/api/admin/users/${user.id}`
-      : 'http://127.0.0.1:8000/api/admin/users';
+      ? `${apiBaseUrl}/admin/users/${user.id}/update`
+      : `${apiBaseUrl}/admin/user/create`;
 
     const data = new FormData();
-    data.append('name', formData.name.trim());
+    data.append('full_name', formData.name.trim());
     data.append('email', formData.email.trim());
-    data.append('phone', formData.phone ? formData.phone.trim() : '');
+    data.append('phone_number', formData.phone ? formData.phone.trim() : '');
     data.append('id_card_number', formData.id_card_number ? formData.id_card_number.trim() : '');
     data.append('address', formData.address ? formData.address.trim() : '');
     data.append('role', formData.role);
@@ -128,10 +129,6 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
 
     if (formData.avatar instanceof File) {
       data.append('avatar', formData.avatar);
-    }
-
-    if (user) {
-      data.append('_method', 'PUT');
     }
 
     try {
