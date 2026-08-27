@@ -86,4 +86,5 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
     Route::get('/admin/financials/stats', [\App\Http\Controllers\admin\FinancialController::class, 'getStats']);
     Route::get('/admin/payouts', [\App\Http\Controllers\admin\FinancialController::class, 'getPayouts']);
     Route::post('/admin/payouts/{id}/approve', [\App\Http\Controllers\admin\FinancialController::class, 'approvePayout']);
+
 });
