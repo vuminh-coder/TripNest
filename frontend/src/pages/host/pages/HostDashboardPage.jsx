@@ -17,6 +17,8 @@ export const HostDashboardPage = ({
   listings = [],
   bookings = [],
   bankInfo = { bankName: 'Vietcombank (VCB)', accountNumber: '9988776655', accountHolder: 'MINH VŨ' },
+  availableBalance = 0,
+  pendingEscrowBalance = 0,
   onNavigate,
   onOpenWizard,
   onApproveBooking,
@@ -42,10 +44,6 @@ export const HostDashboardPage = ({
 
   const validBookings = bookings.filter(
     (b) => b.status === 'confirmed' || b.status === 'checked_in' || b.status === 'completed'
-  );
-  const totalHostEarnings = validBookings.reduce(
-    (sum, b) => sum + (b.hostEarnings || b.totalAmount || 0),
-    0
   );
   const activeStayCount = bookings.filter((b) => b.status === 'checked_in').length;
   const pendingCount = bookings.filter((b) => b.status === 'pending').length;
@@ -98,15 +96,17 @@ export const HostDashboardPage = ({
           gap: '1.1rem',
         }}
       >
-        {/* Thẻ 1: Doanh thu thực nhận */}
+        {/* Thẻ 1: Số dư khả dụng & Tạm giữ Escrow */}
         <div className="host-stat-card" style={{ margin: 0 }}>
           <div>
-            <div className="host-stat-label">Doanh thu thực nhận</div>
+            <div className="host-stat-label">Số dư khả dụng (Đã về ví)</div>
             <div className="host-stat-value" style={{ color: '#059669', whiteSpace: 'nowrap' }}>
-              {formatPrice(totalHostEarnings)}
+              {formatPrice(availableBalance)}
             </div>
-            <span style={{ fontSize: '0.76rem', color: '#64748b', marginTop: '3px', display: 'block', whiteSpace: 'nowrap' }}>
-              {validBookings.length > 0 ? `Từ ${validBookings.length} lượt đặt phòng thành công` : 'Chưa phát sinh doanh thu'}
+            <span style={{ fontSize: '0.76rem', color: pendingEscrowBalance > 0 ? '#d97706' : '#64748b', fontWeight: pendingEscrowBalance > 0 ? 700 : 500, marginTop: '3px', display: 'block', whiteSpace: 'nowrap' }}>
+              {pendingEscrowBalance > 0
+                ? `⏳ ${formatPrice(pendingEscrowBalance)} chờ Admin giải ngân`
+                : 'Đã giải ngân toàn bộ'}
             </span>
           </div>
           <div className="host-stat-icon-wrap earnings">

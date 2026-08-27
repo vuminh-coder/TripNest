@@ -108,11 +108,22 @@ export const FinancialsTab = ({ payouts, stats, onOpenPayoutModal }) => {
                   </td>
                   <td>
                     <span className={`status-pill ${p.status}`}>
-                      {p.status === 'completed' ? 'ĐÃ CHUYỂN' : 'CHỜ DUYỆT'}
+                      {p.status === 'completed'
+                        ? 'ĐÃ CHUYỂN'
+                        : p.status === 'failed'
+                        ? 'THẤT BẠI'
+                        : p.status === 'cancelled'
+                        ? 'ĐÃ HỦY'
+                        : 'CHỜ DUYỆT'}
                     </span>
                     {p.transaction_ref && (
                       <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
                         Ref: {p.transaction_ref}
+                      </div>
+                    )}
+                    {p.failure_reason && p.status === 'failed' && (
+                      <div style={{ fontSize: '0.68rem', color: '#dc2626', marginTop: '2px' }}>
+                        Lý do: {p.failure_reason}
                       </div>
                     )}
                   </td>
@@ -125,6 +136,14 @@ export const FinancialsTab = ({ payouts, stats, onOpenPayoutModal }) => {
                       >
                         <TbCheck />
                         <span>Duyệt Chuyển</span>
+                      </button>
+                    ) : p.status === 'failed' ? (
+                      <button
+                        className="btn-admin-primary"
+                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.78rem', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}
+                        onClick={() => onOpenPayoutModal(p)}
+                      >
+                        <span>Thử Lại</span>
                       </button>
                     ) : (
                       <span style={{ fontSize: '0.76rem', color: '#059669', fontWeight: 700 }}>

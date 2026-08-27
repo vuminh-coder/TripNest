@@ -10,9 +10,12 @@ export const AdminStatusBadge = ({ status, label }) => {
       case 'paused': return 'TẠM ẨN';
       case 'maintenance': return 'BẢO TRÌ';
       case 'confirmed': return 'ĐÃ XÁC NHẬN';
+      case 'checked_in': return 'ĐANG LƯU TRÚ';
       case 'pending': return 'CHỜ XỬ LÝ';
       case 'completed': return 'HOÀN THÀNH';
       case 'cancelled': return 'ĐÃ HỦY';
+      case 'refunded': return 'ĐÃ HOÀN TIỀN';
+      case 'failed': return 'THẤT BẠI';
       case 'verified': return 'ĐÃ XÁC MINH';
       case 'rejected': return 'BỊ TỪ CHỐI';
       case 'active': return 'HOẠT ĐỘNG';

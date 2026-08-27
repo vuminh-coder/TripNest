@@ -108,4 +108,45 @@ class FinancialController extends Controller
             'payout' => $payout,
         ]);
     }
+
+    /**
+     * Danh sách tất cả đơn đặt phòng (Admin Bookings)
+     */
+    public function getBookings(Request $request): JsonResponse
+    {
+        $bookings = Booking::with(['user.account', 'room.accommodation.host'])
+            ->orderBy('id', 'desc')
+            ->get()
+            ->map(function ($b) {
+                return [
+                    'id' => $b->booking_code,
+                    'bookingId' => $b->id,
+                    'room_name' => $b->room?->room_name_vi ?: 'Chỗ nghỉ TripNest',
+                    'room_id' => $b->room_id,
+                    'guest_name' => $b->user?->full_name ?: 'Khách hàng',
+                    'guest_email' => $b->user?->account?->email ?: '',
+                    'guest_phone' => $b->user?->phone_number ?: '',
+                    'host_name' => $b->room?->accommodation?->host?->host_display_name ?: 'Chủ nhà',
+                    'check_in' => $b->check_in_date ? date('Y-m-d', strtotime($b->check_in_date)) : '',
+                    'check_out' => $b->check_out_date ? date('Y-m-d', strtotime($b->check_out_date)) : '',
+                    'nights' => $b->nights_count,
+                    'guests_count' => $b->guests_count,
+                    'base_price' => (float)$b->base_price,
+                    'cleaning_fee' => (float)$b->cleaning_fee,
+                    'service_fee' => (float)$b->service_fee,
+                    'total_price' => (float)$b->total_price,
+                    'currency' => $b->currency ?: 'VND',
+                    'payment_method' => 'Chuyển khoản / Cổng thanh toán',
+                    'payment_status' => 'paid',
+                    'status' => $b->status,
+                    'created_at' => $b->created_at ? $b->created_at->format('d/m/Y H:i') : '',
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $bookings,
+            'total' => $bookings->count(),
+        ]);
+    }
 }

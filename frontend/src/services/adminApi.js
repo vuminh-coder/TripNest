@@ -49,23 +49,33 @@ export const adminService = {
 
   // 1. Get Dashboard Stats
   async getDashboardStats() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/financials/stats`, {
+        headers: getAuthHeaders(),
+      });
+      if (response.ok) {
+        const statsData = await response.json();
+        return {
+          totalRevenueVND: statsData.totalRevenueVND || 0,
+          commissionRevenueVND: statsData.commissionRevenueVND || 0,
+          escrowPendingVND: statsData.escrowPendingVND || 0,
+          payoutsCompletedVND: statsData.payoutsCompletedVND || 0,
+          pendingPayoutsCount: statsData.pendingPayoutsCount || 0,
+          totalBookings: statsData.totalBookings || 0,
+          completedBookings: statsData.completedBookings || 0,
+          pendingKycCount: 0,
+          growthRatePercent: 0,
+        };
+      }
+    } catch (e) {
+      console.warn('Failed to fetch admin stats from backend, fallback', e);
+    }
     const data = getStoredData();
-    // Dynamically calculate some stats
-    const totalBookings = data.bookings.length;
-    const completedBookings = data.bookings.filter((b) => b.status === 'completed').length;
-    const totalRev = data.bookings
-      .filter((b) => b.status !== 'cancelled')
-      .reduce((sum, b) => sum + (b.total_price || 0), 0);
-    const commission = Math.round(totalRev * 0.12);
-    const pendingKyc = data.hosts.filter((h) => h.kyc_status === 'pending').length;
-
-    return {
-      ...data.stats,
-      totalRevenueVND: totalRev > 0 ? totalRev : data.stats.totalRevenueVND,
-      commissionRevenueVND: commission > 0 ? commission : data.stats.commissionRevenueVND,
-      totalBookings,
-      completedBookings,
-      pendingKycCount: pendingKyc,
+    return data.stats || {
+      totalRevenueVND: 0,
+      commissionRevenueVND: 0,
+      totalBookings: 0,
+      completedBookings: 0,
     };
   },
 
@@ -128,14 +138,49 @@ export const adminService = {
 
   // 3. Bookings
   async getBookings() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/bookings`, {
+        headers: getAuthHeaders(),
+      });
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          return result.data;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch bookings from backend', e);
+    }
     const data = getStoredData();
     return data.bookings || [];
   },
 
   async updateBookingStatus(bookingId, newStatus, reason = '') {
+    try {
+      if (newStatus === 'cancelled') {
+        await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ reason }),
+        });
+      } else if (newStatus === 'checked_in') {
+        await fetch(`${API_BASE_URL}/bookings/${bookingId}/check-in`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+        });
+      } else if (newStatus === 'completed') {
+        await fetch(`${API_BASE_URL}/bookings/${bookingId}/check-out`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+        });
+      }
+    } catch (e) {
+      console.warn('Sync booking status to backend failed:', e);
+    }
+
     const data = getStoredData();
-    data.bookings = data.bookings.map((item) => {
-      if (item.id === bookingId) {
+    data.bookings = (data.bookings || []).map((item) => {
+      if (item.id === bookingId || item.code === bookingId) {
         return {
           ...item,
           status: newStatus,
@@ -146,11 +191,24 @@ export const adminService = {
       return item;
     });
     saveStoredData(data);
-    return data.bookings;
+    return await this.getBookings();
   },
 
   // 4. KYC & Hosts
   async getHosts() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/hosts`, {
+        headers: getAuthHeaders(),
+      });
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          return result.data;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch hosts from backend', e);
+    }
     const data = getStoredData();
     return data.hosts || [];
   },
@@ -347,12 +405,39 @@ export const adminService = {
       }
     }
 
+    // 1. Asynchronously sync with Backend API
+    try {
+      const endpoint = approved
+        ? `${API_BASE_URL}/admin/users/${userId}/approve-host`
+        : `${API_BASE_URL}/admin/users/${userId}/reject-host`;
+      fetch(endpoint, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ reason: rejectionReason }),
+      }).catch(() => {});
+    } catch {
+      // ignore
+    }
+
     saveStoredData(data);
     return { users: data.users, hosts: data.hosts };
   },
 
   // 6. Payouts & Financials
   async getPayouts() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/payouts`, {
+        headers: getAuthHeaders(),
+      });
+      if (response.ok) {
+        const result = await response.json();
+        if (Array.isArray(result)) {
+          return result;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch payouts from backend', e);
+    }
     const data = getStoredData();
     return data.payouts || [];
   },

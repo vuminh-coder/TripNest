@@ -38,6 +38,8 @@ export const BookingCheckoutPage = ({
   room,
   bookingParams = {},
   currency = 'VND',
+  user,
+  onRequireLogin,
   onBack,
   onBookingComplete,
 }) => {
@@ -95,10 +97,10 @@ export const BookingCheckoutPage = ({
   const cleaningFee = currency === 'USD' ? 30 : (room.cleaning_fee_vnd || 350000);
   const serviceFee = Math.round(baseTotal * 0.12);
 
-  // Form states
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  // Form states with auto-fill from logged-in user
+  const [fullName, setFullName] = useState(() => user?.name || user?.full_name || '');
+  const [email, setEmail] = useState(() => user?.email || '');
+  const [phone, setPhone] = useState(() => user?.phone || user?.phone_number || '');
   const [guestNote, setGuestNote] = useState('');
   const [formErrors, setFormErrors] = useState({});
   const [paymentMethod, setPaymentMethod] = useState('vietqr');
@@ -116,6 +118,15 @@ export const BookingCheckoutPage = ({
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
   const [cardHolder, setCardHolder] = useState('');
+
+  // Sync profile data when user logs in during checkout
+  React.useEffect(() => {
+    if (user) {
+      if (!fullName && (user.name || user.full_name)) setFullName(user.name || user.full_name);
+      if (!email && user.email) setEmail(user.email);
+      if (!phone && (user.phone || user.phone_number)) setPhone(user.phone || user.phone_number);
+    }
+  }, [user]);
 
   const NOTE_MAX = 500;
 
@@ -139,9 +150,19 @@ export const BookingCheckoutPage = ({
     window.scrollTo({ top: 140, behavior: 'smooth' });
   };
 
-  // Step 2 -> Step 3 (With Validation)
+  // Step 2 -> Step 3 (With Validation & Auth Guard)
   const handleProceedToStep3 = (e) => {
     if (e) e.preventDefault();
+    const token = localStorage.getItem('token');
+    const isLoggedIn = Boolean(token || (user && user.id));
+
+    if (!isLoggedIn) {
+      if (onRequireLogin) {
+        onRequireLogin();
+      }
+      return;
+    }
+
     const errors = {};
     if (!fullName.trim()) {
       errors.fullName = 'Vui lòng nhập Họ và tên khách';
@@ -195,6 +216,16 @@ export const BookingCheckoutPage = ({
   // Step 3 Final Submission
   const handleFinalConfirmBooking = async (e) => {
     if (e) e.preventDefault();
+    const token = localStorage.getItem('token');
+    const isLoggedIn = Boolean(token || (user && user.id));
+
+    if (!isLoggedIn) {
+      if (onRequireLogin) {
+        onRequireLogin();
+      }
+      return;
+    }
+
     setIsProcessing(true);
     const generatedId = 'TN-' + Math.floor(100000 + Math.random() * 900000);
 
@@ -232,16 +263,18 @@ export const BookingCheckoutPage = ({
       isBookingForOther,
     };
 
-    // Asynchronously send to backend API
     try {
-      apiService.createBooking(bookingPayload).catch((err) => {
-        console.warn('Backend booking sync notice (will use client state):', err);
-      });
-    } catch {
-      // ignore
-    }
-
-    setTimeout(() => {
+      const result = await apiService.createBooking(bookingPayload);
+      const finalBookingId = result?.booking?.id || generatedId;
+      setIsProcessing(false);
+      setIsConfirmed(true);
+      setBookingId(finalBookingId);
+      if (onBookingComplete) {
+        onBookingComplete({ ...bookingPayload, id: finalBookingId, code: finalBookingId });
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      console.error('Lỗi khi gửi đặt phòng lên Backend:', err);
       setIsProcessing(false);
       setIsConfirmed(true);
       setBookingId(generatedId);
@@ -249,7 +282,7 @@ export const BookingCheckoutPage = ({
         onBookingComplete(bookingPayload);
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 900);
+    }
   };
 
   const handleCopyBookingId = () => {

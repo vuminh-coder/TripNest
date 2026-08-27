@@ -14,6 +14,7 @@ import { MyBookingsModal } from '@/components/modals/MyBookingsModal/MyBookingsM
 import { WishlistModal } from '@/components/modals/WishlistModal/WishlistModal';
 import { ChangePasswordModal } from '@/components/modals/ChangePasswordModal/ChangePasswordModal';
 import { HostModal } from '@/components/modals/HostModal/HostModal';
+import { BecomeHostModal } from '@/components/modals/BecomeHostModal';
 
 // Pages & Feature Modules
 import { CategoryBar } from '@/pages/home/components/CategoryBar/CategoryBar';
@@ -121,6 +122,7 @@ function App() {
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isHostModalOpen, setIsHostModalOpen] = useState(false);
+  const [isBecomeHostModalOpen, setIsBecomeHostModalOpen] = useState(false);
   const [isHostOpen, setIsHostOpen] = useState(() => {
     const isHostRoute =
       window.location.pathname.startsWith('/host') ||
@@ -149,6 +151,18 @@ function App() {
       return [];
     }
   });
+
+  // Reset legacy cached bookings/payouts to synchronize with 0-state database
+  useEffect(() => {
+    const DATA_SYNC_VERSION = 'tripnest_v3_zero_state_synced';
+    if (localStorage.getItem('tripnest_sync_ver') !== DATA_SYNC_VERSION) {
+      localStorage.removeItem('tripnest_admin_data_v1');
+      localStorage.removeItem('tripnest_host_bookings');
+      localStorage.removeItem('tripnest_host_payout_history');
+      localStorage.removeItem('tripnest_bookings');
+      localStorage.setItem('tripnest_sync_ver', DATA_SYNC_VERSION);
+    }
+  }, []);
 
   // Sync URL changes (back/forward buttons & direct links)
   useEffect(() => {
@@ -320,10 +334,24 @@ function App() {
     }
   };
 
-  // Checkout navigation
+  // Checkout navigation with Instant Auth Guard
   const [checkoutData, setCheckoutData] = useState(null);
+  const [pendingCheckout, setPendingCheckout] = useState(null);
 
   const handleStartCheckout = (roomToBook, bookingParams) => {
+    const token = localStorage.getItem('token');
+    const isLoggedIn = Boolean(token || (user && user.id));
+
+    if (!isLoggedIn) {
+      toast.info(
+        'Yêu cầu đăng nhập',
+        'Vui lòng đăng nhập hoặc đăng ký tài khoản để tiến hành đặt phòng nghỉ dưỡng.'
+      );
+      setPendingCheckout({ room: roomToBook, bookingParams });
+      setAuthModal({ isOpen: true, tab: 'login' });
+      return;
+    }
+
     setCheckoutData({ room: roomToBook, bookingParams });
     window.history.pushState({}, '', `/book/${roomToBook.id}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -332,6 +360,7 @@ function App() {
   const handleBackFromCheckout = () => {
     const prevRoom = checkoutData?.room;
     setCheckoutData(null);
+    setPendingCheckout(null);
     if (prevRoom && prevRoom.accommodationId) {
       handleBackToAccommodation(prevRoom.accommodationId);
     } else if (selectedRoom) {
@@ -724,6 +753,13 @@ function App() {
         onOpenBookings={() => setIsBookingsOpen(true)}
         onOpenWishlist={() => setIsWishlistOpen(true)}
         onOpenChangePassword={() => setIsChangePasswordOpen(true)}
+        onOpenBecomeHost={() => {
+          if (!user || (!user.id && !user.email)) {
+            setAuthModal({ isOpen: true, tab: 'login' });
+            return;
+          }
+          setIsBecomeHostModalOpen(true);
+        }}
         onOpenHost={() => {
           if (user?.role === 'admin') {
             toast.info(
@@ -744,7 +780,7 @@ function App() {
           }
 
           if (!isHostUser) {
-            setIsHostModalOpen(true);
+            setIsBecomeHostModalOpen(true);
             return;
           }
 
@@ -767,6 +803,11 @@ function App() {
             room={checkoutData.room}
             bookingParams={checkoutData.bookingParams}
             currency={currency}
+            user={user}
+            onRequireLogin={() => {
+              toast.info('Yêu cầu đăng nhập', 'Vui lòng đăng nhập hoặc đăng ký tài khoản để hoàn tất đặt phòng.');
+              setAuthModal({ isOpen: true, tab: 'login' });
+            }}
             onBack={handleBackFromCheckout}
             onBookingComplete={(order) => {
               handleBookRoom(order);
@@ -965,11 +1006,20 @@ function App() {
       <AuthModal
         isOpen={authModal.isOpen}
         initialTab={authModal.tab}
-        onClose={() => setAuthModal({ isOpen: false, tab: 'login' })}
+        onClose={() => {
+          setAuthModal({ isOpen: false, tab: 'login' });
+        }}
         onAuthSuccess={(userData) => {
           if (userData?.role === 'admin') {
             window.history.pushState({}, '', '/admin');
             setIsAdminOpen(true);
+            return;
+          }
+          if (pendingCheckout && pendingCheckout.room) {
+            setCheckoutData(pendingCheckout);
+            window.history.pushState({}, '', `/book/${pendingCheckout.room.id}`);
+            setPendingCheckout(null);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         }}
       />
@@ -1008,6 +1058,15 @@ function App() {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         currency={currency}
+      />
+
+      <BecomeHostModal
+        isOpen={isBecomeHostModalOpen}
+        onClose={() => setIsBecomeHostModalOpen(false)}
+        user={user}
+        onSuccess={() => {
+          setIsBecomeHostModalOpen(false);
+        }}
       />
     </div>
   );

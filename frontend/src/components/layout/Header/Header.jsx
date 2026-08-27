@@ -28,6 +28,7 @@ export const Header = ({
   onOpenWishlist,
   onOpenChangePassword,
   onOpenHost,
+  onOpenBecomeHost,
   onOpenAdmin,
   wishlistCount = 0,
   onLogout,
@@ -293,8 +294,8 @@ export const Header = ({
               Kênh Chủ Nhà
             </button>
           ) : user?.role !== 'admin' ? (
-            <button className="host-btn" onClick={onOpenHost}>
-              Cho thuê chỗ ở
+            <button className="host-btn" onClick={onOpenBecomeHost || onOpenHost}>
+              Đón tiếp khách
             </button>
           ) : null}
 
@@ -468,7 +469,14 @@ export const Header = ({
                     {user?.role !== 'admin' && user?.role !== 'host' && (
                       <>
                         <div className="menu-separator" />
-                        <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenHost(); }}>
+                        <button
+                          className="menu-option-item"
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            if (onOpenBecomeHost) onOpenBecomeHost();
+                            else onOpenHost();
+                          }}
+                        >
                           <TbHomePlus /> Đăng ký trở thành Chủ Nhà
                         </button>
                       </>

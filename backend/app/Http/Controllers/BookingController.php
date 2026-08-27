@@ -62,18 +62,17 @@ class BookingController extends Controller
         $nights = $d1->diffInDays($d2);
         if ($nights < 1) $nights = 1;
 
-        // 3. Tính toán tài chính chuẩn xác
-        $pricePerNight = (float)($room->price_vnd_per_night ?: $room->price_per_night ?: 2500000);
-        $baseTotal = $pricePerNight * $nights;
-        $cleaningFee = (float)($room->cleaning_fee_vnd ?: $room->cleaning_fee ?: 0);
-        $serviceFeePercent = (float)($room->service_fee_percent ?: 12.00);
-        $serviceFee = round($baseTotal * ($serviceFeePercent / 100));
+        // 3. Tính toán tài chính chuẩn xác đồng bộ với Frontend
+        $pricePerNight = (float)($request->input('price_per_night') ?: $room->price_vnd_per_night ?: $room->price_per_night ?: 2500000);
+        $baseTotal = (float)($request->input('base_price') ?: ($pricePerNight * $nights));
+        $cleaningFee = (float)($request->input('cleaning_fee') ?? $room->cleaning_fee_vnd ?? $room->cleaning_fee ?? 350000);
+        $serviceFee = (float)($request->input('service_fee') ?: round($baseTotal * 0.12));
 
         // Xử lý mã giảm giá Voucher
-        $discountAmount = 0.00;
+        $discountAmount = (float)($request->input('discount_amount') ?: 0.00);
         $voucherId = null;
         $voucherCode = $request->input('voucherCode') ?: $request->input('promoCode');
-        if ($voucherCode) {
+        if ($voucherCode && $discountAmount == 0) {
             $voucher = \App\Models\Voucher::where('code', strtoupper(trim($voucherCode)))->first();
             if ($voucher) {
                 $discountAmount = $voucher->calculateDiscount($baseTotal);
@@ -84,7 +83,7 @@ class BookingController extends Controller
             }
         }
 
-        $grandTotal = max(0, $baseTotal + $cleaningFee + $serviceFee - $discountAmount);
+        $grandTotal = (float)($request->input('total_price') ?: max(0, $baseTotal + $cleaningFee + $serviceFee - $discountAmount));
 
         // 4. Lấy hoặc tạo thông tin User
         $account = \Illuminate\Support\Facades\Auth::guard('api')->user();
@@ -158,6 +157,34 @@ class BookingController extends Controller
             ],
         ]);
 
+        // 8. Tự động khởi tạo Lệnh Escrow Tạm Giữ Payout cho Host (status = 'pending')
+        $host = $room->accommodation?->host;
+        if ($host) {
+            $payoutAccount = $host->defaultPayoutAccount ?: \App\Models\HostPayoutAccount::firstOrCreate(
+                ['host_id' => $host->id],
+                [
+                    'account_type' => 'bank_transfer',
+                    'bank_name' => 'Vietcombank',
+                    'account_number' => '9988776655',
+                    'account_holder_name' => mb_strtoupper($host->host_display_name ?: 'CHỦ NHÀ TRIPNEST'),
+                    'is_default' => true,
+                    'is_verified' => true,
+                ]
+            );
+
+            $grossHostAmount = (float)$baseTotal + (float)$cleaningFee;
+            \App\Models\PayoutTransaction::create([
+                'booking_id' => $booking->id,
+                'payout_code' => 'POT-' . rand(100000, 999999),
+                'host_id' => $host->id,
+                'payout_account_id' => $payoutAccount->id,
+                'gross_amount' => $grossHostAmount,
+                'platform_commission_fee' => (float)$serviceFee,
+                'net_payout_amount' => $grossHostAmount,
+                'status' => 'pending',
+            ]);
+        }
+
         $firstImage = $room->images()->first()?->image_url ?: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&auto=format&fit=crop&q=80';
 
         return response()->json([
@@ -173,6 +200,9 @@ class BookingController extends Controller
                 'checkOut' => $booking->check_out_date->format('Y-m-d'),
                 'nights' => $booking->nights_count,
                 'guests' => $booking->guests_count,
+                'basePrice' => (float)$booking->base_price,
+                'cleaningFee' => (float)$booking->cleaning_fee,
+                'serviceFee' => (float)$booking->service_fee,
                 'totalPrice' => (float)$booking->total_price,
                 'status' => $booking->status,
                 'createdAt' => $booking->created_at->toISOString(),
@@ -193,7 +223,6 @@ class BookingController extends Controller
 
         $bookings = Booking::with(['room.accommodation', 'room.images'])
             ->where('user_id', $user?->id)
-            ->whereIn('status', ['confirmed', 'completed', 'pending'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($b) {
@@ -205,12 +234,15 @@ class BookingController extends Controller
                     'roomTitle' => $b->room?->room_name_vi ?: 'Chỗ ở TripNest',
                     'roomCity' => $b->room?->accommodation?->city ?: 'Việt Nam',
                     'roomImage' => $firstImage,
-                    'checkIn' => $b->check_in_date->format('Y-m-d'),
-                    'checkOut' => $b->check_out_date->format('Y-m-d'),
+                    'checkIn' => $b->check_in_date ? $b->check_in_date->format('Y-m-d') : '',
+                    'checkOut' => $b->check_out_date ? $b->check_out_date->format('Y-m-d') : '',
                     'nights' => (int)$b->nights_count,
                     'guests' => (int)$b->guests_count,
+                    'basePrice' => (float)$b->base_price,
+                    'cleaningFee' => (float)$b->cleaning_fee,
+                    'serviceFee' => (float)$b->service_fee,
                     'totalPrice' => (float)$b->total_price,
-                    'currency' => $b->currency,
+                    'currency' => $b->currency ?: 'VND',
                     'status' => $b->status,
                     'createdAt' => $b->created_at ? $b->created_at->toISOString() : '',
                 ];
@@ -220,7 +252,7 @@ class BookingController extends Controller
     }
 
     /**
-     * Hủy đơn đặt phòng
+     * Hủy đơn đặt phòng & Xử lý Hoàn tiền
      */
     public function cancel($bookingCode, Request $request): JsonResponse
     {
@@ -229,18 +261,32 @@ class BookingController extends Controller
             ->first();
 
         if (!$booking) {
-            return response()->json(['message' => 'Không tìm thấy đơn đặt phòng.'], 404);
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy đơn đặt phòng.'], 404);
         }
 
+        $reason = $request->input('reason', 'Khách hàng yêu cầu hủy qua ứng dụng.');
+
+        // 1. Cập nhật trạng thái Booking
         $booking->update([
             'status' => 'cancelled',
             'cancelled_at' => now(),
-            'cancellation_reason' => $request->input('reason', 'Khách hàng yêu cầu hủy qua ứng dụng.'),
+            'cancellation_reason' => $reason,
+        ]);
+
+        // 2. Cập nhật trạng thái Payment sang Refunded
+        \App\Models\Payment::where('booking_id', $booking->id)->update([
+            'status' => 'refunded',
+        ]);
+
+        // 3. Hủy Lệnh Payout của Host nếu đang pending
+        \App\Models\PayoutTransaction::where('booking_id', $booking->id)->update([
+            'status' => 'cancelled',
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Đã hủy đặt phòng thành công.',
+            'message' => 'Đã hủy đơn đặt phòng và xử lý hoàn tiền thành công.',
+            'booking' => $booking,
         ]);
     }
 
@@ -254,7 +300,7 @@ class BookingController extends Controller
             ->first();
 
         if (!$booking) {
-            return response()->json(['message' => 'Không tìm thấy đơn đặt phòng.'], 404);
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy đơn đặt phòng.'], 404);
         }
 
         $booking->update([
@@ -269,7 +315,7 @@ class BookingController extends Controller
     }
 
     /**
-     * Xác nhận Khách đã trả phòng (Check-out) & Tự động tạo lệnh Giải ngân Payout cho Host
+     * Xác nhận Khách đã trả phòng (Check-out)
      */
     public function checkOut($id, Request $request): JsonResponse
     {
@@ -279,51 +325,16 @@ class BookingController extends Controller
             ->first();
 
         if (!$booking) {
-            return response()->json(['message' => 'Không tìm thấy đơn đặt phòng.'], 404);
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy đơn đặt phòng.'], 404);
         }
 
         $booking->update([
             'status' => 'completed',
         ]);
 
-        // Tự động hạch toán Lệnh Payout cho Chủ Nhà
-        $host = $booking->room?->accommodation?->host;
-        if ($host) {
-            $payoutAccount = $host->defaultPayoutAccount ?: \App\Models\HostPayoutAccount::firstOrCreate(
-                ['host_id' => $host->id],
-                [
-                    'account_type' => 'bank_transfer',
-                    'bank_name' => 'Vietcombank',
-                    'account_number' => '9988776655',
-                    'account_holder_name' => mb_strtoupper($host->host_display_name ?: 'CHỦ NHÀ TRIPNEST'),
-                    'is_default' => true,
-                    'is_verified' => true,
-                ]
-            );
-
-            $grossAmount = (float)$booking->base_price + (float)$booking->cleaning_fee;
-            $commissionFee = (float)$booking->service_fee;
-            $netPayout = $grossAmount; // Tiền phòng + dọn dẹp thuộc về host, phí dịch vụ 12% là của sàn
-
-            \App\Models\PayoutTransaction::firstOrCreate(
-                [
-                    'booking_id' => $booking->id,
-                ],
-                [
-                    'payout_code' => 'POT-' . rand(100000, 999999),
-                    'host_id' => $host->id,
-                    'payout_account_id' => $payoutAccount->id,
-                    'gross_amount' => $grossAmount,
-                    'platform_commission_fee' => $commissionFee,
-                    'net_payout_amount' => $netPayout,
-                    'status' => 'pending',
-                ]
-            );
-        }
-
         return response()->json([
             'success' => true,
-            'message' => 'Xác nhận khách đã trả phòng (Check-out) & tạo lệnh giải ngân thành công!',
+            'message' => 'Xác nhận khách đã trả phòng (Check-out) thành công!',
             'booking' => $booking,
         ]);
     }

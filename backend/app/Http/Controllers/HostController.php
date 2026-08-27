@@ -111,60 +111,70 @@ class HostController extends Controller
      */
     public function registerHost(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'hostDisplayName' => 'required|string|max:100',
-            'contactPhone' => 'required|string|max:20',
-            'idCardNumber' => 'required|string|max:30',
-            'bankName' => 'required|string|max:100',
-            'accountNumber' => 'required|string|max:50',
-            'accountHolderName' => 'required|string|max:100',
-            'introduction' => 'nullable|string',
-        ]);
+        $displayName = $request->input('hostDisplayName') ?? $request->input('host_display_name') ?? $request->input('fullName');
+        $phone = $request->input('contactPhone') ?? $request->input('contact_phone') ?? $request->input('phone');
+        $idCard = $request->input('idCardNumber') ?? $request->input('id_card_number') ?? '00109' . rand(1000000, 9999999);
+        $bankName = $request->input('bankName') ?? $request->input('bank_name') ?? 'Vietcombank';
+        $accountNumber = $request->input('accountNumber') ?? $request->input('account_number') ?? '10' . rand(10000000, 99999999);
+        $holder = $request->input('accountHolderName') ?? $request->input('account_holder_name') ?? ($displayName ? mb_strtoupper($displayName) : 'CHU NHA');
+        $intro = $request->input('introduction') ?? $request->input('reason') ?? 'Đăng ký kinh doanh chỗ ở trên hệ thống TripNest.';
+        $propertyType = $request->input('propertyType') ?? $request->input('property_type') ?? 'Biệt thự villa';
+        $frontImg = $request->input('idCardFrontUrl') ?? $request->input('id_card_front_url') ?? 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80';
+        $backImg = $request->input('idCardBackUrl') ?? $request->input('id_card_back_url') ?? 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80';
 
-        if ($validator->fails()) {
+        if (empty($displayName) || empty($phone)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Vui lòng cung cấp đầy đủ thông tin đăng ký chủ nhà.',
-                'errors' => $validator->errors(),
+                'message' => 'Vui lòng cung cấp đầy đủ họ tên hiển thị và số điện thoại liên hệ.',
             ], 422);
         }
 
         $account = Auth::guard('api')->user();
-        $user = $account?->user ?: User::first();
+        if (!$account) {
+            $user = User::first();
+        } else {
+            $user = $account->user ?: User::first();
+        }
 
-        $host = Host::updateOrCreate(
-            ['user_id' => $user->id],
-            [
-                'host_display_name' => $request->input('hostDisplayName'),
-                'contact_phone' => $request->input('contactPhone'),
-                'contact_email' => $user->account?->email ?: $request->input('contactEmail'),
-                'host_introduction' => $request->input('introduction'),
-                'id_card_number' => $request->input('idCardNumber'),
-                'id_card_front_url' => $request->input('idCardFrontUrl', 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80'),
-                'id_card_back_url' => $request->input('idCardBackUrl', 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80'),
-                'kyc_status' => 'verified',
-                'verified_at' => now(),
-                'terms_accepted_at' => now(),
-            ]
-        );
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy thông tin tài khoản người dùng.'], 404);
+        }
 
-        // Cập nhật/Tạo tài khoản ngân hàng nhận tiền Payout
-        HostPayoutAccount::updateOrCreate(
-            ['host_id' => $host->id, 'is_default' => true],
-            [
-                'account_type' => 'bank_transfer',
-                'bank_name' => $request->input('bankName'),
-                'account_number' => $request->input('accountNumber'),
-                'account_holder_name' => mb_strtoupper($request->input('accountHolderName')),
-                'is_verified' => true,
-            ]
-        );
+        $host = DB::transaction(function () use ($user, $displayName, $phone, $idCard, $bankName, $accountNumber, $holder, $intro, $propertyType, $frontImg, $backImg) {
+            $host = Host::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'host_display_name' => $displayName,
+                    'contact_phone' => $phone,
+                    'contact_email' => $user->account?->email ?: ($user->email ?? 'host@tripnest.vn'),
+                    'host_introduction' => $intro,
+                    'business_name' => $propertyType,
+                    'id_card_number' => $idCard,
+                    'id_card_front_url' => $frontImg,
+                    'id_card_back_url' => $backImg,
+                    'kyc_status' => 'pending',
+                    'terms_accepted_at' => now(),
+                ]
+            );
 
-        $user->account?->update(['role' => 'host']);
+            // Cập nhật/Tạo tài khoản ngân hàng nhận tiền Payout
+            HostPayoutAccount::updateOrCreate(
+                ['host_id' => $host->id, 'is_default' => true],
+                [
+                    'account_type' => 'bank_transfer',
+                    'bank_name' => $bankName,
+                    'account_number' => $accountNumber,
+                    'account_holder_name' => mb_strtoupper($holder),
+                    'is_verified' => false,
+                ]
+            );
+
+            return $host;
+        });
 
         return response()->json([
             'success' => true,
-            'message' => 'Chúc mừng bạn đã đăng ký trở thành Chủ nhà thành công trên TripNest!',
+            'message' => 'Hồ sơ đăng ký Chủ nhà đã được gửi thành công và đang chờ Quản trị viên thẩm định!',
             'host' => $host->load('defaultPayoutAccount'),
         ]);
     }
@@ -190,12 +200,14 @@ class HostController extends Controller
         $pendingBookings = (clone $bookingsQuery)->where('status', 'pending')->count();
         $completedBookings = (clone $bookingsQuery)->where('status', 'completed')->count();
 
-        // Host nhận = Base Price + Cleaning Fee của các đơn confirmed, checked_in, completed
-        $validBookings = (clone $bookingsQuery)->whereIn('status', ['confirmed', 'checked_in', 'completed'])->get();
-        $netEarningsVND = $validBookings->reduce(function ($carry, $b) {
-            return $carry + (float)($b->base_price + $b->cleaning_fee);
-        }, 0);
+        // 1. Doanh thu ĐÃ GIẢI NGÂN (Admin duyệt completed)
+        $netEarningsVND = (float)PayoutTransaction::where('host_id', $host->id)->where('status', 'completed')->sum('net_payout_amount');
 
+        // 2. Doanh thu TẠM GIỮ CHỜ GIẢI NGÂN (Escrow Pending)
+        $escrowPendingVND = (float)PayoutTransaction::where('host_id', $host->id)->where('status', 'pending')->sum('net_payout_amount');
+
+        // 3. Tổng GMV lưu trú (tính các đơn không bị hủy)
+        $validBookings = (clone $bookingsQuery)->whereIn('status', ['confirmed', 'checked_in', 'completed'])->get();
         $totalRevenueVND = $validBookings->sum(function ($b) {
             return (float)$b->total_price;
         });
@@ -211,6 +223,7 @@ class HostController extends Controller
                 return [
                     'id' => $b->id,
                     'code' => $b->booking_code ?: ('TN-' . $b->id),
+                    'bookingCode' => $b->booking_code ?: ('TN-' . $b->id),
                     'guestName' => $b->guest_name ?: $b->user?->full_name ?: 'Khách TripNest',
                     'guestPhone' => $b->guest_phone ?: $b->user?->phone_number ?: '0912 345 678',
                     'roomTitle' => $b->room?->room_name_vi ?: $b->room?->accommodation?->name_vi ?: 'Biệt thự nghỉ dưỡng',
@@ -218,7 +231,11 @@ class HostController extends Controller
                     'checkOut' => $b->check_out_date?->format('Y-m-d') ?: '2026-08-28',
                     'nights' => (int)($b->nights_count ?: 1),
                     'guests' => (int)($b->guests_count ?: 2),
+                    'basePrice' => (float)$b->base_price,
+                    'cleaningFee' => (float)$b->cleaning_fee,
+                    'serviceFee' => (float)$b->service_fee,
                     'totalAmount' => (float)$b->total_price,
+                    'totalPrice' => (float)$b->total_price,
                     'hostEarnings' => $hostEarnings > 0 ? $hostEarnings : (float)$b->total_price,
                     'status' => $b->status ?: 'confirmed',
                     'createdAt' => $b->created_at?->format('d/m/Y H:i'),
@@ -246,6 +263,7 @@ class HostController extends Controller
                 'completedBookings' => $completedBookings,
                 'totalRevenueVND' => (float)$totalRevenueVND,
                 'netEarningsVND' => (float)$netEarningsVND,
+                'escrowPendingVND' => (float)$escrowPendingVND,
                 'occupancyRate' => $totalBookings > 0 ? 86 : 0,
             ],
             'recentBookings' => $recentBookings,
@@ -561,38 +579,34 @@ class HostController extends Controller
         $host = $this->getCurrentHost();
         $payoutAccount = $host->defaultPayoutAccount;
 
-        // Mock danh sách giao dịch chi trả nếu chưa có
-        $transactions = PayoutTransaction::where('host_id', $host->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $payoutQuery = PayoutTransaction::where('host_id', $host->id)->with('booking.room.accommodation');
 
-        if ($transactions->isEmpty()) {
-            $transactions = [
-                [
-                    'id' => 'PO-98214',
-                    'amount' => 15200000,
-                    'bankName' => $payoutAccount?->bank_name ?: 'Vietcombank',
-                    'accountNumber' => $payoutAccount?->account_number ?: '9988776655',
-                    'status' => 'completed',
-                    'date' => '15/08/2026',
-                    'note' => 'Quyết toán doanh thu tuần 2 tháng 8',
-                ],
-                [
-                    'id' => 'PO-97451',
-                    'amount' => 23680000,
-                    'bankName' => $payoutAccount?->bank_name ?: 'Vietcombank',
-                    'accountNumber' => $payoutAccount?->account_number ?: '9988776655',
-                    'status' => 'completed',
-                    'date' => '01/08/2026',
-                    'note' => 'Quyết toán doanh thu tuần 1 tháng 8',
-                ],
-            ];
-        }
+        $availableBalance = (float)(clone $payoutQuery)->where('status', 'completed')->sum('net_payout_amount');
+        $pendingEscrowBalance = (float)(clone $payoutQuery)->where('status', 'pending')->sum('net_payout_amount');
+
+        $transactions = (clone $payoutQuery)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($po) {
+                return [
+                    'id' => $po->payout_code ?: ('POT-' . $po->id),
+                    'payoutId' => $po->id,
+                    'bookingCode' => $po->booking?->booking_code,
+                    'date' => $po->created_at?->format('d/m/Y') ?: now()->format('d/m/Y'),
+                    'amount' => (float)$po->net_payout_amount,
+                    'note' => 'Doanh thu đơn ' . ($po->booking?->booking_code ?: ('#' . $po->booking_id)),
+                    'status' => $po->status ?: 'pending',
+                    'transferredAt' => $po->transferred_at ? $po->transferred_at->format('d/m/Y H:i') : null,
+                ];
+            });
 
         return response()->json([
             'success' => true,
             'payoutAccount' => $payoutAccount,
+            'availableBalance' => $availableBalance,
+            'pendingEscrowBalance' => $pendingEscrowBalance,
             'transactions' => $transactions,
+            'payoutHistory' => $transactions,
         ]);
     }
 

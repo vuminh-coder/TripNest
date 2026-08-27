@@ -75,12 +75,26 @@ Route::middleware(['auth:api'])->group(function () {
 // ==========================================
 Route::middleware(['auth:api', 'admin'])->group(function () {
     Route::get('/admin/users', [UserController::class, 'index']);
+    Route::post('/admin/users', [UserController::class, 'create']);
     Route::get('/admin/users/{id}', [UserController::class, 'show']);
+    Route::match(['put', 'patch', 'post'], '/admin/users/{id}', [UserController::class, 'update']);
     Route::get('/admin/user/{id}', [UserController::class, 'show']); // Alias
     Route::post('/admin/user/create', [UserController::class, 'create']);
-    Route::post('/admin/users/{id}/update', [UserController::class, 'update']);
+    Route::match(['put', 'patch', 'post'], '/admin/users/{id}/update', [UserController::class, 'update']);
     Route::delete('/admin/users/{id}', [UserController::class, 'destroy']);
     Route::delete('/admin/users/by-email/{email}', [UserController::class, 'destroy']);
+
+    // Quản lý Yêu cầu Nâng quyền Host
+    Route::get('/admin/role-requests', [UserController::class, 'getRoleUpgradeRequests']);
+    Route::post('/admin/users/{id}/approve-host', [UserController::class, 'approveHostUpgrade']);
+    Route::post('/admin/users/{id}/reject-host', [UserController::class, 'rejectHostUpgrade']);
+
+    // Quản lý Chủ nhà & KYC
+    Route::get('/admin/hosts', [UserController::class, 'getHosts']);
+    Route::post('/admin/hosts/{id}/kyc', [UserController::class, 'updateHostKyc']);
+
+    // Quản lý Đơn đặt phòng
+    Route::get('/admin/bookings', [\App\Http\Controllers\admin\FinancialController::class, 'getBookings']);
 
     // Tài chính, Doanh thu & Duyệt Giải Ngân (Payouts)
     Route::get('/admin/financials/stats', [\App\Http\Controllers\admin\FinancialController::class, 'getStats']);

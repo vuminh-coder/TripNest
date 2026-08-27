@@ -13,7 +13,8 @@ export const HostFinancialsPage = ({
   bankInfo,
   setBankInfo,
   payoutHistory = [],
-  availableBalance = 14500000,
+  availableBalance = 0,
+  pendingEscrowBalance = 0,
   onRequestPayout,
   isRequestingPayout = false,
   currency = 'VND',
@@ -22,8 +23,8 @@ export const HostFinancialsPage = ({
   const [tempBank, setTempBank] = useState({ ...bankInfo });
 
   const formatPrice = (val) => {
-    if (currency === 'USD') return `$${Math.round(val / 25000).toLocaleString()}`;
-    return `${Number(val).toLocaleString('vi-VN')} ₫`;
+    if (currency === 'USD') return `$${Math.round((val || 0) / 25000).toLocaleString()}`;
+    return `${Number(val || 0).toLocaleString('vi-VN')} ₫`;
   };
 
   const handleSaveBank = (e) => {
@@ -167,19 +168,49 @@ export const HostFinancialsPage = ({
           )}
 
           {/* Instant Payout Action */}
+          <hr style={{ border: 'none', borderTop: '1px solid var(--host-border-subtle)', margin: '1.25rem 0' }} />
+
+          {/* 1. Pending Escrow Balance (Tạm giữ chờ Admin giải ngân) */}
           <div
             style={{
-              marginTop: '1.5rem',
-              borderTop: '1px solid var(--host-border-subtle)',
-              paddingTop: '1.25rem',
               display: 'flex',
-              justifyContent: 'space-between',
               alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.9rem 1.25rem',
+              borderRadius: 'var(--host-radius-md)',
+              background: '#fffbeb',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              marginBottom: '0.85rem',
             }}
           >
             <div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--host-text-muted)', display: 'block' }}>
-                Số dư khả dụng
+              <span style={{ fontSize: '0.78rem', color: '#b45309', fontWeight: 700, display: 'block' }}>
+                ⏳ Đang chờ Admin giải ngân (Escrow)
+              </span>
+              <strong style={{ fontSize: '1.25rem', color: '#d97706', fontWeight: 800, whiteSpace: 'nowrap', display: 'block' }}>
+                {formatPrice(pendingEscrowBalance)}
+              </strong>
+              <span style={{ fontSize: '0.72rem', color: '#92400e', display: 'block', marginTop: '2px' }}>
+                Tiền tạm giữ sẽ chuyển sang ví khả dụng khi Admin duyệt lệnh chi trả.
+              </span>
+            </div>
+          </div>
+
+          {/* 2. Available Balance Card (Đã giải ngân về ví) */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1rem 1.25rem',
+              borderRadius: 'var(--host-radius-md)',
+              background: '#f0fdf4',
+              border: '1px solid rgba(16, 185, 129, 0.2)',
+            }}
+          >
+            <div>
+              <span style={{ fontSize: '0.8rem', color: '#15803d', fontWeight: 700, display: 'block' }}>
+                ✅ Số dư khả dụng (Đã nhận về ví)
               </span>
               <strong style={{ fontSize: '1.4rem', color: 'var(--host-emerald)', fontWeight: 900, whiteSpace: 'nowrap', display: 'block' }}>
                 {formatPrice(availableBalance)}
@@ -190,7 +221,7 @@ export const HostFinancialsPage = ({
               type="button"
               className="host-btn-primary"
               style={{ background: 'var(--host-emerald)', whiteSpace: 'nowrap' }}
-              disabled={isRequestingPayout}
+              disabled={isRequestingPayout || availableBalance <= 0}
               onClick={onRequestPayout}
             >
               {isRequestingPayout ? 'Đang chuyển tiền...' : 'Rút tiền ngay ➔'}
@@ -208,38 +239,60 @@ export const HostFinancialsPage = ({
         </div>
 
         <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {payoutHistory.map((po) => (
-            <div
-              key={po.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '0.75rem 0.9rem',
-                borderRadius: 'var(--host-radius-md)',
-                background: '#f8fafc',
-                border: '1px solid var(--host-border-subtle)',
-              }}
-            >
-              <div>
-                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--host-text-main)' }}>
-                  {po.note}
+          {payoutHistory && payoutHistory.length > 0 ? (
+            payoutHistory.map((po) => (
+              <div
+                key={po.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0.75rem 0.9rem',
+                  borderRadius: 'var(--host-radius-md)',
+                  background: '#f8fafc',
+                  border: '1px solid var(--host-border-subtle)',
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--host-text-main)' }}>
+                    {po.note}
+                  </div>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--host-text-muted)' }}>
+                    Ngày {po.date} · #{po.id}
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.74rem', color: 'var(--host-text-muted)' }}>
-                  Ngày {po.date} · #{po.id}
+
+                <div style={{ textAlign: 'right', flexShrink: 0, whiteSpace: 'nowrap', marginLeft: '12px' }}>
+                  <strong style={{ color: po.status === 'completed' ? '#059669' : '#d97706', fontSize: '0.94rem', whiteSpace: 'nowrap', display: 'block' }}>
+                    +{formatPrice(po.amount)}
+                  </strong>
+                  {po.status === 'completed' ? (
+                    <span className="host-chip success" style={{ marginTop: '2px', display: 'inline-block' }}>
+                      Đã giải ngân
+                    </span>
+                  ) : po.status === 'cancelled' ? (
+                    <span className="host-chip danger" style={{ marginTop: '2px', display: 'inline-block' }}>
+                      Đã hủy hoàn tiền
+                    </span>
+                  ) : (
+                    <span className="host-chip warning" style={{ marginTop: '2px', display: 'inline-block', background: '#fef3c7', color: '#b45309' }}>
+                      Chờ Admin duyệt
+                    </span>
+                  )}
                 </div>
               </div>
-
-              <div style={{ textAlign: 'right', flexShrink: 0, whiteSpace: 'nowrap', marginLeft: '12px' }}>
-                <strong style={{ color: '#059669', fontSize: '0.94rem', whiteSpace: 'nowrap', display: 'block' }}>
-                  +{formatPrice(po.amount)}
-                </strong>
-                <span className="host-chip success" style={{ marginTop: '2px', display: 'inline-block' }}>
-                  Thành công
-                </span>
+            ))
+          ) : (
+            <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--host-text-muted)' }}>
+              <div style={{ fontSize: '2rem', marginBottom: '0.5rem', opacity: 0.6 }}>💸</div>
+              <div style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--host-text-main)', marginBottom: '0.25rem' }}>
+                Chưa có lịch sử nhận tiền
+              </div>
+              <div style={{ fontSize: '0.8rem', maxWidth: '320px', margin: '0 auto', lineHeight: 1.5 }}>
+                Khi có khách đặt phòng và hoàn tất kỳ nghỉ, tiền giải ngân Payout sẽ tự động hiển thị tại đây.
               </div>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>

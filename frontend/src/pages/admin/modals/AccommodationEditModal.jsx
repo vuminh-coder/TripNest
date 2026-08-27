@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { TbX, TbBuildingCastle, TbPhoto, TbCheck } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
 

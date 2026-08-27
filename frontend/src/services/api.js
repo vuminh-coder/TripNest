@@ -326,11 +326,16 @@ export const apiService = {
       return await res.json();
     } catch (e) {
       return {
-        totalRevenueVND: 148500000,
-        totalBookings: 24,
-        occupancyRate: 85,
-        averageRating: 4.96,
-        accommodationsCount: 6,
+        success: true,
+        kpis: {
+          totalRevenueVND: 0,
+          netEarningsVND: 0,
+          totalBookings: 0,
+          activeBookings: 0,
+          completedBookings: 0,
+          occupancyRate: 0,
+        },
+        recentBookings: [],
       };
     }
   },

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TbShieldCheck, TbSearch, TbCircleCheck } from 'react-icons/tb';
+import { TbShieldCheck, TbSearch, TbCircleCheck, TbX, TbAlertTriangle } from 'react-icons/tb';
 import AdminPageHeader from '../common/AdminPageHeader';
 import AdminConfirmDialog from '../common/AdminConfirmDialog';
 import UserUpgradeCard from '../users/UserUpgradeCard';
@@ -7,6 +7,8 @@ import UserUpgradeCard from '../users/UserUpgradeCard';
 export const RoleUpgradeRequestsPage = ({ users, onApproveUpgrade, onNavigate }) => {
   const [search, setSearch] = useState('');
   const [selectedUserToApprove, setSelectedUserToApprove] = useState(null);
+  const [userToReject, setUserToReject] = useState(null);
+  const [rejectReason, setRejectReason] = useState('Hồ sơ CCCD hoặc thông tin kinh doanh chưa đạt tiêu chuẩn.');
 
   const pendingUsers = users.filter(
     (u) => u.role_upgrade_request && u.role_upgrade_request.status === 'pending'
@@ -22,6 +24,13 @@ export const RoleUpgradeRequestsPage = ({ users, onApproveUpgrade, onNavigate })
     }
     return true;
   });
+
+  const handleConfirmReject = () => {
+    if (userToReject) {
+      onApproveUpgrade(userToReject.id, false, rejectReason);
+      setUserToReject(null);
+    }
+  };
 
   return (
     <div>
@@ -85,10 +94,8 @@ export const RoleUpgradeRequestsPage = ({ users, onApproveUpgrade, onNavigate })
               user={user}
               onApprove={(u) => setSelectedUserToApprove(u)}
               onReject={(u) => {
-                const reason = prompt('Lý do từ chối đơn làm Host:', 'Hồ sơ chưa đạt tiêu chuẩn');
-                if (reason !== null) {
-                  onApproveUpgrade(u.id, false, reason);
-                }
+                setUserToReject(u);
+                setRejectReason('Hồ sơ CCCD hoặc thông tin kinh doanh chưa đạt tiêu chuẩn.');
               }}
             />
           ))}
@@ -111,6 +118,81 @@ export const RoleUpgradeRequestsPage = ({ users, onApproveUpgrade, onNavigate })
         }}
         onCancel={() => setSelectedUserToApprove(null)}
       />
+
+      {/* Reject Modal */}
+      {userToReject && (
+        <div className="admin-modal-backdrop" onClick={() => setUserToReject(null)}>
+          <div
+            className="admin-modal-card"
+            style={{ maxWidth: '480px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="admin-modal-header" style={{ borderColor: '#fee2e2' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#dc2626', fontWeight: 800 }}>
+                <TbAlertTriangle style={{ fontSize: '1.25rem' }} />
+                <span>Từ Chối Đơn Xin Làm Host</span>
+              </div>
+              <button
+                type="button"
+                className="admin-modal-close"
+                onClick={() => setUserToReject(null)}
+              >
+                <TbX />
+              </button>
+            </div>
+
+            <div style={{ padding: '1.25rem 1.5rem' }}>
+              <p style={{ fontSize: '0.86rem', color: '#475569', margin: '0 0 1rem 0' }}>
+                Từ chối hồ sơ đăng ký của <strong>{userToReject.name}</strong> ({userToReject.email}). Vui lòng nhập lý do để thông báo:
+              </p>
+
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>
+                Lý do từ chối *
+              </label>
+              <textarea
+                rows="3"
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.6rem 0.8rem',
+                  borderRadius: '8px',
+                  border: '1px solid #cbd5e1',
+                  fontSize: '0.86rem',
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                }}
+              />
+            </div>
+
+            <div style={{ padding: '0.85rem 1.5rem', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <button
+                type="button"
+                className="btn-admin-secondary"
+                onClick={() => setUserToReject(null)}
+              >
+                Hủy Bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmReject}
+                style={{
+                  background: '#dc2626',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '0.5rem 1.1rem',
+                  fontWeight: 700,
+                  fontSize: '0.84rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Xác Nhận Từ Chối
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

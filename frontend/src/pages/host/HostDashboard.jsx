@@ -82,50 +82,7 @@ const DEFAULT_LISTINGS = [
   },
 ];
 
-const DEFAULT_BOOKINGS = [
-  {
-    id: 'BK-101',
-    code: 'TN-892145',
-    guestName: 'Nguyễn Văn An',
-    guestPhone: '0912 345 678',
-    roomTitle: 'The Oasis Garden Retreat Đà Lạt',
-    checkIn: '25/08/2026',
-    checkOut: '28/08/2026',
-    nights: 3,
-    guests: 4,
-    totalAmount: 7500000,
-    hostEarnings: 6600000,
-    status: 'confirmed',
-  },
-  {
-    id: 'BK-102',
-    code: 'TN-773412',
-    guestName: 'Trần Thị Mai',
-    guestPhone: '0988 776 554',
-    roomTitle: 'Grand Sunset Ocean Villa Phú Quốc',
-    checkIn: '29/08/2026',
-    checkOut: '02/09/2026',
-    nights: 4,
-    guests: 6,
-    totalAmount: 16800000,
-    hostEarnings: 14784000,
-    status: 'confirmed',
-  },
-  {
-    id: 'BK-103',
-    code: 'TN-654321',
-    guestName: 'Lê Hoàng Nam',
-    guestPhone: '0903 112 233',
-    roomTitle: 'Mây Homestay & Coffee Sapa',
-    checkIn: '05/09/2026',
-    checkOut: '07/09/2026',
-    nights: 2,
-    guests: 2,
-    totalAmount: 3300000,
-    hostEarnings: 2904000,
-    status: 'pending',
-  },
-];
+const DEFAULT_BOOKINGS = [];
 
 export const HostDashboard = ({
   onSwitchToClient,
@@ -157,47 +114,32 @@ export const HostDashboard = ({
     }
   });
 
-  // Bookings State with LocalStorage
-  const [bookings, setBookings] = useState(() => {
-    try {
-      const saved = localStorage.getItem('tripnest_host_bookings');
-      return saved ? JSON.parse(saved) : DEFAULT_BOOKINGS;
-    } catch {
-      return DEFAULT_BOOKINGS;
-    }
-  });
+  // Bookings State (Synchronized with Backend)
+  const [bookings, setBookings] = useState([]);
 
   // Bank Info State with LocalStorage
   const [bankInfo, setBankInfo] = useState(() => {
     try {
       const saved = localStorage.getItem('tripnest_host_bank');
+      const currentUser = JSON.parse(localStorage.getItem('tripnest_user') || '{}');
+      const defaultName = (currentUser?.name || currentUser?.full_name || 'MINH VŨ').toUpperCase();
       return saved
         ? JSON.parse(saved)
         : {
             bankName: 'Vietcombank (VCB)',
             accountNumber: '9988776655',
-            accountHolder: 'NGUYEN VAN AN',
+            accountHolder: defaultName,
           };
     } catch {
       return {
         bankName: 'Vietcombank (VCB)',
         accountNumber: '9988776655',
-        accountHolder: 'NGUYEN VAN AN',
+        accountHolder: 'MINH VŨ',
       };
     }
   });
 
-  const [payoutHistory, setPayoutHistory] = useState(() => {
-    try {
-      const saved = localStorage.getItem('tripnest_host_payout_history');
-      return saved
-        ? JSON.parse(saved)
-        : [
-            { id: 'PO-103', date: '15/08/2026', amount: 23500000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-            { id: 'PO-102', date: '01/08/2026', amount: 18200000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-            { id: 'PO-101', date: '15/07/2026', amount: 26800000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-          ];
-    } catch {
+  const [payoutHistory, setPayoutHistory] = useState([]);
       return [
         { id: 'PO-103', date: '15/08/2026', amount: 23500000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
         { id: 'PO-102', date: '01/08/2026', amount: 18200000, note: 'Chuyển khoản Vietcombank', status: 'completed' },

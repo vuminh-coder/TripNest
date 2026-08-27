@@ -97,50 +97,7 @@ const DEFAULT_LISTINGS = [
   },
 ];
 
-const DEFAULT_BOOKINGS = [
-  {
-    id: 'BK-101',
-    code: 'TN-892145',
-    guestName: 'Nguyễn Văn An',
-    guestPhone: '0912 345 678',
-    roomTitle: 'The Oasis Garden Retreat Đà Lạt',
-    checkIn: '25/08/2026',
-    checkOut: '28/08/2026',
-    nights: 3,
-    guests: 4,
-    totalAmount: 7500000,
-    hostEarnings: 6600000,
-    status: 'confirmed',
-  },
-  {
-    id: 'BK-102',
-    code: 'TN-773412',
-    guestName: 'Trần Thị Mai',
-    guestPhone: '0988 776 554',
-    roomTitle: 'Grand Sunset Ocean Villa Phú Quốc',
-    checkIn: '29/08/2026',
-    checkOut: '02/09/2026',
-    nights: 4,
-    guests: 6,
-    totalAmount: 16800000,
-    hostEarnings: 14784000,
-    status: 'confirmed',
-  },
-  {
-    id: 'BK-103',
-    code: 'TN-654321',
-    guestName: 'Lê Hoàng Nam',
-    guestPhone: '0903 112 233',
-    roomTitle: 'Mây Homestay & Coffee Sapa',
-    checkIn: '05/09/2026',
-    checkOut: '07/09/2026',
-    nights: 2,
-    guests: 2,
-    totalAmount: 3300000,
-    hostEarnings: 2904000,
-    status: 'pending',
-  },
-];
+const DEFAULT_BOOKINGS = [];
 
 export const HostLayout = ({
   onSwitchToClient,
@@ -172,15 +129,8 @@ export const HostLayout = ({
     }
   });
 
-  // Bookings State
-  const [bookings, setBookings] = useState(() => {
-    try {
-      const saved = localStorage.getItem('tripnest_host_bookings');
-      return saved ? JSON.parse(saved) : DEFAULT_BOOKINGS;
-    } catch {
-      return DEFAULT_BOOKINGS;
-    }
-  });
+  // Bookings State (Synchronized with Backend API)
+  const [bookings, setBookings] = useState([]);
 
   // Bank Info State
   const [bankInfo, setBankInfo] = useState(() => {
@@ -207,19 +157,9 @@ export const HostLayout = ({
   const [payoutHistory, setPayoutHistory] = useState(() => {
     try {
       const saved = localStorage.getItem('tripnest_host_payout_history');
-      return saved
-        ? JSON.parse(saved)
-        : [
-            { id: 'PO-103', date: '15/08/2026', amount: 23500000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-            { id: 'PO-102', date: '01/08/2026', amount: 18200000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-            { id: 'PO-101', date: '15/07/2026', amount: 26800000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-          ];
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return [
-        { id: 'PO-103', date: '15/08/2026', amount: 23500000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-        { id: 'PO-102', date: '01/08/2026', amount: 18200000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-        { id: 'PO-101', date: '15/07/2026', amount: 26800000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-      ];
+      return [];
     }
   });
 
@@ -228,17 +168,11 @@ export const HostLayout = ({
     localStorage.setItem('tripnest_host_listings', JSON.stringify(listings));
   }, [listings]);
 
+  // Clean up legacy localStorage on mount
   useEffect(() => {
-    localStorage.setItem('tripnest_host_bookings', JSON.stringify(bookings));
-  }, [bookings]);
-
-  useEffect(() => {
-    localStorage.setItem('tripnest_host_bank', JSON.stringify(bankInfo));
-  }, [bankInfo]);
-
-  useEffect(() => {
-    localStorage.setItem('tripnest_host_payout_history', JSON.stringify(payoutHistory));
-  }, [payoutHistory]);
+    localStorage.removeItem('tripnest_host_bookings');
+    localStorage.removeItem('tripnest_host_payout_history');
+  }, []);
 
   const handleNavigate = (tabId) => {
     setActiveTab(tabId);
@@ -260,9 +194,11 @@ export const HostLayout = ({
       try {
         const statsRes = await apiService.getHostDashboardStats();
         if (isMounted && statsRes?.success) {
-          if (statsRes.recentBookings && statsRes.recentBookings.length > 0) {
-            setBookings(statsRes.recentBookings);
-          }
+          setBookings(statsRes.recentBookings || []);
+        }
+        const payoutsRes = await apiService.getHostPayouts?.();
+        if (isMounted && payoutsRes?.success) {
+          setPayoutHistory(payoutsRes.payoutHistory || []);
         }
       } catch (err) {
         console.warn('Sync Host Backend Data:', err);
@@ -448,17 +384,25 @@ export const HostLayout = ({
 
     if (isConfirmed) {
       setBookings(
-        bookings.map((b) => (b.id === id ? { ...b, status: 'cancelled' } : b))
+        bookings.map((b) => (b.id === id || b.code === id ? { ...b, status: 'cancelled' } : b))
       );
+      try {
+        await apiService.cancelBooking(id);
+      } catch (err) {
+        console.warn('Backend cancel booking error:', err);
+      }
       toast.info('Đã hủy đơn', 'Đã hủy đơn đặt phòng thành công.');
     }
   };
 
-  // Payout Handlers & Dynamic Balance
-  const completedEarnings = bookings
-    .filter((b) => b.status === 'completed')
-    .reduce((sum, b) => sum + (b.hostEarnings || Math.round((b.totalAmount || 0) * 0.88)), 0);
-  const availableBalance = completedEarnings > 0 ? (14500000 + completedEarnings) : 14500000;
+  // Payout Handlers & Dynamic Balance strictly based on Admin Payout Lifecycle
+  const availableBalance = payoutHistory
+    .filter((p) => p.status === 'completed')
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+  const pendingEscrowBalance = payoutHistory
+    .filter((p) => p.status === 'pending' || !p.status)
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
   const handleRequestPayout = () => {
     setIsRequestingPayout(true);
@@ -511,6 +455,8 @@ export const HostLayout = ({
               listings={listings}
               bookings={bookings}
               bankInfo={bankInfo}
+              availableBalance={availableBalance}
+              pendingEscrowBalance={pendingEscrowBalance}
               onNavigate={handleNavigate}
               onOpenWizard={() => handleNavigate('new_listing')}
               onApproveBooking={handleApproveBooking}
@@ -561,6 +507,7 @@ export const HostLayout = ({
               setBankInfo={setBankInfo}
               payoutHistory={payoutHistory}
               availableBalance={availableBalance}
+              pendingEscrowBalance={pendingEscrowBalance}
               onRequestPayout={handleRequestPayout}
               isRequestingPayout={isRequestingPayout}
               currency={currency}

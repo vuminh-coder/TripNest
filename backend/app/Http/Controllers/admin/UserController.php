@@ -21,23 +21,35 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
-            $users = User::with('account')->orderBy('id', 'desc')->get();
+            $users = User::with(['account', 'host'])->orderBy('id', 'desc')->get();
 
             $formatted = $users->map(function ($u) {
+                $roleUpgrade = null;
+                if ($u->host && in_array($u->host->kyc_status, ['pending', 'rejected'])) {
+                    $roleUpgrade = [
+                        'requested_role' => 'host',
+                        'status' => $u->host->kyc_status,
+                        'reason' => $u->host->host_introduction ?: 'Đăng ký kinh doanh chỗ ở trên hệ thống TripNest.',
+                        'request_date' => $u->host->created_at ? $u->host->created_at->format('Y-m-d H:i') : '',
+                        'property_type' => $u->host->business_name ?: 'Biệt thự villa',
+                        'rejection_reason' => $u->host->kyc_rejection_reason,
+                    ];
+                }
+
                 return [
                     'id' => $u->id,
                     'account_id' => $u->account_id,
                     'name' => $u->full_name ?? '',
                     'email' => $u->account?->email ?? '',
                     'phone' => $u->phone_number ?? '',
-                    'id_card_number' => $u->id_card_number ?? '',
+                    'id_card_number' => $u->id_card_number ?: ($u->host?->id_card_number ?? ''),
                     'address' => $u->address ?? '',
                     'role' => $u->account?->role ?? 'guest',
                     'status' => $u->account?->status ?? 'active',
                     'avatar' => $u->avatar_url ?: ($u->account?->google_avatar ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'),
                     'joined_date' => $u->created_at ? \Carbon\Carbon::parse($u->created_at)->format('Y-m-d') : '',
                     'last_login' => $u->account?->last_login_at ? \Carbon\Carbon::parse($u->account->last_login_at)->diffForHumans() : 'Chưa đăng nhập',
-                    'role_upgrade_request' => null,
+                    'role_upgrade_request' => $roleUpgrade,
                 ];
             });
 
@@ -114,6 +126,13 @@ class UserController extends Controller
     public function create(Request $request)
     {
         try {
+            if ($request->filled('name') && !$request->filled('full_name')) {
+                $request->merge(['full_name' => $request->input('name')]);
+            }
+            if ($request->has('phone') && !$request->filled('phone_number')) {
+                $request->merge(['phone_number' => $request->input('phone')]);
+            }
+
             $dataUser = $request->validate([
                 "full_name" => "required|min:2|max:100",
                 "phone_number" => "sometimes|nullable|max:20",
@@ -215,6 +234,13 @@ class UserController extends Controller
 
             $account = $user->account;
 
+            if ($request->filled('name') && !$request->filled('full_name')) {
+                $request->merge(['full_name' => $request->input('name')]);
+            }
+            if ($request->has('phone') && !$request->filled('phone_number')) {
+                $request->merge(['phone_number' => $request->input('phone')]);
+            }
+
             // Validate dữ liệu
             $request->validate([
                 'full_name' => 'required|min:2|max:100',
@@ -225,7 +251,7 @@ class UserController extends Controller
                 'role' => 'required|in:guest,host,admin',
                 'status' => 'required|in:active,inactive,banned',
                 'password' => 'sometimes|nullable|min:6',
-                'avatar' => 'sometimes|nullable|image|max:5120',
+                'avatar' => 'sometimes|nullable|max:5120',
             ], [
                 'full_name.required' => 'Họ và tên không được để trống.',
                 'full_name.min' => 'Họ và tên phải có ít nhất 2 ký tự.',
@@ -382,6 +408,245 @@ class UserController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Lỗi khi xóa người dùng: ' . $ex->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Lấy danh sách yêu cầu nâng quyền làm Host
+     */
+    public function getRoleUpgradeRequests(Request $request)
+    {
+        try {
+            $pendingHosts = \App\Models\Host::where('kyc_status', 'pending')
+                ->with(['user.account', 'defaultPayoutAccount'])
+                ->orderBy('id', 'desc')
+                ->get();
+
+            $formatted = $pendingHosts->map(function ($h) {
+                $u = $h->user;
+                return [
+                    'id' => $u ? $u->id : $h->id,
+                    'host_id' => $h->id,
+                    'name' => $u ? $u->full_name : $h->host_display_name,
+                    'email' => $u && $u->account ? $u->account->email : $h->contact_email,
+                    'phone' => $h->contact_phone,
+                    'id_card_number' => $h->id_card_number,
+                    'id_card_front' => $h->id_card_front_url,
+                    'id_card_back' => $h->id_card_back_url,
+                    'address' => $u ? $u->address : '',
+                    'avatar' => $u ? $u->avatar_url : $h->host_avatar_url,
+                    'role_upgrade_request' => [
+                        'requested_role' => 'host',
+                        'status' => 'pending',
+                        'reason' => $h->host_introduction ?: 'Đăng ký kinh doanh chỗ ở trên hệ thống TripNest.',
+                        'request_date' => $h->created_at ? $h->created_at->format('Y-m-d H:i') : '',
+                        'property_type' => $h->business_name ?: 'Biệt thự villa',
+                    ],
+                    'bank_info' => $h->defaultPayoutAccount ? [
+                        'bank_name' => $h->defaultPayoutAccount->bank_name,
+                        'account_number' => $h->defaultPayoutAccount->account_number,
+                        'account_holder' => $h->defaultPayoutAccount->account_holder_name,
+                    ] : null,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $formatted,
+            ]);
+        } catch (Throwable $ex) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi tải danh sách yêu cầu: ' . $ex->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Phê duyệt yêu cầu nâng quyền Host cho User
+     */
+    public function approveHostUpgrade(Request $request, $id)
+    {
+        try {
+            $user = is_numeric($id)
+                ? User::with(['account', 'host.defaultPayoutAccount'])->find($id)
+                : User::whereHas('account', fn ($q) => $q->where('email', $id))->with(['account', 'host.defaultPayoutAccount'])->first();
+
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy người dùng.'], 404);
+            }
+
+            DB::transaction(function () use ($user) {
+                // 1. Cập nhật role = 'host' trong bảng accounts
+                if ($user->account) {
+                    $user->account->update(['role' => 'host']);
+                }
+
+                // 2. Cập nhật Host KYC = 'verified'
+                if ($user->host) {
+                    $user->host->update([
+                        'kyc_status' => 'verified',
+                        'verified_at' => now(),
+                        'kyc_rejection_reason' => null,
+                    ]);
+
+                    if ($user->host->defaultPayoutAccount) {
+                        $user->host->defaultPayoutAccount->update(['is_verified' => true]);
+                    }
+                } else {
+                    $host = \App\Models\Host::create([
+                        'user_id' => $user->id,
+                        'host_display_name' => $user->full_name ?: 'Chủ nhà TripNest',
+                        'contact_phone' => $user->phone_number ?: '0912345678',
+                        'contact_email' => $user->account?->email,
+                        'id_card_number' => $user->id_card_number ?: '00109' . rand(1000000, 9999999),
+                        'id_card_front_url' => 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600',
+                        'id_card_back_url' => 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600',
+                        'kyc_status' => 'verified',
+                        'verified_at' => now(),
+                    ]);
+
+                    \App\Models\HostPayoutAccount::create([
+                        'host_id' => $host->id,
+                        'account_type' => 'bank_transfer',
+                        'bank_name' => 'Vietcombank',
+                        'account_number' => '10' . rand(10000000, 99999999),
+                        'account_holder_name' => mb_strtoupper($user->full_name ?: 'CHU NHA'),
+                        'is_default' => true,
+                        'is_verified' => true,
+                    ]);
+                }
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã phê duyệt thành công! Người dùng ' . ($user->full_name) . ' đã chính thức trở thành Chủ Nhà (Host).',
+                'user' => $user->fresh(['account', 'host']),
+            ]);
+        } catch (Throwable $ex) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi phê duyệt chủ nhà: ' . $ex->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Từ chối yêu cầu nâng quyền Host kèm lý do
+     */
+    public function rejectHostUpgrade(Request $request, $id)
+    {
+        try {
+            $reason = $request->input('reason') ?: 'Hồ sơ pháp lý chưa đầy đủ hoặc không đạt tiêu chuẩn.';
+            
+            $user = is_numeric($id)
+                ? User::with(['account', 'host'])->find($id)
+                : User::whereHas('account', fn ($q) => $q->where('email', $id))->with(['account', 'host'])->first();
+
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy người dùng.'], 404);
+            }
+
+            if ($user->host) {
+                $user->host->update([
+                    'kyc_status' => 'rejected',
+                    'kyc_rejection_reason' => $reason,
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã từ chối đơn đăng ký làm Host của ' . ($user->full_name) . '.',
+                'rejection_reason' => $reason,
+            ]);
+        } catch (Throwable $ex) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi từ chối hồ sơ: ' . $ex->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Lấy danh sách tất cả các Host (Admin Hosts & KYC)
+     */
+    public function getHosts(Request $request)
+    {
+        try {
+            $hosts = \App\Models\Host::with(['user.account', 'defaultPayoutAccount', 'accommodations'])
+                ->orderBy('id', 'desc')
+                ->get()
+                ->map(function ($h) {
+                    $u = $h->user;
+                    $acc = $u?->account;
+                    $payout = $h->defaultPayoutAccount;
+                    return [
+                        'id' => $h->id,
+                        'user_id' => $u?->id,
+                        'name' => $u?->full_name ?: $h->host_display_name,
+                        'display_name' => $h->host_display_name,
+                        'email' => $acc?->email ?: $h->contact_email,
+                        'phone' => $h->contact_phone ?: $u?->phone_number,
+                        'avatar' => $h->host_avatar_url ?: $u?->avatar_url,
+                        'id_card_number' => $h->id_card_number ?: $u?->id_card_number,
+                        'id_card_front' => $h->id_card_front_url,
+                        'id_card_back' => $h->id_card_back_url,
+                        'kyc_status' => $h->kyc_status ?: 'verified',
+                        'kyc_rejection_reason' => $h->kyc_rejection_reason,
+                        'is_superhost' => (bool)$h->is_superhost,
+                        'rating' => (float)($h->host_rating ?: 4.98),
+                        'reviews_count' => (int)($h->host_reviews_count ?: 120),
+                        'properties_count' => $h->accommodations ? $h->accommodations->count() : 0,
+                        'bank_name' => $payout?->bank_name ?: 'Vietcombank',
+                        'account_number' => $payout?->account_number ?: '9988776655',
+                        'account_holder' => $payout?->account_holder_name ?: mb_strtoupper($h->host_display_name),
+                        'joined_date' => $h->created_at ? $h->created_at->format('d/m/Y') : '2026-08-25',
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $hosts,
+                'total' => $hosts->count(),
+            ]);
+        } catch (Throwable $ex) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi tải danh sách chủ nhà: ' . $ex->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Cập nhật trạng thái KYC của Host
+     */
+    public function updateHostKyc(Request $request, $id)
+    {
+        try {
+            $host = \App\Models\Host::find($id);
+            if (!$host) {
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy hồ sơ chủ nhà.'], 404);
+            }
+
+            $status = $request->input('status', 'verified');
+            $reason = $request->input('rejection_reason', '');
+
+            $host->update([
+                'kyc_status' => $status,
+                'kyc_rejection_reason' => $reason,
+                'verified_at' => $status === 'verified' ? now() : null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật trạng thái KYC thành công!',
+                'host' => $host,
+            ]);
+        } catch (Throwable $ex) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi cập nhật KYC: ' . $ex->getMessage(),
             ], 500);
         }
     }
