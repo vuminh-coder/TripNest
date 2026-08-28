@@ -26,6 +26,7 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
+Route::post('/auth/forgot-password/reset', [AuthController::class, 'resetPasswordCaseForgot']);
 
 // ==========================================
 // 2. Tra cứu dữ liệu công khai (Public Catalog)

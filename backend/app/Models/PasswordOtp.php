@@ -10,6 +10,7 @@ class PasswordOtp extends Model
     protected $fillable = [
         "account_id",
         "expire_at",
-        "otp"
+        "otp",
+        "email"
     ];
 }
