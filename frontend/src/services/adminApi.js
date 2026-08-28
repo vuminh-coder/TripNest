@@ -399,7 +399,6 @@ export const adminService = {
     });
     saveStoredData(data);
 
-<<<<<<< HEAD
     // 1. Asynchronously update backend CSDL
     try {
       fetch(`${API_BASE_URL}/admin/payouts/${payoutId}/approve`, {
@@ -412,9 +411,6 @@ export const adminService = {
     }
 
     // 2. Đồng bộ sang Host Payout History (tripnest_host_payout_history)
-=======
-    // Đồng bộ sang Host Payout History (tripnest_host_payout_history)
->>>>>>> 0cf8b323187ffcbcde8960688ca46a5c2ba0a43d
     if (approvedPayout) {
       try {
         const hostHistory = JSON.parse(localStorage.getItem('tripnest_host_payout_history') || '[]');

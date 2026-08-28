@@ -94,6 +94,6 @@ Route::middleware([])->group(function () {
     Route::get('/admin/payouts', [\App\Http\Controllers\admin\FinancialController::class, 'getPayouts']);
     Route::post('/admin/payouts/{id}/approve', [\App\Http\Controllers\admin\FinancialController::class, 'approvePayout']);
 
-    // Cơ sơ dữ liệu
+    // Cơ sở lưu trú
     Route::get("/admin/accommodations",[AdminAccommodationController::class,'index']);
 });

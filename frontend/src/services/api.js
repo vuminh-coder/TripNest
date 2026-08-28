@@ -103,6 +103,12 @@ export const apiService = {
     return data;
   },
 
+  async forgotPassword(email){
+
+  },
+
+
+
   // ==========================================
   // 2. Tra cứu Danh mục & Cơ sở lưu trú
   // ==========================================

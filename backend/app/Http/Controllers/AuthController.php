@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\SendOtpMail;
 use App\Models\Account;
+use App\Models\PasswordOtp;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Throwable;
@@ -365,20 +368,17 @@ class AuthController extends Controller
         // Sinh mã OTP 6 số
         $otp = (string) rand(100000, 999999);
 
-        // Lưu Cache hiệu lực 15 phút
-        $otpCacheKey = 'forgot_pw_otp_' . md5($email);
-        Cache::put($otpCacheKey, [
-            'otp' => $otp,
-            'failed_attempts' => 0,
-            'account_id' => $account->id,
-            'created_at' => now()->timestamp,
-        ], now()->addMinutes(15));
+        Mail::to($account->email)->send(new SendOtpMail($otp));
+
+        $resultSaveOtp = PasswordOtp::create([
+            "account_id" => $account->id,
+            "otp" => $otp,
+            "expire_at" => now()->addMinutes(5),
+        ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Mã xác minh OTP 6 chữ số đã được gửi đến email của bạn!',
-            'email' => $email,
-            'otp_demo' => $otp,
+            'message' => 'Mã xác minh OTP 6 chữ số đã được gửi đến email của bạn!'
         ], 200);
     }
 
