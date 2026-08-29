@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccommodationController;
 use App\Http\Controllers\admin\AccommodationController as AdminAccommodationController;
+use App\Http\Controllers\admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
@@ -97,4 +98,10 @@ Route::middleware([])->group(function () {
 
     // Cơ sở lưu trú
     Route::get("/admin/accommodations",[AdminAccommodationController::class,'index']);
+
+    // Quản lý Đánh giá Radar 6 tiêu chí (Admin Review Moderation)
+    Route::get('/admin/reviews', [AdminReviewController::class, 'index']);
+    Route::match(['post', 'patch', 'put'], '/admin/reviews/{id}/status', [AdminReviewController::class, 'updateStatus']);
+    Route::post('/admin/reviews/{id}/respond', [AdminReviewController::class, 'respond']);
+    Route::delete('/admin/reviews/{id}', [AdminReviewController::class, 'destroy']);
 });

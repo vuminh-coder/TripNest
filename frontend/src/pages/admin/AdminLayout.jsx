@@ -242,8 +242,36 @@ export const AdminLayout = ({ onExitAdmin }) => {
 
   // Reviews Actions
   const handleUpdateReviewStatus = async (reviewId, status) => {
-    const updated = await adminService.updateReviewStatus(reviewId, status);
-    setReviews(updated);
+    try {
+      const updated = await adminService.updateReviewStatus(reviewId, status);
+      setReviews(updated);
+      toast.success(
+        status === 'approved' ? 'Đã duyệt hiển thị đánh giá' : status === 'hidden' ? 'Đã ẩn đánh giá khỏi hệ thống' : 'Đã gắn cờ đánh giá',
+        'Trạng thái kiểm duyệt đã được lưu vào cơ sở dữ liệu.'
+      );
+    } catch (e) {
+      toast.error('Lỗi khi cập nhật trạng thái đánh giá', e.message);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      const updated = await adminService.deleteReview(reviewId);
+      setReviews(updated);
+      toast.success('Đã xóa đánh giá thành công khỏi cơ sở dữ liệu.');
+    } catch (e) {
+      toast.error('Lỗi khi xóa đánh giá: ' + e.message);
+    }
+  };
+
+  const handleRespondReview = async (reviewId, hostResponse) => {
+    try {
+      const updated = await adminService.respondToReview(reviewId, hostResponse);
+      setReviews(updated);
+      toast.success('Đã lưu phản hồi thành công vào cơ sở dữ liệu!');
+    } catch (e) {
+      toast.error('Lỗi khi lưu phản hồi: ' + e.message);
+    }
   };
 
   // Categories & Amenities Actions
@@ -373,6 +401,8 @@ export const AdminLayout = ({ onExitAdmin }) => {
                 <ReviewsPage
                   reviews={reviews}
                   onUpdateReviewStatus={handleUpdateReviewStatus}
+                  onDeleteReview={handleDeleteReview}
+                  onRespondReview={handleRespondReview}
                 />
               )}
 
