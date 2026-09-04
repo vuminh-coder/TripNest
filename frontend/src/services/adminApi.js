@@ -670,25 +670,65 @@ export const adminService = {
       return p;
     });
     saveStoredData(data);
-    return await this.getPayouts();
+
+    // 1. Asynchronously update backend CSDL
+    try {
+      fetch(`${API_BASE_URL}/admin/payouts/${payoutId}/approve`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ transactionRef: ref }),
+      }).catch(() => { });
+    } catch {
+      // ignore
+    }
+
+    // 2. Đồng bộ sang Host Payout History (tripnest_host_payout_history)
+    if (approvedPayout) {
+      try {
+        const hostHistory = JSON.parse(localStorage.getItem('tripnest_host_payout_history') || '[]');
+        const hostItem = {
+          id: approvedPayout.id,
+          date: new Date().toLocaleDateString('vi-VN'),
+          amount: approvedPayout.net_payout,
+          note: `Chuyển khoản ${approvedPayout.bank_name || 'Ngân hàng'} (Đơn ${approvedPayout.booking_code || approvedPayout.id})`,
+          status: 'completed',
+          ref: approvedPayout.transaction_ref,
+        };
+        const filtered = hostHistory.filter((h) => h.id !== approvedPayout.id && h.note !== hostItem.note);
+        localStorage.setItem('tripnest_host_payout_history', JSON.stringify([hostItem, ...filtered]));
+      } catch (e) {
+        console.warn('Sync to host payout history failed', e);
+      }
+    }
+
+    return data.payouts;
   },
 
   // ==========================================
   // 7. Đánh giá Radar (Reviews)
   // ==========================================
-  async getReviews() {
+  async getReviews(params = {}) {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/reviews`, {
+      const queryParams = new URLSearchParams();
+      if (params.status && params.status !== 'all') queryParams.append('status', params.status);
+      if (params.search) queryParams.append('search', params.search);
+      const url = `${API_BASE_URL}/admin/reviews${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      
+      const response = await fetch(url, {
         headers: getAuthHeaders(),
       });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          return json.data;
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && Array.isArray(result.reviews || result.data)) {
+          const list = result.reviews || result.data;
+          const data = getStoredData();
+          data.reviews = list;
+          saveStoredData(data);
+          return list;
         }
       }
     } catch (e) {
-      console.warn('Backend get admin reviews failed:', e);
+      console.warn('Failed to fetch reviews from backend, fallback to local store', e);
     }
     const data = getStoredData();
     return data.reviews || [];
@@ -696,22 +736,72 @@ export const adminService = {
 
   async updateReviewStatus(reviewId, status) {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/reviews/${reviewId}/status`, {
-        method: 'PATCH',
+      const response = await fetch(`${API_BASE_URL}/admin/reviews/${reviewId}/status`, {
+        method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ status }),
       });
-      if (res.ok) {
-        return await this.getReviews();
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        console.warn('Update review status server error:', errData);
       }
     } catch (e) {
-      console.warn('Backend update review status failed:', e);
+      console.warn('Failed to update review status on server:', e);
     }
 
     const data = getStoredData();
-    data.reviews = data.reviews.map((r) => {
+    data.reviews = (data.reviews || []).map((r) => {
       if (r.id === reviewId) {
         return { ...r, status };
+      }
+      return r;
+    });
+    saveStoredData(data);
+    return data.reviews;
+  },
+
+  async deleteReview(reviewId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || 'Không thể xóa đánh giá.');
+      }
+    } catch (e) {
+      console.warn('Failed to delete review on server:', e);
+    }
+
+    const data = getStoredData();
+    data.reviews = (data.reviews || []).filter((r) => r.id !== reviewId);
+    saveStoredData(data);
+    return data.reviews;
+  },
+
+  async respondToReview(reviewId, hostResponse) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/reviews/${reviewId}/respond`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ host_response: hostResponse }),
+      });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || 'Không thể gửi phản hồi.');
+      }
+    } catch (e) {
+      console.warn('Failed to respond to review on server:', e);
+    }
+
+    const data = getStoredData();
+    data.reviews = (data.reviews || []).map((r) => {
+      if (r.id === reviewId) {
+        return {
+          ...r,
+          host_response: hostResponse,
+          host_responded_at: new Date().toISOString().replace('T', ' ').substring(0, 16),
+        };
       }
       return r;
     });

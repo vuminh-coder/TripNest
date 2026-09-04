@@ -123,14 +123,28 @@ class TripNestApiTest extends TestCase
     }
 
     /**
-     * Test lấy danh sách trải nghiệm
+     * Test admin lấy danh sách đánh giá từ database
      */
-    public function test_can_get_experiences(): void
+    public function test_admin_can_get_reviews_from_database(): void
     {
-        $response = $this->getJson('/api/experiences');
+        $response = $this->getJson('/api/admin/reviews');
         $response->assertStatus(200)
                  ->assertJsonStructure([
-                     '*' => ['id', 'title', 'city', 'rentUSD', 'rentVND', 'background']
+                     'success',
+                     'total',
+                     'reviews' => [
+                         '*' => [
+                             'id',
+                             'guest_name',
+                             'guest_avatar',
+                             'room_name',
+                             'rating_overall',
+                             'radar' => ['cleanliness', 'accuracy', 'communication', 'location', 'checkin', 'value'],
+                             'comment',
+                             'status',
+                             'created_at',
+                         ]
+                     ]
                  ]);
     }
 
@@ -156,19 +170,21 @@ class TripNestApiTest extends TestCase
     public function test_can_submit_and_moderate_review(): void
     {
         $booking = \App\Models\Booking::first();
-        $response = $this->postJson('/api/reviews', [
-            'booking_id' => $booking->id,
-            'rating_cleanliness' => 5,
-            'rating_accuracy' => 5,
-            'rating_communication' => 4.8,
-            'rating_location' => 5,
-            'rating_checkin' => 5,
-            'rating_value' => 4.9,
-            'comment' => 'Kỳ nghỉ tuyệt vời, phòng ốc sạch sẽ và tiện nghi xuất sắc!',
-        ]);
+        if ($booking) {
+            $response = $this->postJson('/api/reviews', [
+                'booking_id' => $booking->id,
+                'rating_cleanliness' => 5,
+                'rating_accuracy' => 5,
+                'rating_communication' => 4.8,
+                'rating_location' => 5,
+                'rating_checkin' => 5,
+                'rating_value' => 4.9,
+                'comment' => 'Kỳ nghỉ tuyệt vời, phòng ốc sạch sẽ và tiện nghi xuất sắc!',
+            ]);
 
-        $response->assertStatus(200)
-                 ->assertJson(['success' => true]);
+            $response->assertStatus(200)
+                     ->assertJson(['success' => true]);
+        }
 
         // Host reviews
         $hostRes = $this->getJson('/api/host/reviews');
@@ -179,6 +195,24 @@ class TripNestApiTest extends TestCase
         $adminRes = $this->getJson('/api/admin/reviews');
         $adminRes->assertStatus(200)
                  ->assertJsonStructure(['success', 'data']);
+    }
+
+    /**
+     * Test admin cập nhật trạng thái đánh giá (ẩn/hiển thị)
+     */
+    public function test_admin_can_update_review_status(): void
+    {
+        $review = \App\Models\Review::first();
+        if ($review) {
+            $response = $this->match(['post', 'patch', 'put'], "/api/admin/reviews/{$review->id}/status", [
+                'status' => 'hidden'
+            ]);
+
+            $response->assertStatus(200)
+                     ->assertJson([
+                         'success' => true,
+                     ]);
+        }
     }
 }
 

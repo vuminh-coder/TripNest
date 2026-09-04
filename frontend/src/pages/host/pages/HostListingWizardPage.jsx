@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './HostListingWizardPage.css';
 import { TbArrowLeft, TbArrowRight, TbHome, TbBuildingCastle, TbBuildingCommunity, TbSailboat, TbTrees, TbBuilding, TbMapPin, TbUsers, TbBed, TbBath, TbSparkles, TbWifi, TbSwimming, TbToolsKitchen2, TbAirConditioning, TbCar, TbFlame, TbDeviceTv, TbPhoto, TbPlus, TbTrash, TbCheck, TbEye, TbCoin, TbX } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
@@ -35,6 +35,9 @@ export const HostListingWizardPage = ({
   const [bathrooms, setBathrooms] = useState(2);
   const [roomSizeM2, setRoomSizeM2] = useState(85);
 
+  // Image state
+  const [fileList,setFileList] = useState([]);
+
   // Amenities
   const [selectedAmenities, setSelectedAmenities] = useState([
     'Hồ bơi riêng',
@@ -47,9 +50,6 @@ export const HostListingWizardPage = ({
 
   // Images
   const [images, setImages] = useState([
-    'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1000&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1000&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=1000&auto=format&fit=crop&q=80',
   ]);
   const [newImageUrl, setNewImageUrl] = useState('');
 
@@ -84,6 +84,10 @@ export const HostListingWizardPage = ({
     { name: 'View thiên nhiên tuyệt đẹp', icon: <TbSparkles /> },
   ];
 
+  // Amenity
+  const [amenities, setAmenities] = useState([]);
+
+
   const toggleAmenity = (name) => {
     if (selectedAmenities.includes(name)) {
       setSelectedAmenities(selectedAmenities.filter((a) => a !== name));
@@ -92,18 +96,32 @@ export const HostListingWizardPage = ({
     }
   };
 
-  const handleAddImage = (e) => {
-    if (e) e.preventDefault();
-    if (!newImageUrl.trim()) return;
-    setImages([...images, newImageUrl.trim()]);
-    setNewImageUrl('');
-  };
+  // const handleAddImage = (e) => {
+  //   if (e) e.preventDefault();
+  //   if (!newImageUrl.trim()) return;
+  //   setImages([...images, newImageUrl.trim()]);
+  //   setNewImageUrl('');
+  // };
+
+  const handleAddImageFromDevice = (e) => {
+    const {name,files} = e.target;
+    const newFileList = [...fileList];
+    const imagePreview = [...images];
+    Array.from(files).forEach((file) => {
+      newFileList.push(file);
+      imagePreview.push(URL.createObjectURL(file));
+    });
+    setImages(imagePreview);
+    setFileList(newFileList);
+  }
 
   const handleRemoveImage = (index) => {
     if (images.length <= 1) {
       toast.warning('Yêu cầu hình ảnh', 'Chỗ ở cần ít nhất 1 ảnh đại diện.');
       return;
     }
+    const newFileList = fileList.filter((item,i) => index!=i);
+    setFileList(newFileList);
     setImages(images.filter((_, i) => i !== index));
   };
 
@@ -170,6 +188,21 @@ export const HostListingWizardPage = ({
       setIsPublishing(false);
     }
   };
+
+  useEffect(() => {
+    const refreshAmenities = async () => {
+      try {
+        const data = await apiService.getAmenities();
+        if (data.success && Array.isArray(data.amenities) && data.amenities.length > 0) {
+          setAmenities(data.amenities);
+        }
+      } catch (e) {
+        console.error('Error loading host amenities:', e);
+      } finally {
+      }
+    };
+    refreshAmenities();
+  }, [])
 
   return (
     <div className="host-panel-card" style={{ margin: 0, width: '100%' }}>
@@ -450,19 +483,19 @@ export const HostListingWizardPage = ({
             </p>
 
             <div className="amenities-selector-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
-              {allAmenities.map((a) => {
-                const isChecked = selectedAmenities.includes(a.name);
+              {amenities.map((a) => {
+                const isChecked = selectedAmenities.includes(a.name_vi);
                 return (
                   <div
-                    key={a.name}
+                    key={a.name_vi}
                     className={`amenity-toggle-card ${isChecked ? 'checked' : ''}`}
-                    onClick={() => toggleAmenity(a.name)}
+                    onClick={() => toggleAmenity(a.name_vi)}
                     style={{ padding: '0.75rem 0.85rem' }}
                   >
                     <span style={{ fontSize: '1.2rem', color: isChecked ? 'var(--host-primary)' : 'var(--host-text-muted)' }}>
-                      {a.icon}
+                      <i className={a.icon}></i>
                     </span>
-                    <span style={{ fontSize: '0.86rem' }}>{a.name}</span>
+                    <span style={{ fontSize: '0.86rem' }}>{a.name_vi}</span>
                   </div>
                 );
               })}
@@ -480,7 +513,7 @@ export const HostListingWizardPage = ({
               Hình ảnh đẹp và sắc nét là yếu tố quan trọng nhất quyết định lựa chọn của khách.
             </p>
 
-            <form onSubmit={handleAddImage} style={{ display: 'flex', gap: '8px', marginBottom: '1.25rem' }}>
+            {/* <form onSubmit={handleAddImage} style={{ display: 'flex', gap: '8px', marginBottom: '1.25rem' }}>
               <input
                 type="url"
                 placeholder="Dán link ảnh chất lượng cao (URL)..."
@@ -502,6 +535,17 @@ export const HostListingWizardPage = ({
               >
                 <TbPlus /> Thêm ảnh
               </button>
+            </form> */}
+            <form className='form-handle-upload-image'>
+              <input type='file' name='images' id='upload-image' multiple hidden onChange={handleAddImageFromDevice}></input>
+              <label
+                htmlFor='upload-image'
+                type="submit"
+                className="host-btn-primary"
+                style={{ padding: '0.58rem 1.15rem', fontSize: '0.84rem' }}
+              >
+                <TbPlus /> Thêm ảnh Từ Thiết Bị
+              </label>
             </form>
 
             <div className="photos-preview-strip" style={{ gap: '8px' }}>
@@ -731,7 +775,7 @@ export const HostListingWizardPage = ({
               <>Đang lưu & đăng bài...</>
             ) : (
               <>
-                <TbCheck style={{ fontSize: '1.1rem' }} /> HOÀN TẤT & ĐĂNG BÁN CHỖ NGHỈ
+                <TbCheck style={{ fontSize: '1.1rem' }} /> HOÀN TẤT
               </>
             )}
           </button>

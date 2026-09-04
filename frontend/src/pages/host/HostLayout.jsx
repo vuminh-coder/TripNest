@@ -44,7 +44,7 @@ export const HostLayout = ({
   const [availableBalance, setAvailableBalance] = useState(0);
   const [loadingListings, setLoadingListings] = useState(false);
 
-  // Listings State with LocalStorage cache fallback
+  // Listings State với LocalStorage cache đồng bộ (Sửa lỗi async ở useState)
   const [listings, setListings] = useState(() => {
     try {
       const saved = localStorage.getItem('tripnest_host_listings');
@@ -54,7 +54,7 @@ export const HostLayout = ({
     }
   });
 
-  // Bookings State with LocalStorage cache fallback
+  // Bookings State với LocalStorage cache fallback
   const [bookings, setBookings] = useState(() => {
     try {
       const saved = localStorage.getItem('tripnest_host_bookings');
@@ -95,12 +95,12 @@ export const HostLayout = ({
     }
   });
 
-  // Fetch Accommodations, Bookings, Payouts from Backend
+  // Fetch Accommodations, Bookings, Payouts,Amenities từ Backend
   const refreshAccommodations = async () => {
     setLoadingListings(true);
     try {
       const data = await apiService.getHostAccommodations();
-      const list = Array.isArray(data) ? data : data?.data || [];
+      const list = Array.isArray(data) ? data : (data?.data || []);
       if (Array.isArray(list) && list.length > 0) {
         setListings(list);
       }
@@ -194,7 +194,7 @@ export const HostLayout = ({
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Fetch Live Data from Backend API on Mount
+  // Fetch Live Data từ Backend API khi Mount
   useEffect(() => {
     let isMounted = true;
     const fetchHostBackend = async () => {
@@ -226,7 +226,7 @@ export const HostLayout = ({
     };
   }, []);
 
-  // Listing Handlers with Real Backend Integration
+  // Listing Handlers
   const handleToggleStatus = async (id) => {
     try {
       const res = await apiService.toggleHostAccommodationStatus(id);
@@ -340,14 +340,12 @@ export const HostLayout = ({
       prev.map((b) => (b.id === id || b.code === id ? { ...b, status: 'checked_in' } : b))
     );
 
-    // 1. Asynchronous backend check-in
     try {
       apiService.checkIn(id).catch(() => {});
     } catch {
       // ignore
     }
 
-    // 2. Đồng bộ sang Admin Portal bookings store
     try {
       const STORAGE_KEY = 'tripnest_admin_data_v1';
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -378,14 +376,12 @@ export const HostLayout = ({
     const commissionFee = target?.commissionFee || target?.serviceFee || Math.round(grossAmount * 0.12);
     const netPayoutAmount = target?.hostEarnings || target?.hostPayoutAmount || Math.max(0, grossAmount - commissionFee);
 
-    // 1. Asynchronous backend check-out
     try {
       apiService.checkOut(id).catch(() => {});
     } catch {
       // ignore
     }
 
-    // 2. Tạo lệnh Payout trong Host Payout History
     const hostPayoutId = 'POT-' + Math.floor(100000 + Math.random() * 900000);
     const newPayout = {
       id: hostPayoutId,
@@ -396,7 +392,6 @@ export const HostLayout = ({
     };
     setPayoutHistory((prev) => [newPayout, ...prev]);
 
-    // 3. Đồng bộ tạo bản ghi Payout mới trong Admin Portal (tripnest_admin_data_v1)
     try {
       const STORAGE_KEY = 'tripnest_admin_data_v1';
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -758,7 +753,7 @@ export const HostLayout = ({
                 >
                   Hình ảnh chỗ ở
                 </label>
-                <form onSubmit={handleAddEditImage} style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
                   <input
                     type="url"
                     value={editImageUrl}
@@ -773,10 +768,10 @@ export const HostLayout = ({
                       boxSizing: 'border-box',
                     }}
                   />
-                  <button type="submit" className="host-btn-client" title="Thêm ảnh">
+                  <button type="button" onClick={handleAddEditImage} className="host-btn-client" title="Thêm ảnh">
                     <TbPlus /> Thêm
                   </button>
-                </form>
+                </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px', marginTop: '10px' }}>
                   {(editingListing.images || []).map((image, index) => (
                     <div key={`${image}-${index}`} style={{ position: 'relative' }}>

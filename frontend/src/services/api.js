@@ -180,6 +180,57 @@ export const apiService = {
     return data;
   },
 
+  async forgotPassword(email){
+    const res = await fetch(`${API_BASE_URL}/auth/forgot-password`,{
+      method: "POST",
+      headers: {"Content-type": "application/json"},
+      body: JSON.stringify({"email": email})
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const error = new Error(data.message || 'Có lỗi xảy ra. Vui lòng thử lại');
+      error.response = data;
+      throw error;
+    }
+    return data;
+  },
+
+  async verifyOtp(email,otp){
+    const res = await fetch(`${API_BASE_URL}/auth/verify-otp`,{
+      method: "POST",
+      headers: {"Content-type": "application/json"},
+      body: JSON.stringify({"email": email,"otp": otp})
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      const error = new Error(data.message || 'Có lỗi xảy ra. Vui lòng thử lại');
+      error.response = data;
+      throw error;
+    }
+    return data;
+  },
+
+  async resetPasswordCaseForgot(email,resetToken,newPassword){
+    const res = await fetch(`${API_BASE_URL}/auth/forgot-password/reset`,{
+      method: "POST",
+      headers: {"Content-type": "application/json"},
+      body: JSON.stringify({
+        "email": email,
+        "reset_token": resetToken,
+        "new_password": newPassword
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      const error = new Error(data.message || 'Có lỗi xảy ra. Vui lòng thử lại');
+      error.response = data;
+      throw error;
+    }
+    return data;
+  },
+
   // ==========================================
   // 2. Tra cứu Danh mục & Cơ sở lưu trú
   // ==========================================
@@ -582,6 +633,21 @@ export const apiService = {
       if (!res.ok) throw new Error('Network error');
       const json = await res.json();
       return json.data || json || [];
+    } catch (e) {
+      const saved = localStorage.getItem('tripnest_host_listings');
+      return saved ? JSON.parse(saved) : [];
+    }
+  },
+
+  // Lấy danh sách tiện ích
+  async getAmenities(){
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/amenity`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Network error');
+      const json = await res.json();
+      return json;
     } catch (e) {
       const saved = localStorage.getItem('tripnest_host_listings');
       return saved ? JSON.parse(saved) : [];

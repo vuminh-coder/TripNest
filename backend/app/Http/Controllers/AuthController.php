@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\SendOtpMail;
 use App\Models\Account;
+use App\Models\PasswordOtp;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Throwable;
@@ -365,20 +368,18 @@ class AuthController extends Controller
         // Sinh mã OTP 6 số
         $otp = (string) rand(100000, 999999);
 
-        // Lưu Cache hiệu lực 15 phút
-        $otpCacheKey = 'forgot_pw_otp_' . md5($email);
-        Cache::put($otpCacheKey, [
-            'otp' => $otp,
-            'failed_attempts' => 0,
-            'account_id' => $account->id,
-            'created_at' => now()->timestamp,
-        ], now()->addMinutes(15));
+        Mail::to($account->email)->send(new SendOtpMail($otp));
+
+        $resultSaveOtp = PasswordOtp::create([
+            "account_id" => $account->id,
+            "otp" => $otp,
+            "expire_at" => now()->addMinutes(5),
+            "email" => $email
+        ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Mã xác minh OTP 6 chữ số đã được gửi đến email của bạn!',
-            'email' => $email,
-            'otp_demo' => $otp,
+            'message' => 'Mã xác minh OTP 6 chữ số đã được gửi đến email của bạn!'
         ], 200);
     }
 
@@ -401,11 +402,10 @@ class AuthController extends Controller
 
         $email = strtolower(trim($request->input('email')));
         $otpInput = trim($request->input('otp'));
+        
+        $result = PasswordOtp::where("email",$email)->Where("otp",$otpInput)->Where("expire_at",">",now())->first();
 
-        $otpCacheKey = 'forgot_pw_otp_' . md5($email);
-        $cachedData = Cache::get($otpCacheKey);
-
-        if (!$cachedData) {
+        if (!$result) {
             return response()->json([
                 'success' => false,
                 'code' => 'OTP_EXPIRED',
@@ -413,31 +413,31 @@ class AuthController extends Controller
             ], 410);
         }
 
-        if ($cachedData['failed_attempts'] >= 5) {
-            Cache::forget($otpCacheKey);
-            return response()->json([
-                'success' => false,
-                'code' => 'OTP_LOCKED',
-                'message' => 'Mã OTP đã bị hủy do bạn nhập sai quá 5 lần. Vui lòng yêu cầu mã mới.',
-            ], 422);
-        }
+        // if ($cachedData['failed_attempts'] >= 5) {
+        //     Cache::forget($otpCacheKey);
+        //     return response()->json([
+        //         'success' => false,
+        //         'code' => 'OTP_LOCKED',
+        //         'message' => 'Mã OTP đã bị hủy do bạn nhập sai quá 5 lần. Vui lòng yêu cầu mã mới.',
+        //     ], 422);
+        // }
 
-        if ($cachedData['otp'] !== $otpInput && $otpInput !== '123456') {
-            $cachedData['failed_attempts'] += 1;
-            Cache::put($otpCacheKey, $cachedData, now()->addMinutes(15));
+        // if ($cachedData['otp'] !== $otpInput && $otpInput !== '123456') {
+        //     $cachedData['failed_attempts'] += 1;
+        //     Cache::put($otpCacheKey, $cachedData, now()->addMinutes(15));
 
-            $remaining = 5 - $cachedData['failed_attempts'];
-            return response()->json([
-                'success' => false,
-                'code' => 'OTP_INVALID',
-                'message' => "Mã OTP không chính xác. Bạn còn {$remaining} lần thử.",
-            ], 422);
-        }
+        //     $remaining = 5 - $cachedData['failed_attempts'];
+        //     return response()->json([
+        //         'success' => false,
+        //         'code' => 'OTP_INVALID',
+        //         'message' => "Mã OTP không chính xác. Bạn còn {$remaining} lần thử.",
+        //     ], 422);
+        // }
 
         $resetToken = Str::random(64);
         Cache::put('reset_token_' . $resetToken, [
             'email' => $email,
-            'account_id' => $cachedData['account_id'],
+            'account_id' => $result['account_id'],
         ], now()->addMinutes(15));
 
         return response()->json([
@@ -517,5 +517,51 @@ class AuthController extends Controller
                 'host' => $user?->host,
             ],
         ], 200);
+    }
+
+    // 4. Đặt lại mật khẩu trong trường hợp quên mật khẩu
+    public function resetPasswordCaseForgot(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'reset_token' => 'required|string',
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mật khẩu mới phải có tối thiểu 6 ký tự.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $email = strtolower(trim($request->input('email')));
+        $resetToken = $request->input('reset_token');
+        $newPassword = $request->input('new_password');
+
+        $tokenData = Cache::get('reset_token_' . $resetToken);
+        if (!$tokenData || $tokenData['email'] !== $email) {
+            return response()->json([
+                'success' => false,
+                'code' => 'TOKEN_INVALID',
+                'message' => 'Phiên xác thực đã hết hạn hoặc không hợp lệ.',
+            ], 403);
+        }
+
+        $account = Account::find($tokenData['account_id']);
+        if (!$account) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy tài khoản người dùng tương ứng.',
+            ], 404);
+        }
+
+        $account->password = Hash::make($newPassword);
+        $account->save();
+
+        Cache::forget('reset_token_' . $resetToken);
+
+        return response()->json(["success" => true]);
     }
 }

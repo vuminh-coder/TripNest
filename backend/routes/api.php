@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccommodationController;
 use App\Http\Controllers\admin\AccommodationController as AdminAccommodationController;
 use App\Http\Controllers\admin\FinancialController;
+use App\Http\Controllers\admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\AuthController;
@@ -23,50 +24,58 @@ use Illuminate\Support\Facades\Route;
 */
 
 // ==========================================
-// 1. Xác thực người dùng (Public Auth Routes)
+// 1. API Xác thực người dùng (Auth)
 // ==========================================
-Route::post('/auth/login', [AuthController::class, 'login']);
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
-Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
-Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/refresh', [AuthController::class, 'refresh']);
+    Route::post('/update-profile', [AuthController::class, 'updateProfile']);
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
+    Route::post('/forgot-password/send-otp', [AuthController::class, 'sendOtp']);
+    Route::post('/forgot-password/verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::post('/forgot-password/reset', [AuthController::class, 'resetPassword']);
+});
 
 // ==========================================
-// 2. Tra cứu dữ liệu công khai (Public Catalog)
+// 2. API Khách du lịch công khai (Public Client)
 // ==========================================
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/accommodations', [AccommodationController::class, 'index']);
 Route::get('/accommodations/{id}', [AccommodationController::class, 'show']);
-Route::get('/rooms', [RoomController::class, 'index']);
+Route::get('/accommodations/{id}/rooms', [AccommodationController::class, 'getRooms']);
 Route::get('/rooms/{id}', [RoomController::class, 'show']);
+Route::get('/amenities', [AmenityController::class, 'index']);
 Route::get('/experiences', [ExperienceController::class, 'index']);
-Route::get('/host/estimate', [HostController::class, 'estimate']);
-Route::post('/bookings', [BookingController::class, 'store']);
-Route::get('/bookings/{id}', [BookingController::class, 'show']);
-Route::match(['post', 'patch'], '/bookings/{id}/check-in', [BookingController::class, 'checkIn']);
-Route::match(['post', 'patch'], '/bookings/{id}/check-out', [BookingController::class, 'checkOut']);
-Route::match(['post', 'patch'], '/bookings/{id}/cancel', [BookingController::class, 'cancel']);
-Route::get('/my-bookings', [BookingController::class, 'myBookings']);
+Route::get('/experiences/{id}', [ExperienceController::class, 'show']);
+Route::get('/reviews', [ReviewController::class, 'index']);
+Route::post('/host/estimate', [HostController::class, 'estimate']);
 
-// Khuyến mãi & Đánh giá (Client)
+// Voucher validation (Public / Checkout)
 Route::post('/vouchers/validate', [VoucherController::class, 'validateVoucher']);
-Route::post('/reviews', [ReviewController::class, 'store']);
 
 // ==========================================
-// 3. API yêu cầu đăng nhập (JWT Authenticated: auth:api)
+// 3. API Khách du lịch yêu cầu đăng nhập (Customer Authenticated)
 // ==========================================
 Route::middleware(['auth:api'])->group(function () {
-    // Tài khoản & Phiên làm việc
-    Route::get('/auth/me', [AuthController::class, 'me']);
-    Route::put('/auth/password', [AuthController::class, 'updatePassword']);
-    Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::post('/auth/refresh', [AuthController::class, 'refresh']);
+    // Đặt phòng (Bookings)
+    Route::post('/bookings', [BookingController::class, 'store']);
+    Route::get('/my-bookings', [BookingController::class, 'myBookings']);
+    Route::get('/bookings/{id}', [BookingController::class, 'show']);
+    Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
+    Route::post('/bookings/{id}/check-in', [BookingController::class, 'checkIn']);
+    Route::post('/bookings/{id}/check-out', [BookingController::class, 'checkOut']);
+
+    // Đánh giá Radar 6 tiêu chí (Reviews)
+    Route::post('/reviews', [ReviewController::class, 'store']);
 
     // Danh sách yêu thích (Wishlist)
-    Route::get('/wishlist', [WishlistController::class, 'index']);
-    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle']);
+    Route::get('/wishlists', [WishlistController::class, 'index']);
+    Route::post('/wishlists/toggle', [WishlistController::class, 'toggle']);
 
-    // Đăng ký chủ nhà (cần đăng nhập)
+    // Đăng ký làm Chủ nhà (Upgrade to Host)
     Route::post('/host/register', [HostController::class, 'registerHost']);
 });
 
@@ -84,6 +93,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/host/payouts', [HostController::class, 'getPayouts']);
     Route::post('/host/payouts/request', [HostController::class, 'requestPayout']);
     Route::put('/host/payout-account', [HostController::class, 'updatePayoutAccount']);
+    Route::get('/host/amenity', [AmenityController::class, 'index']);
     Route::get('/host/reviews', [ReviewController::class, 'hostIndex']);
     Route::post('/host/reviews/{id}/reply', [ReviewController::class, 'hostReply']);
 });
@@ -124,9 +134,11 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
     Route::get('/admin/payouts', [FinancialController::class, 'getPayouts']);
     Route::post('/admin/payouts/{id}/approve', [FinancialController::class, 'approvePayout']);
 
-    // Quản lý Đánh giá (Reviews)
-    Route::get('/admin/reviews', [ReviewController::class, 'adminIndex']);
-    Route::patch('/admin/reviews/{id}/status', [ReviewController::class, 'adminUpdateStatus']);
+    // Quản lý Đánh giá Radar 6 tiêu chí (Admin Review Moderation)
+    Route::get('/admin/reviews', [AdminReviewController::class, 'index']);
+    Route::match(['post', 'patch', 'put'], '/admin/reviews/{id}/status', [AdminReviewController::class, 'updateStatus']);
+    Route::post('/admin/reviews/{id}/respond', [AdminReviewController::class, 'respond']);
+    Route::delete('/admin/reviews/{id}', [AdminReviewController::class, 'destroy']);
 
     // Quản lý Mã giảm giá (Vouchers)
     Route::get('/admin/vouchers', [VoucherController::class, 'adminIndex']);

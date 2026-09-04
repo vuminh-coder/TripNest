@@ -7,30 +7,39 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Throwable;
 
 class AmenityController extends Controller
 {
     /**
      * Danh sách tất cả tiện nghi
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $amenities = Amenity::orderBy('id', 'asc')->get()->map(function ($a) {
-            return [
-                'id' => $a->id,
-                'code' => $a->code,
-                'name_vi' => $a->name_vi,
-                'name_en' => $a->name_en,
-                'icon' => $a->icon,
-                'category' => $a->category,
-                'target_type' => $a->target_type,
-            ];
-        });
+        try {
+            $amenities = Amenity::orderBy('id', 'asc')->get()->map(function ($a) {
+                return [
+                    'id' => $a->id,
+                    'code' => $a->code,
+                    'name_vi' => $a->name_vi,
+                    'name_en' => $a->name_en,
+                    'icon' => $a->icon,
+                    'category' => $a->category,
+                    'target_type' => $a->target_type,
+                ];
+            });
 
-        return response()->json([
-            'success' => true,
-            'data' => $amenities,
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $amenities,
+                'amenities' => $amenities,
+            ]);
+        } catch (Throwable $ex) {
+            return response()->json([
+                'success' => false,
+                'message' => $ex->getMessage(),
+            ], 400);
+        }
     }
 
     /**

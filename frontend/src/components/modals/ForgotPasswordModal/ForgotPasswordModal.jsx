@@ -112,9 +112,9 @@ export const ForgotPasswordModal = ({
       const res = await apiService.forgotPassword(email.trim());
 
       if (res.success) {
-        setDemoOtp(res.otp_demo || '892341');
+        // setDemoOtp(res.otp_demo || '892341');
         setStep('otp');
-        setCountdown(60);
+        setCountdown(60*5);
         setIsCounting(true);
         // Auto-focus ô OTP đầu tiên
         setTimeout(() => {
@@ -229,12 +229,9 @@ export const ForgotPasswordModal = ({
     setLoading(true);
 
     try {
-      const res = await apiService.resetPassword(email.trim(), resetToken, newPassword);
+      const res = await apiService.resetPasswordCaseForgot(email.trim(), resetToken, newPassword);
 
       if (res.success) {
-        if (res.token && res.user) {
-          localStorage.setItem('tripnest_user', JSON.stringify({ ...res.user, token: res.token }));
-        }
         setStep('success');
         if (onResetSuccess) {
           onResetSuccess(email, newPassword);
@@ -846,7 +843,7 @@ export const ForgotPasswordModal = ({
                 }}
                 disabled={loading}
               >
-                {loading ? 'Đang cập nhật mật khẩu...' : 'Đổi Mật Khẩu & Đăng Nhập'}
+                {loading ? 'Đang cập nhật mật khẩu...' : 'Đổi Mật Khẩu'}
               </button>
             </form>
           </div>
