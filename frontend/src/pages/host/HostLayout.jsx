@@ -226,7 +226,7 @@ export const HostLayout = ({
     }
   });
 
-  // Fetch Accommodations, Bookings, Payouts từ Backend
+  // Fetch Accommodations, Bookings, Payouts,Amenities từ Backend
   const refreshAccommodations = async () => {
     try {
       setLoadingListings(true);

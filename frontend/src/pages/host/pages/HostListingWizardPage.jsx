@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TbArrowLeft, TbArrowRight, TbHome, TbBuildingCastle, TbBuildingCommunity, TbSailboat, TbTrees, TbBuilding, TbMapPin, TbUsers, TbBed, TbBath, TbSparkles, TbWifi, TbSwimming, TbToolsKitchen2, TbAirConditioning, TbCar, TbFlame, TbDeviceTv, TbPhoto, TbPlus, TbTrash, TbCheck, TbEye, TbCoin, TbX } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/services/api';
@@ -82,6 +82,10 @@ export const HostListingWizardPage = ({
     { name: 'Smart TV 4K', icon: <TbDeviceTv /> },
     { name: 'View thiên nhiên tuyệt đẹp', icon: <TbSparkles /> },
   ];
+
+  // Amenity
+    const [amenities,setAmenities] = useState([]);
+  
 
   const toggleAmenity = (name) => {
     if (selectedAmenities.includes(name)) {
@@ -169,6 +173,22 @@ export const HostListingWizardPage = ({
       setIsPublishing(false);
     }
   };
+
+  useEffect(() => {
+    const refreshAmenities = async () => {
+      try {
+        const data = await apiService.getAmenities();
+        console.log(data);
+        if (data.success && Array.isArray(data.amenities) && data.amenities.length > 0) {
+          setAmenities(data.amenities);
+        }
+      } catch (e) {
+        console.error('Error loading host amenities:', e);
+      } finally {
+      }
+    };
+    refreshAmenities();
+  }, [])
 
   return (
     <div className="host-panel-card" style={{ margin: 0, width: '100%' }}>

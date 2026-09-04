@@ -31,7 +31,7 @@ export const HostSidebar = ({
       group: 'Quản Lý Chỗ Ở',
       items: [
         { id: 'accommodations', label: 'Cơ Sở Lưu Trú', icon: TbBuildingCastle },
-        { id: 'new_listing', label: 'Đăng Ký Chỗ Nghỉ', icon: TbPlus },
+        { id: 'new_listing', label: 'Thêm Mới Cơ Sở Lưu Trú', icon: TbPlus },
       ],
     },
     {

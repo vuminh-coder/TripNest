@@ -129,7 +129,7 @@ export const HostAccommodationsPage = ({
             className="host-btn-primary"
             onClick={onOpenWizard}
           >
-            <TbPlus /> Đăng Ký Chỗ Nghỉ
+            <TbPlus /> Thêm Mới Cơ Sở Lưu Trú
           </button>
         </div>
       </div>
@@ -182,7 +182,7 @@ export const HostAccommodationsPage = ({
               className="host-btn-primary"
               onClick={onOpenWizard}
             >
-              <TbPlus /> Đăng Ký Chỗ Nghỉ Ngay
+              <TbPlus /> Thêm Mới Cơ Sở Lưu Trú
             </button>
           </div>
         ) : (

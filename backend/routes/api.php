@@ -4,6 +4,7 @@ use App\Http\Controllers\AccommodationController;
 use App\Http\Controllers\admin\AccommodationController as AdminAccommodationController;
 use App\Http\Controllers\admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\admin\UserController;
+use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CategoryController;
@@ -78,6 +79,7 @@ Route::get('/host/bookings', [HostController::class, 'getHostBookings']);
 Route::get('/host/payouts', [HostController::class, 'getPayouts']);
 Route::post('/host/payouts/request', [HostController::class, 'requestPayout']);
 Route::put('/host/payout-account', [HostController::class, 'updatePayoutAccount']);
+Route::get('/host/amenity',[AmenityController::class,'index']);
 
 // ==========================================
 // 4. API Quản trị hệ thống (Admin Portal: auth:api + admin role)

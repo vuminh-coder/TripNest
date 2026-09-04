@@ -423,6 +423,21 @@ export const apiService = {
     }
   },
 
+  // Lấy danh sách tiện ích
+  async getAmenities(){
+    try {
+      const res = await fetch(`${API_BASE_URL}/host/amenity`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Network error');
+      const json = await res.json();
+      return json;
+    } catch (e) {
+      const saved = localStorage.getItem('tripnest_host_listings');
+      return saved ? JSON.parse(saved) : [];
+    }
+  },
+
   // 19. Tạo mới chỗ ở & phòng (Listing Wizard 6 Bước)
   async createHostAccommodation(payload) {
     try {
