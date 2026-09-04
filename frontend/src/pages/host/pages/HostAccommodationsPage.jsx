@@ -26,12 +26,14 @@ export const HostAccommodationsPage = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
 
+  const arrayListings = Array.isArray(listings) ? listings : [];
+
   const formatPrice = (val) => {
     if (currency === 'USD') return `$${Math.round(val / 25000).toLocaleString()}`;
     return `${Number(val).toLocaleString('vi-VN')} ₫`;
   };
 
-  const filteredListings = listings.filter((item) => {
+  const filteredListings = arrayListings.filter((item) => {
     const matchSearch =
       !searchTerm.trim() ||
       item.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,7 +51,7 @@ export const HostAccommodationsPage = ({
         <div>
           <h3 className="host-panel-title">
             <TbBuildingCastle style={{ color: 'var(--host-primary)' }} />
-            Quản Lý Cơ Sở Lưu Trú ({filteredListings.length}/{listings.length})
+            Quản Lý Cơ Sở Lưu Trú ({filteredListings.length}/{arrayListings.length})
           </h3>
         </div>
 
