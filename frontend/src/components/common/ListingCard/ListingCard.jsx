@@ -59,7 +59,7 @@ export const ListingCard = ({
       return `€${Math.round(val).toLocaleString()}`;
     }
     const val = (priceVND || priceUSD * 25450) * nights;
-    return `${val.toLocaleString()} ₫`;
+    return `${val.toLocaleString()} đ`;
   };
 
   return (
@@ -82,6 +82,7 @@ export const ListingCard = ({
           className={`favorite-heart-btn ${isFavorite ? 'active' : ''}`}
           onClick={handleHeartClick}
           title={isFavorite ? 'Xóa khỏi danh sách yêu thích' : 'Lưu vào danh sách yêu thích'}
+          aria-label={isFavorite ? 'Xóa khỏi danh sách yêu thích' : 'Lưu vào danh sách yêu thích'}
         >
           {isFavorite ? <TbHeartFilled /> : <TbHeart />}
         </button>
@@ -94,18 +95,20 @@ export const ListingCard = ({
         )}
 
         {/* City Location Tag */}
-        <div className="card-city-tag">
-          <TbMapPin style={{ fontSize: '0.85rem' }} />
-          <span>{room.city}</span>
-        </div>
+        {room.city && (
+          <div className="card-city-tag">
+            <TbMapPin style={{ fontSize: '0.8rem' }} />
+            <span>{room.city}</span>
+          </div>
+        )}
 
         {/* Slider Controls */}
         {images.length > 1 && (
           <>
-            <button className="card-slide-arrow prev" onClick={handlePrevImg} title="Ảnh trước">
+            <button className="card-slide-arrow prev" onClick={handlePrevImg} title="Ảnh trước" aria-label="Ảnh trước">
               <TbChevronLeft />
             </button>
-            <button className="card-slide-arrow next" onClick={handleNextImg} title="Ảnh tiếp">
+            <button className="card-slide-arrow next" onClick={handleNextImg} title="Ảnh tiếp" aria-label="Ảnh tiếp">
               <TbChevronRight />
             </button>
             <div className="card-dots-indicator">
@@ -122,10 +125,16 @@ export const ListingCard = ({
 
       {/* Information Row */}
       <div className="listing-info">
-        <div className="listing-header-row">
-          <h3 className="listing-hotel-title" title={room.nameVi || room.title}>
-            {room.nameVi || room.title}
-          </h3>
+        <h3 className="listing-hotel-title" title={room.nameVi || room.title}>
+          {(room.nameVi || room.title || '')
+            .replace(/(Phu|Phú)\s+(Quoc|Quốc)/gi, '$1\u00A0$2')
+            .replace(/(Nha)\s+(Trang)/gi, '$1\u00A0$2')
+            .replace(/(Đà|Da)\s+(Lạt|Lat|Nẵng|Nang)/gi, '$1\u00A0$2')
+            .replace(/(Hội|Hoi)\s+(An)/gi, '$1\u00A0$2')
+            .replace(/(Hạ|Ha)\s+(Long)/gi, '$1\u00A0$2')}
+        </h3>
+
+        <div className="listing-meta-row">
           <div className="listing-rating-pill">
             <TbStarFilled style={{ fontSize: '0.85rem', color: '#ff385c' }} />
             <span style={{ fontWeight: 700 }}>{room.rating ? Number(room.rating).toFixed(2) : '5.00'}</span>
@@ -133,19 +142,17 @@ export const ListingCard = ({
               <span className="listing-reviews-count">({room.reviewsCount})</span>
             )}
           </div>
-        </div>
 
-        <div className="listing-meta-row">
           <span className="listing-type-tag">
             {room.accommodationType === 'resort'
-              ? 'Khu nghỉ dưỡng 5⭐'
+              ? 'Resort 5 sao'
               : room.accommodationType === 'hotel'
-              ? 'Khách sạn cao cấp'
+              ? 'Khách sạn 5 sao'
               : room.accommodationType === 'villa'
-              ? 'Biệt thự nghỉ dưỡng'
+              ? 'Villa nghỉ dưỡng'
               : room.accommodationType === 'homestay'
-              ? 'Homestay nguyên căn'
-              : 'Cơ sở lưu trú cao cấp'}
+              ? 'Homestay'
+              : 'Lưu trú cao cấp'}
           </span>
           {room.roomsCount > 1 && (
             <span className="listing-rooms-badge">
@@ -154,12 +161,25 @@ export const ListingCard = ({
           )}
         </div>
 
-        <span className="listing-distance-text">{room.distance || `Cách trung tâm ${room.city}`}</span>
-        <span className="listing-date-text">
-          {searchParams.checkInDate && searchParams.checkOutDate
-            ? `${searchParams.checkInDate} - ${searchParams.checkOutDate}`
-            : room.dates || 'Khả dụng cho mọi ngày nghỉ'}
+        <span className="listing-distance-text" title={room.distance || `Cách trung tâm ${room.city}`}>
+          {(() => {
+            const raw = room.distance || (room.city ? `Cách trung tâm ${room.city}` : '');
+            if (raw.includes('·')) {
+              const parts = raw.split('·').map(s => s.trim());
+              const distPart = parts.find(p => /cách\s+trung\s+tâm|\d+\s*km/i.test(p));
+              if (distPart) return distPart.replace(/(\d+(?:\.\d+)?)\s*km/gi, '$1\u00A0km');
+            }
+            return raw.replace(/(\d+(?:\.\d+)?)\s*km/gi, '$1\u00A0km');
+          })()}
         </span>
+
+        {((searchParams.checkInDate && searchParams.checkOutDate) || (room.dates && room.dates !== 'Khả dụng cho mọi ngày nghỉ')) && (
+          <span className="listing-date-text">
+            {searchParams.checkInDate && searchParams.checkOutDate
+              ? `${searchParams.checkInDate} - ${searchParams.checkOutDate}`
+              : room.dates}
+          </span>
+        )}
 
         <div className="listing-price-row">
           {searchNights > 0 ? (

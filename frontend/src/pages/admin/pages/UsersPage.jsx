@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { TbPlus, TbSearch, TbShieldCheck } from 'react-icons/tb';
+import './UsersPage.css';
+import { TbPlus, TbSearch } from 'react-icons/tb';
 import AdminPageHeader from '../common/AdminPageHeader';
 import AdminTableWrapper from '../common/AdminTableWrapper';
 import AdminConfirmDialog from '../common/AdminConfirmDialog';
@@ -56,21 +57,9 @@ export const UsersPage = ({
   const paginatedUsers = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div>
+    <div className="adm-users-container">
       {deleteError && (
-        <div
-          role="alert"
-          style={{
-            background: '#fff0f3',
-            border: '1px solid #fecdd3',
-            color: '#be123c',
-            borderRadius: '8px',
-            padding: '0.8rem 1rem',
-            marginBottom: '1.25rem',
-            fontSize: '0.88rem',
-            fontWeight: 600,
-          }}
-        >
+        <div role="alert" className="adm-users-alert-danger">
           {deleteError}
         </div>
       )}
@@ -89,8 +78,8 @@ export const UsersPage = ({
       />
 
       {/* Filter Toolbar */}
-      <div className="admin-card-box" style={{ padding: '0.85rem 1.25rem', marginBottom: '1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.85rem' }}>
+      <div className="admin-card-box adm-users-filter-box">
+        <div className="adm-users-filter-bar">
           {/* Sub-tabs */}
           <UserFilterTabs
             activeTab={activeTab}
@@ -106,27 +95,14 @@ export const UsersPage = ({
           />
 
           {/* Search Box */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: '#f8fafc',
-              border: '1px solid #edf2f7',
-              borderRadius: '8px',
-              padding: '0.42rem 0.85rem',
-              flex: 1,
-              minWidth: '220px',
-              maxWidth: '300px',
-            }}
-          >
-            <TbSearch style={{ color: '#94a3b8' }} />
+          <div className="adm-users-search-wrap">
+            <TbSearch className="adm-users-search-icon" />
             <input
               type="text"
               placeholder="Tìm theo họ tên, email, SĐT, CCCD..."
               value={searchUser}
               onChange={(e) => setSearchUser(e.target.value)}
-              style={{ border: 'none', background: 'transparent', width: '100%', fontSize: '0.84rem', outline: 'none' }}
+              className="adm-users-search-input"
             />
           </div>
         </div>

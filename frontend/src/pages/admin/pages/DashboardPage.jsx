@@ -1,4 +1,5 @@
 import React from 'react';
+import './DashboardPage.css';
 import {
   TbCoins,
   TbCalendarEvent,
@@ -30,7 +31,7 @@ export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycMod
   const commission12 = Math.round((stats.totalRevenueVND || 0) * 0.12);
 
   return (
-    <div>
+    <div className="adm-dashboard-container">
       {/* Page Header */}
       <AdminPageHeader
         title="Tổng Quan Vận Hành"
@@ -44,7 +45,7 @@ export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycMod
       />
 
       {/* 4 Stats Cards */}
-      <div className="admin-stats-grid">
+      <div className="admin-stats-grid adm-dash-stats-grid">
         <div className="stat-card-glass">
           <div>
             <span className="stat-label">Tổng GMV Đã Đặt</span>
@@ -62,7 +63,7 @@ export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycMod
         <div className="stat-card-glass">
           <div>
             <span className="stat-label">Hoa Hồng Nền Tảng (12%)</span>
-            <div className="stat-value" style={{ color: '#059669' }}>
+            <div className="stat-value adm-dash-stat-green">
               {formatVND(commission12 || stats.commissionRevenueVND)}
             </div>
             <div className="stat-trend trend-up">
@@ -80,13 +81,16 @@ export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycMod
             <span className="stat-label">Đơn Đặt Phòng</span>
             <div className="stat-value">{stats.totalBookings || 0}</div>
             {/* Progress bar */}
-            <div style={{ marginTop: '4px', width: '130px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: '#64748b', marginBottom: '2px' }}>
+            <div className="adm-dash-progress-wrap">
+              <div className="adm-dash-progress-meta">
                 <span>Lấp phòng</span>
                 <strong>{stats.occupancyRate || 82}%</strong>
               </div>
-              <div style={{ width: '100%', height: '5px', background: '#f1f5f9', borderRadius: '999px', overflow: 'hidden' }}>
-                <div style={{ width: `${stats.occupancyRate || 82}%`, height: '100%', background: '#0ea5e9', borderRadius: '999px' }} />
+              <div className="adm-dash-progress-track">
+                <div
+                  className="adm-dash-progress-bar"
+                  style={{ width: `${stats.occupancyRate || 82}%` }}
+                />
               </div>
             </div>
           </div>
@@ -98,7 +102,9 @@ export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycMod
         <div className="stat-card-glass">
           <div>
             <span className="stat-label">KYC Cần Thẩm Định</span>
-            <div className="stat-value" style={{ color: stats.pendingKycCount > 0 ? '#e11d48' : '#059669' }}>
+            <div
+              className={`stat-value ${stats.pendingKycCount > 0 ? 'adm-dash-kyc-alert' : 'adm-dash-stat-green'}`}
+            >
               {stats.pendingKycCount || 0}
             </div>
             <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '4px' }}>
@@ -112,16 +118,16 @@ export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycMod
       </div>
 
       {/* Grid 2 Columns: KYC Pending Notice & Recent Bookings */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '1.25rem' }}>
+      <div className="adm-dash-2col-grid">
         {/* Left: KYC Pending List */}
-        <div className="admin-card-box" style={{ marginBottom: 0 }}>
+        <div className="admin-card-box adm-dash-box">
           <div className="admin-card-box-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }} />
+              <span className="adm-dash-dot-red" />
               <h3 className="admin-card-box-title">Hồ Sơ KYC Chờ Duyệt</h3>
             </div>
             <button
-              style={{ fontSize: '0.8rem', color: '#ff385c', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer' }}
+              className="adm-dash-view-all-btn"
               onClick={() => onNavigate('hosts_kyc')}
             >
               Xem tất cả <TbArrowRight />
@@ -130,37 +136,26 @@ export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycMod
 
           <div style={{ padding: '1rem 1.25rem' }}>
             {pendingKycList.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '1.75rem 0', color: '#059669' }}>
-                <TbCircleCheck style={{ fontSize: '2.2rem', marginBottom: '4px' }} />
+              <div className="adm-dash-empty-kyc">
+                <TbCircleCheck className="adm-dash-empty-icon" />
                 <p style={{ fontWeight: 700, fontSize: '0.9rem' }}>Tất cả hồ sơ chủ nhà đã được thẩm định an toàn!</p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div className="adm-dash-kyc-list">
                 {pendingKycList.map((host) => (
-                  <div
-                    key={host.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '0.75rem 1rem',
-                      background: '#f8fafc',
-                      borderRadius: '12px',
-                      border: '1px solid #edf2f7',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div key={host.id} className="adm-dash-kyc-card">
+                    <div className="adm-dash-kyc-info">
                       <img
                         src={host.avatar}
                         alt={host.name}
-                        style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }}
+                        className="adm-dash-kyc-avatar"
                       />
                       <div>
-                        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#0f172a' }}>
+                        <div className="adm-dash-kyc-name">
                           {host.name}
                         </div>
-                        <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                          CCCD: <strong style={{ fontFamily: 'monospace' }}>{host.id_card_number}</strong>
+                        <div className="adm-dash-kyc-idcard">
+                          CCCD: <strong className="adm-dash-kyc-idcard-code">{host.id_card_number}</strong>
                         </div>
                       </div>
                     </div>
@@ -181,11 +176,11 @@ export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycMod
         </div>
 
         {/* Right: Recent Bookings */}
-        <div className="admin-card-box" style={{ marginBottom: 0 }}>
+        <div className="admin-card-box adm-dash-box">
           <div className="admin-card-box-header">
             <h3 className="admin-card-box-title">Đơn Đặt Phòng Mới Nhất</h3>
             <button
-              style={{ fontSize: '0.8rem', color: '#ff385c', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer' }}
+              className="adm-dash-view-all-btn"
               onClick={() => onNavigate('bookings')}
             >
               Xem tất cả <TbArrowRight />
@@ -195,19 +190,10 @@ export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycMod
           <div style={{ padding: '0.5rem 1.25rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {recentBookings.map((b) => (
-                <div
-                  key={b.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '0.75rem 0',
-                    borderBottom: '1px solid #f1f5f9',
-                  }}
-                >
+                <div key={b.id} className="adm-dash-recent-row">
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <strong style={{ fontSize: '0.88rem', color: '#0f172a' }}>#{b.id}</strong>
+                      <strong className="adm-dash-recent-id">#{b.id}</strong>
                       <span
                         className={`status-pill ${b.status}`}
                         style={{
@@ -231,13 +217,13 @@ export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycMod
                           : 'ĐÃ HỦY'}
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px', whiteSpace: 'nowrap' }}>
+                    <div className="adm-dash-recent-guest">
                       {b.guest_name || b.guestName} • {formatDateVN(b.check_in || b.checkIn)}
                     </div>
                   </div>
 
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem' }}>
+                    <div className="adm-dash-recent-price">
                       {formatVND(b.total_price)}
                     </div>
                   </div>

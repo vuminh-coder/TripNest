@@ -41,8 +41,18 @@ import {
   TbHome,
   TbBuildingSkyscraper,
   TbSailboat,
+  TbNavigation,
+  TbCopy,
+  TbRoute,
+  TbMotorbike,
+  TbWalk,
+  TbExternalLink,
 } from 'react-icons/tb';
 import { ListingCard } from '@/components/common/ListingCard/ListingCard';
+import { AccommodationDetailSkeleton } from '@/components/common/skeletons';
+import { useToast } from '@/context/ToastContext';
+import { openGoogleMapsDirections, getTargetCoordinates } from '@/utils/mapUtils';
+import { InteractiveMapModal } from '@/components/modals/InteractiveMapModal/InteractiveMapModal';
 
 const amenityIcons = {
   'Wifi': <TbWifi />,
@@ -72,6 +82,7 @@ export const AccommodationDetailPage = ({
   isFavorite = false,
   onToggleFavorite,
   onStartCheckout,
+  onOpenMapPage,
 }) => {
   // Today and default dates
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
@@ -89,8 +100,13 @@ export const AccommodationDetailPage = ({
   const [checkIn, setCheckIn] = useState(searchParams.checkInDate || tomorrowStr);
   const [checkOut, setCheckOut] = useState(searchParams.checkOutDate || defaultOutStr);
   const [guestCount, setGuestCount] = useState(Number(searchParams.guests) || 2);
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState('overview');
   const [copiedLink, setCopiedLink] = useState(false);
+  const [travelMode, setTravelMode] = useState('driving');
+  const [isLocating, setIsLocating] = useState(false);
+  const [copiedAddress, setCopiedAddress] = useState(false);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
 
   // Multi-room selection state: { [roomId]: quantity }
   const [selectedRoomsCount, setSelectedRoomsCount] = useState({});
@@ -99,6 +115,34 @@ export const AccommodationDetailPage = ({
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [activeLightboxIndex, setActiveLightboxIndex] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+
+  // Accurate target coordinates for map display and directions
+  const targetCoords = useMemo(() => getTargetCoordinates(accommodation), [accommodation]);
+
+  // Handler for Google Maps Directions from current user GPS position
+  const handleOpenGoogleMaps = (mode = travelMode) => {
+    setIsLocating(true);
+    toast?.info?.('📍 Đang định vị GPS và mở Google Maps chỉ đường...');
+    openGoogleMapsDirections(accommodation, {
+      travelMode: mode,
+      onSuccess: () => {
+        setIsLocating(false);
+        toast?.success?.('Đã mở Google Maps', 'Lộ trình từ vị trí của bạn đã sẵn sàng trên tab mới!');
+      },
+      onError: (err) => {
+        setIsLocating(false);
+        console.warn('Geolocation warning:', err);
+      },
+    });
+  };
+
+  const handleCopyAddress = () => {
+    const fullAddress = accommodation.address || `${accommodation.city}, Việt Nam`;
+    navigator.clipboard.writeText(fullAddress);
+    setCopiedAddress(true);
+    toast?.success?.('Đã sao chép địa chỉ', fullAddress);
+    setTimeout(() => setCopiedAddress(false), 2500);
+  };
 
   // Scroll to top when accommodation changes
   useEffect(() => {
@@ -197,10 +241,13 @@ export const AccommodationDetailPage = ({
         room: roomItem,
         accommodation: accommodation,
         bookingParams: {
+          checkIn: checkIn,
           checkInDate: checkIn,
+          checkOut: checkOut,
           checkOutDate: checkOut,
           guests: guestCount,
           nights: nightsCount,
+          roomsCount: 1,
           totalPrice: (roomItem.priceVND || roomItem.pricePerNight || 2250000) * nightsCount,
         },
       });
@@ -254,7 +301,9 @@ export const AccommodationDetailPage = ({
         room: selectedRoomObj,
         accommodation: accommodation,
         bookingParams: {
+          checkIn: checkIn,
           checkInDate: checkIn,
+          checkOut: checkOut,
           checkOutDate: checkOut,
           guests: guestCount,
           nights: nightsCount,
@@ -266,19 +315,14 @@ export const AccommodationDetailPage = ({
     }
   };
 
-  if (!accommodation) {
-    return (
-      <div className="tn-empty-state-wrap">
-        <h2>Không tìm thấy thông tin cơ sở lưu trú</h2>
-        <button type="button" className="primary-gradient-btn" onClick={onBack} style={{ marginTop: '1.5rem' }}>
-          Quay lại trang chủ
-        </button>
-      </div>
-    );
+  if (!accommodation || (!accommodation.name_vi && !accommodation.title && !accommodation.name)) {
+    return <AccommodationDetailSkeleton />;
   }
 
   const rating5 = accommodation.rating ? Number(accommodation.rating).toFixed(2) : '4.98';
-  const reviewsCount = accommodation.reviewsCount || 364;
+  const reviewsCount = accommodation.reviewsCount !== undefined
+    ? accommodation.reviewsCount
+    : (accommodation.reviews_count !== undefined ? accommodation.reviews_count : (accommodation.reviewsList?.length || 0));
 
   const reviewBreakdown = accommodation.reviewScoresBreakdown || {
     cleanliness: 9.8,
@@ -289,36 +333,9 @@ export const AccommodationDetailPage = ({
     value: 9.5,
   };
 
-  const reviewsList = accommodation.reviewsList || [
-    {
-      id: 1,
-      userName: 'Nguyễn Thu Trang',
-      userAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
-      nationality: 'Hà Nội, Việt Nam',
-      roomName: roomsList[0]?.title || 'Không gian nghỉ dưỡng',
-      rating: 5.0,
-      score10: 9.8,
-      stayDuration: '3 đêm · Kỳ nghỉ lãng mạn',
-      comment: `Kỳ nghỉ trên cả tuyệt vời tại ${accommodation.nameVi || accommodation.title}! Không gian sân vườn yên tĩnh, bữa sáng phong phú và giường ngủ êm ái tuyệt đối.`,
-      positivePoint: 'Hồ bơi nước ấm ngắm cảnh cực chill, nhân viên lễ tân hỗ trợ nhiệt tình 24/7.',
-      createdAt: '25/08/2026',
-      hostResponse: 'Cảm ơn quý khách đã dành thời gian đánh giá và ủng hộ cơ sở. Hân hạnh phục vụ bạn lần sau!',
-    },
-    {
-      id: 2,
-      userName: 'Trần Minh Đức',
-      userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-      nationality: 'TP. Hồ Chí Minh, Việt Nam',
-      roomName: roomsList[1]?.title || roomsList[0]?.title || 'Phòng Cao Cấp',
-      rating: 4.9,
-      score10: 9.5,
-      stayDuration: '2 đêm · Chuyến công tác',
-      comment: 'Dịch vụ chuẩn quốc tế 5 sao. Wifi tốc độ cao làm việc mượt mà, phòng tắm bồn Jacuzzi ngâm mình rất thư giãn.',
-      positivePoint: 'Vị trí đắc địa dễ dàng di chuyển vào trung tâm và các điểm tham quan.',
-      createdAt: '20/08/2026',
-      hostResponse: 'TripNest rất vui vì mang lại trải nghiệm tiện nghi và thư thái cho anh Đức!',
-    },
-  ];
+  const reviewsList = Array.isArray(accommodation.reviewsList)
+    ? accommodation.reviewsList
+    : [];
 
   const surroundings = accommodation.surroundings || [
     { name: `Trung tâm thành phố ${accommodation.city}`, distance: '1.5 km', type: 'center' },
@@ -451,9 +468,19 @@ export const AccommodationDetailPage = ({
             <button
               type="button"
               className="tn-view-map-btn"
-              onClick={() => scrollToSection('tn-location-section', 'location')}
+              onClick={() => (onOpenMapPage ? onOpenMapPage(accommodation) : setIsMapModalOpen(true))}
+              title="Mở trang bản đồ vị trí & chỉ đường chuyên dụng"
             >
-              — Xem bản đồ vị trí
+              <TbNavigation className="tn-mini-nav-icon" />
+              — Xem bản đồ vị trí & Chỉ đường
+            </button>
+            <button
+              type="button"
+              className="tn-quick-scroll-map-btn"
+              onClick={() => scrollToSection('tn-location-section', 'location')}
+              title="Xem vị trí & cẩm nang lân cận"
+            >
+              (Chi tiết)
             </button>
           </div>
 
@@ -1065,64 +1092,242 @@ export const AccommodationDetailPage = ({
               <span>{rating5}</span>
             </div>
             <div className="tn-big-score-text">
-              <h3>Xuất sắc</h3>
+              <h3>{Number(rating5) >= 4.8 ? 'Xuất sắc' : (Number(rating5) >= 4.5 ? 'Tuyệt vời' : 'Rất tốt')}</h3>
               <p>{reviewsCount} bài đánh giá</p>
             </div>
           </div>
         </div>
 
-        {/* Detailed Reviews Cards */}
-        <div className="tn-reviews-cards-list">
-          {reviewsList.map((rev) => (
-            <div key={rev.id} className="tn-review-card">
-              <div className="tn-review-user-col">
-                <img src={rev.userAvatar} alt={rev.userName} className="tn-rev-avatar" />
-                <div className="tn-rev-user-meta">
-                  <h4>{rev.userName}</h4>
-                  <span className="tn-rev-nationality">{rev.nationality}</span>
-                  <span className="tn-rev-room">{rev.roomName}</span>
-                  <span className="tn-rev-duration">{rev.stayDuration}</span>
-                </div>
-              </div>
-
-              <div className="tn-review-content-col">
-                <div className="tn-review-score-line">
-                  <div className="tn-rev-rating-pill">
-                    <TbStarFilled style={{ color: '#ff385c' }} />
-                    <span>5.0 / 5.0</span>
-                  </div>
-                  <span className="tn-rev-date">{rev.createdAt}</span>
-                </div>
-
-                <p className="tn-rev-comment-text">{rev.comment}</p>
-
-                {rev.positivePoint && (
-                  <div className="tn-rev-positive-box">
-                    <strong>👍 Điểm yêu thích:</strong> {rev.positivePoint}
-                  </div>
-                )}
-
-                {rev.hostResponse && (
-                  <div className="tn-rev-host-reply-box">
-                    <div className="tn-host-reply-title">
-                      <TbShieldCheck /> Phản hồi từ Quản lý {accommodation.nameVi || accommodation.title}:
-                    </div>
-                    <p>{rev.hostResponse}</p>
-                  </div>
-                )}
-              </div>
+        {/* 6 Category Score Breakdown Grid */}
+        <div className="tn-reviews-breakdown-grid">
+          <div className="tn-breakdown-item">
+            <div className="tn-breakdown-label-row">
+              <span>Mức độ sạch sẽ</span>
+              <span className="tn-breakdown-val">{Number(reviewBreakdown.cleanliness || 9.8).toFixed(1)}</span>
             </div>
-          ))}
+            <div className="tn-breakdown-progress-track">
+              <div
+                className="tn-breakdown-progress-fill"
+                style={{ width: `${Math.min(100, (Number(reviewBreakdown.cleanliness || 9.8) / 10) * 100)}%` }}
+              />
+            </div>
+          </div>
+          <div className="tn-breakdown-item">
+            <div className="tn-breakdown-label-row">
+              <span>Độ chính xác & Tiện nghi</span>
+              <span className="tn-breakdown-val">{Number(reviewBreakdown.accuracy || reviewBreakdown.facilities || 9.6).toFixed(1)}</span>
+            </div>
+            <div className="tn-breakdown-progress-track">
+              <div
+                className="tn-breakdown-progress-fill"
+                style={{ width: `${Math.min(100, (Number(reviewBreakdown.accuracy || reviewBreakdown.facilities || 9.6) / 10) * 100)}%` }}
+              />
+            </div>
+          </div>
+          <div className="tn-breakdown-item">
+            <div className="tn-breakdown-label-row">
+              <span>Giao tiếp & Phục vụ</span>
+              <span className="tn-breakdown-val">{Number(reviewBreakdown.staff || reviewBreakdown.communication || 9.8).toFixed(1)}</span>
+            </div>
+            <div className="tn-breakdown-progress-track">
+              <div
+                className="tn-breakdown-progress-fill"
+                style={{ width: `${Math.min(100, (Number(reviewBreakdown.staff || reviewBreakdown.communication || 9.8) / 10) * 100)}%` }}
+              />
+            </div>
+          </div>
+          <div className="tn-breakdown-item">
+            <div className="tn-breakdown-label-row">
+              <span>Vị trí thuận tiện</span>
+              <span className="tn-breakdown-val">{Number(reviewBreakdown.location || 9.9).toFixed(1)}</span>
+            </div>
+            <div className="tn-breakdown-progress-track">
+              <div
+                className="tn-breakdown-progress-fill"
+                style={{ width: `${Math.min(100, (Number(reviewBreakdown.location || 9.9) / 10) * 100)}%` }}
+              />
+            </div>
+          </div>
+          <div className="tn-breakdown-item">
+            <div className="tn-breakdown-label-row">
+              <span>Nhận phòng & Thoải mái</span>
+              <span className="tn-breakdown-val">{Number(reviewBreakdown.comfort || 9.7).toFixed(1)}</span>
+            </div>
+            <div className="tn-breakdown-progress-track">
+              <div
+                className="tn-breakdown-progress-fill"
+                style={{ width: `${Math.min(100, (Number(reviewBreakdown.comfort || 9.7) / 10) * 100)}%` }}
+              />
+            </div>
+          </div>
+          <div className="tn-breakdown-item">
+            <div className="tn-breakdown-label-row">
+              <span>Giá trị tương xứng</span>
+              <span className="tn-breakdown-val">{Number(reviewBreakdown.value || 9.5).toFixed(1)}</span>
+            </div>
+            <div className="tn-breakdown-progress-track">
+              <div
+                className="tn-breakdown-progress-fill"
+                style={{ width: `${Math.min(100, (Number(reviewBreakdown.value || 9.5) / 10) * 100)}%` }}
+              />
+            </div>
+          </div>
         </div>
+
+        {/* Detailed Reviews Cards */}
+        {reviewsList.length === 0 ? (
+          <div className="tn-reviews-empty-state">
+            <div className="tn-empty-star-icon">
+              <TbStarFilled style={{ color: '#ff385c', fontSize: '2rem' }} />
+            </div>
+            <h3>Chưa có bài đánh giá nào</h3>
+            <p>Hãy là vị khách đầu tiên trải nghiệm và chia sẻ nhận xét sau kỳ nghỉ của bạn tại đây!</p>
+          </div>
+        ) : (
+          <div className="tn-reviews-cards-list">
+            {reviewsList.map((rev) => (
+              <div key={rev.id} className="tn-review-card">
+                <div className="tn-review-user-col">
+                  <img src={rev.userAvatar} alt={rev.userName} className="tn-rev-avatar" />
+                  <div className="tn-rev-user-meta">
+                    <h4>{rev.userName}</h4>
+                    <span className="tn-rev-nationality">{rev.nationality}</span>
+                    <span className="tn-rev-room">{rev.roomName}</span>
+                    <span className="tn-rev-duration">{rev.stayDuration}</span>
+                  </div>
+                </div>
+
+                <div className="tn-review-content-col">
+                  <div className="tn-review-score-line">
+                    <div className="tn-rev-rating-pill">
+                      <TbStarFilled style={{ color: '#ff385c' }} />
+                      <span>{Number(rev.rating || 5).toFixed(1)} / 5.0</span>
+                    </div>
+                    <span className="tn-rev-date">{rev.createdAt}</span>
+                  </div>
+
+                  <p className="tn-rev-comment-text">{rev.comment}</p>
+
+                  {rev.positivePoint && (
+                    <div className="tn-rev-positive-box">
+                      <strong>👍 Điểm yêu thích:</strong> {rev.positivePoint}
+                    </div>
+                  )}
+
+                  {rev.hostResponse && (
+                    <div className="tn-rev-host-reply-box">
+                      <div className="tn-host-reply-title">
+                        <TbShieldCheck /> Phản hồi từ Quản lý {accommodation.nameVi || accommodation.title}:
+                      </div>
+                      <p>{rev.hostResponse}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* 10. LOCATION & SURROUNDINGS SECTION */}
-      <div id="tn-location-section" className="tn-section-block">
-        <h2 className="tn-section-main-heading">Vị trí & Các địa danh lân cận</h2>
-        <p className="tn-section-subtitle">
-          <TbMapPin style={{ color: '#ff385c' }} /> {accommodation.address || `${accommodation.city}, Việt Nam`} —{' '}
-          <strong style={{ color: '#ff385c' }}>Vị trí đắc địa (Điểm 9.8)</strong>
-        </p>
+      {/* 10. LOCATION & GOOGLE MAPS DIRECTIONS SECTION */}
+      <div id="tn-location-section" className="tn-section-block tn-map-interactive-section">
+        <div className="tn-map-section-header">
+          <div>
+            <h2 className="tn-section-main-heading">Vị trí & Chỉ đường Google Maps</h2>
+            <p className="tn-section-subtitle">
+              <TbMapPin style={{ color: '#ff385c' }} /> {accommodation.address || `${accommodation.city}, Việt Nam`} —{' '}
+              <strong style={{ color: '#ff385c' }}>Vị trí đắc địa (Điểm 9.8)</strong>
+            </p>
+          </div>
+          <div className="tn-map-header-actions">
+            <button
+              type="button"
+              className="tn-copy-address-btn"
+              onClick={handleCopyAddress}
+              title="Sao chép địa chỉ chính xác"
+            >
+              <TbCopy /> {copiedAddress ? 'Đã sao chép địa chỉ!' : 'Sao chép địa chỉ'}
+            </button>
+            <button
+              type="button"
+              className="tn-open-gmaps-link-btn"
+              onClick={() => (onOpenMapPage ? onOpenMapPage(accommodation) : handleOpenGoogleMaps(travelMode))}
+              title="Mở trang Bản đồ & Chỉ đường chuyên biệt"
+            >
+              <TbRoute /> Mở trang bản đồ
+            </button>
+          </div>
+        </div>
+
+        {/* Interactive Luxury Map Card */}
+        <div className="tn-luxury-map-hero-card">
+          <div className="tn-map-viewport-wrapper">
+            <iframe
+              title={`Bản đồ ${accommodation.nameVi || accommodation.title}`}
+              className="tn-map-iframe"
+              src={`https://maps.google.com/maps?q=${targetCoords.lat},${targetCoords.lng}&hl=vi&z=16&output=embed`}
+              loading="lazy"
+              allowFullScreen
+            />
+            {/* Floating Info Overlay on Map */}
+            <div className="tn-map-overlay-floating-card">
+              <div className="tn-map-pin-pulse-box">
+                <span className="tn-pin-pulsing-dot" />
+                <TbMapPin className="tn-map-floating-pin-icon" />
+              </div>
+              <div className="tn-map-floating-details">
+                <h4 className="tn-map-floating-title">{accommodation.nameVi || accommodation.title}</h4>
+                <p className="tn-map-floating-address">{accommodation.address || `${accommodation.city}, Việt Nam`}</p>
+                <div className="tn-map-coords-badge">
+                  <TbRoute /> {targetCoords.lat.toFixed(4)}° N, {targetCoords.lng.toFixed(4)}° E
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Real-time Navigation CTA Bar */}
+          <div className="tn-map-cta-action-bar">
+            <div className="tn-map-cta-left">
+              <div className="tn-travel-mode-selector">
+                <span className="tn-travel-mode-label">Phương tiện di chuyển:</span>
+                <button
+                  type="button"
+                  className={`tn-mode-pill ${travelMode === 'driving' ? 'active' : ''}`}
+                  onClick={() => setTravelMode('driving')}
+                >
+                  <TbCar /> Ô tô
+                </button>
+                <button
+                  type="button"
+                  className={`tn-mode-pill ${travelMode === 'motorcycle' ? 'active' : ''}`}
+                  onClick={() => setTravelMode('motorcycle')}
+                >
+                  <TbMotorbike /> Xe máy
+                </button>
+                <button
+                  type="button"
+                  className={`tn-mode-pill ${travelMode === 'walking' ? 'active' : ''}`}
+                  onClick={() => setTravelMode('walking')}
+                >
+                  <TbWalk /> Đi bộ
+                </button>
+              </div>
+            </div>
+
+            <div className="tn-map-cta-right">
+              <button
+                type="button"
+                className={`primary-gradient-btn tn-gmaps-direction-btn ${isLocating ? 'locating' : ''}`}
+                onClick={() => (onOpenMapPage ? onOpenMapPage(accommodation) : setIsMapModalOpen(true))}
+                title="Xem bản đồ và chỉ đường trên trang chuyên biệt"
+              >
+                <TbNavigation className="tn-nav-icon-spin" />
+                <span>Chỉ đường trực tiếp</span>
+                <span className="tn-gmaps-live-tag">Trang riêng</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div className="tn-surroundings-grid">
           <div className="tn-surroundings-card">
@@ -1222,6 +1427,13 @@ export const AccommodationDetailPage = ({
           </button>
         </div>
       )}
+
+      {/* In-app Interactive Google Maps & Directions Modal */}
+      <InteractiveMapModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+        target={accommodation}
+      />
     </div>
   );
 };

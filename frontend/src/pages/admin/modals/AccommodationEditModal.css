@@ -1,0 +1,97 @@
+/* ==========================================================================
+   ACCOMMODATION EDIT MODAL CSS (Admin Portal)
+   ========================================================================== */
+
+.adm-accedit-overlay {
+  z-index: 110;
+}
+
+.adm-accedit-container {
+  width: 760px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.adm-accedit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--adm-border, #e2e8f0);
+}
+
+.adm-accedit-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.adm-accedit-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #ffe4e6;
+  color: #ff385c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.adm-accedit-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--adm-text-main, #0f172a);
+}
+
+.adm-accedit-form {
+  padding: 1.5rem 0;
+}
+
+.adm-accedit-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.adm-accedit-3col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.adm-accedit-4col {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.adm-accedit-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--adm-text-muted, #475569);
+  margin-bottom: 4px;
+}
+
+.adm-accedit-input {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--adm-radius-sm, 8px);
+  border: 1px solid #cbd5e1;
+  font-size: 0.86rem;
+  box-sizing: border-box;
+}
+
+.adm-accedit-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--adm-border, #e2e8f0);
+}

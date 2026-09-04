@@ -6,82 +6,7 @@ import { useToast } from '@/context/ToastContext';
 import { useConfirm } from '@/context/ConfirmContext';
 import { apiService } from '@/services/api';
 
-const DEFAULT_LISTINGS = [
-  {
-    id: 'ACC-1',
-    roomId: '1',
-    nameVi: 'Biệt thự The Oasis Garden Retreat Đà Lạt',
-    accommodationType: 'villa',
-    city: 'Đà Lạt',
-    district: 'Phường 10',
-    address: '15 Đường Khe Sanh, Đà Lạt',
-    priceVND: 2500000,
-    priceUSD: 100,
-    maxGuests: 6,
-    bedrooms: 3,
-    beds: 3,
-    bathrooms: 3,
-    rating: 4.98,
-    reviewsCount: 34,
-    status: 'published',
-    thumbnail: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
-    ],
-    amenities: ['Hồ bơi riêng', 'WiFi tốc độ cao', 'Bếp nấu ăn đầy đủ', 'Bếp nướng BBQ'],
-    createdAt: '12/06/2026',
-  },
-  {
-    id: 'ACC-2',
-    roomId: '2',
-    nameVi: 'Grand Sunset Ocean Villa Phú Quốc',
-    accommodationType: 'resort',
-    city: 'Phú Quốc',
-    district: 'Bãi Trường',
-    address: 'Đường Trần Hưng Đạo, Dương Đông',
-    priceVND: 4200000,
-    priceUSD: 168,
-    maxGuests: 8,
-    bedrooms: 4,
-    beds: 4,
-    bathrooms: 4,
-    rating: 4.95,
-    reviewsCount: 28,
-    status: 'published',
-    thumbnail: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&auto=format&fit=crop&q=80',
-    ],
-    amenities: ['View thiên nhiên tuyệt đẹp', 'Hồ bơi riêng', 'WiFi tốc độ cao', 'Điều hòa 2 chiều'],
-    createdAt: '18/07/2026',
-  },
-  {
-    id: 'ACC-3',
-    roomId: '3',
-    nameVi: 'Mây Homestay & Coffee View Thung Lũng Sapa',
-    accommodationType: 'homestay',
-    city: 'Sa Pa',
-    district: 'Tả Van',
-    address: 'Bản Tả Van, Sa Pa',
-    priceVND: 1650000,
-    priceUSD: 66,
-    maxGuests: 4,
-    bedrooms: 2,
-    beds: 2,
-    bathrooms: 1.5,
-    rating: 4.92,
-    reviewsCount: 19,
-    status: 'published',
-    thumbnail: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&auto=format&fit=crop&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&auto=format&fit=crop&q=80',
-    ],
-    amenities: ['WiFi tốc độ cao', 'Chỗ đỗ xe miễn phí', 'Smart TV 4K'],
-    createdAt: '02/08/2026',
-  },
-];
+const DEFAULT_LISTINGS = [];
 
 const DEFAULT_BOOKINGS = [];
 
@@ -170,19 +95,9 @@ export const HostDashboard = ({
   const [payoutHistory, setPayoutHistory] = useState(() => {
     try {
       const saved = localStorage.getItem('tripnest_host_payout_history');
-      return saved
-        ? JSON.parse(saved)
-        : [
-            { id: 'PO-103', date: '15/08/2026', amount: 23500000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-            { id: 'PO-102', date: '01/08/2026', amount: 18200000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-            { id: 'PO-101', date: '15/07/2026', amount: 26800000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-          ];
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return [
-        { id: 'PO-103', date: '15/08/2026', amount: 23500000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-        { id: 'PO-102', date: '01/08/2026', amount: 18200000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-        { id: 'PO-101', date: '15/07/2026', amount: 26800000, note: 'Chuyển khoản Vietcombank', status: 'completed' },
-      ];
+      return [];
     }
   });
 
@@ -214,7 +129,7 @@ export const HostDashboard = ({
 
   // Dynamic KPI Calculations
   const confirmedBookings = bookings.filter((b) => b.status === 'confirmed');
-  const totalHostEarnings = confirmedBookings.reduce((sum, b) => sum + (b.hostEarnings || 0), 0) + 44200000;
+  const totalHostEarnings = bookings.filter((b) => b.status !== 'cancelled').reduce((sum, b) => sum + (b.hostEarnings || b.netPayout || 0), 0);
   const pendingCount = bookings.filter((b) => b.status === 'pending').length;
 
   // Toggle listing status via API

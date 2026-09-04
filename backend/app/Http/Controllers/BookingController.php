@@ -28,8 +28,17 @@ class BookingController extends Controller
             ], 404);
         }
 
-        $rawCheckIn = $request->input('checkIn') ?: $request->input('check_in') ?: $request->input('check_in_date') ?: now()->format('Y-m-d');
-        $rawCheckOut = $request->input('checkOut') ?: $request->input('check_out') ?: $request->input('check_out_date') ?: now()->addDays(3)->format('Y-m-d');
+        $rawCheckIn = $request->input('checkIn') 
+            ?: $request->input('checkInDate') 
+            ?: $request->input('check_in') 
+            ?: $request->input('check_in_date') 
+            ?: now()->format('Y-m-d');
+
+        $rawCheckOut = $request->input('checkOut') 
+            ?: $request->input('checkOutDate') 
+            ?: $request->input('check_out') 
+            ?: $request->input('check_out_date') 
+            ?: now()->addDays(3)->format('Y-m-d');
 
         try {
             if (str_contains($rawCheckIn, '/')) {
@@ -49,41 +58,58 @@ class BookingController extends Controller
             } else {
                 $checkOut = Carbon::parse($rawCheckOut)->format('Y-m-d');
             }
+            if (Carbon::parse($checkOut)->lte(Carbon::parse($checkIn))) {
+                $checkOut = Carbon::parse($checkIn)->addDays(3)->format('Y-m-d');
+            }
         } catch (\Exception $e) {
             $checkOut = Carbon::parse($checkIn)->addDays(3)->format('Y-m-d');
         }
 
-        $guests = (int)($request->input('guests') ?: $request->input('guests_count') ?: 2);
+        $guests = (int)($request->input('guests') ?: $request->input('guests_count') ?: $request->input('guestCount') ?: 2);
         if ($guests < 1) $guests = 1;
+
+        $roomsCount = (int)($request->input('rooms_count') ?: $request->input('roomsCount') ?: 1);
+        if ($roomsCount < 1) $roomsCount = 1;
 
         // 2. Tính số đêm
         $d1 = Carbon::parse($checkIn);
         $d2 = Carbon::parse($checkOut);
-        $nights = $d1->diffInDays($d2);
+        $nights = (int)($request->input('nights') ?: $request->input('nights_count') ?: max(1, $d1->diffInDays($d2)));
         if ($nights < 1) $nights = 1;
 
         // 3. Tính toán tài chính chuẩn xác đồng bộ với Frontend
-        $pricePerNight = (float)($request->input('price_per_night') ?: $room->price_vnd_per_night ?: $room->price_per_night ?: 2500000);
-        $baseTotal = (float)($request->input('base_price') ?: ($pricePerNight * $nights));
-        $cleaningFee = (float)($request->input('cleaning_fee') ?? $room->cleaning_fee_vnd ?? $room->cleaning_fee ?? 350000);
-        $serviceFee = (float)($request->input('service_fee') ?: round($baseTotal * 0.12));
+        $pricePerNight = (float)($request->input('price_per_night') ?: $request->input('pricePerNight') ?: $room->price_vnd_per_night ?: $room->price_per_night ?: 2500000);
+        $baseTotal = (float)($request->input('base_price') ?: $request->input('basePrice') ?: ($pricePerNight * $nights * $roomsCount));
+        $cleaningFee = (float)($request->input('cleaning_fee') ?? $request->input('cleaningFee') ?? $room->cleaning_fee_vnd ?? $room->cleaning_fee ?? 350000);
+        $serviceFee = (float)($request->input('service_fee') ?? $request->input('serviceFee') ?? round($baseTotal * 0.12));
 
-        // Xử lý mã giảm giá Voucher
-        $discountAmount = (float)($request->input('discount_amount') ?: 0.00);
-        $voucherId = null;
-        $voucherCode = $request->input('voucherCode') ?: $request->input('promoCode');
-        if ($voucherCode && $discountAmount == 0) {
+        // Xử lý mã giảm giá Voucher chuẩn xác và đồng bộ CSDL
+        $discountAmount = (float)($request->input('discount_amount') ?: $request->input('discountAmount') ?: 0.00);
+        $voucherId = $request->input('voucher_id') ?: $request->input('voucherId');
+        $voucherCode = $request->input('voucherCode') ?: $request->input('voucher_code') ?: $request->input('promoCode');
+
+        if ($voucherCode) {
             $voucher = \App\Models\Voucher::where('code', strtoupper(trim($voucherCode)))->first();
             if ($voucher) {
-                $discountAmount = $voucher->calculateDiscount($baseTotal);
-                if ($discountAmount > 0) {
-                    $voucherId = $voucher->id;
-                    $voucher->increment('used_count');
+                $voucherId = $voucher->id;
+                $calcDiscount = $voucher->calculateDiscount($baseTotal);
+                if ($calcDiscount > 0) {
+                    $discountAmount = $calcDiscount;
                 }
+                $voucher->increment('used_count');
+            }
+        } elseif ($voucherId) {
+            $voucher = \App\Models\Voucher::find($voucherId);
+            if ($voucher) {
+                $calcDiscount = $voucher->calculateDiscount($baseTotal);
+                if ($calcDiscount > 0 && $discountAmount == 0) {
+                    $discountAmount = $calcDiscount;
+                }
+                $voucher->increment('used_count');
             }
         }
 
-        $grandTotal = (float)($request->input('total_price') ?: max(0, $baseTotal + $cleaningFee + $serviceFee - $discountAmount));
+        $grandTotal = (float)($request->input('total_price') ?: $request->input('totalPrice') ?: max(0, $baseTotal + $cleaningFee + $serviceFee - $discountAmount));
 
         // 4. Lấy hoặc tạo thông tin User
         $account = \Illuminate\Support\Facades\Auth::guard('api')->user();
@@ -108,7 +134,7 @@ class BookingController extends Controller
         // 5. Sử dụng mã đặt phòng đã gửi hoặc tự sinh
         $bookingCode = $request->input('id') ?: $request->input('code') ?: ('TN-' . rand(100000, 999999));
 
-        // 6. Ghi vào CSDL
+        // 6. Ghi vào CSDL với đầy đủ voucher_id đã xác thực
         $booking = Booking::create([
             'booking_code' => $bookingCode,
             'user_id' => $user->id,
@@ -173,14 +199,17 @@ class BookingController extends Controller
             );
 
             $grossHostAmount = (float)$baseTotal + (float)$cleaningFee;
+            $commissionFee = (float)$serviceFee;
+            $netPayoutAmount = max(0, $grossHostAmount - $commissionFee);
+
             \App\Models\PayoutTransaction::create([
                 'booking_id' => $booking->id,
                 'payout_code' => 'POT-' . rand(100000, 999999),
                 'host_id' => $host->id,
                 'payout_account_id' => $payoutAccount->id,
                 'gross_amount' => $grossHostAmount,
-                'platform_commission_fee' => (float)$serviceFee,
-                'net_payout_amount' => $grossHostAmount,
+                'platform_commission_fee' => $commissionFee,
+                'net_payout_amount' => $netPayoutAmount,
                 'status' => 'pending',
             ]);
         }
@@ -203,56 +232,190 @@ class BookingController extends Controller
                 'basePrice' => (float)$booking->base_price,
                 'cleaningFee' => (float)$booking->cleaning_fee,
                 'serviceFee' => (float)$booking->service_fee,
+                'discountAmount' => (float)$booking->discount_amount,
+                'voucherCode' => $voucherCode,
+                'voucherId' => $voucherId,
                 'totalPrice' => (float)$booking->total_price,
                 'status' => $booking->status,
+                'statusLabel' => $booking->status_label,
                 'createdAt' => $booking->created_at->toISOString(),
             ],
         ], 201);
     }
 
     /**
-     * Danh sách chuyến đi đã đặt của khách
+     * Danh sách chuyến đi đã đặt của khách (với đầy đủ trạng thái)
      */
     public function myBookings(Request $request): JsonResponse
     {
         $account = \Illuminate\Support\Facades\Auth::guard('api')->user();
         $user = $account?->user;
         if (!$user) {
-            $user = User::first();
+            // Fallback sang tài khoản khách demo (user_id = 2) khi chưa đăng nhập để luôn hiển thị chuyến đi
+            $user = User::find(2) ?: User::first();
         }
 
-        $bookings = Booking::with(['room.accommodation', 'room.images'])
+        $query = Booking::with(['room.accommodation', 'room.images', 'review', 'voucher'])
             ->where('user_id', $user?->id)
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($b) {
-                $firstImage = $b->room?->images?->first()?->image_url ?: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&auto=format&fit=crop&q=80';
-                return [
-                    'id' => $b->booking_code,
-                    'bookingId' => $b->id,
-                    'roomId' => $b->room_id,
-                    'roomTitle' => $b->room?->room_name_vi ?: 'Chỗ ở TripNest',
-                    'roomCity' => $b->room?->accommodation?->city ?: 'Việt Nam',
-                    'roomImage' => $firstImage,
-                    'checkIn' => $b->check_in_date ? $b->check_in_date->format('Y-m-d') : '',
-                    'checkOut' => $b->check_out_date ? $b->check_out_date->format('Y-m-d') : '',
-                    'nights' => (int)$b->nights_count,
-                    'guests' => (int)$b->guests_count,
-                    'basePrice' => (float)$b->base_price,
-                    'cleaningFee' => (float)$b->cleaning_fee,
-                    'serviceFee' => (float)$b->service_fee,
-                    'totalPrice' => (float)$b->total_price,
-                    'currency' => $b->currency ?: 'VND',
-                    'status' => $b->status,
-                    'createdAt' => $b->created_at ? $b->created_at->toISOString() : '',
-                ];
-            });
+            ->orderBy('created_at', 'desc');
+
+        // Lọc theo tab trạng thái
+        $statusFilter = $request->query('status');
+        if ($statusFilter && $statusFilter !== 'all') {
+            switch ($statusFilter) {
+                case 'upcoming':
+                    $query->upcoming();
+                    break;
+                case 'active':
+                    $query->active();
+                    break;
+                case 'completed':
+                    $query->completed();
+                    break;
+                case 'cancelled':
+                    $query->cancelled();
+                    break;
+                default:
+                    $query->where('status', $statusFilter);
+            }
+        }
+
+        $bookings = $query->get()->map(function ($b) {
+            $firstImage = $b->room?->images?->first()?->image_url ?: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&auto=format&fit=crop&q=80';
+            $radar = $b->review?->rating_breakdown ?: [];
+            return [
+                'id' => $b->booking_code,
+                'bookingId' => $b->id,
+                'roomId' => $b->room_id,
+                'accommodationId' => $b->room?->accommodation_id,
+                'roomTitle' => $b->room?->room_name_vi ?: 'Chỗ ở TripNest',
+                'roomCity' => $b->room?->accommodation?->city ?: 'Việt Nam',
+                'roomImage' => $firstImage,
+                'accommodationName' => $b->room?->accommodation?->name_vi ?: '',
+                'checkIn' => $b->check_in_date ? $b->check_in_date->format('Y-m-d') : '',
+                'checkOut' => $b->check_out_date ? $b->check_out_date->format('Y-m-d') : '',
+                'nights' => (int)$b->nights_count,
+                'guests' => (int)$b->guests_count,
+                'basePrice' => (float)$b->base_price,
+                'cleaningFee' => (float)$b->cleaning_fee,
+                'serviceFee' => (float)$b->service_fee,
+                'discountAmount' => (float)$b->discount_amount,
+                'voucherCode' => $b->voucher?->code,
+                'voucherTitle' => $b->voucher?->title,
+                'totalPrice' => (float)$b->total_price,
+                'currency' => $b->currency ?: 'VND',
+                'status' => $b->status,
+                'statusLabel' => $b->status_label,
+                'checkedInAt' => $b->checked_in_at?->toISOString(),
+                'checkedOutAt' => $b->checked_out_at?->toISOString(),
+                'cancelledAt' => $b->cancelled_at?->toISOString(),
+                'cancellationReason' => $b->cancellation_reason,
+                'specialRequests' => $b->special_requests,
+                'canCancel' => $b->can_cancel,
+                'canCheckIn' => $b->can_check_in,
+                'canCheckOut' => $b->can_check_out,
+                'canReview' => $b->can_review,
+                'hasReview' => $b->review !== null,
+                'review' => $b->review ? [
+                    'id' => $b->review->id,
+                    'rating' => (float)$b->review->rating,
+                    'cleanliness' => (float)($radar['cleanliness'] ?? 5.0),
+                    'accuracy' => (float)($radar['accuracy'] ?? 5.0),
+                    'communication' => (float)($radar['communication'] ?? 5.0),
+                    'location' => (float)($radar['location'] ?? 5.0),
+                    'checkin' => (float)($radar['checkin'] ?? 5.0),
+                    'value' => (float)($radar['value'] ?? 5.0),
+                    'comment' => $b->review->comment,
+                    'hostResponse' => $b->review->host_response,
+                    'createdAt' => $b->review->created_at ? $b->review->created_at->format('d/m/Y') : '',
+                ] : null,
+                'createdAt' => $b->created_at ? $b->created_at->toISOString() : '',
+            ];
+        });
 
         return response()->json($bookings);
     }
 
     /**
-     * Hủy đơn đặt phòng & Xử lý Hoàn tiền
+     * Xem chi tiết đơn đặt phòng
+     */
+    public function show($id): JsonResponse
+    {
+        $booking = Booking::with(['room.accommodation', 'room.images', 'payments', 'review', 'voucher'])
+            ->where('booking_code', $id)
+            ->orWhere('id', $id)
+            ->first();
+
+        if (!$booking) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy đơn đặt phòng.'], 404);
+        }
+
+        $firstImage = $booking->room?->images?->first()?->image_url ?: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&auto=format&fit=crop&q=80';
+        $radar = $booking->review?->rating_breakdown ?: [];
+
+        return response()->json([
+            'success' => true,
+            'booking' => [
+                'id' => $booking->booking_code,
+                'bookingId' => $booking->id,
+                'roomId' => $booking->room_id,
+                'accommodationId' => $booking->room?->accommodation_id,
+                'roomTitle' => $booking->room?->room_name_vi ?: 'Chỗ ở TripNest',
+                'roomCity' => $booking->room?->accommodation?->city ?: 'Việt Nam',
+                'roomImage' => $firstImage,
+                'accommodationName' => $booking->room?->accommodation?->name_vi ?: '',
+                'checkIn' => $booking->check_in_date?->format('Y-m-d'),
+                'checkOut' => $booking->check_out_date?->format('Y-m-d'),
+                'nights' => (int)$booking->nights_count,
+                'guests' => (int)$booking->guests_count,
+                'pricePerNight' => (float)$booking->price_per_night,
+                'basePrice' => (float)$booking->base_price,
+                'cleaningFee' => (float)$booking->cleaning_fee,
+                'serviceFee' => (float)$booking->service_fee,
+                'discountAmount' => (float)$booking->discount_amount,
+                'voucherCode' => $booking->voucher?->code,
+                'voucherTitle' => $booking->voucher?->title,
+                'totalPrice' => (float)$booking->total_price,
+                'currency' => $booking->currency ?: 'VND',
+                'status' => $booking->status,
+                'statusLabel' => $booking->status_label,
+                'checkedInAt' => $booking->checked_in_at?->toISOString(),
+                'checkedOutAt' => $booking->checked_out_at?->toISOString(),
+                'cancelledAt' => $booking->cancelled_at?->toISOString(),
+                'cancellationReason' => $booking->cancellation_reason,
+                'specialRequests' => $booking->special_requests,
+                'canCancel' => $booking->can_cancel,
+                'canCheckIn' => $booking->can_check_in,
+                'canCheckOut' => $booking->can_check_out,
+                'canReview' => $booking->can_review,
+                'hasReview' => $booking->review !== null,
+                'review' => $booking->review ? [
+                    'id' => $booking->review->id,
+                    'rating' => (float)$booking->review->rating,
+                    'cleanliness' => (float)($radar['cleanliness'] ?? 5.0),
+                    'accuracy' => (float)($radar['accuracy'] ?? 5.0),
+                    'communication' => (float)($radar['communication'] ?? 5.0),
+                    'location' => (float)($radar['location'] ?? 5.0),
+                    'checkin' => (float)($radar['checkin'] ?? 5.0),
+                    'value' => (float)($radar['value'] ?? 5.0),
+                    'comment' => $booking->review->comment,
+                    'hostResponse' => $booking->review->host_response,
+                    'createdAt' => $booking->review->created_at ? $booking->review->created_at->format('d/m/Y') : '',
+                ] : null,
+                'payments' => $booking->payments->map(fn($p) => [
+                    'transactionCode' => $p->transaction_code,
+                    'method' => $p->payment_method,
+                    'amount' => (float)$p->amount,
+                    'status' => $p->status,
+                    'paidAt' => $p->paid_at?->toISOString(),
+                ]),
+                'createdAt' => $booking->created_at?->toISOString(),
+            ],
+        ]);
+    }
+
+    /**
+     * Hủy đơn đặt phòng & Xử lý Hoàn tiền (Chỉ cho phép khi status = confirmed/pending)
      */
     public function cancel($bookingCode, Request $request): JsonResponse
     {
@@ -262,6 +425,15 @@ class BookingController extends Controller
 
         if (!$booking) {
             return response()->json(['success' => false, 'message' => 'Không tìm thấy đơn đặt phòng.'], 404);
+        }
+
+        // Kiểm tra quyền hủy: chỉ cho hủy khi confirmed hoặc pending
+        if (!$booking->can_cancel) {
+            $statusMsg = Booking::STATUS_LABELS[$booking->status] ?? $booking->status;
+            return response()->json([
+                'success' => false,
+                'message' => "Không thể hủy đơn đặt phòng ở trạng thái \"{$statusMsg}\". Chỉ có thể hủy đơn chưa nhận phòng.",
+            ], 422);
         }
 
         $reason = $request->input('reason', 'Khách hàng yêu cầu hủy qua ứng dụng.');
@@ -274,52 +446,55 @@ class BookingController extends Controller
         ]);
 
         // 2. Cập nhật trạng thái Payment sang Refunded
+        $refundedPayments = \App\Models\Payment::where('booking_id', $booking->id)->get();
         \App\Models\Payment::where('booking_id', $booking->id)->update([
             'status' => 'refunded',
         ]);
 
         // 3. Hủy Lệnh Payout của Host nếu đang pending
-        \App\Models\PayoutTransaction::where('booking_id', $booking->id)->update([
-            'status' => 'cancelled',
-        ]);
+        \App\Models\PayoutTransaction::where('booking_id', $booking->id)
+            ->whereIn('status', ['pending', 'processing'])
+            ->update(['status' => 'failed']);
+
+        // Tính số tiền hoàn trả
+        $refundAmount = $refundedPayments->where('status', 'successful')->sum('amount');
+
+        // Reload booking với relationships
+        $booking->load(['room.accommodation', 'room.images']);
+        $firstImage = $booking->room?->images?->first()?->image_url ?: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&auto=format&fit=crop&q=80';
 
         return response()->json([
             'success' => true,
             'message' => 'Đã hủy đơn đặt phòng và xử lý hoàn tiền thành công.',
-            'booking' => $booking,
+            'booking' => [
+                'id' => $booking->booking_code,
+                'bookingId' => $booking->id,
+                'roomTitle' => $booking->room?->room_name_vi ?: 'Chỗ ở TripNest',
+                'roomCity' => $booking->room?->accommodation?->city ?: 'Việt Nam',
+                'roomImage' => $firstImage,
+                'status' => $booking->status,
+                'statusLabel' => $booking->status_label,
+                'cancelledAt' => $booking->cancelled_at?->toISOString(),
+                'cancellationReason' => $booking->cancellation_reason,
+                'canCancel' => false,
+                'canCheckIn' => false,
+                'canCheckOut' => false,
+            ],
+            'refund' => [
+                'amount' => (float)$refundAmount,
+                'currency' => 'VND',
+                'method' => $refundedPayments->first()?->payment_method ?: 'credit_card',
+                'note' => 'Số tiền sẽ được hoàn lại trong 5-10 ngày làm việc.',
+            ],
         ]);
     }
 
     /**
-     * Xác nhận Khách đã nhận phòng (Check-in)
+     * Xác nhận Khách đã nhận phòng (Check-in) — Chỉ cho phép khi status = confirmed
      */
     public function checkIn($id, Request $request): JsonResponse
     {
-        $booking = Booking::where('booking_code', $id)
-            ->orWhere('id', $id)
-            ->first();
-
-        if (!$booking) {
-            return response()->json(['success' => false, 'message' => 'Không tìm thấy đơn đặt phòng.'], 404);
-        }
-
-        $booking->update([
-            'status' => 'checked_in',
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Xác nhận khách đã nhận phòng (Check-in) thành công!',
-            'booking' => $booking,
-        ]);
-    }
-
-    /**
-     * Xác nhận Khách đã trả phòng (Check-out)
-     */
-    public function checkOut($id, Request $request): JsonResponse
-    {
-        $booking = Booking::with('room.accommodation.host.defaultPayoutAccount')
+        $booking = Booking::with(['room.accommodation', 'room.images'])
             ->where('booking_code', $id)
             ->orWhere('id', $id)
             ->first();
@@ -328,14 +503,97 @@ class BookingController extends Controller
             return response()->json(['success' => false, 'message' => 'Không tìm thấy đơn đặt phòng.'], 404);
         }
 
+        // Kiểm tra quyền check-in
+        if (!$booking->can_check_in) {
+            $statusMsg = Booking::STATUS_LABELS[$booking->status] ?? $booking->status;
+            return response()->json([
+                'success' => false,
+                'message' => "Không thể nhận phòng cho đơn ở trạng thái \"{$statusMsg}\". Chỉ đơn đã xác nhận mới có thể nhận phòng.",
+            ], 422);
+        }
+
         $booking->update([
-            'status' => 'completed',
+            'status' => 'checked_in',
+            'checked_in_at' => now(),
         ]);
+
+        $firstImage = $booking->room?->images?->first()?->image_url ?: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&auto=format&fit=crop&q=80';
 
         return response()->json([
             'success' => true,
-            'message' => 'Xác nhận khách đã trả phòng (Check-out) thành công!',
-            'booking' => $booking,
+            'message' => 'Xác nhận khách đã nhận phòng (Check-in) thành công!',
+            'booking' => [
+                'id' => $booking->booking_code,
+                'bookingId' => $booking->id,
+                'roomTitle' => $booking->room?->room_name_vi ?: 'Chỗ ở TripNest',
+                'roomCity' => $booking->room?->accommodation?->city ?: 'Việt Nam',
+                'roomImage' => $firstImage,
+                'status' => $booking->status,
+                'statusLabel' => $booking->status_label,
+                'checkedInAt' => $booking->checked_in_at?->toISOString(),
+                'canCancel' => false,
+                'canCheckIn' => false,
+                'canCheckOut' => true,
+            ],
+        ]);
+    }
+
+    /**
+     * Xác nhận Khách đã trả phòng (Check-out) — Chỉ cho phép khi status = checked_in
+     */
+    public function checkOut($id, Request $request): JsonResponse
+    {
+        $booking = Booking::with('room.accommodation.host.defaultPayoutAccount', 'room.images')
+            ->where('booking_code', $id)
+            ->orWhere('id', $id)
+            ->first();
+
+        if (!$booking) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy đơn đặt phòng.'], 404);
+        }
+
+        // Kiểm tra quyền check-out
+        if (!$booking->can_check_out) {
+            $statusMsg = Booking::STATUS_LABELS[$booking->status] ?? $booking->status;
+            return response()->json([
+                'success' => false,
+                'message' => "Không thể trả phòng cho đơn ở trạng thái \"{$statusMsg}\". Chỉ đơn đã nhận phòng mới có thể trả phòng.",
+            ], 422);
+        }
+
+        $booking->update([
+            'status' => 'completed',
+            'checked_out_at' => now(),
+        ]);
+
+        // Cập nhật trạng thái Payout sang completed (giải ngân cho Host)
+        \App\Models\PayoutTransaction::where('booking_id', $booking->id)
+            ->where('status', 'pending')
+            ->update([
+                'status' => 'completed',
+                'transferred_at' => now(),
+            ]);
+
+        $firstImage = $booking->room?->images?->first()?->image_url ?: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&auto=format&fit=crop&q=80';
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Xác nhận khách đã trả phòng (Check-out) thành công! Lệnh giải ngân cho chủ nhà đã được kích hoạt.',
+            'booking' => [
+                'id' => $booking->booking_code,
+                'bookingId' => $booking->id,
+                'roomTitle' => $booking->room?->room_name_vi ?: 'Chỗ ở TripNest',
+                'roomCity' => $booking->room?->accommodation?->city ?: 'Việt Nam',
+                'roomImage' => $firstImage,
+                'status' => $booking->status,
+                'statusLabel' => $booking->status_label,
+                'checkedInAt' => $booking->checked_in_at?->toISOString(),
+                'checkedOutAt' => $booking->checked_out_at?->toISOString(),
+                'canCancel' => false,
+                'canCheckIn' => false,
+                'canCheckOut' => false,
+                'canReview' => true,
+            ],
         ]);
     }
 }

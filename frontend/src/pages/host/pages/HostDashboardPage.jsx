@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import './HostDashboardPage.css';
 import {
   TbCoin,
   TbCalendarEvent,
-  TbStarFilled,
   TbBuildingCastle,
   TbArrowRight,
   TbLogin,
@@ -13,6 +13,7 @@ import {
   TbInbox,
 } from 'react-icons/tb';
 import { apiService } from '@/services/api';
+import { HostDashboardSkeleton } from '@/components/common/skeletons';
 
 export const HostDashboardPage = ({
   listings = [],
@@ -28,6 +29,7 @@ export const HostDashboardPage = ({
   currency = 'VND',
 }) => {
   const [statsData, setStatsData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -38,10 +40,16 @@ export const HostDashboardPage = ({
         }
       } catch (e) {
         // Fallback to computed props
+      } finally {
+        setLoading(false);
       }
     };
     loadStats();
   }, []);
+
+  if (loading && !statsData && listings.length === 0 && bookings.length === 0) {
+    return <HostDashboardSkeleton />;
+  }
 
   const formatPrice = (val) => {
     if (currency === 'USD') return `$${Math.round((val || 0) / 25000).toLocaleString()}`;
@@ -66,31 +74,14 @@ export const HostDashboardPage = ({
   const pendingCount = bookings.filter((b) => b.status === 'pending').length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+    <div className="host-dash-container">
       {/* 1. Header Tinh Gọn: Tiêu đề & Nút Tạo chỗ ở mới */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          paddingBottom: '0.25rem',
-        }}
-      >
+      <div className="host-dash-header">
         <div>
-          <h2
-            style={{
-              fontSize: '1.35rem',
-              fontWeight: 800,
-              color: '#0f172a',
-              letterSpacing: '-0.3px',
-              margin: 0,
-            }}
-          >
+          <h2 className="host-dash-title">
             Tổng Quan Hoạt Động
           </h2>
-          <p style={{ fontSize: '0.84rem', color: '#64748b', margin: '3px 0 0 0' }}>
+          <p className="host-dash-subtitle">
             Hiệu suất kinh doanh và quản lý lưu trú thời gian thực của bạn
           </p>
         </div>
@@ -106,23 +97,17 @@ export const HostDashboardPage = ({
       </div>
 
       {/* 2. Lưới 3 Thẻ Chỉ Số Cốt Lõi (Minimalist KPI Cards) */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-          gap: '1.1rem',
-        }}
-      >
+      <div className="host-dash-kpi-grid">
         {/* Thẻ 1: Số dư khả dụng & Tạm giữ Escrow */}
         <div className="host-stat-card" style={{ margin: 0 }}>
           <div>
             <div className="host-stat-label">Số dư khả dụng (Đã về ví)</div>
             <div className="host-stat-value" style={{ color: '#059669', whiteSpace: 'nowrap' }}>
-              {formatPrice(availableBalance)}
+              {formatPrice(statsData?.kpis?.netEarningsVND ?? availableBalance)}
             </div>
-            <span style={{ fontSize: '0.76rem', color: pendingEscrowBalance > 0 ? '#d97706' : '#64748b', fontWeight: pendingEscrowBalance > 0 ? 700 : 500, marginTop: '3px', display: 'block', whiteSpace: 'nowrap' }}>
-              {pendingEscrowBalance > 0
-                ? `⏳ ${formatPrice(pendingEscrowBalance)} chờ Admin giải ngân`
+            <span className={`host-dash-balance-sub ${(statsData?.kpis?.escrowPendingVND ?? pendingEscrowBalance) > 0 ? 'pending' : 'cleared'}`}>
+              {(statsData?.kpis?.escrowPendingVND ?? pendingEscrowBalance) > 0
+                ? `⏳ ${formatPrice(statsData?.kpis?.escrowPendingVND ?? pendingEscrowBalance)} chờ Admin giải ngân`
                 : 'Đã giải ngân toàn bộ'}
             </span>
           </div>
@@ -136,7 +121,7 @@ export const HostDashboardPage = ({
           <div>
             <div className="host-stat-label">Đơn đặt & Lưu trú</div>
             <div className="host-stat-value" style={{ whiteSpace: 'nowrap' }}>
-              {bookings.length} đơn
+              {statsData?.kpis?.totalBookings ?? bookings.length} đơn
             </div>
             <span
               style={{
@@ -167,10 +152,10 @@ export const HostDashboardPage = ({
           <div>
             <div className="host-stat-label">Chỗ ở & Đánh giá</div>
             <div className="host-stat-value" style={{ whiteSpace: 'nowrap' }}>
-              {listings.length} chỗ {listings.length > 0 && <span style={{ color: '#d97706', fontSize: '1.25rem' }}>· 4.96 ★</span>}
+              {statsData?.kpis?.totalAccommodations ?? listings.length} chỗ {listings.length > 0 && <span style={{ color: '#d97706', fontSize: '1.25rem' }}>· {statsData?.host?.rating || '4.96'} ★</span>}
             </div>
-            <span style={{ fontSize: '0.76rem', color: '#d97706', fontWeight: 700, marginTop: '3px', display: 'inline-flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }}>
-              <TbSparkles /> Danh hiệu Superhost 5 sao
+            <span className="host-dash-superhost-tag">
+              <TbSparkles /> {statsData?.host?.isSuperhost !== false ? 'Danh hiệu Superhost 5 sao' : 'Chủ nhà TripNest uy tín'}
             </span>
           </div>
           <div className="host-stat-icon-wrap rating">
@@ -191,17 +176,7 @@ export const HostDashboardPage = ({
           {bookings.length > 0 && (
             <button
               type="button"
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--host-primary)',
-                fontSize: '0.82rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-              }}
+              className="host-dash-view-all-btn"
               onClick={() => onNavigate('bookings')}
             >
               Xem toàn bộ ({bookings.length}) <TbArrowRight />
@@ -212,27 +187,14 @@ export const HostDashboardPage = ({
         <div className="host-table-wrap">
           {bookings.length === 0 ? (
             /* Luxury Empty State Khi Chưa Có Đơn */
-            <div style={{ padding: '3.5rem 1.5rem', textAlign: 'center' }}>
-              <div
-                style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '50%',
-                  background: '#fff1f2',
-                  color: '#ff385c',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '1.8rem',
-                  margin: '0 auto 1rem',
-                }}
-              >
+            <div className="host-dash-empty-state">
+              <div className="host-dash-empty-icon-wrap">
                 <TbInbox />
               </div>
-              <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.4rem 0' }}>
+              <h4 className="host-dash-empty-title">
                 Chưa có đơn đặt phòng nào
               </h4>
-              <p style={{ fontSize: '0.84rem', color: '#64748b', maxWidth: '420px', margin: '0 auto 1.25rem', lineHeight: 1.5 }}>
+              <p className="host-dash-empty-desc">
                 Chỗ nghỉ của bạn đã mở bán và sẵn sàng đón tiếp khách. Các đơn đặt phòng mới cần xử lý sẽ xuất hiện tại đây.
               </p>
               <button
@@ -252,27 +214,18 @@ export const HostDashboardPage = ({
                   <th style={{ minWidth: '150px', whiteSpace: 'nowrap' }}>KHÁCH HÀNG</th>
                   <th style={{ minWidth: '220px', whiteSpace: 'nowrap' }}>CHỖ NGHỈ</th>
                   <th style={{ minWidth: '200px', whiteSpace: 'nowrap' }}>THỜI GIAN LƯU TRÚ</th>
-                  <th style={{ minWidth: '130px', whiteSpace: 'nowrap' }}>THỰC NHẬN</th>
+                  <th style={{ minWidth: '140px', whiteSpace: 'nowrap' }}>THỰC NHẬN</th>
                   <th style={{ minWidth: '110px', whiteSpace: 'nowrap' }}>TRẠNG THÁI</th>
                   <th style={{ textAlign: 'right', minWidth: '130px', whiteSpace: 'nowrap' }}>THAO TÁC NHANH</th>
                 </tr>
               </thead>
               <tbody>
                 {bookings.slice(0, 5).map((b) => (
-                  <tr key={b.id}>
+                  <tr key={b.id || b.code}>
                     {/* Mã đặt phòng: Luôn liền mạch 1 dòng */}
                     <td style={{ whiteSpace: 'nowrap' }}>
-                      <strong
-                        style={{
-                          color: 'var(--host-primary)',
-                          fontSize: '0.88rem',
-                          fontFamily: 'monospace',
-                          display: 'inline-block',
-                          whiteSpace: 'nowrap',
-                          letterSpacing: '0.3px',
-                        }}
-                      >
-                        {b.code || b.id}
+                      <strong className="host-dash-code-tag">
+                        {b.code || b.bookingCode || ('TN-' + b.id)}
                       </strong>
                     </td>
 
@@ -282,165 +235,109 @@ export const HostDashboardPage = ({
                         {b.guestName || 'Khách hàng TripNest'}
                       </div>
                       <div style={{ fontSize: '0.74rem', color: 'var(--host-text-muted)', whiteSpace: 'nowrap' }}>
-                        {b.guestPhone || '0912 345 678'}
+                        {b.guestPhone || b.guestEmail || '0912 345 678'}
                       </div>
                     </td>
 
                     {/* Chỗ nghỉ */}
                     <td>
                       <div
-                        style={{
-                          fontWeight: 600,
-                          color: '#334155',
-                          maxWidth: '260px',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          fontSize: '0.85rem',
-                        }}
-                        title={b.roomTitle}
+                        className="host-dash-room-title"
+                        title={b.roomTitle || b.listingName || b.roomName || 'Căn hộ nghỉ dưỡng cao cấp'}
                       >
-                        {b.roomTitle || 'Không gian nghỉ dưỡng'}
+                        {b.roomTitle || b.listingName || b.roomName || 'Căn hộ nghỉ dưỡng cao cấp'}
+                      </div>
+                      <div className="host-dash-room-city">
+                        {b.city || 'Đà Lạt'}
                       </div>
                     </td>
 
-                    {/* Thời gian lưu trú: Luôn liền mạch 1 dòng */}
+                    {/* Lịch trình lưu trú: Chuẩn DD/MM/YYYY không xuống dòng */}
                     <td style={{ whiteSpace: 'nowrap' }}>
-                      <div
-                        style={{
-                          fontSize: '0.82rem',
-                          fontWeight: 600,
-                          color: '#0f172a',
-                          display: 'inline-block',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {formatDateVN(b.checkIn)} ➔ {formatDateVN(b.checkOut)}
+                      <div style={{ fontWeight: 700, color: 'var(--host-text-main)', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+                        {formatDateVN(b.checkIn || b.check_in)} ➔ {formatDateVN(b.checkOut || b.check_out)}
                       </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--host-text-muted)', whiteSpace: 'nowrap', marginTop: '1px' }}>
-                        {b.nights || 1} đêm · {b.guests || 2} khách
+                      <div style={{ fontSize: '0.74rem', color: 'var(--host-text-muted)', whiteSpace: 'nowrap' }}>
+                        {b.guests || 2} khách · {b.nights || 1} đêm
                       </div>
                     </td>
 
-                    {/* Thực nhận: Luôn liền mạch 1 dòng */}
+                    {/* Thực nhận */}
                     <td style={{ whiteSpace: 'nowrap' }}>
-                      <strong
-                        style={{
-                          color: '#059669',
-                          fontSize: '0.92rem',
-                          display: 'inline-block',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        +{formatPrice(b.hostEarnings || b.totalAmount || 2500000)}
-                      </strong>
+                      <div className="host-dash-net-payout">
+                        {formatPrice(
+                          b.hostEarnings ??
+                          b.hostPayoutAmount ??
+                          (b.grossAmount && b.commissionFee ? b.grossAmount - b.commissionFee : null) ??
+                          (b.basePrice && b.cleaningFee ? b.basePrice + b.cleaningFee - (b.serviceFee || Math.round(b.basePrice * 0.12)) : null) ??
+                          (b.totalAmount ? Math.round(b.totalAmount * 0.88) : null) ??
+                          (b.totalPrice ? Math.round(b.totalPrice * 0.88) : 0)
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--host-text-muted)', whiteSpace: 'nowrap' }}>
+                        {b.commissionFee || b.serviceFee
+                          ? `Đã trừ 12% phí sàn (-${formatPrice(b.commissionFee || b.serviceFee)})`
+                          : 'Đã trừ 12% phí sàn'}
+                      </div>
+                      {b.hasVoucher && (
+                        <div style={{ fontSize: '0.68rem', color: '#059669', fontWeight: 600, marginTop: 2 }}>
+                          🎟️ Voucher sàn {b.voucherCode ? `(${b.voucherCode})` : ''}
+                        </div>
+                      )}
                     </td>
 
-                    {/* Trạng thái */}
+                    {/* Trạng thái đơn */}
                     <td style={{ whiteSpace: 'nowrap' }}>
-                      <span
-                        className={`host-chip ${
-                          b.status === 'confirmed'
-                            ? 'success'
-                            : b.status === 'checked_in'
-                            ? 'info'
-                            : b.status === 'completed'
-                            ? 'completed'
-                            : b.status === 'pending'
-                            ? 'warning'
-                            : 'neutral'
-                        }`}
-                        style={{
-                          fontSize: '0.7rem',
-                          padding: '2px 7px',
-                          whiteSpace: 'nowrap',
-                          display: 'inline-block',
-                          ...(b.status === 'checked_in'
-                            ? { background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd', fontWeight: 800 }
-                            : b.status === 'completed'
-                            ? { background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontWeight: 800 }
-                            : {}),
-                        }}
-                      >
+                      <span className={`status-pill ${b.status}`}>
                         {b.status === 'confirmed'
-                          ? 'Đã xác nhận'
+                          ? 'ĐÃ DUYỆT'
                           : b.status === 'checked_in'
-                          ? 'Đang lưu trú'
+                          ? 'ĐANG Ở'
                           : b.status === 'completed'
-                          ? 'Đã hoàn tất'
-                          : b.status === 'pending'
-                          ? 'Chờ duyệt'
-                          : 'Đã hủy'}
+                          ? 'HOÀN TẤT'
+                          : b.status === 'cancelled'
+                          ? 'ĐÃ HỦY'
+                          : 'CHỜ DUYỆT'}
                       </span>
                     </td>
 
                     {/* Thao tác nhanh */}
                     <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: '5px', whiteSpace: 'nowrap' }}>
-                        {b.status === 'pending' && (
-                          <button
-                            type="button"
-                            className="host-btn-primary"
-                            style={{ padding: '4px 10px', fontSize: '0.74rem', whiteSpace: 'nowrap' }}
-                            onClick={() => onApproveBooking && onApproveBooking(b.id || b.code)}
-                          >
-                            <TbCheck /> Duyệt đơn
-                          </button>
-                        )}
-
-                        {b.status === 'confirmed' && (
-                          <button
-                            type="button"
-                            className="host-btn-primary"
-                            style={{
-                              padding: '4px 10px',
-                              fontSize: '0.74rem',
-                              background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                              whiteSpace: 'nowrap',
-                            }}
-                            onClick={() => onCheckInBooking && onCheckInBooking(b.id || b.code)}
-                            title="Xác nhận khách đã tới nhận phòng"
-                          >
-                            <TbLogin /> Check-in
-                          </button>
-                        )}
-
-                        {b.status === 'checked_in' && (
-                          <button
-                            type="button"
-                            className="host-btn-primary"
-                            style={{
-                              padding: '4px 10px',
-                              fontSize: '0.74rem',
-                              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                              whiteSpace: 'nowrap',
-                            }}
-                            onClick={() => onCheckOutBooking && onCheckOutBooking(b.id || b.code)}
-                            title="Xác nhận khách trả phòng & tạo Payout"
-                          >
-                            <TbLogout /> Check-out
-                          </button>
-                        )}
-
-                        {b.status === 'completed' && (
-                          <span
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              fontSize: '0.74rem',
-                              color: '#059669',
-                              fontWeight: 800,
-                              padding: '3px 7px',
-                              background: '#ecfdf5',
-                              borderRadius: '4px',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            ✓ Payout Đã Tạo
-                          </span>
-                        )}
-                      </div>
+                      {b.status === 'pending' && (
+                        <button
+                          type="button"
+                          className="host-btn-action success"
+                          title="Phê duyệt nhận khách ngay"
+                          onClick={() => onApproveBooking(b.id)}
+                        >
+                          <TbCheck /> <span>Duyệt</span>
+                        </button>
+                      )}
+                      {b.status === 'confirmed' && (
+                        <button
+                          type="button"
+                          className="host-btn-action info"
+                          title="Xác nhận khách đã nhận phòng"
+                          onClick={() => onCheckInBooking(b.id)}
+                        >
+                          <TbLogin /> <span>Check-in</span>
+                        </button>
+                      )}
+                      {b.status === 'checked_in' && (
+                        <button
+                          type="button"
+                          className="host-btn-action success"
+                          title="Hoàn tất trả phòng & thanh toán"
+                          onClick={() => onCheckOutBooking(b.id)}
+                        >
+                          <TbLogout /> <span>Check-out</span>
+                        </button>
+                      )}
+                      {(b.status === 'completed' || b.status === 'cancelled') && (
+                        <span style={{ fontSize: '0.76rem', color: 'var(--host-text-muted)', fontStyle: 'italic' }}>
+                          Đã lưu trữ
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}

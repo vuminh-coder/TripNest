@@ -650,4 +650,33 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Bật / Tắt danh hiệu Chủ nhà Siêu cấp (Superhost)
+     */
+    public function toggleSuperhost(Request $request, $id)
+    {
+        try {
+            $host = \App\Models\Host::find($id);
+            if (!$host) {
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy hồ sơ chủ nhà.'], 404);
+            }
+
+            $host->update([
+                'is_superhost' => !$host->is_superhost,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => $host->is_superhost ? 'Đã trao danh hiệu Superhost!' : 'Đã hủy danh hiệu Superhost.',
+                'is_superhost' => (bool)$host->is_superhost,
+                'host' => $host,
+            ]);
+        } catch (Throwable $ex) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi cập nhật Superhost: ' . $ex->getMessage(),
+            ], 500);
+        }
+    }
 }

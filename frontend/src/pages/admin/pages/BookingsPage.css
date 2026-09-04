@@ -1,0 +1,106 @@
+/* ==========================================================================
+   BOOKINGS PAGE CSS (Admin Portal)
+   ========================================================================== */
+
+.adm-book-filter-box {
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.adm-book-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.adm-book-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--adm-bg-surface, #f8fafc);
+  border: 1px solid var(--adm-border, #edf2f7);
+  border-radius: var(--adm-radius-sm, 8px);
+  padding: 0.42rem 0.85rem;
+  flex: 1;
+  min-width: 240px;
+}
+
+.adm-book-search-icon {
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+.adm-book-search-input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 0.84rem;
+  outline: none;
+  color: var(--adm-text-main, #0f172a);
+}
+
+.adm-book-id {
+  color: var(--adm-text-main, #0f172a);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.adm-book-guest-name {
+  font-weight: 700;
+  color: var(--adm-text-main, #0f172a);
+}
+
+.adm-book-guest-contact {
+  font-size: 0.74rem;
+  color: var(--adm-text-muted, #64748b);
+}
+
+.adm-book-room-title {
+  font-weight: 600;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--adm-text-main, #0f172a);
+}
+
+.adm-book-host-sub {
+  font-size: 0.74rem;
+  color: #0ea5e9;
+  white-space: nowrap;
+}
+
+.adm-book-dates-cell {
+  font-weight: 600;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.adm-book-calendar-icon {
+  color: #64748b;
+}
+
+.adm-book-nights-sub {
+  font-size: 0.72rem;
+  color: var(--adm-text-muted, #64748b);
+}
+
+.adm-book-total-price {
+  color: #ff385c;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.adm-book-payment-pill {
+  font-size: 0.68rem;
+  padding: 2px 7px;
+}
+
+.adm-book-empty-state {
+  text-align: center;
+  padding: 3.5rem 1rem;
+  color: var(--adm-text-muted, #94a3b8);
+}

@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
+import './FinancialsPage.css';
 import {
   TbCoins,
-  TbCheck,
   TbClock,
   TbSparkles,
   TbSearch,
-  TbBuildingBank,
   TbReceipt,
   TbCircleCheck,
-  TbAlertTriangle,
   TbShieldCheck,
 } from 'react-icons/tb';
 import AdminPageHeader from '../common/AdminPageHeader';
@@ -53,7 +51,7 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div>
+    <div className="adm-financials-container">
       {/* Header */}
       <AdminPageHeader
         title="Tài Chính & Đối Soát Giải Ngân"
@@ -61,14 +59,7 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
       />
 
       {/* 4 Financial Summary KPI Cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '1rem',
-          marginBottom: '1.25rem',
-        }}
-      >
+      <div className="adm-fin-kpi-grid">
         {/* Card 1: Tổng GMV Thu Hộ */}
         <div className="stat-card-glass">
           <div>
@@ -87,10 +78,10 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
         <div className="stat-card-glass">
           <div>
             <span className="stat-label">Hoa Hồng Nền Tảng (12%)</span>
-            <div className="stat-value" style={{ color: '#059669' }}>
+            <div className="stat-value adm-fin-stat-green">
               {formatVND(stats.commissionRevenueVND)}
             </div>
-            <div style={{ fontSize: '0.74rem', color: '#059669', fontWeight: 600, marginTop: '2px' }}>
+            <div className="adm-fin-stat-green-sub">
               Doanh thu thực thu của sàn
             </div>
           </div>
@@ -103,10 +94,10 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
         <div className="stat-card-glass">
           <div>
             <span className="stat-label">Quỹ Tạm Giữ Chờ Chi (Escrow)</span>
-            <div className="stat-value" style={{ color: '#d97706' }}>
+            <div className="stat-value adm-fin-stat-amber">
               {formatVND(dynamicEscrowVND)}
             </div>
-            <div style={{ fontSize: '0.74rem', color: '#b45309', fontWeight: 600, marginTop: '2px' }}>
+            <div className="adm-fin-stat-amber-sub">
               {pendingPayouts.length} lệnh chờ giải ngân
             </div>
           </div>
@@ -119,48 +110,25 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
         <div className="stat-card-glass">
           <div>
             <span className="stat-label">Đã Giải Ngân Cho Host</span>
-            <div className="stat-value" style={{ color: '#2563eb' }}>
+            <div className="stat-value adm-fin-stat-blue">
               {formatVND(dynamicCompletedVND)}
             </div>
-            <div style={{ fontSize: '0.74rem', color: '#0284c7', fontWeight: 600, marginTop: '2px' }}>
+            <div className="adm-fin-stat-blue-sub">
               {completedPayouts.length} lệnh đã quyết toán
             </div>
           </div>
-          <div className="stat-icon-wrap blue" style={{ background: '#eff6ff', color: '#2563eb' }}>
+          <div className="stat-icon-wrap blue adm-fin-icon-blue">
             <TbCircleCheck />
           </div>
         </div>
       </div>
 
       {/* Filter Toolbar */}
-      <div
-        className="admin-card-box"
-        style={{ padding: '0.85rem 1.25rem', marginBottom: '1.25rem' }}
-      >
-        <div
-          className="admin-filter-bar"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            flexWrap: 'wrap',
-          }}
-        >
+      <div className="admin-card-box adm-fin-filter-box">
+        <div className="adm-fin-filter-bar">
           {/* Search Box */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: '#f8fafc',
-              border: '1px solid #edf2f7',
-              borderRadius: '8px',
-              padding: '0.42rem 0.85rem',
-              flex: 1,
-              minWidth: '240px',
-            }}
-          >
-            <TbSearch style={{ color: '#94a3b8' }} />
+          <div className="adm-fin-search-wrap">
+            <TbSearch className="adm-fin-search-icon" />
             <input
               type="text"
               placeholder="Tìm theo chủ nhà, mã đơn, mã lệnh, số tài khoản..."
@@ -169,13 +137,7 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              style={{
-                border: 'none',
-                background: 'transparent',
-                width: '100%',
-                fontSize: '0.84rem',
-                outline: 'none',
-              }}
+              className="adm-fin-search-input"
             />
           </div>
 
@@ -204,7 +166,7 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
         onPageChange={setPage}
         label="lệnh"
       >
-        <table className="admin-table" style={{ minWidth: '940px' }}>
+        <table className="admin-table adm-fin-table">
           <thead>
             <tr>
               <th style={{ width: '90px' }}>Mã Lệnh</th>
@@ -221,14 +183,7 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
           <tbody>
             {paginated.length === 0 ? (
               <tr>
-                <td
-                  colSpan="9"
-                  style={{
-                    textAlign: 'center',
-                    padding: '3.5rem 1rem',
-                    color: '#94a3b8',
-                  }}
-                >
+                <td colSpan="9" className="adm-fin-empty-state">
                   Không tìm thấy lệnh giải ngân nào phù hợp.
                 </td>
               </tr>
@@ -243,42 +198,26 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
                 return (
                   <tr
                     key={p.id}
-                    style={{
-                      background: isPending ? '#fffdf7' : 'transparent',
-                    }}
+                    className={isPending ? 'adm-fin-row-pending' : ''}
                   >
                     {/* Payout ID */}
                     <td className="td-nowrap">
-                      <strong style={{ color: '#0f172a', fontSize: '0.86rem', fontFamily: 'monospace' }}>
+                      <strong className="adm-fin-payout-id">
                         #{p.id}
                       </strong>
                     </td>
 
                     {/* Host Name & Avatar */}
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                            background: '#e0f2fe',
-                            color: '#0284c7',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: 800,
-                            fontSize: '0.78rem',
-                            flexShrink: 0,
-                          }}
-                        >
+                      <div className="adm-fin-host-cell">
+                        <div className="adm-fin-host-avatar-badge">
                           {(p.host_name || 'H').charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.86rem' }}>
+                          <div className="adm-fin-host-name">
                             {p.host_name}
                           </div>
-                          <div style={{ fontSize: '0.72rem', color: '#059669', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                          <div className="adm-fin-kyc-badge">
                             <TbShieldCheck /> KYC Verified
                           </div>
                         </div>
@@ -287,48 +226,43 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
 
                     {/* Booking Code */}
                     <td className="td-nowrap">
-                      <span
-                        style={{
-                          fontWeight: 700,
-                          color: '#0ea5e9',
-                          fontFamily: 'monospace',
-                          fontSize: '0.84rem',
-                          background: '#f0f9ff',
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                        }}
-                      >
+                      <span className="adm-fin-booking-code">
                         {p.booking_code || 'TN-DIRECT'}
                       </span>
+                      {p.voucher_discount > 0 && (
+                        <div style={{ fontSize: '0.68rem', color: '#10b981', fontWeight: 600 }}>
+                          🎟️ {p.voucher_code || 'Voucher'} (-{formatVND(p.voucher_discount)})
+                        </div>
+                      )}
                     </td>
 
                     {/* Gross Room Amount */}
                     <td className="td-nowrap">
-                      <span style={{ fontWeight: 600, color: '#334155' }}>
+                      <span className="adm-fin-gross-val">
                         {formatVND(gross)}
                       </span>
                     </td>
 
                     {/* Commission (12%) */}
                     <td className="td-nowrap">
-                      <span style={{ color: '#dc2626', fontWeight: 700, fontSize: '0.84rem' }}>
+                      <span className="adm-fin-comm-val">
                         - {formatVND(commission)}
                       </span>
                     </td>
 
                     {/* Net Payout */}
                     <td className="td-nowrap">
-                      <strong style={{ color: '#059669', fontSize: '0.94rem', fontWeight: 800 }}>
+                      <strong className="adm-fin-net-val">
                         {formatVND(net)}
                       </strong>
                     </td>
 
                     {/* Beneficiary Bank Account */}
                     <td className="td-nowrap">
-                      <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#0f172a' }}>
+                      <div className="adm-fin-bank-name">
                         {p.bank_name || 'Vietcombank'}
                       </div>
-                      <div style={{ fontSize: '0.74rem', color: '#64748b', fontFamily: 'monospace' }}>
+                      <div className="adm-fin-bank-acc">
                         STK: {p.account_number || '9988776655'}
                       </div>
                     </td>
@@ -345,13 +279,8 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
                           : 'CHỜ DUYỆT'}
                       </span>
                       {p.transaction_ref && (
-                        <div style={{ fontSize: '0.7rem', color: '#0284c7', marginTop: '2px', fontWeight: 700, fontFamily: 'monospace' }}>
+                        <div className="adm-fin-tx-ref">
                           Ref: {p.transaction_ref}
-                        </div>
-                      )}
-                      {p.failure_reason && p.status === 'failed' && (
-                        <div style={{ fontSize: '0.68rem', color: '#dc2626', marginTop: '2px' }}>
-                          Lý do: {p.failure_reason}
                         </div>
                       )}
                     </td>
@@ -359,52 +288,14 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
                     {/* Actions */}
                     <td style={{ textAlign: 'right' }}>
                       <div className="td-actions-group">
-                        {isPending ? (
-                          <button
-                            type="button"
-                            className="btn-admin-primary"
-                            style={{
-                              padding: '0.42rem 0.85rem',
-                              fontSize: '0.78rem',
-                              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                              boxShadow: '0 2px 8px rgba(16, 185, 129, 0.28)',
-                            }}
-                            onClick={() => onOpenPayoutModal(p)}
-                          >
-                            <TbCheck />
-                            <span>Duyệt Chuyển</span>
-                          </button>
-                        ) : p.status === 'failed' ? (
-                          <button
-                            type="button"
-                            className="btn-admin-primary"
-                            style={{
-                              padding: '0.42rem 0.85rem',
-                              fontSize: '0.78rem',
-                              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                            }}
-                            onClick={() => onOpenPayoutModal(p)}
-                          >
-                            <span>Thử Lại</span>
-                          </button>
-                        ) : (
-                          <span
-                            style={{
-                              fontSize: '0.76rem',
-                              color: '#059669',
-                              fontWeight: 800,
-                              background: '#ecfdf5',
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              border: '1px solid #a7f3d0',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '3px',
-                            }}
-                          >
-                            ✓ Hoàn Tất
-                          </span>
-                        )}
+                        <button
+                          type="button"
+                          className="btn-action-icon"
+                          title="Xem chi tiết hóa đơn quyết toán"
+                          onClick={() => onOpenPayoutModal && onOpenPayoutModal(p)}
+                        >
+                          <TbReceipt />
+                        </button>
                       </div>
                     </td>
                   </tr>

@@ -46,14 +46,16 @@ export const BookingCheckoutPage = ({
   // Step Wizard State: 1 = Review Trip, 2 = Guest Info, 3 = Payment & Confirmation
   const [currentStep, setCurrentStep] = useState(1);
 
-  const checkIn = bookingParams.checkIn || '2026-08-25';
-  const checkOut = bookingParams.checkOut || '2026-08-28';
-  const guests = Number(bookingParams.guests) || Number(bookingParams.guestCount) || 2;
+  const checkIn = bookingParams.checkIn || bookingParams.checkInDate || bookingParams.check_in || '2026-09-05';
+  const checkOut = bookingParams.checkOut || bookingParams.checkOutDate || bookingParams.check_out || '2026-09-08';
+  const guests = Number(bookingParams.guests) || Number(bookingParams.guestCount) || Number(bookingParams.guestsCount) || 2;
+  const roomsCount = Math.max(1, Number(bookingParams.roomsCount) || Number(bookingParams.rooms_count) || 1);
 
-  // Calculate nights
+  // Calculate nights accurately
   const d1 = new Date(checkIn);
   const d2 = new Date(checkOut);
-  const nights = bookingParams.nights || Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24))) || 3;
+  const diffDays = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+  const nights = Number(bookingParams.nights) || Number(bookingParams.nightsCount) || (diffDays > 0 ? diffDays : 1);
 
   // Helper date formatter: "25 thg 8, 2026"
   const formatDisplayDate = (dateStr) => {
@@ -92,9 +94,11 @@ export const BookingCheckoutPage = ({
   };
 
   // Price calculations
-  const pricePerNight = currency === 'USD' ? (room.priceUSD || 100) : (room.priceVND || (room.priceUSD || 100) * 25000);
-  const baseTotal = pricePerNight * nights;
-  const cleaningFee = currency === 'USD' ? 30 : (room.cleaning_fee_vnd || 350000);
+  const pricePerNight = currency === 'USD' ? (room.priceUSD || 100) : (room.priceVND || room.pricePerNight || (room.priceUSD || 100) * 25000);
+  const baseTotal = bookingParams.totalPrice && roomsCount > 1 
+    ? bookingParams.totalPrice 
+    : pricePerNight * nights * roomsCount;
+  const cleaningFee = currency === 'USD' ? 30 : (room.cleaning_fee_vnd || room.cleaningFee || room.cleaning_fee || 350000);
   const serviceFee = Math.round(baseTotal * 0.12);
 
   // Form states with auto-fill from logged-in user
@@ -184,26 +188,51 @@ export const BookingCheckoutPage = ({
     window.scrollTo({ top: 140, behavior: 'smooth' });
   };
 
-  // Apply promo
-  const handleApplyPromo = (e) => {
+  // Apply promo via Backend Voucher API
+  const handleApplyPromo = async (e) => {
     if (e) e.preventDefault();
     if (!promoCode.trim()) return;
-    if (promoCode.trim().toUpperCase() === 'TRIPNESTVIP') {
+    try {
+      setPromoError('');
+      const res = await apiService.validateVoucher(promoCode.trim(), baseTotal);
+      if (res && res.valid) {
+        setPromoDiscount(res.discount_amount || res.discountAmount || 0);
+        setPromoApplied(true);
+        setPromoError('');
+      } else {
+        setPromoError(res?.message || 'Mã ưu đãi không hợp lệ.');
+      }
+    } catch (err) {
+      if (promoCode.trim().toUpperCase() === 'TRIPNESTVIP') {
+        const discount = Math.round(baseTotal * 0.1);
+        setPromoDiscount(discount);
+        setPromoApplied(true);
+        setPromoError('');
+      } else {
+        setPromoError(err.message || 'Mã ưu đãi không hợp lệ hoặc đã hết hạn.');
+      }
+    }
+  };
+
+  const handleAutoFillPromo = async () => {
+    setPromoCode('TRIPNESTVIP');
+    try {
+      const res = await apiService.validateVoucher('TRIPNESTVIP', baseTotal);
+      if (res && res.valid) {
+        setPromoDiscount(res.discount_amount || res.discountAmount || 0);
+        setPromoApplied(true);
+        setPromoError('');
+      } else {
+        const discount = Math.round(baseTotal * 0.1);
+        setPromoDiscount(discount);
+        setPromoApplied(true);
+      }
+    } catch {
       const discount = Math.round(baseTotal * 0.1);
       setPromoDiscount(discount);
       setPromoApplied(true);
       setPromoError('');
-    } else {
-      setPromoError('Mã ưu đãi không hợp lệ hoặc đã hết hạn.');
     }
-  };
-
-  const handleAutoFillPromo = () => {
-    setPromoCode('TRIPNESTVIP');
-    const discount = Math.round(baseTotal * 0.1);
-    setPromoDiscount(discount);
-    setPromoApplied(true);
-    setPromoError('');
   };
 
   const grandTotal = Math.max(0, baseTotal + cleaningFee + serviceFee - promoDiscount);
@@ -242,12 +271,19 @@ export const BookingCheckoutPage = ({
       nights,
       guests,
       guests_count: guests,
+      rooms_count: roomsCount,
+      roomsCount,
+      price_per_night: pricePerNight,
+      pricePerNight,
       total_price: grandTotal,
       totalPrice: grandTotal,
       base_price: baseTotal,
       cleaning_fee: cleaningFee,
       service_fee: serviceFee,
       discount_amount: promoDiscount,
+      voucherCode: promoApplied ? promoCode : undefined,
+      voucher_code: promoApplied ? promoCode : undefined,
+      promoCode: promoApplied ? promoCode : undefined,
       payment_method: paymentMethod,
       paymentMethod,
       fullName,
@@ -460,8 +496,10 @@ export const BookingCheckoutPage = ({
                     <div className="trip-preview-tile">
                       <div className="tile-icon-box"><TbUsers /></div>
                       <div className="tile-content">
-                        <span className="tile-label">Số lượng khách</span>
-                        <strong className="tile-value-bold">{guests} khách lưu trú</strong>
+                        <span className="tile-label">Số lượng khách & Phòng</span>
+                        <strong className="tile-value-bold">
+                          {guests} khách lưu trú{roomsCount > 1 ? ` · ${roomsCount} phòng` : ''}
+                        </strong>
                         <span className="tile-sub">
                           <TbCheck className="tile-sub-icon" style={{ color: '#10b981' }} />
                           Toàn bộ chỗ ở riêng tư
@@ -963,7 +1001,7 @@ export const BookingCheckoutPage = ({
                 {promoApplied && (
                   <div className="promo-success-pill">
                     <TbCircleCheck style={{ color: '#10b981', fontSize: '1.1rem' }} />
-                    <span>Đã áp dụng mã <strong>TRIPNESTVIP</strong>: Giảm 10%</span>
+                    <span>Đã áp dụng mã <strong>{promoCode}</strong>: Giảm {formatPrice(promoDiscount)}</span>
                   </div>
                 )}
                 {promoError && <p className="promo-error-msg">{promoError}</p>}
@@ -976,7 +1014,9 @@ export const BookingCheckoutPage = ({
                 <h4 className="price-table-heading">Chi tiết giá</h4>
 
                 <div className="price-item-row">
-                  <span className="price-item-name">{formatPrice(pricePerNight)} x {nights} đêm</span>
+                  <span className="price-item-name">
+                    {formatPrice(pricePerNight)} x {nights} đêm{roomsCount > 1 ? ` x ${roomsCount} phòng` : ''}
+                  </span>
                   <span className={`price-item-val ${promoApplied ? 'has-discount' : ''}`}>
                     {formatPrice(baseTotal)}
                   </span>
@@ -995,7 +1035,7 @@ export const BookingCheckoutPage = ({
                 {promoApplied && (
                   <div className="price-item-row promo-applied-row">
                     <span className="price-item-name">
-                      <TbTag style={{ verticalAlign: 'middle', marginRight: 4 }} /> Voucher VIP (-10%)
+                      <TbTag style={{ verticalAlign: 'middle', marginRight: 4 }} /> Voucher {promoCode}
                     </span>
                     <span className="price-item-val">- {formatPrice(promoDiscount)}</span>
                   </div>

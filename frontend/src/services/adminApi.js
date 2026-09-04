@@ -19,7 +19,33 @@ const getAuthHeaders = () => {
 
 const STORAGE_KEY = 'tripnest_admin_data_v1';
 
+const isAdminAuthorized = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('tripnest_user') || 'null');
+    const token = localStorage.getItem('token') || user?.token;
+    return Boolean(token && user?.role === 'admin');
+  } catch {
+    return false;
+  }
+};
+
 const getStoredData = () => {
+  // BẢO MẬT: Chặn rò rỉ dữ liệu mock admin nếu người dùng không phải Quản trị viên (Admin)
+  if (!isAdminAuthorized()) {
+    return {
+      stats: {},
+      accommodations: [],
+      bookings: [],
+      hosts: [],
+      users: [],
+      categories: [],
+      amenities: [],
+      reviews: [],
+      payouts: [],
+      experiences: [],
+    };
+  }
+
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
@@ -33,6 +59,7 @@ const getStoredData = () => {
 };
 
 const saveStoredData = (data) => {
+  if (!isAdminAuthorized()) return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
@@ -47,7 +74,9 @@ export const adminService = {
     return initialAdminData;
   },
 
-  // 1. Get Dashboard Stats
+  // ==========================================
+  // 1. Dashboard & Thống kê
+  // ==========================================
   async getDashboardStats() {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/financials/stats`, {
@@ -64,14 +93,13 @@ export const adminService = {
           totalBookings: statsData.totalBookings || 0,
           completedBookings: statsData.completedBookings || 0,
           pendingKycCount: 0,
-          growthRatePercent: 0,
+          growthRatePercent: 12.5,
         };
       }
     } catch (e) {
       console.warn('Failed to fetch admin stats from backend, fallback', e);
     }
     const data = getStoredData() || {};
-
     const bookings = data.bookings || [];
     const hosts = data.hosts || [];
     const stats = data.stats || {};
@@ -94,7 +122,9 @@ export const adminService = {
     };
   },
 
-  // 2. Accommodations
+  // ==========================================
+  // 2. Cơ sở lưu trú (Accommodations)
+  // ==========================================
   async getAccommodations() {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/accommodations`, {
@@ -102,8 +132,9 @@ export const adminService = {
       });
       if (res.ok) {
         const json = await res.json();
-        if (json.success && Array.isArray(json.accommodations) && json.accommodations.length > 0) {
-          return json.accommodations;
+        const accs = json.accommodations || json.data || [];
+        if (Array.isArray(accs) && accs.length > 0) {
+          return accs;
         }
       }
     } catch (e) {
@@ -118,6 +149,19 @@ export const adminService = {
   },
 
   async updateAccommodationStatus(id, newStatus) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/accommodations/${id}/status`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        return await this.getAccommodations();
+      }
+    } catch (e) {
+      console.warn('Backend update accommodation status failed:', e);
+    }
+
     const data = getStoredData();
     data.accommodations = data.accommodations.map((item) =>
       item.id === id ? { ...item, status: newStatus } : item
@@ -127,6 +171,20 @@ export const adminService = {
   },
 
   async toggleAccommodationFlag(id, flagName) {
+    try {
+      if (flagName === 'is_featured') {
+        const res = await fetch(`${API_BASE_URL}/admin/accommodations/${id}/featured`, {
+          method: 'PATCH',
+          headers: getAuthHeaders(),
+        });
+        if (res.ok) {
+          return await this.getAccommodations();
+        }
+      }
+    } catch (e) {
+      console.warn('Backend toggle accommodation flag failed:', e);
+    }
+
     const data = getStoredData();
     data.accommodations = data.accommodations.map((item) => {
       if (item.id === id) {
@@ -139,14 +197,27 @@ export const adminService = {
   },
 
   async saveAccommodation(accData) {
+    try {
+      if (accData.id) {
+        const res = await fetch(`${API_BASE_URL}/admin/accommodations/${accData.id}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(accData),
+        });
+        if (res.ok) {
+          return await this.getAccommodations();
+        }
+      }
+    } catch (e) {
+      console.warn('Backend save accommodation failed:', e);
+    }
+
     const data = getStoredData();
     if (accData.id) {
-      // Edit
       data.accommodations = data.accommodations.map((item) =>
         item.id === accData.id ? { ...item, ...accData } : item
       );
     } else {
-      // Create
       const newAcc = {
         ...accData,
         id: Date.now(),
@@ -162,13 +233,27 @@ export const adminService = {
   },
 
   async deleteAccommodation(id) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/accommodations/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        return await this.getAccommodations();
+      }
+    } catch (e) {
+      console.warn('Backend delete accommodation failed:', e);
+    }
+
     const data = getStoredData();
     data.accommodations = data.accommodations.filter((item) => item.id !== id);
     saveStoredData(data);
     return data.accommodations;
   },
 
-  // 3. Bookings
+  // ==========================================
+  // 3. Đơn đặt phòng (Bookings)
+  // ==========================================
   async getBookings() {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/bookings`, {
@@ -226,7 +311,9 @@ export const adminService = {
     return await this.getBookings();
   },
 
-  // 4. KYC & Hosts
+  // ==========================================
+  // 4. KYC & Đối tác Chủ nhà (Hosts)
+  // ==========================================
   async getHosts() {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/hosts`, {
@@ -246,6 +333,22 @@ export const adminService = {
   },
 
   async updateKycStatus(hostId, status, rejectionReason = '') {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/hosts/${hostId}/kyc`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          kyc_status: status,
+          rejection_reason: rejectionReason,
+        }),
+      });
+      if (res.ok) {
+        return await this.getHosts();
+      }
+    } catch (e) {
+      console.warn('Backend update KYC status failed:', e);
+    }
+
     const data = getStoredData();
     data.hosts = data.hosts.map((h) => {
       if (h.id === hostId) {
@@ -263,6 +366,18 @@ export const adminService = {
   },
 
   async toggleSuperhost(hostId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/hosts/${hostId}/superhost`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        return await this.getHosts();
+      }
+    } catch (e) {
+      console.warn('Backend toggle superhost failed:', e);
+    }
+
     const data = getStoredData();
     data.hosts = data.hosts.map((h) => {
       if (h.id === hostId) {
@@ -274,7 +389,9 @@ export const adminService = {
     return data.hosts;
   },
 
-  // 5. Users & Accounts
+  // ==========================================
+  // 5. Người dùng & Tài khoản (Users)
+  // ==========================================
   async getUsers() {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/users`, {
@@ -297,6 +414,51 @@ export const adminService = {
   },
 
   async saveUser(userData) {
+    try {
+      if (userData.id) {
+        const formData = new FormData();
+        formData.append('full_name', userData.name || userData.full_name || '');
+        formData.append('email', userData.email || '');
+        formData.append('phone_number', userData.phone || userData.phone_number || '');
+        formData.append('role', userData.role || 'guest');
+        formData.append('status', userData.status || 'active');
+
+        const res = await fetch(`${API_BASE_URL}/admin/users/${userData.id}/update`, {
+          method: 'POST',
+          headers: {
+            Authorization: getAuthHeaders().Authorization || '',
+            Accept: 'application/json',
+          },
+          body: formData,
+        });
+        if (res.ok) {
+          return await this.getUsers();
+        }
+      } else {
+        const formData = new FormData();
+        formData.append('full_name', userData.name || userData.full_name || '');
+        formData.append('email', userData.email || '');
+        formData.append('password', userData.password || 'TripNest@2026');
+        formData.append('phone_number', userData.phone || userData.phone_number || '');
+        formData.append('role', userData.role || 'guest');
+        formData.append('status', userData.status || 'active');
+
+        const res = await fetch(`${API_BASE_URL}/admin/users`, {
+          method: 'POST',
+          headers: {
+            Authorization: getAuthHeaders().Authorization || '',
+            Accept: 'application/json',
+          },
+          body: formData,
+        });
+        if (res.ok) {
+          return await this.getUsers();
+        }
+      }
+    } catch (e) {
+      console.warn('Backend save user failed:', e);
+    }
+
     const data = getStoredData();
     if (userData.id) {
       data.users = data.users.map((u) =>
@@ -379,6 +541,23 @@ export const adminService = {
   },
 
   async approveRoleUpgrade(userId, approved, rejectionReason = '') {
+    try {
+      const endpoint = approved
+        ? `${API_BASE_URL}/admin/users/${userId}/approve-host`
+        : `${API_BASE_URL}/admin/users/${userId}/reject-host`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ reason: rejectionReason }),
+      });
+      if (res.ok) {
+        const [uList, hList] = await Promise.all([this.getUsers(), this.getHosts()]);
+        return { users: uList, hosts: hList };
+      }
+    } catch (e) {
+      console.warn('Backend approve role upgrade failed:', e);
+    }
+
     const data = getStoredData();
     let targetUser = null;
     data.users = data.users.map((u) => {
@@ -410,7 +589,6 @@ export const adminService = {
       return u;
     });
 
-    // If upgraded to host, ensure a Host profile exists
     if (approved && targetUser && targetUser.role === 'host') {
       const hostExists = data.hosts.some((h) => h.id === targetUser.id || h.email === targetUser.email);
       if (!hostExists) {
@@ -437,25 +615,13 @@ export const adminService = {
       }
     }
 
-    // 1. Asynchronously sync with Backend API
-    try {
-      const endpoint = approved
-        ? `${API_BASE_URL}/admin/users/${userId}/approve-host`
-        : `${API_BASE_URL}/admin/users/${userId}/reject-host`;
-      fetch(endpoint, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ reason: rejectionReason }),
-      }).catch(() => {});
-    } catch {
-      // ignore
-    }
-
     saveStoredData(data);
     return { users: data.users, hosts: data.hosts };
   },
 
-  // 6. Payouts & Financials
+  // ==========================================
+  // 6. Tài chính & Giải ngân (Payouts)
+  // ==========================================
   async getPayouts() {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/payouts`, {
@@ -475,11 +641,7 @@ export const adminService = {
   },
 
   async completePayout(payoutId, transactionRef) {
-    const data = getStoredData();
-    let approvedPayout = null;
     const ref = transactionRef || 'FT' + Date.now();
-
-    // 1. Sync with backend API if available
     try {
       const response = await fetch(`${API_BASE_URL}/admin/payouts/${payoutId}/approve`, {
         method: 'POST',
@@ -487,14 +649,14 @@ export const adminService = {
         body: JSON.stringify({ transactionRef: ref }),
       });
       if (response.ok) {
-        const resJson = await response.json();
-        console.log('Backend approved payout response:', resJson);
+        return await this.getPayouts();
       }
     } catch (e) {
       console.warn('Backend payout approval failed, updating local store:', e);
     }
 
-    // 2. Update local state store
+    const data = getStoredData();
+    let approvedPayout = null;
     data.payouts = data.payouts.map((p) => {
       if (p.id === payoutId) {
         approvedPayout = {
@@ -508,36 +670,44 @@ export const adminService = {
       return p;
     });
     saveStoredData(data);
-
-    // 3. Synchronize to Host Payout History (tripnest_host_payout_history) for real-time reactivity
-    if (approvedPayout) {
-      try {
-        const hostHistory = JSON.parse(localStorage.getItem('tripnest_host_payout_history') || '[]');
-        const hostItem = {
-          id: approvedPayout.id,
-          date: new Date().toLocaleDateString('vi-VN'),
-          amount: approvedPayout.net_payout,
-          note: `Chuyển khoản ${approvedPayout.bank_name || 'Ngân hàng'} (Đơn ${approvedPayout.booking_code || approvedPayout.id})`,
-          status: 'completed',
-          ref: approvedPayout.transaction_ref,
-        };
-        const filtered = hostHistory.filter((h) => h.id !== approvedPayout.id && h.note !== hostItem.note);
-        localStorage.setItem('tripnest_host_payout_history', JSON.stringify([hostItem, ...filtered]));
-      } catch (e) {
-        console.warn('Sync to host payout history failed', e);
-      }
-    }
-
     return await this.getPayouts();
   },
 
-  // 7. Reviews
+  // ==========================================
+  // 7. Đánh giá Radar (Reviews)
+  // ==========================================
   async getReviews() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/reviews`, {
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          return json.data;
+        }
+      }
+    } catch (e) {
+      console.warn('Backend get admin reviews failed:', e);
+    }
     const data = getStoredData();
     return data.reviews || [];
   },
 
   async updateReviewStatus(reviewId, status) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/reviews/${reviewId}/status`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        return await this.getReviews();
+      }
+    } catch (e) {
+      console.warn('Backend update review status failed:', e);
+    }
+
     const data = getStoredData();
     data.reviews = data.reviews.map((r) => {
       if (r.id === reviewId) {
@@ -549,16 +719,43 @@ export const adminService = {
     return data.reviews;
   },
 
-  // 8. Categories & Amenities
+  // ==========================================
+  // 8. Danh mục & Tiện nghi (Categories & Amenities)
+  // ==========================================
   async getCategories() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/categories`, {
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          return json.data;
+        }
+      }
+    } catch (e) {
+      console.warn('Backend get admin categories failed:', e);
+    }
     const data = getStoredData();
     return data.categories || [];
   },
 
-  async toggleCategoryActive(slug) {
+  async toggleCategoryActive(slugOrId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/categories/${slugOrId}/toggle`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        return await this.getCategories();
+      }
+    } catch (e) {
+      console.warn('Backend toggle category active failed:', e);
+    }
+
     const data = getStoredData();
     data.categories = data.categories.map((c) => {
-      if (c.slug === slug) {
+      if (c.slug === slugOrId || c.id === slugOrId) {
         return { ...c, is_active: !c.is_active };
       }
       return c;
@@ -568,32 +765,158 @@ export const adminService = {
   },
 
   async getAmenities() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/amenities`, {
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          return json.data;
+        }
+      }
+    } catch (e) {
+      console.warn('Backend get amenities failed:', e);
+    }
     const data = getStoredData();
     return data.amenities || [];
   },
 
   async addAmenity(amenity) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/amenities`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(amenity),
+      });
+      if (res.ok) {
+        return await this.getAmenities();
+      }
+    } catch (e) {
+      console.warn('Backend add amenity failed:', e);
+    }
+
     const data = getStoredData();
     data.amenities.push(amenity);
     saveStoredData(data);
     return data.amenities;
   },
 
-  // 9. Experiences
+  async deleteAmenity(id) {
+    try {
+      await fetch(`${API_BASE_URL}/admin/amenities/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      return await this.getAmenities();
+    } catch (e) {
+      console.warn('Backend delete amenity failed:', e);
+    }
+    const data = getStoredData();
+    data.amenities = data.amenities.filter((a) => a.id !== id && a.code !== id);
+    saveStoredData(data);
+    return data.amenities;
+  },
+
+  // ==========================================
+  // 9. Tour Trải nghiệm (Experiences)
+  // ==========================================
   async getExperiences() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/experiences`, {
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          return json.data;
+        }
+      }
+    } catch (e) {
+      console.warn('Backend get experiences failed:', e);
+    }
     const data = getStoredData();
     return data.experiences || [];
   },
 
   async toggleExperienceActive(id) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/experiences/${id}/toggle`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        return await this.getExperiences();
+      }
+    } catch (e) {
+      console.warn('Backend toggle experience failed:', e);
+    }
+
     const data = getStoredData();
     data.experiences = data.experiences.map((exp) => {
       if (exp.id === id) {
-        return { ...exp, is_active: !exp.is_active };
+        return { ...exp, is_active: !exp.is_active, status: !exp.is_active ? 'active' : 'inactive' };
       }
       return exp;
     });
     saveStoredData(data);
     return data.experiences;
+  },
+
+  // ==========================================
+  // 10. Quản lý Mã giảm giá (Vouchers)
+  // ==========================================
+  async getVouchers() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/vouchers`, {
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          return json.data;
+        }
+      }
+    } catch (e) {
+      console.warn('Backend get vouchers failed:', e);
+    }
+    return [];
+  },
+
+  async saveVoucher(voucherData) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/vouchers`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(voucherData),
+      });
+      return await res.json();
+    } catch (e) {
+      return { success: false, message: e.message };
+    }
+  },
+
+  async toggleVoucherActive(id) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/vouchers/${id}/toggle`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+      });
+      return await res.json();
+    } catch (e) {
+      return { success: false, message: e.message };
+    }
+  },
+
+  async deleteVoucher(id) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/vouchers/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      return await res.json();
+    } catch (e) {
+      return { success: false, message: e.message };
+    }
   },
 };

@@ -133,4 +133,52 @@ class TripNestApiTest extends TestCase
                      '*' => ['id', 'title', 'city', 'rentUSD', 'rentVND', 'background']
                  ]);
     }
+
+    /**
+     * Test xác thực Voucher API
+     */
+    public function test_can_validate_voucher(): void
+    {
+        $response = $this->postJson('/api/vouchers/validate', [
+            'code' => 'TRIPNESTVIP',
+            'base_price' => 5000000,
+        ]);
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success' => true,
+                     'valid' => true,
+                 ]);
+    }
+
+    /**
+     * Test khách gửi đánh giá 6 tiêu chí Radar và Host xem danh sách đánh giá
+     */
+    public function test_can_submit_and_moderate_review(): void
+    {
+        $booking = \App\Models\Booking::first();
+        $response = $this->postJson('/api/reviews', [
+            'booking_id' => $booking->id,
+            'rating_cleanliness' => 5,
+            'rating_accuracy' => 5,
+            'rating_communication' => 4.8,
+            'rating_location' => 5,
+            'rating_checkin' => 5,
+            'rating_value' => 4.9,
+            'comment' => 'Kỳ nghỉ tuyệt vời, phòng ốc sạch sẽ và tiện nghi xuất sắc!',
+        ]);
+
+        $response->assertStatus(200)
+                 ->assertJson(['success' => true]);
+
+        // Host reviews
+        $hostRes = $this->getJson('/api/host/reviews');
+        $hostRes->assertStatus(200)
+                ->assertJsonStructure(['success', 'data']);
+
+        // Admin reviews
+        $adminRes = $this->getJson('/api/admin/reviews');
+        $adminRes->assertStatus(200)
+                 ->assertJsonStructure(['success', 'data']);
+    }
 }
+

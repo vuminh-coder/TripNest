@@ -257,9 +257,31 @@ export const AuthModal = ({ isOpen, onClose, initialTab = 'login', onAuthSuccess
 
           {/* Error Banner */}
           {error && (
-            <div className="auth-error-banner">
-              <TbAlertCircle style={{ fontSize: '1.2rem', flexShrink: 0 }} />
-              <span>{error}</span>
+            <div className="auth-error-banner" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <TbAlertCircle style={{ fontSize: '1.2rem', flexShrink: 0 }} />
+                <span style={{ fontSize: '0.86rem' }}>{error}</span>
+              </div>
+              {tab === 'register' && error.includes('đã được sử dụng') && (
+                <button
+                  type="button"
+                  onClick={() => { setTab('login'); setError(''); }}
+                  style={{
+                    alignSelf: 'flex-start',
+                    background: '#ff385c',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '4px 10px',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    marginTop: '2px'
+                  }}
+                >
+                  👉 Chuyển sang Đăng nhập ngay
+                </button>
+              )}
             </div>
           )}
 

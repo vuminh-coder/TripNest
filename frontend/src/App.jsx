@@ -10,7 +10,6 @@ import { ListingCard } from '@/components/common/ListingCard/ListingCard';
 // Modal Components
 import { AuthModal } from '@/components/modals/AuthModal/AuthModal';
 import { FilterModal } from '@/components/modals/FilterModal/FilterModal';
-import { MyBookingsModal } from '@/components/modals/MyBookingsModal/MyBookingsModal';
 import { WishlistModal } from '@/components/modals/WishlistModal/WishlistModal';
 import { ChangePasswordModal } from '@/components/modals/ChangePasswordModal/ChangePasswordModal';
 import { HostModal } from '@/components/modals/HostModal/HostModal';
@@ -23,8 +22,11 @@ import { ExperienceSection } from '@/pages/home/components/ExperienceSection/Exp
 import { RoomDetailPage } from '@/pages/room-detail/RoomDetailPage/RoomDetailPage';
 import { AccommodationDetailPage } from '@/pages/accommodation-detail/AccommodationDetailPage';
 import { BookingCheckoutPage } from '@/pages/checkout/BookingCheckoutPage/BookingCheckoutPage';
+import { MapDirectionsPage } from '@/pages/map/MapDirectionsPage/MapDirectionsPage';
+import { MyTripsPage } from '@/pages/my-trips/MyTripsPage';
 import HostLayout from '@/pages/host/HostLayout';
 import AdminLayout from '@/pages/admin/AdminLayout';
+import { ListingGridSkeleton, ExperienceSectionSkeleton } from '@/components/common/skeletons';
 
 // Services & Utilities
 import { apiService } from '@/services/api';
@@ -41,6 +43,23 @@ import {
   TbSparkles,
 } from 'react-icons/tb';
 
+// Helper to check if URL is My Trips page
+const isMyTripsUrl = () => {
+  try {
+    const path = window.location.pathname;
+    return (
+      path.toLowerCase().startsWith('/mytripspage') ||
+      path.startsWith('/my-trips') ||
+      path.startsWith('/trips') ||
+      window.location.hash.toLowerCase().startsWith('#mytripspage') ||
+      window.location.hash.startsWith('#my-trips') ||
+      new URLSearchParams(window.location.search).get('view') === 'trips'
+    );
+  } catch {
+    return false;
+  }
+};
+
 // Helper to extract initial search params from URL
 const getInitialSearchParams = () => {
   try {
@@ -56,9 +75,24 @@ const getInitialSearchParams = () => {
   return {};
 };
 
+// Helper to extract map accommodation ID from URL
+const getMapAccommodationIdFromUrl = () => {
+  const path = window.location.pathname;
+  const matchAccomMap = path.match(/^\/accommodation(?:s)?\/([a-zA-Z0-9_-]+)\/map/);
+  if (matchAccomMap) return matchAccomMap[1];
+  const matchMap = path.match(/^\/map\/([a-zA-Z0-9_-]+)/);
+  if (matchMap) return matchMap[1];
+  const searchParam = new URLSearchParams(window.location.search).get('map');
+  if (searchParam) return searchParam;
+  const hashMatch = window.location.hash.match(/^#map-?([a-zA-Z0-9_-]+)/);
+  if (hashMatch) return hashMatch[1];
+  return null;
+};
+
 // Helper to extract accommodation ID from URL
 const getAccommodationIdFromUrl = () => {
   const path = window.location.pathname;
+  if (path.includes('/map')) return null;
   const match = path.match(/^\/accommodation(?:s)?\/([a-zA-Z0-9_-]+)/);
   if (match) return match[1];
   const searchParam = new URLSearchParams(window.location.search).get('accommodation');
@@ -92,19 +126,48 @@ const getBookingRoomIdFromUrl = () => {
 
 function App() {
   const toast = useToast();
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.userInfo);
+
   const [categories, setCategories] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // View state: Client view vs Admin Portal (URL routing: /admin)
+  // View state: Client view vs Admin Portal (URL routing: /admin with Role Guard)
   const [isAdminOpen, setIsAdminOpen] = useState(() => {
-    return (
+    const isAdmRoute =
       window.location.pathname.startsWith('/admin') ||
       window.location.hash.startsWith('#admin') ||
-      new URLSearchParams(window.location.search).get('view') === 'admin'
-    );
+      new URLSearchParams(window.location.search).get('view') === 'admin';
+    if (!isAdmRoute) return false;
+    try {
+      const stored = JSON.parse(localStorage.getItem('tripnest_user') || '{}');
+      return Boolean(stored?.role === 'admin');
+    } catch {
+      return false;
+    }
   });
+
+  const [isMyTripsOpen, setIsMyTripsOpen] = useState(isMyTripsUrl);
+
+  const handleOpenMyTrips = () => {
+    setIsMyTripsOpen(true);
+    setIsAdminOpen(false);
+    setIsHostOpen(false);
+    setSelectedAccommodation(null);
+    setSelectedRoom(null);
+    setCheckoutData(null);
+    setMapTargetAccommodation(null);
+    window.history.pushState({}, '', '/MyTripsPage');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBackFromMyTrips = () => {
+    setIsMyTripsOpen(false);
+    window.history.pushState({}, '', '/');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Filter & Search states (Initialized from URL if present)
   const [activeCategory, setActiveCategory] = useState('all');
@@ -114,9 +177,10 @@ function App() {
   const [currency, setCurrency] = useState('VND');
 
   // Modals state
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedAccommodation, setSelectedAccommodation] = useState(null);
   const [selectedRoom, setSelectedRoom] = useState(null);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [mapTargetAccommodation, setMapTargetAccommodation] = useState(null);
   const [authModal, setAuthModal] = useState({ isOpen: false, tab: 'login' });
   const [isBookingsOpen, setIsBookingsOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
@@ -129,12 +193,16 @@ function App() {
       window.location.pathname.startsWith('/become-a-host') ||
       window.location.hash.startsWith('#host') ||
       new URLSearchParams(window.location.search).get('view') === 'host';
-    return isHostRoute;
+    if (!isHostRoute) return false;
+    try {
+      const stored = JSON.parse(localStorage.getItem('tripnest_user') || '{}');
+      if (stored?.role === 'admin') return false;
+      const isHostUser = stored?.role === 'host' || localStorage.getItem('tripnest_is_host') === 'true';
+      return Boolean(isHostUser);
+    } catch {
+      return false;
+    }
   });
-
-  // User & Wishlist & Bookings
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state.userInfo);
 
   const [wishlistIds, setWishlistIds] = useState(() => {
     try {
@@ -154,9 +222,10 @@ function App() {
 
   // Reset legacy cached bookings/payouts to synchronize with 0-state database
   useEffect(() => {
-    const DATA_SYNC_VERSION = 'tripnest_v3_zero_state_synced';
+    const DATA_SYNC_VERSION = 'tripnest_v4_pure_db_sync_2026';
     if (localStorage.getItem('tripnest_sync_ver') !== DATA_SYNC_VERSION) {
       localStorage.removeItem('tripnest_admin_data_v1');
+      localStorage.removeItem('tripnest_host_listings');
       localStorage.removeItem('tripnest_host_bookings');
       localStorage.removeItem('tripnest_host_payout_history');
       localStorage.removeItem('tripnest_bookings');
@@ -164,95 +233,212 @@ function App() {
     }
   }, []);
 
-  // Sync URL changes (back/forward buttons & direct links)
+  // Sync URL changes (back/forward buttons & direct links) with Strict RBAC Route Guard
   useEffect(() => {
     const handleLocationChange = () => {
+      const currentUser = user?.id ? user : (() => {
+        try {
+          return JSON.parse(localStorage.getItem('tripnest_user') || '{}');
+        } catch {
+          return {};
+        }
+      })();
+      const token = localStorage.getItem('token') || currentUser?.token;
+
+      // 1. Kiểm tra Route Admin (/admin)
       const isAdm =
         window.location.pathname.startsWith('/admin') ||
         window.location.hash.startsWith('#admin') ||
         new URLSearchParams(window.location.search).get('view') === 'admin';
-      setIsAdminOpen(isAdm);
 
+      if (isAdm) {
+        if (!token || !currentUser?.id) {
+          setIsAdminOpen(false);
+          window.history.replaceState({}, '', '/');
+          toast.warning(
+            'Yêu cầu xác thực Quản trị viên',
+            'Vui lòng đăng nhập với tài khoản Quản trị viên (Admin) để truy cập cổng này.'
+          );
+          setAuthModal({ isOpen: true, tab: 'login' });
+          return;
+        }
+
+        if (currentUser.role !== 'admin') {
+          setIsAdminOpen(false);
+          const redirectPath = currentUser.role === 'host' ? '/host' : '/';
+          window.history.replaceState({}, '', redirectPath);
+          if (currentUser.role === 'host') {
+            setIsHostOpen(true);
+          }
+          toast.error(
+            'Từ chối truy cập (403 Forbidden)',
+            'Tài khoản của bạn không có quyền Quản trị viên (Admin). Bạn đã được chuyển hướng về trang tương ứng.'
+          );
+          return;
+        }
+
+        setIsAdminOpen(true);
+        setIsHostOpen(false);
+        setIsMyTripsOpen(false);
+        return;
+      } else {
+        setIsAdminOpen(false);
+      }
+
+      // 2. Kiểm tra Route Host (/host)
       const isHost =
         window.location.pathname.startsWith('/host') ||
         window.location.pathname.startsWith('/become-a-host') ||
         window.location.hash.startsWith('#host') ||
         new URLSearchParams(window.location.search).get('view') === 'host';
 
-      if (isHost && user?.role === 'admin') {
+      if (isHost) {
+        if (currentUser?.role === 'admin') {
+          setIsHostOpen(false);
+          setIsAdminOpen(true);
+          window.history.replaceState({}, '', '/admin');
+          return;
+        }
+
+        if (!token || !currentUser?.id) {
+          setIsHostOpen(false);
+          window.history.replaceState({}, '', '/');
+          toast.info(
+            'Yêu cầu đăng nhập',
+            'Vui lòng đăng nhập để truy cập Cổng Dành Cho Chủ Nhà.'
+          );
+          setAuthModal({ isOpen: true, tab: 'login' });
+          return;
+        }
+
+        const isHostUser =
+          currentUser.role === 'host' ||
+          localStorage.getItem('tripnest_is_host') === 'true';
+
+        if (!isHostUser) {
+          setIsHostOpen(false);
+          window.history.replaceState({}, '', '/');
+          setIsBecomeHostModalOpen(true);
+          return;
+        }
+
+        setIsHostOpen(true);
+        setIsAdminOpen(false);
+        setIsMyTripsOpen(false);
+        return;
+      } else {
         setIsHostOpen(false);
-        setIsAdminOpen(true);
-        window.history.replaceState({}, '', '/admin');
+      }
+
+      const isTrips = isMyTripsUrl();
+      setIsMyTripsOpen(isTrips);
+
+      const mapId = getMapAccommodationIdFromUrl();
+      if (mapId) {
+        const found = rooms.find((r) => String(r.id) === String(mapId));
+        if (found) {
+          setMapTargetAccommodation(found);
+          setSelectedAccommodation(null);
+          setSelectedRoom(null);
+          setCheckoutData(null);
+        }
+        apiService.getAccommodationById(mapId).then((single) => {
+          if (single && (single.id || single.title)) {
+            setMapTargetAccommodation(single);
+          }
+        });
         return;
       }
 
-      setIsHostOpen(isHost);
-
-      const bId = getBookingRoomIdFromUrl();
-      if (bId) {
-        const found = rooms.find((r) => String(r.id) === String(bId));
+      const bookRoomId = getBookingRoomIdFromUrl();
+      if (bookRoomId) {
+        const found = rooms.find((r) => String(r.id) === String(bookRoomId));
         if (found) {
-          setCheckoutData({ room: found, bookingParams: {} });
+          handleStartCheckout(found, {});
+        } else {
+          apiService.getRoomById(bookRoomId).then((single) => {
+            if (single && (single.id || single.title)) {
+              handleStartCheckout(single, {});
+            }
+          });
+        }
+        return;
+      }
+
+      const urlRoomId = getRoomIdFromUrl();
+      if (urlRoomId) {
+        const found = rooms.find((r) => String(r.id) === String(urlRoomId));
+        if (found) {
           setSelectedRoom(found);
           setSelectedAccommodation(null);
+          setCheckoutData(null);
         } else {
-          apiService.getRoomById(bId).then((single) => {
+          apiService.getRoomById(urlRoomId).then((single) => {
             if (single && (single.id || single.title)) {
-              setCheckoutData({ room: single, bookingParams: {} });
               setSelectedRoom(single);
               setSelectedAccommodation(null);
+              setCheckoutData(null);
             }
           });
         }
       } else {
-        const rId = getRoomIdFromUrl();
-        if (rId) {
-          const found = rooms.find((r) => String(r.id) === String(rId));
+        const urlAccomId = getAccommodationIdFromUrl();
+        if (urlAccomId) {
+          const found = rooms.find((r) => String(r.id) === String(urlAccomId));
           if (found) {
-            setSelectedRoom(found);
-            setSelectedAccommodation(null);
+            setSelectedAccommodation(found);
+            setSelectedRoom(null);
             setCheckoutData(null);
-          }
-          apiService.getRoomById(rId).then((single) => {
-            if (single && (single.id || single.title)) {
-              setSelectedRoom(single);
-              setSelectedAccommodation(null);
-              setCheckoutData(null);
-            }
-          });
-        } else {
-          const aId = getAccommodationIdFromUrl();
-          if (aId) {
-            const found = rooms.find((r) => String(r.id) === String(aId));
-            if (found) {
-              setSelectedAccommodation(found);
-              setSelectedRoom(null);
-              setCheckoutData(null);
-            }
-            apiService.getAccommodationById(aId).then((single) => {
+          } else {
+            apiService.getAccommodationById(urlAccomId).then((single) => {
               if (single && (single.id || single.title)) {
                 setSelectedAccommodation(single);
                 setSelectedRoom(null);
                 setCheckoutData(null);
               }
             });
-          } else if (!isAdm && !isHost) {
-            setSelectedAccommodation(null);
-            setSelectedRoom(null);
-            setCheckoutData(null);
+          }
+        } else if (!isAdm && !isHost && !isTrips) {
+          if (window.location.pathname === '/' || window.location.pathname === '') {
+            const hasDetailOpen = selectedAccommodation || selectedRoom || checkoutData || mapTargetAccommodation;
+            if (hasDetailOpen) {
+              setSelectedAccommodation(null);
+              setSelectedRoom(null);
+              setCheckoutData(null);
+              setMapTargetAccommodation(null);
+            }
           }
         }
       }
     };
+
     window.addEventListener('popstate', handleLocationChange);
     window.addEventListener('hashchange', handleLocationChange);
+
+    // Kích hoạt kiểm tra ngay khi component mount để bắt trường hợp reload tại URL /admin
+    handleLocationChange();
+
     return () => {
       window.removeEventListener('popstate', handleLocationChange);
       window.removeEventListener('hashchange', handleLocationChange);
     };
-  }, [rooms]);
+  }, [rooms, user]);
 
   const handleOpenAdmin = () => {
+    const currentUser = user?.id ? user : (() => {
+      try {
+        return JSON.parse(localStorage.getItem('tripnest_user') || '{}');
+      } catch {
+        return {};
+      }
+    })();
+    if (currentUser?.role !== 'admin') {
+      toast.error(
+        'Từ chối truy cập',
+        'Tài khoản của bạn không có quyền Quản trị viên (Admin).'
+      );
+      return;
+    }
     window.history.pushState({}, '', '/admin');
     setIsAdminOpen(true);
   };
@@ -262,10 +448,41 @@ function App() {
     setIsAdminOpen(false);
   };
 
+  // Map page navigation handlers
+  const handleOpenMapPage = async (targetItem) => {
+    const targetAccom = targetItem?.accommodation || targetItem;
+    setMapTargetAccommodation(targetAccom);
+    setSelectedAccommodation(null);
+    setSelectedRoom(null);
+    setCheckoutData(null);
+    window.history.pushState({}, '', `/accommodation/${targetAccom.id}/map`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    try {
+      const detailed = await apiService.getAccommodationById(targetAccom.id);
+      if (detailed && (detailed.id || detailed.title)) {
+        setMapTargetAccommodation(detailed);
+      }
+    } catch (e) {}
+  };
+
+  const handleBackFromMapPage = () => {
+    const prevAccom = mapTargetAccommodation;
+    setMapTargetAccommodation(null);
+    if (prevAccom && prevAccom.id) {
+      handleSelectAccommodation(prevAccom);
+    } else {
+      window.history.pushState({}, '', '/');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   // Level 2: Select accommodation and navigate to /accommodation/:id
   const handleSelectAccommodation = async (accom) => {
+    setIsMyTripsOpen(false);
     setSelectedAccommodation(accom);
     setSelectedRoom(null);
+    setMapTargetAccommodation(null);
     setCheckoutData(null);
     window.history.pushState({}, '', `/accommodation/${accom.id}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -280,6 +497,7 @@ function App() {
 
   // Level 3: Select child room and navigate to /room/:id
   const handleSelectRoom = async (roomOrId) => {
+    setIsMyTripsOpen(false);
     const roomId = typeof roomOrId === 'object' && roomOrId !== null ? roomOrId.id : roomOrId;
     const roomObj = typeof roomOrId === 'object' && roomOrId !== null ? roomOrId : { id: roomId };
     setSelectedRoom(roomObj);
@@ -386,6 +604,24 @@ function App() {
       setRooms(rms);
       setExperiences(exps);
       setLoading(false);
+
+      // Check if URL has map accommodationId
+      const urlMapId = getMapAccommodationIdFromUrl();
+      if (urlMapId) {
+        try {
+          const single = await apiService.getAccommodationById(urlMapId);
+          if (single && (single.id || single.title)) {
+            setMapTargetAccommodation(single);
+          } else {
+            const found = rms.find((r) => String(r.id) === String(urlMapId));
+            if (found) setMapTargetAccommodation(found);
+          }
+        } catch (e) {
+          const found = rms.find((r) => String(r.id) === String(urlMapId));
+          if (found) setMapTargetAccommodation(found);
+        }
+        return;
+      }
 
       // Check if URL has accommodationId
       const urlAccomId = getAccommodationIdFromUrl();
@@ -553,9 +789,112 @@ function App() {
     }
   };
 
-  // Cancel booking
-  const handleCancelBooking = (bookingId) => {
-    setBookings((prev) => prev.filter((b) => b.id !== bookingId));
+  // Cancel booking — update status instead of removing from list
+  const handleCancelBooking = (bookingId, reason = '') => {
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.id === bookingId
+          ? {
+              ...b,
+              status: 'cancelled',
+              cancellationReason: reason || 'Khách hàng yêu cầu hủy.',
+              cancelledAt: new Date().toISOString(),
+              canCancel: false,
+              canCheckIn: false,
+              canCheckOut: false,
+            }
+          : b
+      )
+    );
+
+    // Sync to Host Portal localStorage
+    try {
+      const hostBookings = JSON.parse(localStorage.getItem('tripnest_host_bookings') || '[]');
+      const updated = hostBookings.map((b) =>
+        (b.code === bookingId || b.id === bookingId)
+          ? { ...b, status: 'cancelled' }
+          : b
+      );
+      localStorage.setItem('tripnest_host_bookings', JSON.stringify(updated));
+    } catch {}
+
+    // Sync to Admin Portal localStorage
+    try {
+      const STORAGE_KEY = 'tripnest_admin_data_v1';
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const adminData = JSON.parse(raw);
+        if (adminData.bookings) {
+          adminData.bookings = adminData.bookings.map((b) =>
+            b.id === bookingId ? { ...b, status: 'cancelled' } : b
+          );
+          const totalRev = adminData.bookings
+            .filter((b) => b.status !== 'cancelled' && b.status !== 'refunded')
+            .reduce((sum, b) => sum + (b.total_price || 0), 0);
+          adminData.stats = {
+            ...adminData.stats,
+            totalRevenueVND: totalRev,
+            commissionRevenueVND: Math.round(totalRev * 0.12),
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(adminData));
+        }
+      }
+    } catch {}
+  };
+
+  // Check-in booking — update status in state
+  const handleCheckIn = (bookingId) => {
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.id === bookingId
+          ? {
+              ...b,
+              status: 'checked_in',
+              checkedInAt: new Date().toISOString(),
+              canCancel: false,
+              canCheckIn: false,
+              canCheckOut: true,
+            }
+          : b
+      )
+    );
+
+    try {
+      const hostBookings = JSON.parse(localStorage.getItem('tripnest_host_bookings') || '[]');
+      localStorage.setItem('tripnest_host_bookings', JSON.stringify(
+        hostBookings.map((b) =>
+          (b.code === bookingId || b.id === bookingId) ? { ...b, status: 'checked_in' } : b
+        )
+      ));
+    } catch {}
+  };
+
+  // Check-out booking — update status in state
+  const handleCheckOut = (bookingId) => {
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.id === bookingId
+          ? {
+              ...b,
+              status: 'completed',
+              checkedOutAt: new Date().toISOString(),
+              canCancel: false,
+              canCheckIn: false,
+              canCheckOut: false,
+              canReview: true,
+            }
+          : b
+      )
+    );
+
+    try {
+      const hostBookings = JSON.parse(localStorage.getItem('tripnest_host_bookings') || '[]');
+      localStorage.setItem('tripnest_host_bookings', JSON.stringify(
+        hostBookings.map((b) =>
+          (b.code === bookingId || b.id === bookingId) ? { ...b, status: 'completed' } : b
+        )
+      ));
+    } catch {}
   };
 
   // Handle Search Execution from Header & synchronize URL
@@ -715,7 +1054,12 @@ function App() {
 
   // Render Admin Portal if admin mode is active
   if (isAdminOpen) {
-    return <AdminLayout onExitAdmin={handleExitAdmin} />;
+    return (
+      <AdminLayout
+        onExitAdmin={handleExitAdmin}
+        onOpenBookings={handleOpenMyTrips}
+      />
+    );
   }
 
   // Render Host Portal if host mode is active
@@ -737,6 +1081,22 @@ function App() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         }}
+        onOpenBookings={handleOpenMyTrips}
+      />
+    );
+  }
+
+  // Render Standalone Dedicated Map & Directions Page
+  if (mapTargetAccommodation) {
+    return (
+      <MapDirectionsPage
+        accommodation={mapTargetAccommodation}
+        onBack={handleBackFromMapPage}
+        onBookNow={() => {
+          handleSelectAccommodation(mapTargetAccommodation);
+          setMapTargetAccommodation(null);
+        }}
+        currency={currency}
       />
     );
   }
@@ -750,7 +1110,7 @@ function App() {
         currency={currency}
         setCurrency={setCurrency}
         onOpenAuth={(tab) => setAuthModal({ isOpen: true, tab })}
-        onOpenBookings={() => setIsBookingsOpen(true)}
+        onOpenBookings={handleOpenMyTrips}
         onOpenWishlist={() => setIsWishlistOpen(true)}
         onOpenChangePassword={() => setIsChangePasswordOpen(true)}
         onOpenBecomeHost={() => {
@@ -797,7 +1157,16 @@ function App() {
       />
 
       <main className="main-content">
-        {checkoutData && checkoutData.room ? (
+        {isMyTripsOpen ? (
+          /* Dedicated Standalone My Trips Page */
+          <MyTripsPage
+            onBack={handleBackFromMyTrips}
+            onSelectRoom={handleSelectRoom}
+            onSelectAccommodation={handleSelectAccommodation}
+            onCancelBooking={handleCancelBooking}
+            currency={currency}
+          />
+        ) : checkoutData && checkoutData.room ? (
           /* Dedicated Standalone Checkout & Booking Page */
           <BookingCheckoutPage
             room={checkoutData.room}
@@ -823,6 +1192,7 @@ function App() {
             onBack={handleBackFromRoomDetail}
             onBackToAccommodation={handleBackToAccommodation}
             onSelectRoom={handleSelectRoom}
+            onOpenMapPage={handleOpenMapPage}
             currency={currency}
             isFavorite={wishlistIds.includes(selectedRoom.id)}
             onToggleFavorite={handleToggleFavorite}
@@ -838,6 +1208,7 @@ function App() {
             onBack={handleBackFromAccommodation}
             onSelectAccommodation={handleSelectAccommodation}
             onOpenRoomDetail={handleSelectRoom}
+            onOpenMapPage={handleOpenMapPage}
             currency={currency}
             isFavorite={wishlistIds.includes(selectedAccommodation.id)}
             onToggleFavorite={handleToggleFavorite}
@@ -912,9 +1283,7 @@ function App() {
             {/* Main Listings Grid */}
             <div id="rooms-listing-section" style={{ marginTop: '1.5rem', marginBottom: '2.5rem' }}>
               {loading ? (
-                <div style={{ textAlign: 'center', padding: '4rem 0', color: '#717171' }}>
-                  Đang tải danh sách chỗ ở tuyệt vời...
-                </div>
+                <ListingGridSkeleton count={8} />
               ) : filteredRooms.length === 0 ? (
                 /* Smart Luxury Empty State with One-Click Popular Destination Chips */
                 <div className="search-empty-state-luxury">
@@ -975,7 +1344,9 @@ function App() {
             </div>
 
             {/* Experiences Section */}
-            {experiences.length > 0 && (
+            {loading ? (
+              <ExperienceSectionSkeleton />
+            ) : experiences.length > 0 ? (
               <ExperienceSection
                 experiences={experiences}
                 currency={currency}
@@ -986,7 +1357,7 @@ function App() {
                   );
                 }}
               />
-            )}
+            ) : null}
           </>
         )}
       </main>
@@ -1024,13 +1395,6 @@ function App() {
         }}
       />
 
-      <MyBookingsModal
-        isOpen={isBookingsOpen}
-        onClose={() => setIsBookingsOpen(false)}
-        bookings={bookings}
-        onCancelBooking={handleCancelBooking}
-        currency={currency}
-      />
 
       <WishlistModal
         isOpen={isWishlistOpen}

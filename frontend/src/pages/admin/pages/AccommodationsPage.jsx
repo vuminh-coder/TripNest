@@ -1,8 +1,8 @@
 import React, { useState } from "react";
+import "./AccommodationsPage.css";
 import {
   TbEye,
   TbBan,
-  TbCircleCheck,
   TbStar,
   TbFlame,
   TbSearch,
@@ -59,41 +59,18 @@ export const AccommodationsPage = ({
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div>
-      {/* Header - Admin manages & regulates accommodations without creating new ones */}
+    <div className="adm-accommodations-container">
+      {/* Header */}
       <AdminPageHeader
         title="Cơ Sở Lưu Trú & Hạng Phòng"
         subtitle={`Quản lý và kiểm duyệt ${accommodations.length} cơ sở trên toàn hệ thống · Điều phối trạng thái kinh doanh`}
       />
 
       {/* Filter Bar */}
-      <div
-        className="admin-card-box"
-        style={{ padding: "0.85rem 1.25rem", marginBottom: "1.25rem" }}
-      >
-        <div
-          className="admin-filter-bar"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-            flexWrap: "wrap",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              background: "#f8fafc",
-              border: "1px solid #edf2f7",
-              borderRadius: "8px",
-              padding: "0.42rem 0.85rem",
-              flex: 1,
-              minWidth: "220px",
-            }}
-          >
-            <TbSearch style={{ color: "#94a3b8" }} />
+      <div className="admin-card-box adm-acc-filter-box">
+        <div className="adm-acc-filter-bar">
+          <div className="adm-acc-search-wrapper">
+            <TbSearch className="adm-acc-search-icon" />
             <input
               type="text"
               placeholder="Tìm theo tên chỗ ở, địa điểm, chủ nhà..."
@@ -102,13 +79,7 @@ export const AccommodationsPage = ({
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              style={{
-                border: "none",
-                background: "transparent",
-                width: "100%",
-                fontSize: "0.84rem",
-                outline: "none",
-              }}
+              className="adm-acc-search-input"
             />
           </div>
 
@@ -171,14 +142,7 @@ export const AccommodationsPage = ({
           <tbody>
             {paginated.length === 0 ? (
               <tr>
-                <td
-                  colSpan="8"
-                  style={{
-                    textAlign: "center",
-                    padding: "3.5rem 1rem",
-                    color: "#94a3b8",
-                  }}
-                >
+                <td colSpan="8" className="adm-acc-empty-state">
                   Không tìm thấy cơ sở lưu trú nào phù hợp.
                 </td>
               </tr>
@@ -190,61 +154,30 @@ export const AccommodationsPage = ({
                 return (
                   <tr
                     key={acc.id}
-                    style={{
-                      background: isSuspended ? "#fffafa" : "transparent",
-                    }}
+                    className={isSuspended ? "adm-acc-row-suspended" : ""}
                   >
                     {/* Name & Image */}
                     <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                        }}
-                      >
+                      <div className="adm-acc-info-cell">
                         <img
                           src={
+                            acc.thumbnail ||
                             acc.image ||
+                            acc.images?.[0] ||
                             "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&auto=format&fit=crop&q=80"
                           }
                           alt={acc.name_vi}
-                          style={{
-                            width: "48px",
-                            height: "48px",
-                            borderRadius: "8px",
-                            objectFit: "cover",
-                            flexShrink: 0,
-                            border: isSuspended
-                              ? "1.5px solid #fca5a5"
-                              : "1px solid #e2e8f0",
-                          }}
+                          className={`adm-acc-thumbnail ${isSuspended ? "suspended" : ""}`}
                         />
-                        <div style={{ minWidth: 0 }}>
+                        <div className="adm-acc-meta">
                           <div
-                            style={{
-                              fontWeight: 800,
-                              fontSize: "0.88rem",
-                              color: isSuspended ? "#991b1b" : "#0f172a",
-                              maxWidth: "240px",
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              cursor: "pointer",
-                            }}
+                            className={`adm-acc-name ${isSuspended ? "suspended" : ""}`}
                             title={acc.name_vi}
                             onClick={() => onOpenDetailModal && onOpenDetailModal(acc)}
                           >
                             {acc.name_vi}
                           </div>
-                          <div
-                            style={{
-                              fontSize: "0.74rem",
-                              color: "#64748b",
-                              marginTop: "1px",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
+                          <div className="adm-acc-category-sub">
                             {acc.type?.toUpperCase()} • {acc.category_name || acc.category || "Tiêu chuẩn"}
                           </div>
                         </div>
@@ -253,55 +186,33 @@ export const AccommodationsPage = ({
 
                     {/* Host */}
                     <td className="td-nowrap">
-                      <div
-                        style={{
-                          fontWeight: 600,
-                          color: "#0f172a",
-                          fontSize: "0.86rem",
-                        }}
-                      >
+                      <div className="adm-acc-host-name">
                         {hostName}
                       </div>
                     </td>
 
                     {/* City */}
                     <td className="td-nowrap">
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "3px",
-                          fontWeight: 600,
-                          fontSize: "0.84rem",
-                        }}
-                      >
-                        <TbMapPin style={{ color: "#ff385c" }} />
+                      <div className="adm-acc-city-cell">
+                        <TbMapPin className="adm-acc-city-icon" />
                         <span>{acc.city}</span>
                       </div>
                     </td>
 
                     {/* Price */}
                     <td className="td-nowrap">
-                      <strong style={{ color: "#0f172a" }}>
-                        {formatVND(acc.priceVND || acc.price_per_night)}
+                      <strong className="adm-acc-price">
+                        {formatVND(acc.priceVND || acc.price_from || acc.price_per_night || acc.price)}
                       </strong>
                     </td>
 
                     {/* Rating */}
                     <td className="td-nowrap">
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "3px",
-                          fontWeight: 700,
-                          fontSize: "0.84rem",
-                        }}
-                      >
-                        <TbStar style={{ color: "#f59e0b" }} />
+                      <div className="adm-acc-rating-cell">
+                        <TbStar className="adm-acc-star-icon" />
                         <span>{acc.rating || 4.95}</span>
-                        <span style={{ color: "#94a3b8", fontSize: "0.72rem" }}>
-                          ({acc.reviewsCount || 0})
+                        <span className="adm-acc-review-count">
+                          ({acc.reviewsCount || acc.reviews_count || 0})
                         </span>
                       </div>
                     </td>
@@ -311,30 +222,7 @@ export const AccommodationsPage = ({
                       <select
                         value={acc.status}
                         onChange={(e) => onUpdateStatus(acc.id, e.target.value)}
-                        style={{
-                          padding: "3px 6px",
-                          borderRadius: "6px",
-                          border: "1px solid #edf2f7",
-                          fontSize: "0.74rem",
-                          fontWeight: 700,
-                          background:
-                            acc.status === "published"
-                              ? "#ecfdf5"
-                              : acc.status === "suspended"
-                              ? "#fee2e2"
-                              : acc.status === "maintenance"
-                              ? "#fffbeb"
-                              : "#f1f5f9",
-                          color:
-                            acc.status === "published"
-                              ? "#059669"
-                              : acc.status === "suspended"
-                              ? "#dc2626"
-                              : acc.status === "maintenance"
-                              ? "#d97706"
-                              : "#475569",
-                          cursor: "pointer",
-                        }}
+                        className={`adm-acc-status-select ${acc.status}`}
                       >
                         <option value="published">Hiển thị</option>
                         <option value="paused">Tạm ẩn</option>
@@ -345,7 +233,7 @@ export const AccommodationsPage = ({
 
                     {/* Flags (Star / Fire) */}
                     <td className="td-nowrap">
-                      <div style={{ display: "flex", gap: "4px" }}>
+                      <div className="adm-acc-flags-wrap">
                         <button
                           type="button"
                           className="btn-action-icon"

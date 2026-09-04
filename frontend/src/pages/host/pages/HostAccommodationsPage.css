@@ -1,0 +1,139 @@
+/* ==========================================================================
+   HOST ACCOMMODATIONS PAGE CSS (Host Portal)
+   ========================================================================== */
+
+.host-acc-header {
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.host-acc-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.host-acc-search-wrap {
+  position: relative;
+}
+
+.host-acc-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.host-acc-search-input {
+  padding: 0.45rem 0.85rem 0.45rem 2rem;
+  border-radius: var(--host-radius-md);
+  border: 1px solid var(--host-border-strong);
+  font-size: 0.85rem;
+  outline: none;
+  width: 210px;
+  background: #ffffff;
+}
+
+.host-acc-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+}
+
+.host-acc-select-type {
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--host-radius-md);
+  border: 1px solid var(--host-border-strong);
+  font-size: 0.85rem;
+  outline: none;
+  background: #ffffff;
+  color: var(--host-text-main);
+}
+
+.host-acc-loading-box {
+  padding: 4rem 1.5rem;
+  text-align: center;
+  color: var(--host-text-muted);
+}
+
+.host-acc-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--host-border-strong);
+  border-top-color: var(--host-primary);
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: hostSpin 0.8s linear infinite;
+}
+
+@keyframes hostSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.host-acc-empty-box {
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+}
+
+.host-acc-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  color: var(--host-text-muted);
+  margin: 0 auto 1rem;
+}
+
+.host-acc-cell-flex {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.host-acc-thumb {
+  width: 64px;
+  height: 52px;
+  border-radius: var(--host-radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.host-acc-name {
+  font-weight: 700;
+  color: var(--host-text-main);
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.host-acc-address {
+  font-size: 0.78rem;
+  color: var(--host-text-muted);
+}
+
+.host-acc-type-badge {
+  text-transform: capitalize;
+  font-weight: 600;
+  color: var(--host-text-muted);
+  font-size: 0.82rem;
+}
+
+.host-acc-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}

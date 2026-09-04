@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { TbShieldCheck, TbSearch, TbCircleCheck, TbX, TbAlertTriangle } from 'react-icons/tb';
+import './RoleUpgradeRequestsPage.css';
+import { TbSearch, TbCircleCheck, TbX, TbAlertTriangle } from 'react-icons/tb';
 import AdminPageHeader from '../common/AdminPageHeader';
 import AdminConfirmDialog from '../common/AdminConfirmDialog';
 import UserUpgradeCard from '../users/UserUpgradeCard';
@@ -33,7 +34,7 @@ export const RoleUpgradeRequestsPage = ({ users, onApproveUpgrade, onNavigate })
   };
 
   return (
-    <div>
+    <div className="adm-role-requests-container">
       {/* Header */}
       <AdminPageHeader
         title="Duyệt Yêu Cầu Nâng Quyền Làm Host"
@@ -43,15 +44,15 @@ export const RoleUpgradeRequestsPage = ({ users, onApproveUpgrade, onNavigate })
 
       {/* Search toolbar if any */}
       {pendingUsers.length > 0 && (
-        <div className="admin-card-box" style={{ padding: '0.75rem 1.15rem', marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '8px', padding: '0.42rem 0.85rem' }}>
-            <TbSearch style={{ color: '#94a3b8' }} />
+        <div className="admin-card-box adm-role-filter-box">
+          <div className="adm-role-search-wrap">
+            <TbSearch className="adm-role-search-icon" />
             <input
               type="text"
               placeholder="Tìm theo tên người nộp đơn, email, SĐT..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ border: 'none', background: 'transparent', width: '100%', fontSize: '0.84rem', outline: 'none' }}
+              className="adm-role-search-input"
             />
           </div>
         </div>
@@ -59,27 +60,14 @@ export const RoleUpgradeRequestsPage = ({ users, onApproveUpgrade, onNavigate })
 
       {/* List of Upgrade Applications */}
       {filtered.length === 0 ? (
-        <div className="admin-card-box" style={{ padding: '3.5rem 1.5rem', textAlign: 'center' }}>
-          <div
-            style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '50%',
-              background: '#ecfdf5',
-              color: '#10b981',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '2rem',
-              margin: '0 auto 0.75rem auto',
-            }}
-          >
+        <div className="admin-card-box adm-role-empty-box">
+          <div className="adm-role-empty-icon-wrap">
             <TbCircleCheck />
           </div>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.25rem' }}>
+          <h3 className="adm-role-empty-title">
             Không có yêu cầu nâng quyền nào đang chờ xử lý
           </h3>
-          <p style={{ fontSize: '0.84rem', color: '#64748b', marginBottom: '1.25rem' }}>
+          <p className="adm-role-empty-desc">
             Tất cả các đơn đăng ký trở thành Chủ nhà đã được duyệt hoàn tất.
           </p>
           <button className="btn-admin-primary" onClick={() => onNavigate('users')}>
@@ -87,7 +75,7 @@ export const RoleUpgradeRequestsPage = ({ users, onApproveUpgrade, onNavigate })
           </button>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="adm-role-cards-list">
           {filtered.map((user) => (
             <UserUpgradeCard
               key={user.id}
@@ -123,12 +111,11 @@ export const RoleUpgradeRequestsPage = ({ users, onApproveUpgrade, onNavigate })
       {userToReject && (
         <div className="admin-modal-backdrop" onClick={() => setUserToReject(null)}>
           <div
-            className="admin-modal-card"
-            style={{ maxWidth: '480px' }}
+            className="admin-modal-card adm-role-reject-modal-card"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="admin-modal-header" style={{ borderColor: '#fee2e2' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#dc2626', fontWeight: 800 }}>
+            <div className="admin-modal-header adm-role-reject-header">
+              <div className="adm-role-reject-header-title">
                 <TbAlertTriangle style={{ fontSize: '1.25rem' }} />
                 <span>Từ Chối Đơn Xin Làm Host</span>
               </div>
@@ -141,31 +128,23 @@ export const RoleUpgradeRequestsPage = ({ users, onApproveUpgrade, onNavigate })
               </button>
             </div>
 
-            <div style={{ padding: '1.25rem 1.5rem' }}>
-              <p style={{ fontSize: '0.86rem', color: '#475569', margin: '0 0 1rem 0' }}>
+            <div className="adm-role-reject-body">
+              <p className="adm-role-reject-desc">
                 Từ chối hồ sơ đăng ký của <strong>{userToReject.name}</strong> ({userToReject.email}). Vui lòng nhập lý do để thông báo:
               </p>
 
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>
+              <label className="adm-role-reject-label">
                 Lý do từ chối *
               </label>
               <textarea
                 rows="3"
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.6rem 0.8rem',
-                  borderRadius: '8px',
-                  border: '1px solid #cbd5e1',
-                  fontSize: '0.86rem',
-                  boxSizing: 'border-box',
-                  outline: 'none',
-                }}
+                className="adm-role-reject-textarea"
               />
             </div>
 
-            <div style={{ padding: '0.85rem 1.5rem', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <div className="adm-role-reject-footer">
               <button
                 type="button"
                 className="btn-admin-secondary"
@@ -176,16 +155,7 @@ export const RoleUpgradeRequestsPage = ({ users, onApproveUpgrade, onNavigate })
               <button
                 type="button"
                 onClick={handleConfirmReject}
-                style={{
-                  background: '#dc2626',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '0.5rem 1.1rem',
-                  fontWeight: 700,
-                  fontSize: '0.84rem',
-                  cursor: 'pointer',
-                }}
+                className="adm-role-reject-confirm-btn"
               >
                 Xác Nhận Từ Chối
               </button>

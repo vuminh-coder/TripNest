@@ -405,6 +405,23 @@ class DatabaseSeeder extends Seeder
                 'special_requests' => 'Nhận phòng sớm nếu có thể, chuẩn bị phòng hoa chào mừng.',
             ]);
 
+            $sampleHost = $firstRoom->accommodation?->host ?: $createdHosts[0];
+            $samplePayoutAcc = $sampleHost->defaultPayoutAccount;
+            if ($samplePayoutAcc) {
+                $grossAmt = (float)$baseTotal + (float)$cleaningFee;
+                $commFee = (float)$serviceFee;
+                \App\Models\PayoutTransaction::create([
+                    'booking_id' => $booking->id,
+                    'payout_code' => 'POT-892341',
+                    'host_id' => $sampleHost->id,
+                    'payout_account_id' => $samplePayoutAcc->id,
+                    'gross_amount' => $grossAmt,
+                    'platform_commission_fee' => $commFee,
+                    'net_payout_amount' => max(0, $grossAmt - $commFee),
+                    'status' => 'pending',
+                ]);
+            }
+
             // Seed Wishlists for Demo User
             Wishlist::create(['user_id' => $guestUser->id, 'room_id' => 1]);
             Wishlist::create(['user_id' => $guestUser->id, 'room_id' => 2]);

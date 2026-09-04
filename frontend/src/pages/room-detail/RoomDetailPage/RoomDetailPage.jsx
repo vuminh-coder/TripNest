@@ -1,6 +1,7 @@
 import './RoomDetailPage.css';
 import React, { useState, useEffect, useMemo } from 'react';
 import { removeVietnameseTones } from '@/utils/textUtils';
+import { RoomDetailSkeleton } from '@/components/common/skeletons';
 import {
   TbArrowLeft,
   TbStarFilled,
@@ -46,7 +47,14 @@ import {
   TbPlaneDeparture,
   TbWalk,
   TbListCheck,
+  TbNavigation,
+  TbMotorbike,
+  TbCopy,
+  TbExternalLink,
 } from 'react-icons/tb';
+import { useToast } from '@/context/ToastContext';
+import { openGoogleMapsDirections, getTargetCoordinates } from '@/utils/mapUtils';
+import { InteractiveMapModal } from '@/components/modals/InteractiveMapModal/InteractiveMapModal';
 
 const amenityIcons = {
   'Wifi': <TbWifi />,
@@ -77,6 +85,7 @@ export const RoomDetailPage = ({
   onToggleFavorite,
   onBookRoom,
   onStartCheckout,
+  onOpenMapPage,
 }) => {
   // Today and default check-in/out
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
@@ -119,6 +128,37 @@ export const RoomDetailPage = ({
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   // Contact host toast state
   const [contactToast, setContactToast] = useState(false);
+  const toast = useToast();
+  const [travelMode, setTravelMode] = useState('driving');
+  const [isLocating, setIsLocating] = useState(false);
+  const [copiedAddress, setCopiedAddress] = useState(false);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+
+  const targetCoords = useMemo(() => getTargetCoordinates(room), [room]);
+
+  const handleOpenGoogleMaps = (mode = travelMode) => {
+    setIsLocating(true);
+    toast?.info?.('📍 Đang định vị GPS và mở Google Maps chỉ đường...');
+    openGoogleMapsDirections(room, {
+      travelMode: mode,
+      onSuccess: () => {
+        setIsLocating(false);
+        toast?.success?.('Đã mở Google Maps', 'Lộ trình từ vị trí của bạn đã sẵn sàng trên tab mới!');
+      },
+      onError: (err) => {
+        setIsLocating(false);
+        console.warn('Geolocation warning:', err);
+      },
+    });
+  };
+
+  const handleCopyAddress = () => {
+    const fullAddress = room?.location || room?.accommodation?.address || `${room?.city}, ${room?.country}`;
+    navigator.clipboard.writeText(fullAddress);
+    setCopiedAddress(true);
+    toast?.success?.('Đã sao chép địa chỉ', fullAddress);
+    setTimeout(() => setCopiedAddress(false), 2500);
+  };
 
   // Scroll to top when room changes
   useEffect(() => {
@@ -248,84 +288,6 @@ export const RoomDetailPage = ({
       results = [...results, ...otherLocRooms.slice(0, needed)];
     }
 
-    // Dynamic demo fallback if total list is still < 6
-    if (results.length < 6) {
-      const demoList = [
-        {
-          id: `rec-demo-${room.id}-1`,
-          title: `Chalet Gỗ Mộc View Đồi ${room.city || 'Nghỉ Dưỡng'}`,
-          city: room.city || 'Sa Pa',
-          type: 'Bungalow view mây',
-          rating: 4.98,
-          reviewsCount: 142,
-          priceUSD: Math.round((room.priceUSD || 80) * 0.95),
-          priceVND: Math.round((room.priceVND || 2000000) * 0.95),
-          images: ['https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400'],
-        },
-        {
-          id: `rec-demo-${room.id}-2`,
-          title: `Boutique Ecolodge & Spa ${room.city || 'Nghỉ Dưỡng'}`,
-          city: room.city || 'Sa Pa',
-          type: 'Resort nghỉ dưỡng',
-          rating: 4.96,
-          reviewsCount: 118,
-          priceUSD: Math.round((room.priceUSD || 80) * 1.1),
-          priceVND: Math.round((room.priceVND || 2000000) * 1.1),
-          images: ['https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400'],
-        },
-        {
-          id: `rec-demo-${room.id}-3`,
-          title: `Villa Sân Vườn Biệt Lập ${room.city || 'Nghỉ Dưỡng'}`,
-          city: room.city || 'Sa Pa',
-          type: 'Biệt thự riêng tư',
-          rating: 4.95,
-          reviewsCount: 96,
-          priceUSD: Math.round((room.priceUSD || 80) * 1.25),
-          priceVND: Math.round((room.priceVND || 2000000) * 1.25),
-          images: ['https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=400'],
-        },
-        {
-          id: `rec-demo-${room.id}-4`,
-          title: `Panorama Skyview Studio ${room.city || 'Nghỉ Dưỡng'}`,
-          city: room.city || 'Sa Pa',
-          type: 'Studio view toàn cảnh',
-          rating: 4.92,
-          reviewsCount: 75,
-          priceUSD: Math.round((room.priceUSD || 80) * 0.85),
-          priceVND: Math.round((room.priceVND || 2000000) * 0.85),
-          images: ['https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400'],
-        },
-        {
-          id: `rec-demo-${room.id}-5`,
-          title: `Riverside Bamboo House ${room.city || 'Nghỉ Dưỡng'}`,
-          city: room.city || 'Sa Pa',
-          type: 'Nhà tre ven suối',
-          rating: 4.97,
-          reviewsCount: 130,
-          priceUSD: Math.round((room.priceUSD || 80) * 0.9),
-          priceVND: Math.round((room.priceVND || 2000000) * 0.9),
-          images: ['https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400'],
-        },
-        {
-          id: `rec-demo-${room.id}-6`,
-          title: `Luxury Glass Heritage Villa ${room.city || 'Nghỉ Dưỡng'}`,
-          city: room.city || 'Sa Pa',
-          type: 'Biệt thự kính panorama',
-          rating: 4.99,
-          reviewsCount: 168,
-          priceUSD: Math.round((room.priceUSD || 80) * 1.4),
-          priceVND: Math.round((room.priceVND || 2000000) * 1.4),
-          images: ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400'],
-        },
-      ];
-
-      for (const fallback of demoList) {
-        if (results.length < 6 && !results.some((r) => r.title === fallback.title || r.id === fallback.id)) {
-          results.push(fallback);
-        }
-      }
-    }
-
     return results.slice(0, 6);
   }, [allRooms, room]);
 
@@ -357,7 +319,7 @@ export const RoomDetailPage = ({
   // Price calculations
   const pricePerNight = currency === 'USD' ? room.priceUSD : (room.priceVND || room.priceUSD * 25000);
   const baseTotal = pricePerNight * nights;
-  const cleaningFee = currency === 'USD' ? 30 : 500000;
+  const cleaningFee = currency === 'USD' ? 30 : (room.cleaning_fee_vnd || room.cleaningFee || room.cleaning_fee || 350000);
   const serviceFee = Math.round(baseTotal * 0.12);
   const grandTotal = baseTotal + cleaningFee + serviceFee;
 
@@ -422,6 +384,10 @@ export const RoomDetailPage = ({
     .slice(0, 3);
 
   const displayExperiences = nearbyExperiences.length > 0 ? nearbyExperiences : experiences.slice(0, 3);
+
+  if (!room || (!room.title && !room.name_vi && !room.name)) {
+    return <RoomDetailSkeleton />;
+  }
 
   return (
     <div className="room-detail-page-container">
@@ -653,6 +619,15 @@ export const RoomDetailPage = ({
               <TbMapPin style={{ verticalAlign: 'middle', marginRight: '3px', color: '#ff385c' }} />
               {room.city}, {room.country}
             </span>
+            <button
+              type="button"
+              className="meta-map-direction-btn"
+              onClick={() => (onOpenMapPage ? onOpenMapPage(room) : setIsMapModalOpen(true))}
+              title="Mở trang bản đồ & chỉ đường chi tiết"
+            >
+              <TbNavigation style={{ verticalAlign: 'middle', marginRight: '3px' }} />
+              Bản đồ & Chỉ đường
+            </button>
           </div>
 
           {/* Action buttons aligned to right corner */}
@@ -1072,57 +1047,11 @@ export const RoomDetailPage = ({
                 </div>
               ))
             ) : (
-              <>
-                <div className="guest-review-card">
-                  <div className="reviewer-meta">
-                    <img
-                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80"
-                      alt="Hoàng Anh"
-                      className="reviewer-avatar"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80';
-                      }}
-                    />
-                    <div>
-                      <h5 className="reviewer-name">Hoàng Anh</h5>
-                      <span className="review-date">Tháng 9 năm 2026 · Kỳ nghỉ 4 đêm</span>
-                    </div>
-                  </div>
-                  <p className="review-comment">
-                    "Không gian tuyệt vời hơn cả mong đợi! View bình minh đẹp mê hồn, phòng sạch sẽ và chủ nhà hỗ trợ cực kỳ chu đáo. Chắc chắn sẽ quay lại!"
-                  </p>
-                  <div className="host-response-box">
-                    <strong>Phản hồi từ chủ nhà {room.host?.name || 'Minh Hoàng'}:</strong>
-                    <p>"Cảm ơn bạn Hoàng Anh rất nhiều! Rất vui được đón tiếp bạn và hẹn gặp lại bạn trong chuyến đi tới nhé!"</p>
-                  </div>
-                </div>
-
-                <div className="guest-review-card">
-                  <div className="reviewer-meta">
-                    <img
-                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80"
-                      alt="Tuấn Kiệt"
-                      className="reviewer-avatar"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80';
-                      }}
-                    />
-                    <div>
-                      <h5 className="reviewer-name">Tuấn Kiệt</h5>
-                      <span className="review-date">Tháng 8 năm 2026 · Đi cùng gia đình</span>
-                    </div>
-                  </div>
-                  <p className="review-comment">
-                    "Biệt thự rất rộng rãi, các bé nhà mình thích mê hồ bơi và khu BBQ ngoài trời. Đầy đủ tiện nghi nấu nướng tiện lợi."
-                  </p>
-                  <div className="host-response-box">
-                    <strong>Phản hồi từ chủ nhà {room.host?.name || 'Minh Hoàng'}:</strong>
-                    <p>"Cảm ơn gia đình anh Kiệt! Chúc các bé luôn ngoan và có thật nhiều kỷ niệm đẹp tại {room.city || 'kỳ nghỉ'} ạ."</p>
-                  </div>
-                </div>
-              </>
+              <div className="empty-reviews-state" style={{ textAlign: 'center', padding: '2.5rem 1.5rem', gridColumn: '1 / -1', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem', fontWeight: 500 }}>
+                  Hạng phòng này hiện chưa có bài đánh giá riêng lẻ. Toàn bộ cơ sở lưu trú đạt <strong>{room.rating || 4.98}⭐</strong> từ du khách TripNest đã hoàn tất kỳ nghỉ.
+                </p>
+              </div>
             )}
           </div>
         </section>
@@ -1136,10 +1065,60 @@ export const RoomDetailPage = ({
           
           <div className="location-and-guide-layout">
             {/* Left 60%: Interactive Map Preview */}
-            <div className="map-preview-mockup">
-              <div className="map-overlay-badge">
-                <TbMapPin style={{ color: '#ff385c', fontSize: '1.3rem' }} />
-                <span>{room.city} - {room.distance || 'Khu vực yên tĩnh nghỉ dưỡng'}</span>
+            <div className="luxury-room-map-wrapper">
+              <div className="room-map-iframe-box">
+                <iframe
+                  title={`Bản đồ ${room.title}`}
+                  className="room-map-iframe"
+                  src={`https://maps.google.com/maps?q=${targetCoords.lat},${targetCoords.lng}&hl=vi&z=15&output=embed`}
+                  loading="lazy"
+                  allowFullScreen
+                />
+                <div className="map-overlay-badge-interactive">
+                  <div className="map-pin-pulse-circle">
+                    <TbMapPin style={{ color: '#ff385c', fontSize: '1.2rem' }} />
+                  </div>
+                  <div className="map-overlay-texts">
+                    <strong>{room.title}</strong>
+                    <span>{room.city} · {room.distance || 'Khu vực yên tĩnh nghỉ dưỡng'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Bar with Google Maps Direct Button */}
+              <div className="room-map-action-bar">
+                <div className="room-travel-modes">
+                  <button
+                    type="button"
+                    className={`mode-btn ${travelMode === 'driving' ? 'active' : ''}`}
+                    onClick={() => setTravelMode('driving')}
+                  >
+                    <TbCar /> Lái xe
+                  </button>
+                  <button
+                    type="button"
+                    className={`mode-btn ${travelMode === 'motorcycle' ? 'active' : ''}`}
+                    onClick={() => setTravelMode('motorcycle')}
+                  >
+                    <TbMotorbike /> Xe máy
+                  </button>
+                  <button
+                    type="button"
+                    className={`mode-btn ${travelMode === 'walking' ? 'active' : ''}`}
+                    onClick={() => setTravelMode('walking')}
+                  >
+                    <TbWalk /> Đi bộ
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className={`primary-gradient-btn room-gmaps-btn ${isLocating ? 'locating' : ''}`}
+                  onClick={() => (onOpenMapPage ? onOpenMapPage(room) : setIsMapModalOpen(true))}
+                  title="Mở trang bản đồ & chỉ đường toàn màn hình"
+                >
+                  <TbNavigation className="room-nav-icon" />
+                  <span>{isLocating ? 'Đang định vị...' : 'Mở trang Bản đồ & Chỉ đường'}</span>
+                </button>
               </div>
             </div>
 
@@ -1541,6 +1520,13 @@ export const RoomDetailPage = ({
           Chọn ngày đặt phòng
         </button>
       </div>
+
+      {/* In-app Interactive Google Maps & Directions Modal */}
+      <InteractiveMapModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+        target={room}
+      />
     </div>
   );
 };

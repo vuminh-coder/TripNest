@@ -23,59 +23,59 @@ use Illuminate\Support\Facades\Validator;
 class HostController extends Controller
 {
     /**
-     * Helper: Lấy Host instance của User hiện tại hoặc tạo mặc định
+     * Helper: Lấy Host instance của User hiện tại đã xác thực
      */
     private function getCurrentHost(): ?Host
     {
         $account = Auth::guard('api')->user();
-        if ($account && $account->user && $account->user->host) {
+        if (!$account) {
+            return null;
+        }
+
+        if ($account->user && $account->user->host) {
             return $account->user->host;
         }
 
-        // Fallback: Ưu tiên Host đầu tiên trong cơ sở dữ liệu để test frontend mượt mà
-        $firstHost = Host::with(['user', 'defaultPayoutAccount'])->first();
-        if ($firstHost) {
-            return $firstHost;
+        // Nếu tài khoản có vai trò host hoặc admin nhưng chưa có bản ghi host, khởi tạo tương ứng
+        if (($account->role === 'host' || $account->role === 'admin') && $account->user) {
+            $host = Host::firstOrCreate(
+                ['user_id' => $account->user->id],
+                [
+                    'host_display_name' => $account->user->full_name ?: ($account->email ? explode('@', $account->email)[0] : 'Chủ nhà TripNest'),
+                    'contact_phone' => $account->user->phone_number ?: '0912345678',
+                    'contact_email' => $account->email ?: 'host@tripnest.vn',
+                    'host_introduction' => 'Chào mừng bạn đến với không gian nghỉ dưỡng cao cấp của tôi trên TripNest!',
+                    'id_card_number' => $account->user->id_card_number ?: '001200012345',
+                    'id_card_front_url' => 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80',
+                    'id_card_back_url' => 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80',
+                    'kyc_status' => 'verified',
+                    'is_superhost' => true,
+                    'host_rating' => 4.96,
+                    'host_reviews_count' => 0,
+                    'response_rate_percent' => 100,
+                    'response_time_text' => 'trong vòng 1 giờ',
+                    'verified_at' => now(),
+                    'terms_accepted_at' => now(),
+                ]
+            );
+
+            // Tạo tài khoản payout mặc định nếu chưa có
+            if (!$host->defaultPayoutAccount) {
+                HostPayoutAccount::create([
+                    'host_id' => $host->id,
+                    'account_type' => 'bank_transfer',
+                    'bank_name' => 'Vietcombank',
+                    'account_number' => '9988776655',
+                    'account_holder_name' => mb_strtoupper($host->host_display_name),
+                    'is_default' => true,
+                    'is_verified' => true,
+                ]);
+            }
+
+            return $host;
         }
 
-        $user = $account?->user ?: User::first();
-        if (!$user) return null;
-
-        $host = Host::firstOrCreate(
-            ['user_id' => $user->id],
-            [
-                'host_display_name' => $user->full_name ?: ($account?->email ? explode('@', $account->email)[0] : 'Chủ nhà TripNest'),
-                'contact_phone' => $user->phone_number ?: '0912345678',
-                'contact_email' => $account?->email ?: 'host@tripnest.vn',
-                'host_introduction' => 'Chào mừng bạn đến với không gian nghỉ dưỡng cao cấp của tôi trên TripNest!',
-                'id_card_number' => '001200012345',
-                'id_card_front_url' => 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80',
-                'id_card_back_url' => 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80',
-                'kyc_status' => 'verified',
-                'is_superhost' => true,
-                'host_rating' => 4.96,
-                'host_reviews_count' => 38,
-                'response_rate_percent' => 100,
-                'response_time_text' => 'trong vòng 1 giờ',
-                'verified_at' => now(),
-                'terms_accepted_at' => now(),
-            ]
-        );
-
-        // Tạo tài khoản payout mặc định nếu chưa có
-        if (!$host->defaultPayoutAccount) {
-            HostPayoutAccount::create([
-                'host_id' => $host->id,
-                'account_type' => 'bank_transfer',
-                'bank_name' => 'Vietcombank',
-                'account_number' => '9988776655',
-                'account_holder_name' => mb_strtoupper($host->host_display_name),
-                'is_default' => true,
-                'is_verified' => true,
-            ]);
-        }
-
-        return $host;
+        return null;
     }
 
     /**
@@ -220,12 +220,15 @@ class HostController extends Controller
 
         // Đơn đặt mới nhất từ CSDL thực
         $recentBookings = Booking::whereIn('room_id', $roomIds)
-            ->with(['room.accommodation', 'user'])
+            ->with(['room.accommodation', 'user', 'voucher'])
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get()
             ->map(function ($b) {
-                $hostEarnings = (float)($b->base_price + $b->cleaning_fee);
+                $grossAmount = (float)($b->base_price + $b->cleaning_fee);
+                $commissionFee = (float)$b->service_fee;
+                $netPayoutAmount = max(0, $grossAmount - $commissionFee);
+
                 return [
                     'id' => $b->id,
                     'code' => $b->booking_code ?: ('TN-' . $b->id),
@@ -233,17 +236,30 @@ class HostController extends Controller
                     'guestName' => $b->guest_name ?: $b->user?->full_name ?: 'Khách TripNest',
                     'guestPhone' => $b->guest_phone ?: $b->user?->phone_number ?: '0912 345 678',
                     'roomTitle' => $b->room?->room_name_vi ?: $b->room?->accommodation?->name_vi ?: 'Biệt thự nghỉ dưỡng',
+                    'listingName' => $b->room?->accommodation?->name_vi ?: ($b->room?->room_name_vi ?: 'Biệt thự nghỉ dưỡng'),
+                    'roomName' => $b->room?->room_name_vi ?: 'Phòng tiêu chuẩn',
+                    'city' => $b->room?->accommodation?->city ?: 'Đà Lạt',
                     'checkIn' => $b->check_in_date?->format('Y-m-d') ?: '2026-08-25',
                     'checkOut' => $b->check_out_date?->format('Y-m-d') ?: '2026-08-28',
                     'nights' => (int)($b->nights_count ?: 1),
                     'guests' => (int)($b->guests_count ?: 2),
                     'basePrice' => (float)$b->base_price,
                     'cleaningFee' => (float)$b->cleaning_fee,
-                    'serviceFee' => (float)$b->service_fee,
+                    'grossAmount' => $grossAmount,
+                    'serviceFee' => $commissionFee,
+                    'commissionFee' => $commissionFee,
+                    'discountAmount' => (float)$b->discount_amount,
+                    'hasVoucher' => !empty($b->voucher_id) || (float)$b->discount_amount > 0,
+                    'voucherCode' => $b->voucher?->code,
                     'totalAmount' => (float)$b->total_price,
                     'totalPrice' => (float)$b->total_price,
-                    'hostEarnings' => $hostEarnings > 0 ? $hostEarnings : (float)$b->total_price,
+                    'guestPaidTotal' => (float)$b->total_price,
+                    'hostEarnings' => $netPayoutAmount,
+                    'hostPayoutAmount' => $netPayoutAmount,
+                    'netPayout' => $netPayoutAmount,
                     'status' => $b->status ?: 'confirmed',
+                    'checkedInAt' => $b->checked_in_at?->format('d/m/Y H:i'),
+                    'checkedOutAt' => $b->checked_out_at?->format('d/m/Y H:i'),
                     'createdAt' => $b->created_at?->format('d/m/Y H:i'),
                 ];
             });
@@ -698,14 +714,17 @@ class HostController extends Controller
         })->pluck('id');
 
         $status = $request->query('status');
-        $query = Booking::whereIn('room_id', $roomIds)->with(['room.accommodation', 'user']);
+        $query = Booking::whereIn('room_id', $roomIds)->with(['room.accommodation', 'user', 'voucher']);
 
         if ($status && $status !== 'all') {
             $query->where('status', $status);
         }
 
         $bookings = $query->orderBy('created_at', 'desc')->get()->map(function ($b) {
-            $hostEarnings = (float)($b->base_price + $b->cleaning_fee);
+            $grossAmount = (float)($b->base_price + $b->cleaning_fee);
+            $commissionFee = (float)$b->service_fee;
+            $netPayoutAmount = max(0, $grossAmount - $commissionFee);
+
             return [
                 'id' => $b->id,
                 'code' => $b->booking_code ?: ('TN-' . $b->id),
@@ -714,14 +733,30 @@ class HostController extends Controller
                 'guestEmail' => $b->guest_email ?: $b->user?->account?->email ?: 'guest@email.com',
                 'guestPhone' => $b->guest_phone ?: $b->user?->phone_number ?: '0912345678',
                 'roomTitle' => $b->room?->room_name_vi ?: $b->room?->accommodation?->name_vi ?: 'Biệt thự nghỉ dưỡng',
+                'listingName' => $b->room?->accommodation?->name_vi ?: ($b->room?->room_name_vi ?: 'Biệt thự nghỉ dưỡng'),
+                'roomName' => $b->room?->room_name_vi ?: 'Phòng tiêu chuẩn',
+                'city' => $b->room?->accommodation?->city ?: 'Đà Lạt',
                 'checkIn' => $b->check_in_date?->format('Y-m-d') ?: '2026-08-25',
                 'checkOut' => $b->check_out_date?->format('Y-m-d') ?: '2026-08-28',
                 'nights' => (int)($b->nights_count ?: 3),
                 'guests' => (int)($b->guests_count ?: 2),
+                'basePrice' => (float)$b->base_price,
+                'cleaningFee' => (float)$b->cleaning_fee,
+                'grossAmount' => $grossAmount,
+                'serviceFee' => $commissionFee,
+                'commissionFee' => $commissionFee,
+                'discountAmount' => (float)$b->discount_amount,
+                'hasVoucher' => !empty($b->voucher_id) || (float)$b->discount_amount > 0,
+                'voucherCode' => $b->voucher?->code,
                 'totalAmount' => (float)$b->total_price,
-                'hostEarnings' => $hostEarnings > 0 ? $hostEarnings : (float)($b->total_price * 0.88),
-                'hostPayoutAmount' => $hostEarnings > 0 ? $hostEarnings : (float)($b->total_price * 0.88),
+                'totalPrice' => (float)$b->total_price,
+                'guestPaidTotal' => (float)$b->total_price,
+                'hostEarnings' => $netPayoutAmount,
+                'hostPayoutAmount' => $netPayoutAmount,
+                'netPayout' => $netPayoutAmount,
                 'status' => $b->status ?: 'confirmed',
+                'checkedInAt' => $b->checked_in_at?->format('d/m/Y H:i'),
+                'checkedOutAt' => $b->checked_out_at?->format('d/m/Y H:i'),
                 'createdAt' => $b->created_at?->format('d/m/Y H:i'),
             ];
         });
@@ -742,8 +777,11 @@ class HostController extends Controller
         $payoutAccount = $host->defaultPayoutAccount;
         $payoutQuery = PayoutTransaction::where('host_id', $host->id)->with('booking.room.accommodation');
 
-        $availableBalance = (float)(clone $payoutQuery)->where('status', 'completed')->sum('net_payout_amount');
-        $pendingEscrowBalance = (float)(clone $payoutQuery)->where('status', 'pending')->sum('net_payout_amount');
+        $availableBalance = (float)(clone $payoutQuery)->where('status', 'completed')->whereNotNull('booking_id')->sum('net_payout_amount');
+        $withdrawnAmount = (float)(clone $payoutQuery)->whereNull('booking_id')->whereIn('status', ['pending', 'completed'])->sum('net_payout_amount');
+        $netAvailableBalance = max(0, $availableBalance - $withdrawnAmount);
+
+        $pendingEscrowBalance = (float)(clone $payoutQuery)->where('status', 'pending')->whereNotNull('booking_id')->sum('net_payout_amount');
 
         $transactions = (clone $payoutQuery)
             ->orderBy('created_at', 'desc')
@@ -755,7 +793,9 @@ class HostController extends Controller
                     'bookingCode' => $po->booking?->booking_code,
                     'date' => $po->created_at?->format('d/m/Y') ?: now()->format('d/m/Y'),
                     'amount' => (float)$po->net_payout_amount,
-                    'note' => 'Doanh thu đơn ' . ($po->booking?->booking_code ?: ('#' . $po->booking_id)),
+                    'grossAmount' => (float)$po->gross_amount,
+                    'commissionFee' => (float)$po->platform_commission_fee,
+                    'note' => $po->booking ? ('Doanh thu đơn ' . ($po->booking->booking_code ?: ('#' . $po->booking_id))) : 'Yêu cầu rút tiền về ngân hàng',
                     'status' => $po->status ?: 'pending',
                     'ref' => $po->transaction_reference,
                     'transferredAt' => $po->transferred_at ? $po->transferred_at->format('d/m/Y H:i') : null,
@@ -765,7 +805,7 @@ class HostController extends Controller
         return response()->json([
             'success' => true,
             'payoutAccount' => $payoutAccount,
-            'availableBalance' => $availableBalance,
+            'availableBalance' => $netAvailableBalance,
             'pendingEscrowBalance' => $pendingEscrowBalance,
             'transactions' => $transactions,
             'payoutHistory' => $transactions,
@@ -787,19 +827,12 @@ class HostController extends Controller
             ], 422);
         }
 
-        $roomIds = Room::whereHas('accommodation', function ($q) use ($host) {
-            $q->where('host_id', $host->id);
-        })->pluck('id');
-        $completedEarnings = Booking::whereIn('room_id', $roomIds)
-            ->where('status', 'completed')
-            ->get()
-            ->sum(fn ($booking) => (float)$booking->base_price + (float)$booking->cleaning_fee);
-        $reservedPayouts = PayoutTransaction::where('host_id', $host->id)
-            ->whereIn('status', ['pending', 'processing', 'completed'])
-            ->sum('net_payout_amount');
-        $availableBalance = max(0, $completedEarnings - (float)$reservedPayouts);
+        $payoutQuery = PayoutTransaction::where('host_id', $host->id);
+        $availableBalance = (float)(clone $payoutQuery)->where('status', 'completed')->whereNotNull('booking_id')->sum('net_payout_amount');
+        $withdrawnAmount = (float)(clone $payoutQuery)->whereNull('booking_id')->whereIn('status', ['pending', 'completed'])->sum('net_payout_amount');
+        $netAvailableBalance = max(0, $availableBalance - $withdrawnAmount);
 
-        if ($availableBalance <= 0) {
+        if ($netAvailableBalance <= 0) {
             return response()->json([
                 'success' => false,
                 'message' => 'Số dư khả dụng không đủ để tạo yêu cầu rút tiền.',
@@ -811,9 +844,9 @@ class HostController extends Controller
             'payout_code' => 'PO-' . strtoupper(bin2hex(random_bytes(4))),
             'host_id' => $host->id,
             'payout_account_id' => $payoutAccount->id,
-            'gross_amount' => $availableBalance,
+            'gross_amount' => $netAvailableBalance,
             'platform_commission_fee' => 0,
-            'net_payout_amount' => $availableBalance,
+            'net_payout_amount' => $netAvailableBalance,
             'currency' => 'VND',
             'status' => 'pending',
         ]);

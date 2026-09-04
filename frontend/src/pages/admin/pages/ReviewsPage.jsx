@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './ReviewsPage.css';
 import { TbStar, TbEyeOff, TbCheck } from 'react-icons/tb';
 import AdminPageHeader from '../common/AdminPageHeader';
 import Pagination from '../Pagination';
@@ -10,7 +11,7 @@ export const ReviewsPage = ({ reviews, onUpdateReviewStatus }) => {
   const paginated = reviews.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div>
+    <div className="adm-reviews-container">
       {/* Header */}
       <AdminPageHeader
         title="Kiểm Duyệt Đánh Giá Radar 6 Tiêu Chí"
@@ -18,28 +19,28 @@ export const ReviewsPage = ({ reviews, onUpdateReviewStatus }) => {
       />
 
       {/* Review Cards */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div className="adm-rev-list">
         {paginated.map((rev) => (
-          <div key={rev.id} className="admin-card-box" style={{ padding: '1.25rem', marginBottom: 0 }}>
+          <div key={rev.id} className="admin-card-box adm-rev-card">
             {/* Top row */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.85rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="adm-rev-top-row">
+              <div className="adm-rev-author-info">
                 <img
                   src={rev.guest_avatar}
                   alt={rev.guest_name}
-                  style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+                  className="adm-rev-avatar"
                 />
                 <div>
-                  <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.94rem' }}>{rev.guest_name}</div>
-                  <div style={{ fontSize: '0.76rem', color: '#64748b' }}>
-                    Chỗ ở: <strong style={{ color: '#0ea5e9' }}>{rev.room_name}</strong> • {rev.created_at}
+                  <div className="adm-rev-guest-name">{rev.guest_name}</div>
+                  <div className="adm-rev-sub-meta">
+                    Chỗ ở: <strong className="adm-rev-room-name">{rev.room_name}</strong> • {rev.created_at}
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: '#fffbeb', color: '#b45309', padding: '3px 8px', borderRadius: '999px', fontWeight: 800, fontSize: '0.84rem' }}>
-                  <TbStar style={{ color: '#f59e0b' }} />
+              <div className="adm-rev-badges-wrap">
+                <div className="adm-rev-score-badge">
+                  <TbStar className="adm-rev-star-icon" />
                   <span>{rev.rating_overall}★</span>
                 </div>
                 <span className={`status-pill ${rev.status}`}>
@@ -49,34 +50,34 @@ export const ReviewsPage = ({ reviews, onUpdateReviewStatus }) => {
             </div>
 
             {/* Radar 6 Breakdown pills */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', background: '#f8fafc', padding: '0.55rem 0.85rem', borderRadius: '8px', marginBottom: '0.85rem', border: '1px solid #edf2f7' }}>
-              <span style={{ fontSize: '0.74rem', color: '#475569' }}>Sạch sẽ: <strong>{rev.radar.cleanliness}★</strong></span>
-              <span style={{ color: '#cbd5e1' }}>•</span>
-              <span style={{ fontSize: '0.74rem', color: '#475569' }}>Chính xác: <strong>{rev.radar.accuracy}★</strong></span>
-              <span style={{ color: '#cbd5e1' }}>•</span>
-              <span style={{ fontSize: '0.74rem', color: '#475569' }}>Giao tiếp: <strong>{rev.radar.communication}★</strong></span>
-              <span style={{ color: '#cbd5e1' }}>•</span>
-              <span style={{ fontSize: '0.74rem', color: '#475569' }}>Vị trí: <strong>{rev.radar.location}★</strong></span>
-              <span style={{ color: '#cbd5e1' }}>•</span>
-              <span style={{ fontSize: '0.74rem', color: '#475569' }}>Nhận phòng: <strong>{rev.radar.checkin}★</strong></span>
-              <span style={{ color: '#cbd5e1' }}>•</span>
-              <span style={{ fontSize: '0.74rem', color: '#475569' }}>Giá trị: <strong>{rev.radar.value}★</strong></span>
+            <div className="adm-rev-radar-strip">
+              <span className="adm-rev-radar-item">Sạch sẽ: <strong>{rev.radar.cleanliness}★</strong></span>
+              <span className="adm-rev-dot-sep">•</span>
+              <span className="adm-rev-radar-item">Chính xác: <strong>{rev.radar.accuracy}★</strong></span>
+              <span className="adm-rev-dot-sep">•</span>
+              <span className="adm-rev-radar-item">Giao tiếp: <strong>{rev.radar.communication}★</strong></span>
+              <span className="adm-rev-dot-sep">•</span>
+              <span className="adm-rev-radar-item">Vị trí: <strong>{rev.radar.location}★</strong></span>
+              <span className="adm-rev-dot-sep">•</span>
+              <span className="adm-rev-radar-item">Nhận phòng: <strong>{rev.radar.checkin}★</strong></span>
+              <span className="adm-rev-dot-sep">•</span>
+              <span className="adm-rev-radar-item">Giá trị: <strong>{rev.radar.value}★</strong></span>
             </div>
 
             {/* Comment */}
-            <p style={{ color: '#334155', fontSize: '0.86rem', lineHeight: 1.45, marginBottom: '0.75rem' }}>
+            <p className="adm-rev-comment">
               "{rev.comment}"
             </p>
 
             {/* Host Response */}
             {rev.host_response && (
-              <div style={{ background: '#f8fafc', borderLeft: '3px solid #ff385c', padding: '0.55rem 0.85rem', borderRadius: '0 6px 6px 0', marginBottom: '0.75rem', fontSize: '0.8rem', color: '#64748b' }}>
+              <div className="adm-rev-host-reply-box">
                 <strong>Phản hồi chủ nhà:</strong> {rev.host_response}
               </div>
             )}
 
             {/* Action Bar */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px', borderTop: '1px solid #f1f5f9', paddingTop: '0.65rem' }}>
+            <div className="adm-rev-actions-bar">
               {rev.status !== 'approved' && (
                 <button
                   className="btn-action-icon success"
@@ -101,7 +102,7 @@ export const ReviewsPage = ({ reviews, onUpdateReviewStatus }) => {
       </div>
 
       {/* Pagination wrapper */}
-      <div className="admin-card-box" style={{ padding: 0 }}>
+      <div className="admin-card-box adm-rev-pagination-box">
         <Pagination
           currentPage={page}
           totalPages={Math.ceil(reviews.length / pageSize)}

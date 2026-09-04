@@ -1,0 +1,145 @@
+/* WriteReviewModal.css — Luxury Polished Review Form */
+.review-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+  animation: fadeInModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.review-modal-card {
+  background: #ffffff;
+  border-radius: 22px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.25);
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.review-modal-header {
+  padding: 1.35rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f1f5f9;
+  background: linear-gradient(135deg, #ffffff 0%, #fff1f2 100%);
+}
+
+.review-modal-header h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-modal-body {
+  padding: 1.75rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+.radar-slider-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #f8fafc;
+  padding: 0.85rem 1.1rem;
+  border-radius: 14px;
+  border: 1.5px solid #edf2f7;
+  transition: all 0.15s ease;
+}
+
+.radar-slider-item:hover {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.radar-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #334155;
+  min-width: 150px;
+}
+
+.stars-rating-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px;
+  font-size: 1.45rem;
+  color: #cbd5e1;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+}
+
+.star-btn:hover {
+  transform: scale(1.2);
+  color: #f59e0b;
+}
+
+.star-btn.active {
+  color: #f59e0b;
+  transform: scale(1.08);
+}
+
+.review-comment-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 110px;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  color: #0f172a;
+}
+
+.review-comment-textarea:focus {
+  outline: none;
+  border-color: #ff385c;
+  box-shadow: 0 0 0 4px rgba(255, 56, 92, 0.12);
+  background: #ffffff;
+}
+
+.review-modal-footer {
+  padding: 1.1rem 1.75rem;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #fafafa;
+}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './HostListingWizardPage.css';
 import { TbArrowLeft, TbArrowRight, TbHome, TbBuildingCastle, TbBuildingCommunity, TbSailboat, TbTrees, TbBuilding, TbMapPin, TbUsers, TbBed, TbBath, TbSparkles, TbWifi, TbSwimming, TbToolsKitchen2, TbAirConditioning, TbCar, TbFlame, TbDeviceTv, TbPhoto, TbPlus, TbTrash, TbCheck, TbEye, TbCoin, TbX } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/services/api';

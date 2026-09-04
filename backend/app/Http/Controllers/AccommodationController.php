@@ -89,6 +89,7 @@ class AccommodationController extends Controller
             'rooms.images',
             'rooms.amenities',
             'rooms.reviews.user',
+            'rooms.reviews.booking',
         ])->find($id);
 
         if (!$accommodation) {
@@ -125,6 +126,20 @@ class AccommodationController extends Controller
                 $rImages = ['https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&auto=format&fit=crop&q=80'];
             }
 
+            $rReviews = $r->reviews->where('status', '!=', 'hidden')->map(function ($rev) use ($r) {
+                return [
+                    'id' => $rev->id,
+                    'userName' => $rev->user?->full_name ?? 'Khách du lịch TripNest',
+                    'userAvatar' => $rev->user?->avatar_url ?? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+                    'nationality' => $rev->user?->nationality ?? 'Việt Nam',
+                    'roomName' => $r->room_name_vi,
+                    'rating' => (float)$rev->rating,
+                    'comment' => $rev->comment,
+                    'createdAt' => $rev->created_at ? $rev->created_at->format('d/m/Y') : '26/08/2026',
+                    'hostResponse' => $rev->host_response ?: null,
+                ];
+            })->values()->toArray();
+
             return [
                 'id' => $r->id,
                 'accommodationId' => $r->accommodation_id,
@@ -138,6 +153,7 @@ class AccommodationController extends Controller
                 'priceVND' => (float)$r->price_per_night,
                 'priceUSD' => round((float)$r->price_per_night / 25450),
                 'cleaningFee' => (float)$r->cleaning_fee,
+                'cleaning_fee_vnd' => (float)$r->cleaning_fee,
                 'serviceFeePercent' => (float)$r->service_fee_percent,
                 'maxGuests' => $r->max_guests,
                 'bedroomsCount' => $r->bedrooms_count,
@@ -149,12 +165,20 @@ class AccommodationController extends Controller
                 'isGuestFavorite' => (bool)$r->is_guest_favorite,
                 'images' => $rImages,
                 'amenities' => $r->amenities->pluck('name_vi')->toArray(),
+                'reviewsList' => $rReviews,
             ];
         })->values()->toArray();
 
         $allReviews = collect();
         foreach ($rooms as $r) {
             foreach ($r->reviews as $rev) {
+                if ($rev->status === 'hidden') continue;
+                $radar = $rev->rating_breakdown ?: [];
+                $nights = $rev->booking ? (int)$rev->booking->nights_count : 2;
+                $monthYear = $rev->booking && $rev->booking->check_in_date 
+                    ? $rev->booking->check_in_date->format('m/Y') 
+                    : ($rev->created_at ? $rev->created_at->format('m/Y') : '08/2026');
+
                 $allReviews->push([
                     'id' => $rev->id,
                     'userName' => $rev->user?->full_name ?? 'Khách du lịch TripNest',
@@ -163,53 +187,62 @@ class AccommodationController extends Controller
                     'roomName' => $r->room_name_vi,
                     'rating' => (float)$rev->rating,
                     'score10' => round((float)$rev->rating * 2, 1),
-                    'stayDuration' => '2 đêm · Tháng 08/2026',
-                    'travelerType' => 'Cặp đôi',
+                    'stayDuration' => "{$nights} đêm · Tháng {$monthYear}",
+                    'travelerType' => 'Du khách thực tế',
                     'comment' => $rev->comment,
-                    'positivePoint' => 'Phòng ốc cực kỳ sang trọng, view ngắm cảnh tuyệt đẹp và nhân viên phục vụ rất chu đáo tận tâm.',
+                    'radar' => $radar,
+                    'cleanliness' => (float)($radar['cleanliness'] ?? $rev->rating),
+                    'accuracy' => (float)($radar['accuracy'] ?? $rev->rating),
+                    'communication' => (float)($radar['communication'] ?? $rev->rating),
+                    'location' => (float)($radar['location'] ?? $rev->rating),
+                    'checkin' => (float)($radar['checkin'] ?? $rev->rating),
+                    'value' => (float)($radar['value'] ?? $rev->rating),
+                    'positivePoint' => 'Phòng ốc chuẩn tiện nghi, không gian thoáng đãng và dịch vụ rất chu đáo.',
                     'negativePoint' => null,
                     'createdAt' => $rev->created_at ? $rev->created_at->format('d/m/Y') : '26/08/2026',
-                    'hostResponse' => $rev->host_response ?? 'Cảm ơn quý khách đã tin chọn nghỉ dưỡng tại ' . $accom->name_vi . '. Chúng tôi rất hân hạnh được phục vụ bạn!',
+                    'rawCreatedAt' => $rev->created_at ? $rev->created_at->timestamp : 0,
+                    'hostResponse' => $rev->host_response ?: null,
                 ]);
             }
         }
 
-        if ($allReviews->isEmpty()) {
-            $allReviews->push([
-                'id' => 1,
-                'userName' => 'Nguyễn Thu Trang',
-                'userAvatar' => 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
-                'nationality' => 'Hà Nội, Việt Nam',
-                'roomName' => $formattedRooms[0]['title'] ?? 'Phòng Deluxe 5 Sao',
-                'rating' => 5.0,
-                'score10' => 9.8,
-                'stayDuration' => '3 đêm · Kỳ nghỉ lãng mạn',
-                'travelerType' => 'Cặp đôi',
-                'comment' => 'Kỳ nghỉ trên cả tuyệt vời tại ' . $accom->name_vi . '! Không gian sân vườn yên tĩnh, bữa sáng buffet phong phú và giường ngủ êm ái tuyệt đối.',
-                'positivePoint' => 'Hồ bơi nước ấm ngắm cảnh đồi thông cực chill, nhân viên lễ tân hỗ trợ nhiệt tình 24/7.',
-                'negativePoint' => null,
-                'createdAt' => '25/08/2026',
-                'hostResponse' => 'Cảm ơn chị Thu Trang đã dành thời gian đánh giá và ủng hộ cơ sở. Hẹn gặp lại quý khách vào kỳ nghỉ tiếp theo!',
-            ]);
-            $allReviews->push([
-                'id' => 2,
-                'userName' => 'Trần Minh Đức',
-                'userAvatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-                'nationality' => 'TP. Hồ Chí Minh, Việt Nam',
-                'roomName' => $formattedRooms[1]['title'] ?? 'Suite Cao Cấp',
-                'rating' => 4.9,
-                'score10' => 9.5,
-                'stayDuration' => '2 đêm · Chuyến công tác kết hợp nghỉ dưỡng',
-                'travelerType' => 'Du khách một mình',
-                'comment' => 'Dịch vụ chuẩn quốc tế 5 sao. Wifi tốc độ cao làm việc mượt mà, phòng tắm bồn Jacuzzi ngâm mình rất thư giãn.',
-                'positivePoint' => 'Vị trí đắc địa dễ dàng di chuyển vào trung tâm và các điểm tham quan.',
-                'negativePoint' => null,
-                'createdAt' => '20/08/2026',
-                'hostResponse' => 'TripNest rất vui vì mang lại trải nghiệm tiện nghi và thư thái cho anh Đức!',
-            ]);
+        // Sắp xếp bài đánh giá mới nhất lên đầu (Newest First)
+        $allReviews = $allReviews->sortByDesc('rawCreatedAt')->values();
+
+        if ($allReviews->isNotEmpty()) {
+            // Quy đổi sang thang điểm 10 chuẩn UX TripNest
+            $cleanlinessScore = round(($allReviews->avg('cleanliness') ?: 4.9) * 2, 1);
+            $locationScore = round(($allReviews->avg('location') ?: 4.9) * 2, 1);
+            $accuracyScore = round(($allReviews->avg('accuracy') ?: 4.9) * 2, 1);
+            $communicationScore = round(($allReviews->avg('communication') ?: 4.9) * 2, 1);
+            $checkinScore = round(($allReviews->avg('checkin') ?: 4.9) * 2, 1);
+            $valueScore = round(($allReviews->avg('value') ?: 4.9) * 2, 1);
+            $realAvgRating = round($allReviews->avg('rating') ?: 4.98, 2);
+            $realReviewsCount = $allReviews->count();
+        } else {
+            $cleanlinessScore = 9.8;
+            $locationScore = 9.9;
+            $accuracyScore = 9.6;
+            $communicationScore = 9.7;
+            $checkinScore = 9.7;
+            $valueScore = 9.5;
+            $realAvgRating = round($avgRating, 2);
+            $realReviewsCount = (int)($totalReviews > 0 ? $totalReviews : 0);
         }
 
-        $bookingScore = round($avgRating * 2, 1);
+        $reviewScoresBreakdown = [
+            'cleanliness' => min(10, max(5, $cleanlinessScore)),
+            'location' => min(10, max(5, $locationScore)),
+            'facilities' => min(10, max(5, $accuracyScore)),
+            'accuracy' => min(10, max(5, $accuracyScore)),
+            'comfort' => min(10, max(5, $checkinScore)),
+            'staff' => min(10, max(5, $communicationScore)),
+            'communication' => min(10, max(5, $communicationScore)),
+            'value' => min(10, max(5, $valueScore)),
+            'freeWifi' => 9.8,
+        ];
+
+        $bookingScore = round($realAvgRating * 2, 1);
         if ($bookingScore > 10) $bookingScore = 9.8;
         if ($bookingScore < 9.0) $bookingScore = 9.4;
 
@@ -231,6 +264,8 @@ class AccommodationController extends Controller
             'city' => $accom->city,
             'district' => $accom->district,
             'address' => $accom->address,
+            'latitude' => $accom->latitude ? (float)$accom->latitude : null,
+            'longitude' => $accom->longitude ? (float)$accom->longitude : null,
             'distance' => $accom->distance_description ?? ('Vị trí tuyệt vời · Cách trung tâm ' . $accom->city . ' 1.5 km'),
             'description' => $accom->description,
             'category' => $accom->category?->slug ?? 'all',
@@ -239,19 +274,11 @@ class AccommodationController extends Controller
             'isGuestFavorite' => true,
             'images' => $images,
             'amenities' => $amenityNames,
-            'rating' => round($avgRating, 2),
-            'reviewsCount' => (int)($totalReviews > 0 ? $totalReviews : 364),
+            'rating' => $realAvgRating,
+            'reviewsCount' => $realReviewsCount,
             'bookingScore' => $bookingScore,
             'bookingScoreLabel' => $bookingScore >= 9.0 ? 'Xuất sắc' : 'Tuyệt vời',
-            'reviewScoresBreakdown' => [
-                'staff' => 9.7,
-                'facilities' => 9.5,
-                'cleanliness' => 9.8,
-                'comfort' => 9.6,
-                'value' => 9.3,
-                'location' => 9.9,
-                'freeWifi' => 9.7,
-            ],
+            'reviewScoresBreakdown' => $reviewScoresBreakdown,
             'checkInTime' => '14:00 - 23:30',
             'checkOutTime' => '06:00 - 12:00',
             'houseRules' => [
@@ -264,7 +291,7 @@ class AccommodationController extends Controller
             ],
             'cancellationPolicy' => 'HỦY MIỄN PHÍ trước 48 giờ so với ngày nhận phòng. Đặt phòng hôm nay và thanh toán khi nhận phòng tại chỗ nghỉ.',
             'surroundings' => $surroundings,
-            'reviewsList' => $allReviews->values()->toArray(),
+            'reviewsList' => $allReviews->toArray(),
             'priceFrom' => (float)$minPrice,
             'priceTo' => (float)$maxPrice,
             'priceVND' => (float)$minPrice,

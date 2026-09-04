@@ -1,392 +1,969 @@
 // =============================================================================
-// DATABASE MARKUP LANGUAGE (DBML) - TRIPNEST BOOKING SYSTEM
+// DATABASE MARKUP LANGUAGE (DBML) - TRIPNEST BOOKING SYSTEM (CHUẨN 100% MỚI NHẤT)
+// Kiểm tra & Đối soát trực tiếp từ toàn bộ 23 file Laravel Migration trong backend
 // Sử dụng tại: https://dbdiagram.io hoặc https://dbdocs.io
 // =============================================================================
 
 Project TripNest {
   database_type: 'MySQL 9.x'
-  Note: 'Hệ thống Quản lý & Đặt phòng du lịch nghỉ dưỡng cao cấp TripNest'
+  Note: 'Hệ thống Quản lý & Đặt phòng du lịch nghỉ dưỡng cao cấp TripNest (Kiến trúc chuẩn 2026)'
 }
 
-// -----------------------------------------------------------------------------
-// 1. NHÓM NGƯỜI DÙNG & XÁC THỰC
-// -----------------------------------------------------------------------------
+// =============================================================================
+// 1. NHÓM TÀI KHOẢN, HỒ SƠ NGƯỜI DÙNG & ĐỐI TÁC CHỦ NHÀ KYC
+// =============================================================================
 
+// -----------------------------------------------------------------------------
+// BẢNG: accounts
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Lớp Xác thực (Authentication Layer): Tách biệt độc lập khỏi thông tin nhân thân (users).
+// - Quản lý bảo mật đăng nhập: Hỗ trợ cả đăng nhập truyền thống (Email/Mật khẩu Bcrypt)
+//   và đăng nhập mạng xã hội (Google OAuth2 Single Sign-On).
+// - Kiểm soát trạng thái tài khoản (chặn truy cập nếu bị ban) và phân quyền 3 cấp (Role-based).
+// -----------------------------------------------------------------------------
 Table accounts {
+  // [PK] Khóa chính tự tăng, định danh duy nhất cho mỗi tài khoản đăng nhập trên hệ thống
   id bigint [pk, increment]
+
+  // Email đăng nhập duy nhất (Unique Index). Chuẩn hóa 191 ký tự tối ưu cho B-Tree index MySQL utf8mb4
   email varchar(191) [unique, not null]
-  password varchar(255) [not null, note: 'Mật khẩu mã hóa Bcrypt']
+
+  // Mã định danh Sub ID của Google (OAuth2). Dùng khi khách đăng nhập nhanh bằng tài khoản Google
+  google_id varchar(191) [unique, null]
+
+  // URL ảnh đại diện gốc đồng bộ tự động từ Google profile
+  google_avatar varchar(500) [null]
+
+  // Mật khẩu mã hóa 1 chiều bằng thuật toán Bcrypt (cost factor 12), đảm bảo an toàn tuyệt đối
+  password varchar(255) [null]
+
+  // Phân quyền 3 vai trò: 'guest' (khách thuê), 'host' (chủ nhà cho thuê), 'admin' (quản trị viên sàn)
   role enum('guest', 'host', 'admin') [default: 'guest', not null]
+
+  // Trạng thái tài khoản: 'active' (bình thường), 'inactive' (chưa kích hoạt), 'banned' (bị khóa do vi phạm)
   status enum('active', 'inactive', 'banned') [default: 'active', not null]
-  email_verified_at timestamp
-  last_login_at timestamp
-  created_at timestamp
-  updated_at timestamp
-  deleted_at timestamp
 
-  Note: 'Tài khoản đăng nhập hệ thống'
+  // Mốc thời gian người dùng bấm xác thực email qua mã OTP 6 số
+  email_verified_at timestamp [null]
+
+  // Mốc thời gian lần cuối người dùng đăng nhập vào hệ thống (phục vụ thống kê MAU/DAU)
+  last_login_at timestamp [null]
+
+  // Chuỗi token ngẫu nhiên phục vụ tính năng "Ghi nhớ phiên đăng nhập" (Remember Me) của Laravel
+  remember_token varchar(100) [null]
+
+  // Thời điểm tạo tài khoản
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật thông tin tài khoản gần nhất
+  updated_at timestamp [null]
+
+  // Xóa mềm (Soft Delete) - giúp giữ lại toàn vẹn lịch sử giao dịch và kế toán khi tài khoản bị hủy
+  deleted_at timestamp [null]
 }
 
+// -----------------------------------------------------------------------------
+// BẢNG: users
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Lớp Hồ sơ (Profile Layer): Lưu trữ toàn bộ thông tin nhân thân của khách du lịch.
+// - Quan hệ 1-1 với bảng accounts. Dùng để tự động điền thông tin khi khách đặt phòng (Checkout),
+//   in lên phiếu xác nhận đặt phòng và phục vụ thủ tục đăng ký tạm trú theo luật du lịch.
+// -----------------------------------------------------------------------------
 Table users {
+  // [PK] Khóa chính của hồ sơ người dùng
   id bigint [pk, increment]
+
+  // [FK 1-1] Liên kết với accounts.id. Xóa tài khoản accounts sẽ tự động xóa hồ sơ users (cascade)
   account_id bigint [unique, not null, ref: - accounts.id]
+
+  // Họ và tên đầy đủ hiển thị trên ứng dụng và hợp đồng đặt phòng
   full_name varchar(100) [not null]
-  phone_number varchar(20)
-  avatar_url varchar(500)
-  gender enum('male', 'female', 'other') [default: 'other']
-  date_of_birth date
-  id_card_number varchar(30)
-  nationality varchar(50) [default: 'Việt Nam']
-  address varchar(255)
-  bio text
-  emergency_contact varchar(150)
-  created_at timestamp
-  updated_at timestamp
 
-  Note: 'Thông tin hồ sơ cá nhân người dùng'
+  // Số điện thoại liên lạc chính thức để gửi SMS OTP và để chủ nhà gọi đón khi nhận phòng
+  phone_number varchar(20) [null]
+
+  // Đường dẫn ảnh đại diện tùy chỉnh do người dùng tự tải lên từ thiết bị
+  avatar_url varchar(500) [null]
+
+  // Giới tính: 'male' (nam), 'female' (nữ), 'other' (khác) phục vụ thống kê nhân khẩu học
+  gender enum('male', 'female', 'other') [default: 'other', not null]
+
+  // Ngày sinh của khách (hệ thống kiểm tra độ tuổi trên 18 tuổi để chịu trách nhiệm dân sự khi thuê phòng)
+  date_of_birth date [null]
+
+  // Số CCCD hoặc Hộ chiếu của khách thuê để chủ nhà làm thủ tục khai báo tạm trú với cơ quan quản lý
+  id_card_number varchar(30) [null]
+
+  // Quốc tịch của khách (mặc định 'Việt Nam')
+  nationality varchar(50) [default: 'Việt Nam', not null]
+
+  // Địa chỉ nơi cư trú của người dùng
+  address varchar(255) [null]
+
+  // Đoạn giới thiệu ngắn về bản thân và phong cách du lịch
+  bio text [null]
+
+  // Tên và SĐT người thân trong gia đình để liên hệ trong các trường hợp sự cố khẩn cấp
+  emergency_contact varchar(150) [null]
+
+  // Thời điểm tạo hồ sơ
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật hồ sơ gần nhất
+  updated_at timestamp [null]
 }
 
+// -----------------------------------------------------------------------------
+// BẢNG: hosts
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Quản lý tư cách pháp nhân và độ uy tín của Đối tác Chủ nhà (Host Partner).
+// - Lưu trữ hồ sơ định danh KYC (CCCD 2 mặt, ảnh chân dung, giấy phép kinh doanh lưu trú/PCCC).
+// - Ghi nhận điểm sao trung bình, huy hiệu Superhost và cam kết thời gian phản hồi tin nhắn.
+// -----------------------------------------------------------------------------
 Table hosts {
+  // [PK] Khóa chính định danh Đối tác Chủ nhà
   id bigint [pk, increment]
+
+  // [FK 1-1] Liên kết với users.id. Xác định người dùng nào là chủ sở hữu hồ sơ Host này
   user_id bigint [unique, not null, ref: - users.id]
+
+  // Tên thương hiệu hiển thị công khai cho du khách thấy (VD: "Minh Luxury Villas", "Đà Lạt Homestay")
   host_display_name varchar(100) [not null]
-  host_avatar_url varchar(500)
-  host_introduction text
-  languages_spoken json [note: '["vi", "en"]']
+
+  // Logo thương hiệu hoặc ảnh đại diện chuyên nghiệp của chủ nhà
+  host_avatar_url varchar(500) [null]
+
+  // Bài viết giới thiệu kinh nghiệm làm du lịch và cam kết chất lượng hiếu khách
+  host_introduction text [null]
+
+  // Mảng JSON các ngôn ngữ chủ nhà có thể giao tiếp với du khách (VD: ["vi", "en"])
+  languages_spoken json [null]
+
+  // Số điện thoại hotline chuyên dùng để tiếp đón khách nhận phòng
   contact_phone varchar(20) [not null]
-  contact_email varchar(191)
-  emergency_phone varchar(20)
-  business_type enum('individual', 'household', 'company') [default: 'individual']
-  business_name varchar(150)
-  tax_id varchar(50)
+
+  // Email chính thức nhận thông báo có đơn đặt phòng mới và hóa đơn đối soát
+  contact_email varchar(191) [null]
+
+  // Số điện thoại khẩn cấp 24/7 của quản lý cơ sở
+  emergency_phone varchar(20) [null]
+
+  // Loại hình: 'individual' (cá nhân), 'household' (hộ kinh doanh), 'company' (doanh nghiệp lưu trú)
+  business_type enum('individual', 'household', 'company') [default: 'individual', not null]
+
+  // Tên doanh nghiệp/hộ kinh doanh ghi trên Giấy phép kinh doanh
+  business_name varchar(150) [null]
+
+  // Mã số thuế phục vụ khấu trừ nghĩa vụ thuế thu nhập và xuất hóa đơn VAT điện tử
+  tax_id varchar(50) [null]
+
+  // Số CCCD hoặc Hộ chiếu của người đại diện pháp luật
   id_card_number varchar(30) [not null]
+
+  // URL ảnh chụp mặt trước CCCD phục vụ quy trình xác thực danh tính KYC
   id_card_front_url varchar(500) [not null]
+
+  // URL ảnh chụp mặt sau CCCD phục vụ quy trình KYC
   id_card_back_url varchar(500) [not null]
-  portrait_photo_url varchar(500)
-  business_license_url varchar(500)
-  kyc_status enum('unverified', 'pending', 'verified', 'rejected') [default: 'pending']
-  kyc_rejection_reason text
-  verified_at timestamp
-  verified_by bigint [ref: > accounts.id]
-  is_superhost boolean [default: false]
-  host_rating decimal(3,2) [default: 5.00]
-  host_reviews_count int [default: 0]
-  response_rate_percent tinyint [default: 100]
-  response_time_text varchar(50) [default: 'trong vòng 1 giờ']
-  terms_accepted_at timestamp
-  created_at timestamp
-  updated_at timestamp
 
-  Note: 'Hồ sơ đối tác chủ nhà cho thuê'
+  // URL ảnh chân dung trực diện cầm CCCD để đối chiếu khuôn mặt thực tế chống mạo danh
+  portrait_photo_url varchar(500) [null]
+
+  // URL giấy phép kinh doanh dịch vụ lưu trú du lịch hoặc biên bản nghiệm thu PCCC
+  business_license_url varchar(500) [null]
+
+  // Trạng thái KYC: 'unverified' (chưa nộp), 'pending' (chờ duyệt), 'verified' (hợp lệ), 'rejected' (bị từ chối)
+  kyc_status enum('unverified', 'pending', 'verified', 'rejected') [default: 'pending', not null]
+
+  // Lý do Admin từ chối duyệt hồ sơ để Host biết đường bổ sung lại giấy tờ
+  kyc_rejection_reason text [null]
+
+  // Mốc thời gian hồ sơ đối tác được Admin phê duyệt chính thức
+  verified_at timestamp [null]
+
+  // [FK] Tài khoản accounts.id của Admin đã thực hiện duyệt hồ sơ đối tác này
+  verified_by bigint [null, ref: > accounts.id]
+
+  // Huy hiệu Chủ nhà Siêu cấp (Superhost) dành cho Host có rating > 4.8 sao và tỷ lệ hủy đơn dưới 1%
+  is_superhost boolean [default: false, not null]
+
+  // Điểm đánh giá sao uy tín trung bình của Host tính gộp từ tất cả các phòng
+  host_rating decimal(3,2) [default: 5.00, not null]
+
+  // Tổng số lượt khách đã gửi đánh giá cho Host này
+  host_reviews_count int [default: 0, not null]
+
+  // Tỷ lệ phản hồi tin nhắn của khách tính theo phần trăm (0 - 100%)
+  response_rate_percent tinyint [default: 100, not null]
+
+  // Cam kết thời gian phản hồi tin nhắn (VD: "trong vòng 1 giờ")
+  response_time_text varchar(50) [default: 'trong vòng 1 giờ', not null]
+
+  // Mốc thời gian bấm chấp thuận Thỏa thuận Hợp tác Kinh doanh trên sàn TripNest
+  terms_accepted_at timestamp [null]
+
+  // Thời điểm đăng ký làm Host
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật thông tin Host
+  updated_at timestamp [null]
 }
 
+// -----------------------------------------------------------------------------
+// BẢNG: host_payout_accounts
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Lưu trữ tài khoản ngân hàng hoặc ví điện tử thụ hưởng của Đối tác Chủ nhà.
+// - Nền tảng dùng thông tin này để chuyển khoản giải ngân (Payout) sau khi khách trả phòng.
+// - Đã tối ưu hóa loại bỏ các trường quốc tế thừa (swift_code, bank_branch, currency,...).
+// -----------------------------------------------------------------------------
 Table host_payout_accounts {
+  // [PK] Khóa chính tài khoản thụ hưởng
   id bigint [pk, increment]
+
+  // [FK] Khóa ngoại xác định tài khoản này thuộc về Chủ nhà nào
   host_id bigint [not null, ref: > hosts.id]
-  account_type enum('bank_transfer', 'momo', 'vnpay', 'paypal', 'stripe') [default: 'bank_transfer']
+
+  // Phương thức nhận tiền: 'bank_transfer', 'momo', 'vnpay', 'paypal', 'stripe'
+  account_type enum('bank_transfer', 'momo', 'vnpay', 'paypal', 'stripe') [default: 'bank_transfer', not null]
+
+  // Tên ngân hàng thụ hưởng (Vietcombank, Techcombank, MBBank,...)
   bank_name varchar(100) [not null]
-  bank_code varchar(20)
-  bank_branch varchar(150)
+
+  // Số tài khoản ngân hàng nhận tiền giải ngân
   account_number varchar(50) [not null]
+
+  // Tên chủ tài khoản viết hoa không dấu (bắt buộc trùng khớp với tên trên CCCD của Host)
   account_holder_name varchar(100) [not null]
-  swift_code varchar(20)
-  currency varchar(10) [default: 'VND']
-  is_default boolean [default: false]
-  is_verified boolean [default: true]
-  verification_document_url varchar(500)
-  created_at timestamp
-  updated_at timestamp
 
-  Note: 'Tài khoản ngân hàng/ví điện tử thụ hưởng của chủ nhà'
+  // Đánh dấu tài khoản chính nhận tiền tự động khi đến phiên giải ngân
+  is_default boolean [default: false, not null]
+
+  // Trạng thái tài khoản đã được đối soát tên hợp lệ với ngân hàng
+  is_verified boolean [default: true, not null]
+
+  // Thời điểm thêm tài khoản
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật tài khoản
+  updated_at timestamp [null]
 }
 
-// -----------------------------------------------------------------------------
-// 2. NHÓM DANH MỤC & TIỆN NGHI
-// -----------------------------------------------------------------------------
+// =============================================================================
+// 2. NHÓM DANH MỤC PHONG CÁCH & TIỆN NGHI CHUẨN HÓA
+// =============================================================================
 
+// -----------------------------------------------------------------------------
+// BẢNG: categories
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Phân loại cơ sở lưu trú theo phong cách trải nghiệm sống (Lifestyle Curation)
+//   tương tự thanh lướt Category của Airbnb (Biệt thự, Sát biển, View đồi núi, Cabin,...).
+// -----------------------------------------------------------------------------
 Table categories {
+  // [PK] Khóa chính danh mục
   id bigint [pk, increment]
+
+  // Chuỗi định danh URL thân thiện cho SEO (VD: 'villas-luxury', 'beachfront')
   slug varchar(50) [unique, not null]
+
+  // Tên danh mục tiếng Việt hiển thị trên thanh CategoryBar (VD: "Biệt thự", "View đồi")
   label_vi varchar(100) [not null]
+
+  // Tên danh mục tiếng Anh cho giao diện du khách quốc tế
   label_en varchar(100) [not null]
-  icon varchar(50) [not null]
-  description text
-  display_order int [default: 0]
-  is_active boolean [default: true]
-  created_at timestamp
-  updated_at timestamp
 
-  Note: 'Danh mục phong cách chỗ nghỉ'
+  // Mã icon đại diện từ thư viện react-icons (VD: 'TbBeach', 'TbHome2')
+  icon varchar(50) [not null]
+
+  // Mô tả tiêu chuẩn phong cách của nhóm bất động sản này
+  description text [null]
+
+  // Thứ tự ưu tiên sắp xếp hiển thị từ trái qua phải trên thanh danh mục trang chủ
+  display_order int [default: 0, not null]
+
+  // Công tắc bật/tắt hiển thị danh mục trên ứng dụng
+  is_active boolean [default: true, not null]
+
+  // Thời điểm tạo danh mục
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật danh mục
+  updated_at timestamp [null]
 }
 
+// -----------------------------------------------------------------------------
+// BẢNG: amenities
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Từ điển Tiện nghi & Dịch vụ chuẩn hóa toàn sàn.
+// - Tránh việc Host tự nhập text tùy tiện làm hỏng bộ lọc tìm kiếm của du khách.
+// -----------------------------------------------------------------------------
 Table amenities {
+  // [PK] Khóa chính tiện nghi
   id bigint [pk, increment]
+
+  // Mã định danh tiện nghi trong code (VD: 'wifi', 'pool', 'kitchen', 'bbq', 'jacuzzi')
   code varchar(50) [unique, not null]
+
+  // Tên tiện nghi tiếng Việt (VD: "Bể bơi vô cực", "Bếp nướng BBQ", "Bồn tắm Jacuzzi")
   name_vi varchar(100) [not null]
+
+  // Tên tiện nghi tiếng Anh phục vụ khách nước ngoài
   name_en varchar(100) [not null]
+
+  // Mã icon đại diện của tiện nghi
   icon varchar(50) [not null]
-  target_type enum('both', 'accommodation', 'room') [default: 'both']
-  category enum('basic', 'standout', 'safety', 'luxury') [default: 'basic']
-  created_at timestamp
-  updated_at timestamp
 
-  Note: 'Danh mục tiện nghi (Wifi, Hồ bơi, Bếp...)'
+  // Phạm vi: 'accommodation' (khuôn viên chung), 'room' (trong phòng ngủ), 'both' (cả hai)
+  target_type enum('both', 'accommodation', 'room') [default: 'both', not null]
+
+  // Phân nhóm: 'basic' (cơ bản), 'standout' (nổi bật), 'safety' (an toàn/PCCC), 'luxury' (xa xỉ 5 sao)
+  category enum('basic', 'standout', 'safety', 'luxury') [default: 'basic', not null]
+
+  // Thời điểm tạo tiện nghi
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật tiện nghi
+  updated_at timestamp [null]
 }
 
-// -----------------------------------------------------------------------------
-// 3. NHÓM KHÁCH SẠN & PHÒNG NGHỈ
-// -----------------------------------------------------------------------------
+// =============================================================================
+// 3. NHÓM BẤT ĐỘNG SẢN & HẠNG PHÒNG NGHỈ DƯỠNG
+// =============================================================================
 
+// -----------------------------------------------------------------------------
+// BẢNG: accommodations
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Thực thể Cha (Parent Entity) đại diện cho toàn bộ khuôn viên khu nghỉ dưỡng/tòa nhà.
+// - Giải quyết bài toán đa hình: Vừa quản lý căn Villa nguyên căn, vừa quản lý Khách sạn
+//   nhiều phòng ngủ bên trong. Lưu trữ vị trí GPS, giờ nhận/trả phòng và nội quy chung.
+// -----------------------------------------------------------------------------
 Table accommodations {
+  // [PK] Khóa chính cơ sở lưu trú
   id bigint [pk, increment]
+
+  // [FK] Khóa ngoại trỏ đến Chủ nhà sở hữu bất động sản này
   host_id bigint [not null, ref: > hosts.id]
+
+  // [FK] Khóa ngoại trỏ đến danh mục phong cách thiết kế chính của khu nghỉ
   category_id bigint [not null, ref: > categories.id]
+
+  // Tên khu nghỉ dưỡng tiếng Việt (VD: "Ana Mandara Villas Dalat Resort & Spa")
   name_vi varchar(255) [not null]
-  name_en varchar(255)
-  accommodation_type enum('hotel', 'resort', 'villa', 'homestay', 'apartment', 'cabin', 'yacht') [default: 'hotel']
-  star_rating tinyint [default: 0]
+
+  // Tên khu nghỉ dưỡng tiếng Anh
+  name_en varchar(255) [null]
+
+  // Loại hình kiến trúc: 'hotel', 'resort', 'villa', 'homestay', 'apartment', 'cabin', 'yacht'
+  accommodation_type enum('hotel', 'resort', 'villa', 'homestay', 'apartment', 'cabin', 'yacht') [default: 'hotel', not null]
+
+  // Xếp hạng sao chính thức từ 0 đến 5 sao
+  star_rating tinyint [default: 0, not null]
+
+  // Bài viết giới thiệu chi tiết không gian kiến trúc, lịch sử và cảnh quan khuôn viên
   description longtext [not null]
+
+  // Địa chỉ thực tế (Số nhà, tên đường)
   address varchar(255) [not null]
-  city varchar(100) [not null]
-  district varchar(100)
-  country varchar(100) [default: 'Việt Nam']
-  latitude decimal(10,8)
-  longitude decimal(11,8)
-  distance_description varchar(255)
-  check_in_time time [default: '14:00:00']
-  check_out_time time [default: '12:00:00']
-  house_rules text
-  cancellation_policy text
-  is_featured boolean [default: false]
-  status enum('draft', 'published', 'paused', 'archived') [default: 'published']
-  created_at timestamp
-  updated_at timestamp
-  deleted_at timestamp
 
-  Note: 'Bất động sản / Khách sạn / Resort'
+  // Thành phố/Tỉnh du lịch trọng điểm (Đà Lạt, Nha Trang, Phú Quốc,...) dùng để lọc tìm kiếm
+  city varchar(100) [not null]
+
+  // Quận / Huyện / Thị xã
+  district varchar(100) [null]
+
+  // Quốc gia nơi đặt bất động sản (mặc định 'Việt Nam')
+  country varchar(100) [default: 'Việt Nam', not null]
+
+  // Vĩ độ GPS chính xác dùng để tính khoảng cách cự ly km và chỉ đường
+  latitude decimal(10,8) [null]
+
+  // Kinh độ GPS chính xác dùng để ghim vị trí trên bản đồ tương tác Google Maps
+  longitude decimal(11,8) [null]
+
+  // Mô tả cự ly ngắn (VD: "Cách chợ đêm Đà Lạt 1.5km, 5 phút lái xe")
+  distance_description varchar(255) [null]
+
+  // Giờ bắt đầu cho phép nhận phòng tiêu chuẩn trong ngày (14:00)
+  check_in_time time [default: '14:00:00', not null]
+
+  // Giờ chốt khách phải trả phòng tiêu chuẩn trong ngày (12:00)
+  check_out_time time [default: '12:00:00', not null]
+
+  // Nội quy lưu trú: giờ yên tĩnh ban đêm, quy định tiệc tùng, hút thuốc
+  house_rules text [null]
+
+  // Chính sách hủy phòng (hủy miễn phí trước 48h, hoặc không hoàn tiền)
+  cancellation_policy text [null]
+
+  // Cờ đánh dấu cơ sở lưu trú nổi bật để hiển thị lên Banner Spotlight trang chủ
+  is_featured boolean [default: false, not null]
+
+  // Trạng thái: 'draft' (nháp), 'published' (đang mở bán), 'paused' (tạm ngưng), 'archived' (ngừng kinh doanh)
+  status enum('draft', 'published', 'paused', 'archived') [default: 'published', not null]
+
+  // Thời điểm tạo chỗ nghỉ
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật chỗ nghỉ
+  updated_at timestamp [null]
+
+  // Xóa mềm chỗ nghỉ
+  deleted_at timestamp [null]
 }
 
+// -----------------------------------------------------------------------------
+// BẢNG: rooms
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Thực thể Con (Child Entity) đại diện cho từng đơn vị phòng ngủ cụ thể có thể bán.
+// - Villa nguyên căn có 1 phòng ('entire_place'); Khách sạn có nhiều hạng phòng ('Deluxe', 'Suite').
+// - Đã tối ưu hóa bỏ các cột USD thừa, lưu trữ giá gốc niêm yết theo VNĐ.
+// -----------------------------------------------------------------------------
 Table rooms {
+  // [PK] Khóa chính của hạng phòng bán
   id bigint [pk, increment]
+
+  // [FK] Khóa ngoại trỏ về cơ sở lưu trú cha accommodations.id. Xóa accommodation sẽ cascade xóa rooms
   accommodation_id bigint [not null, ref: > accommodations.id]
+
+  // Tên hạng phòng tiếng Việt (VD: "Phòng Suite Hướng Đồi Cổ Điển")
   room_name_vi varchar(255) [not null]
-  room_name_en varchar(255)
-  room_type_code varchar(50) [default: 'entire_villa']
-  space_type enum('entire_place', 'private_room', 'shared_room') [default: 'entire_place']
+
+  // Tên hạng phòng tiếng Anh ("Hill View Classic Suite")
+  room_name_en varchar(255) [null]
+
+  // Mã loại phòng nội bộ trong mã nguồn
+  room_type_code varchar(50) [default: 'entire_villa', not null]
+
+  // Không gian: 'entire_place' (nguyên căn biệt lập), 'private_room' (phòng riêng), 'shared_room' (ở ghép dorm)
+  space_type enum('entire_place', 'private_room', 'shared_room') [default: 'entire_place', not null]
+
+  // Mô tả nội thất, tầm nhìn ban công và trang thiết bị riêng trong phòng
   description longtext [not null]
-  room_size_m2 decimal(6,2)
-  price_per_night decimal(14,2) [not null, note: 'Giá gốc niêm yết theo VNĐ']
-  cleaning_fee decimal(14,2) [default: 500000.00]
-  service_fee_percent decimal(4,2) [default: 12.00]
-  max_guests tinyint [default: 2]
-  bedrooms_count tinyint [default: 1]
-  beds_count tinyint [default: 1]
-  bathrooms_count decimal(3,1) [default: 1.0]
-  total_inventory int [default: 1]
-  rating decimal(3,2) [default: 5.00]
-  reviews_count int [default: 0]
-  is_guest_favorite boolean [default: false]
-  status enum('available', 'maintenance', 'hidden') [default: 'available']
-  created_at timestamp
-  updated_at timestamp
-  deleted_at timestamp
 
-  Note: 'Hạng phòng nghỉ dưỡng cụ thể'
-}
+  // Diện tích phòng ngủ tính theo mét vuông (m2)
+  room_size_m2 decimal(6,2) [null]
 
-Table accommodation_images {
-  id bigint [pk, increment]
-  accommodation_id bigint [not null, ref: > accommodations.id]
-  image_type varchar(50) [default: 'exterior', note: 'exterior, room, pool, view, amenity']
-  image_url varchar(500) [not null]
-  google_search_link text
-  caption varchar(255)
-  display_order int [default: 0]
-  is_thumbnail boolean [default: false]
-  created_at timestamp
-  updated_at timestamp
-
-  Note: 'Ảnh tổng thể khách sạn'
-}
-
-Table room_images {
-  id bigint [pk, increment]
-  room_id bigint [not null, ref: > rooms.id]
-  image_type varchar(50) [default: 'room', note: 'exterior, room, pool, view, amenity']
-  image_url varchar(500) [not null]
-  google_search_link text
-  caption varchar(255)
-  display_order int [default: 0]
-  is_thumbnail boolean [default: false]
-  created_at timestamp
-  updated_at timestamp
-
-  Note: 'Ảnh nội thất chi tiết phòng'
-}
-
-Table accommodation_amenity {
-  id bigint [pk, increment]
-  accommodation_id bigint [not null, ref: > accommodations.id]
-  amenity_id bigint [not null, ref: > amenities.id]
-}
-
-Table room_amenity {
-  id bigint [pk, increment]
-  room_id bigint [not null, ref: > rooms.id]
-  amenity_id bigint [not null, ref: > amenities.id]
-}
-
-// -----------------------------------------------------------------------------
-// 4. NHÓM ĐẶT PHÒNG, VOUCHER & ĐÁNH GIÁ
-// -----------------------------------------------------------------------------
-
-Table vouchers {
-  id bigint [pk, increment]
-  code varchar(50) [unique, not null]
-  title varchar(150) [not null]
-  description text
-  discount_type enum('percent', 'fixed_amount') [default: 'percent']
-  discount_value decimal(14,2) [not null]
-  min_booking_amount decimal(14,2) [default: 0.00]
-  max_discount_amount decimal(14,2)
-  usage_limit int [default: 100]
-  used_count int [default: 0]
-  start_date datetime [not null]
-  end_date datetime [not null]
-  is_active boolean [default: true]
-  created_at timestamp
-  updated_at timestamp
-
-  Note: 'Mã giảm giá ưu đãi đặt phòng'
-}
-
-Table bookings {
-  id bigint [pk, increment]
-  booking_code varchar(20) [unique, not null]
-  user_id bigint [not null, ref: > users.id]
-  room_id bigint [not null, ref: > rooms.id]
-  voucher_id bigint [ref: > vouchers.id]
-  check_in_date date [not null]
-  check_out_date date [not null]
-  nights_count int [not null]
-  guests_count int [not null]
+  // Giá niêm yết gốc cho 1 đêm nghỉ tính theo VNĐ (Snapshot đơn giá)
   price_per_night decimal(14,2) [not null]
-  base_price decimal(14,2) [not null]
-  cleaning_fee decimal(14,2) [not null]
-  service_fee decimal(14,2) [not null]
-  discount_amount decimal(14,2) [default: 0.00]
-  total_price decimal(14,2) [not null]
-  currency varchar(10) [default: 'VND']
-  status enum('pending', 'confirmed', 'completed', 'cancelled', 'refunded') [default: 'confirmed']
-  cancellation_reason varchar(255)
-  cancelled_at timestamp
-  special_requests text
-  created_at timestamp
-  updated_at timestamp
 
-  Note: 'Đơn đặt phòng nghỉ dưỡng'
-}
+  // Phí dọn dẹp vệ sinh phòng một lần tính trên cả chuyến đi
+  cleaning_fee decimal(14,2) [default: 500000.00, not null]
 
-Table reviews {
-  id bigint [pk, increment]
-  booking_id bigint [unique, ref: - bookings.id]
-  room_id bigint [not null, ref: > rooms.id]
-  user_id bigint [not null, ref: > users.id]
-  rating_overall decimal(3,2) [not null, note: 'Điểm tổng thể (1.0 - 5.0)']
-  rating_cleanliness decimal(3,2) [not null, note: 'Tiêu chí Sạch sẽ']
-  rating_accuracy decimal(3,2) [not null, note: 'Tiêu chí Độ chính xác']
-  rating_communication decimal(3,2) [not null, note: 'Tiêu chí Giao tiếp']
-  rating_location decimal(3,2) [not null, note: 'Tiêu chí Vị trí']
-  rating_checkin decimal(3,2) [not null, note: 'Tiêu chí Nhận phòng']
-  rating_value decimal(3,2) [not null, note: 'Tiêu chí Giá trị tương xứng']
-  comment text [not null]
-  host_response text
-  host_responded_at timestamp
-  status enum('visible', 'hidden') [default: 'visible']
-  created_at timestamp
-  updated_at timestamp
+  // Tỷ lệ phần trăm phí dịch vụ công nghệ sàn TripNest thu (mặc định 12%)
+  service_fee_percent decimal(4,2) [default: 12.00, not null]
 
-  Note: 'Đánh giá chi tiết 6 tiêu chí radar'
-}
+  // Sức chứa khách tối đa cho phép trong phòng
+  max_guests tinyint [default: 2, not null]
 
-Table wishlists {
-  id bigint [pk, increment]
-  user_id bigint [not null, ref: > users.id]
-  room_id bigint [not null, ref: > rooms.id]
-  created_at timestamp
+  // Số lượng phòng ngủ bên trong
+  bedrooms_count tinyint [default: 1, not null]
 
-  Note: 'Danh sách phòng yêu thích'
+  // Số lượng giường ngủ (giường đôi King, giường đơn Twin)
+  beds_count tinyint [default: 1, not null]
+
+  // Số lượng phòng tắm khép kín (hỗ trợ số lẻ như 1.5 phòng tắm)
+  bathrooms_count decimal(3,1) [default: 1.0, not null]
+
+  // Số lượng phòng trống cùng hạng sẵn có để mở bán trên sàn
+  total_inventory int [default: 1, not null]
+
+  // Điểm đánh giá sao trung bình của riêng hạng phòng này
+  rating decimal(3,2) [default: 5.00, not null]
+
+  // Tổng số lượt nhận xét đánh giá dành riêng cho hạng phòng này
+  reviews_count int [default: 0, not null]
+
+  // Huy hiệu "Khách yêu thích" dành cho phòng thuộc top 5% được yêu thích nhất sàn
+  is_guest_favorite boolean [default: false, not null]
+
+  // Tình trạng: 'available' (mở bán), 'maintenance' (đang sửa chữa), 'hidden' (tạm ẩn)
+  status enum('available', 'maintenance', 'hidden') [default: 'available', not null]
+
+  // Thời điểm tạo phòng
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật thông tin phòng
+  updated_at timestamp [null]
+
+  // Xóa mềm phòng
+  deleted_at timestamp [null]
 }
 
 // -----------------------------------------------------------------------------
-// 5. TRẢI NGHIỆM, THANH TOÁN & TỶ GIÁ
+// BẢNG: accommodation_images
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Quản lý album ảnh tổng thể của khu nghỉ dưỡng: flycam khuôn viên, sảnh, hồ bơi ngoài trời.
 // -----------------------------------------------------------------------------
-
-Table experiences {
+Table accommodation_images {
+  // [PK] Khóa chính ảnh
   id bigint [pk, increment]
-  host_id bigint [ref: > hosts.id]
-  title_vi varchar(255) [not null]
-  title_en varchar(255)
-  caption varchar(255) [not null]
-  description text
-  city varchar(100) [not null]
-  country varchar(100) [default: 'Việt Nam']
-  price_vnd_per_person decimal(14,2) [not null]
-  rating decimal(3,2) [default: 5.00]
-  reviews_count int [default: 0]
+
+  // [FK] Khóa ngoại trỏ đến cơ sở lưu trú accommodations.id
+  accommodation_id bigint [not null, ref: > accommodations.id]
+
+  // Đường dẫn ảnh CDN Cloudinary/S3 chất lượng cao
   image_url varchar(500) [not null]
-  duration_hours decimal(3,1)
-  is_active boolean [default: true]
-  created_at timestamp
-  updated_at timestamp
 
-  Note: 'Tour và trải nghiệm du lịch địa phương'
+  // Góc chụp: 'exterior' (ngoại cảnh), 'room', 'pool' (hồ bơi), 'view', 'amenity'
+  image_type varchar(50) [default: 'exterior', null]
+
+  // Link tham khảo ảnh gốc
+  google_search_link text [null]
+
+  // Chú thích ảnh hiển thị trong trình phóng to Lightbox (VD: "Toàn cảnh khuôn viên lúc hoàng hôn")
+  caption varchar(255) [null]
+
+  // Thứ tự ưu tiên sắp xếp trong bộ sưu tập Gallery ảnh
+  display_order int [default: 0, not null]
+
+  // Đánh dấu ảnh bìa đại diện (Cover Photo) trên thẻ ListingCard ngoài trang chủ
+  is_thumbnail boolean [default: false, not null]
+
+  // Thời điểm tải ảnh lên
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật ảnh
+  updated_at timestamp [null]
 }
 
+// -----------------------------------------------------------------------------
+// BẢNG: room_images
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Quản lý album ảnh nội thất chi tiết của từng phòng: góc giường ngủ, bồn tắm khép kín, ban công.
+// -----------------------------------------------------------------------------
+Table room_images {
+  // [PK] Khóa chính ảnh
+  id bigint [pk, increment]
+
+  // [FK] Khóa ngoại trỏ đến hạng phòng chi tiết rooms.id
+  room_id bigint [not null, ref: > rooms.id]
+
+  // Đường dẫn ảnh chi tiết phòng trên CDN
+  image_url varchar(500) [not null]
+
+  // Góc chụp nội thất: 'room' (phòng ngủ), 'bathroom' (phòng tắm), 'balcony' (ban công)
+  image_type varchar(50) [default: 'room', null]
+
+  // Link tham khảo ảnh gốc
+  google_search_link text [null]
+
+  // Chú thích ảnh chi tiết phòng
+  caption varchar(255) [null]
+
+  // Thứ tự hiển thị ảnh trong trang chi tiết phòng
+  display_order int [default: 0, not null]
+
+  // Đánh dấu ảnh bìa đại diện của hạng phòng
+  is_thumbnail boolean [default: false, not null]
+
+  // Thời điểm tải ảnh lên
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật ảnh
+  updated_at timestamp [null]
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: accommodation_amenity
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Bảng nối Nhiều-Nhiều (N-N) gán tiện ích khuôn viên chung cho khu nghỉ dưỡng (Bãi đỗ xe, Bể bơi).
+// -----------------------------------------------------------------------------
+Table accommodation_amenity {
+  // [PK] Khóa chính bản ghi liên kết
+  id bigint [pk, increment]
+
+  // [FK] Khóa ngoại trỏ đến cơ sở lưu trú accommodations.id
+  accommodation_id bigint [not null, ref: > accommodations.id]
+
+  // [FK] Khóa ngoại trỏ đến tiện nghi chung amenities.id
+  amenity_id bigint [not null, ref: > amenities.id]
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: room_amenity
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Bảng nối Nhiều-Nhiều (N-N) gán tiện ích riêng tư cho từng hạng phòng (Bồn tắm Jacuzzi, Két sắt).
+// -----------------------------------------------------------------------------
+Table room_amenity {
+  // [PK] Khóa chính bản ghi liên kết
+  id bigint [pk, increment]
+
+  // [FK] Khóa ngoại trỏ đến hạng phòng chi tiết rooms.id
+  room_id bigint [not null, ref: > rooms.id]
+
+  // [FK] Khóa ngoại trỏ đến tiện nghi trong phòng amenities.id
+  amenity_id bigint [not null, ref: > amenities.id]
+}
+
+// =============================================================================
+// 4. NHÓM ĐẶT PHÒNG, VOUCHER, ĐÁNH GIÁ & YÊU THÍCH
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// BẢNG: vouchers
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Quản lý chiến dịch mã giảm giá (Promo Code) kích cầu du lịch.
+// - Tự động đối soát điều kiện áp dụng tại bước thanh toán Checkout.
+// -----------------------------------------------------------------------------
+Table vouchers {
+  // [PK] Khóa chính mã giảm giá
+  id bigint [pk, increment]
+
+  // Mã voucher duy nhất nhập tại Checkout (VD: 'TRIPNESTVIP', 'SUMMER2026')
+  code varchar(50) [unique, not null]
+
+  // Tên chương trình ưu đãi hiển thị trong modal chọn voucher
+  title varchar(255) [not null]
+
+  // Điều kiện áp dụng và quy định sử dụng voucher
+  description text [null]
+
+  // Hình thức giảm giá: 'percentage' (theo phần trăm %), 'fixed' (số tiền cố định)
+  discount_type enum('percentage', 'fixed') [default: 'percentage', not null]
+
+  // Giá trị giảm (VD: 10% hoặc 500.000 VNĐ)
+  discount_value decimal(14,2) [not null]
+
+  // Giá trị đơn đặt phòng tối thiểu bắt buộc để có thể kích hoạt voucher
+  min_booking_amount decimal(14,2) [default: 0.00, not null]
+
+  // Mức tiền giảm trần tối đa khi áp dụng hình thức giảm theo phần trăm %
+  max_discount_amount decimal(14,2) [null]
+
+  // Tổng số lượt sử dụng tối đa của toàn hệ thống (NULL = không giới hạn)
+  usage_limit int [null]
+
+  // Số lượt voucher đã được khách sử dụng thành công (tăng tự động khi tạo đơn)
+  used_count int [default: 0, not null]
+
+  // Ngày bắt đầu có hiệu lực của voucher
+  start_date date [null]
+
+  // Ngày hết hạn của voucher
+  end_date date [null]
+
+  // Công tắc bật/tắt kích hoạt voucher bởi Admin
+  is_active boolean [default: true, not null]
+
+  // Thời điểm tạo voucher
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật voucher
+  updated_at timestamp [null]
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: bookings
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Trái tim nghiệp vụ của hệ thống: Lưu trữ hợp đồng giao dịch thuê phòng giữa Khách và Host.
+// - Đã bổ sung checked_in_at, checked_out_at, voucher_id, price_per_night và bỏ currency thừa.
+// - Máy trạng thái quản lý: 'pending', 'confirmed', 'checked_in', 'completed', 'cancelled', 'refunded'.
+// -----------------------------------------------------------------------------
+Table bookings {
+  // [PK] Khóa chính đơn đặt phòng
+  id bigint [pk, increment]
+
+  // Mã đơn phòng độc nhất gửi cho khách và Host tra cứu tại lễ tân (VD: 'TN-894215')
+  booking_code varchar(20) [unique, not null]
+
+  // [FK] Khóa ngoại trỏ đến khách du lịch thực hiện đặt phòng (users.id)
+  user_id bigint [not null, ref: > users.id]
+
+  // [FK] Khóa ngoại trỏ đến hạng phòng được đặt (rooms.id)
+  room_id bigint [not null, ref: > rooms.id]
+
+  // [FK] Khóa ngoại trỏ đến mã giảm giá đã áp dụng nếu có (vouchers.id)
+  voucher_id bigint [null, ref: > vouchers.id]
+
+  // Ngày nhận phòng dự kiến theo lịch đặt
+  check_in_date date [not null]
+
+  // Ngày trả phòng dự kiến theo lịch đặt
+  check_out_date date [not null]
+
+  // Số đêm lưu trú = check_out_date - check_in_date
+  nights_count int [not null]
+
+  // Tổng số lượng khách người lớn và trẻ em đăng ký lưu trú
+  guests_count int [not null]
+
+  // Ảnh chụp (Snapshot) đơn giá phòng tại thời điểm khách bấm đặt phòng
+  price_per_night decimal(14,2) [not null]
+
+  // Tiền phòng cơ sở = price_per_night * nights_count
+  base_price decimal(14,2) [not null]
+
+  // Phí vệ sinh phòng một lần
+  cleaning_fee decimal(14,2) [default: 0.00, not null]
+
+  // Phí dịch vụ công nghệ sàn TripNest thu (12% trên base_price)
+  service_fee decimal(14,2) [default: 0.00, not null]
+
+  // Số tiền được khấu trừ từ voucher
+  discount_amount decimal(14,2) [default: 0.00, not null]
+
+  // Tổng số tiền thanh toán thực tế = base_price + cleaning_fee + service_fee - discount_amount
+  total_price decimal(14,2) [not null]
+
+  // Vòng đời đơn phòng: 'pending', 'confirmed', 'checked_in', 'completed', 'cancelled', 'refunded'
+  status varchar(30) [default: 'confirmed', not null]
+
+  // Thời điểm thực tế khách làm thủ tục Check-in nhận phòng tại chỗ nghỉ
+  checked_in_at timestamp [null]
+
+  // Thời điểm thực tế khách làm thủ tục Check-out trả phòng
+  checked_out_at timestamp [null]
+
+  // Lý do hủy đơn được khách chọn hoặc nhập vào khi hủy
+  cancellation_reason varchar(255) [null]
+
+  // Thời điểm đơn phòng bị hủy bỏ
+  cancelled_at timestamp [null]
+
+  // Ghi chú yêu cầu đặc biệt của khách gửi cho chủ nhà (Giờ đến muộn, thêm giường phụ)
+  special_requests text [null]
+
+  // Thời điểm tạo đơn đặt phòng
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật đơn phòng
+  updated_at timestamp [null]
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: reviews
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Đánh giá chất lượng dịch vụ theo mô hình Biểu đồ Radar 6 tiêu chí quốc tế.
+// - Ràng buộc 1-1 với booking_id đảm bảo CHỈ khách đã hoàn thành kỳ nghỉ ('completed')
+//   mới được viết duy nhất 1 review, chống hoàn toàn tình trạng cày review ảo.
+// - Gồm rating tổng thể và cột JSON rating_breakdown (cleanliness, accuracy, communication,...).
+// -----------------------------------------------------------------------------
+Table reviews {
+  // [PK] Khóa chính đánh giá
+  id bigint [pk, increment]
+
+  // [FK 1-1] Khóa ngoại duy nhất liên kết 1-1 với đơn phòng (1 kỳ nghỉ chỉ được viết 1 review)
+  booking_id bigint [unique, not null, ref: - bookings.id]
+
+  // [FK] Khóa ngoại trỏ đến phòng được đánh giá
+  room_id bigint [not null, ref: > rooms.id]
+
+  // [FK] Khóa ngoại trỏ đến khách hàng viết đánh giá
+  user_id bigint [not null, ref: > users.id]
+
+  // Điểm đánh giá trung bình tổng thể từ 1.00 đến 5.00 sao
+  rating decimal(3,2) [not null]
+
+  // Cột JSON lưu trữ chi tiết 6 tiêu chí Radar: cleanliness, accuracy, communication, location, checkin, value
+  rating_breakdown json [null]
+
+  // Nội dung nhận xét chi tiết của khách về trải nghiệm kỳ nghỉ
+  comment text [not null]
+
+  // Lời phản hồi cảm ơn hoặc giải thích của Chủ nhà gửi lại cho khách
+  host_response text [null]
+
+  // Thời điểm chủ nhà gửi phản hồi nhận xét
+  host_responded_at timestamp [null]
+
+  // Kiểm duyệt bởi Admin: 'approved' (hiển thị), 'hidden' (ẩn vi phạm), 'flagged' (đang tranh chấp)
+  status enum('approved', 'hidden', 'flagged') [default: 'approved', not null]
+
+  // Thời điểm gửi đánh giá
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật đánh giá
+  updated_at timestamp [null]
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: wishlists
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Lưu trữ danh sách các phòng nghỉ yêu thích mà du khách thả tim để xem lại và đặt sau.
+// -----------------------------------------------------------------------------
+Table wishlists {
+  // [PK] Khóa chính danh sách yêu thích
+  id bigint [pk, increment]
+
+  // [FK] Khóa ngoại xác định người dùng thả tim (users.id)
+  user_id bigint [not null, ref: > users.id]
+
+  // [FK] Khóa ngoại xác định phòng được thả tim (rooms.id). Cặp (user_id, room_id) là duy nhất
+  room_id bigint [not null, ref: > rooms.id]
+
+  // Thời điểm bấm thả tim lưu phòng
+  created_at timestamp [not null]
+}
+
+// =============================================================================
+// 5. TRẢI NGHIỆM, DÒNG TIỀN ESCROW & TỶ GIÁ NGOẠI TỆ
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// BẢNG: experiences
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Tour du lịch & Trải nghiệm địa phương (TripNest Experiences) ngoài dịch vụ phòng.
+// - Đã tối ưu hóa đổi price_vnd_per_person thành price_per_person và bỏ các cột thừa.
+// -----------------------------------------------------------------------------
+Table experiences {
+  // [PK] Khóa chính tour trải nghiệm
+  id bigint [pk, increment]
+
+  // [FK] Khóa ngoại trỏ đến chủ nhà hoặc hướng dẫn viên địa phương tổ chức tour
+  host_id bigint [null, ref: > hosts.id]
+
+  // Tên tour trải nghiệm tiếng Việt (VD: "Chèo SUP ngắm bình minh Hồ Tuyền Lâm")
+  title_vi varchar(255) [not null]
+
+  // Khẩu hiệu ngắn thu hút sự chú ý của du khách
+  caption varchar(255) [not null]
+
+  // Lịch trình chi tiết các hoạt động trong tour trải nghiệm
+  description text [null]
+
+  // Thành phố địa phương diễn ra hoạt động
+  city varchar(100) [not null]
+
+  // Giá vé tham gia tính theo đầu người (VNĐ/khách)
+  price_per_person decimal(14,2) [not null]
+
+  // Điểm đánh giá chất lượng tour
+  rating decimal(3,2) [default: 5.00, not null]
+
+  // Tổng số lượt nhận xét từ du khách
+  reviews_count int [default: 0, not null]
+
+  // Ảnh đại diện của tour trải nghiệm
+  image_url varchar(500) [not null]
+
+  // Thời lượng hoạt động tính theo giờ (VD: 3.5 giờ)
+  duration_hours decimal(3,1) [null]
+
+  // Công tắc bật/tắt mở bán tour trên ứng dụng
+  is_active boolean [default: true, not null]
+
+  // Thời điểm tạo tour
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật tour
+  updated_at timestamp [null]
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: payments
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Quản lý dòng tiền thu hộ từ khách du lịch (Pay-In).
+// - Lưu vết phản hồi Webhook IPN từ cổng thanh toán để làm bằng chứng đối soát tài chính.
+// -----------------------------------------------------------------------------
 Table payments {
+  // [PK] Khóa chính bản ghi thanh toán
   id bigint [pk, increment]
+
+  // [FK] Khóa ngoại gắn hóa đơn này với đơn phòng tương ứng (bookings.id)
   booking_id bigint [not null, ref: > bookings.id]
+
+  // Mã giao dịch ngân hàng độc nhất (VD: 'TXN-658231-ABCD') dùng để đối chiếu sao kê
   transaction_code varchar(100) [unique, not null]
-  payment_method enum('credit_card', 'vnpay', 'momo', 'bank_transfer', 'cash') [not null]
+
+  // Cổng thanh toán: 'vietqr', 'vnpay', 'momo', 'credit_card', 'bank_transfer', 'cash'
+  payment_method varchar(50) [default: 'credit_card', not null]
+
+  // Số tiền thực tế khách đã quẹt thẻ hoặc chuyển khoản (VNĐ)
   amount decimal(14,2) [not null]
-  currency varchar(10) [default: 'VND']
-  status enum('pending', 'successful', 'failed', 'refunded') [default: 'successful']
-  payment_gateway_response json
-  paid_at timestamp
-  created_at timestamp
-  updated_at timestamp
 
-  Note: 'Giao dịch thanh toán của khách du lịch'
+  // Trạng thái giao dịch: 'pending' (chờ), 'successful' (thành công), 'failed' (thất bại), 'refunded' (hoàn tiền)
+  status varchar(30) [default: 'successful', not null]
+
+  // Cột JSON lưu toàn bộ gói tin Callback Webhook từ ngân hàng để đối soát tranh chấp
+  payment_gateway_response json [null]
+
+  // Thời điểm chính xác tiền đã vào tài khoản thu hộ của sàn
+  paid_at timestamp [null]
+
+  // Thời điểm tạo hóa đơn
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật hóa đơn
+  updated_at timestamp [null]
 }
 
+// -----------------------------------------------------------------------------
+// BẢNG: payout_transactions
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Quản lý Cơ chế Ký quỹ Trung gian (Escrow Model) và giải ngân cho Host (Pay-Out).
+// - Sàn tạm giữ tiền của khách, chỉ giải ngân cho Host sau khi khách đã trả phòng an toàn.
+// -----------------------------------------------------------------------------
 Table payout_transactions {
+  // [PK] Khóa chính lệnh giải ngân
   id bigint [pk, increment]
-  payout_code varchar(30) [unique, not null]
-  host_id bigint [not null, ref: > hosts.id]
-  booking_id bigint [ref: > bookings.id]
-  payout_account_id bigint [not null, ref: > host_payout_accounts.id]
-  gross_amount decimal(14,2) [not null]
-  platform_commission_fee decimal(14,2) [not null]
-  net_payout_amount decimal(14,2) [not null]
-  currency varchar(10) [default: 'VND']
-  status enum('pending', 'processing', 'completed', 'failed') [default: 'completed']
-  transaction_reference varchar(100)
-  transferred_at timestamp
-  created_at timestamp
-  updated_at timestamp
 
-  Note: 'Giao dịch chi trả doanh thu cho chủ nhà'
+  // Mã lệnh chi tiền đối soát độc nhất (VD: 'POT-847291')
+  payout_code varchar(30) [unique, not null]
+
+  // [FK] Khóa ngoại xác định Đối tác Chủ nhà nhận tiền
+  host_id bigint [not null, ref: > hosts.id]
+
+  // [FK] Khóa ngoại xác định đơn phòng đối soát sinh ra khoản doanh thu này
+  booking_id bigint [null, ref: > bookings.id]
+
+  // [FK] Khóa ngoại xác định tài khoản ngân hàng nhận tiền của Host (host_payout_accounts.id)
+  payout_account_id bigint [not null, ref: > host_payout_accounts.id]
+
+  // Tổng doanh thu gộp = Tiền phòng cơ bản + Phí dọn dẹp
+  gross_amount decimal(14,2) [not null]
+
+  // Doanh thu hoa hồng sàn TripNest giữ lại (12% theo thỏa thuận đối tác)
+  platform_commission_fee decimal(14,2) [not null]
+
+  // Số tiền ròng thực nhận của Chủ nhà = gross_amount - platform_commission_fee
+  net_payout_amount decimal(14,2) [not null]
+
+  // Vòng đời Quỹ Escrow: 'pending' (tạm giữ chờ khách trả phòng), 'processing' (đang chuyển), 'completed' (đã chi), 'failed' (hủy do khiếu nại)
+  status enum('pending', 'processing', 'completed', 'failed') [default: 'completed', not null]
+
+  // Mã số ủy nhiệm chi / biên lai chuyển tiền của ngân hàng do kế toán Admin nhập vào
+  transaction_reference varchar(100) [null]
+
+  // Thời điểm tiền được giải ngân thành công về tài khoản chủ nhà
+  transferred_at timestamp [null]
+
+  // Thời điểm khởi tạo lệnh Payout
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật lệnh Payout
+  updated_at timestamp [null]
 }
 
+// -----------------------------------------------------------------------------
+// BẢNG: exchange_rates
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Bảng tỷ giá ngoại tệ linh hoạt phục vụ hiển thị đa tiền tệ cho du khách quốc tế (USD, EUR,...).
+// - Toàn bộ số liệu thanh toán và kế toán cốt lõi bên dưới neo cố định 100% bằng Đồng Việt Nam (VND).
+// -----------------------------------------------------------------------------
 Table exchange_rates {
+  // [PK] Khóa chính bản ghi tỷ giá
   id bigint [pk, increment]
-  base_currency varchar(10) [default: 'VND', not null]
-  target_currency varchar(10) [not null, note: 'USD, EUR...']
-  rate decimal(14,6) [not null]
-  effective_date date [not null]
-  is_active boolean [default: true]
-  created_at timestamp
-  updated_at timestamp
 
-  Note: 'Bảng tỷ giá quy đổi tiền tệ linh hoạt'
+  // Tiền tệ cơ sở của hệ thống TripNest (luôn là 'VND')
+  base_currency varchar(10) [default: 'VND', not null]
+
+  // Mã tiền tệ quốc tế cần quy đổi (USD, EUR, JPY, GBP,...)
+  target_currency varchar(10) [not null]
+
+  // Tỷ giá quy đổi chính xác 6 số thập phân (VD: 25450.000000 VNĐ đổi 1 USD)
+  rate decimal(16,6) [not null]
+
+  // Ngày áp dụng tỷ giá. Bộ (base_currency, target_currency, effective_date) là duy nhất
+  effective_date date [not null]
+
+  // Nguồn cấp tỷ giá: 'vietcombank_api', 'openexchangerates', hoặc 'manual'
+  source varchar(100) [default: 'manual', not null]
+
+  // Trạng thái bật/tắt áp dụng của tỷ giá này
+  is_active boolean [default: true, not null]
+
+  // Thời điểm lưu tỷ giá
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật tỷ giá
+  updated_at timestamp [null]
 }

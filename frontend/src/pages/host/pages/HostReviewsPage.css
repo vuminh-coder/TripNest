@@ -1,0 +1,130 @@
+/* ==========================================================================
+   HOST REVIEWS PAGE CSS (Host Portal)
+   ========================================================================== */
+
+.host-rev-banner-card {
+  background: linear-gradient(135deg, #ffffff 0%, #fff1f2 60%, #ffe4e6 100%);
+  border: 1px solid var(--host-primary-border);
+}
+
+.host-rev-banner-wrap {
+  padding: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.host-rev-score-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.host-rev-score-num {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--host-text-main);
+  font-family: var(--host-font-display);
+}
+
+.host-rev-stars {
+  display: flex;
+  color: #f59e0b;
+  font-size: 1.2rem;
+}
+
+.host-rev-superhost-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  padding: 0.6rem 1rem;
+  border-radius: var(--host-radius-lg);
+  border: 1px solid var(--host-primary-border);
+}
+
+.host-rev-radar-grid {
+  padding: 1.25rem 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.host-rev-radar-bar-track {
+  width: 100%;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.host-rev-radar-bar-fill {
+  height: 100%;
+  background: var(--host-primary-gradient);
+  border-radius: 999px;
+}
+
+.host-rev-list-container {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.host-rev-card {
+  padding: 1.25rem;
+  border-radius: var(--host-radius-lg);
+  border: 1px solid var(--host-border-subtle);
+  background: #f8fafc;
+}
+
+.host-rev-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.host-rev-score-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #fffbeb;
+  color: #b45309;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.host-rev-reply-box {
+  background: #ffffff;
+  padding: 0.85rem 1rem;
+  border-radius: var(--host-radius-md);
+  border-left: 3.5px solid var(--host-primary);
+  font-size: 0.84rem;
+  color: #475569;
+}
+
+.host-rev-reply-form {
+  margin-top: 0.75rem;
+  background: #ffffff;
+  padding: 0.85rem;
+  border-radius: 12px;
+  border: 1.5px solid #fed7aa;
+}
+
+.host-rev-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 0.85rem;
+  resize: none;
+  font-family: inherit;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './HostFinancialsPage.css';
 import {
   TbWallet,
   TbBuildingBank,
@@ -51,7 +52,7 @@ export const HostFinancialsPage = ({
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.25rem' }}>
+    <div className="host-fin-container">
       {/* Left Column: Bank Account & Payout Controls */}
       <div className="host-panel-card" style={{ margin: 0 }}>
         <div className="host-panel-header">
@@ -74,21 +75,14 @@ export const HostFinancialsPage = ({
           </button>
         </div>
 
-        <div style={{ padding: '1.25rem 1.5rem' }}>
+        <div className="host-fin-body">
           {!isEditing ? (
-            <div
-              style={{
-                background: '#f8fafc',
-                padding: '1.25rem',
-                borderRadius: 'var(--host-radius-lg)',
-                border: '1px solid var(--host-border-strong)',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <div className="host-fin-bank-info-box">
+              <div className="host-fin-info-row">
                 <span style={{ color: 'var(--host-text-muted)', fontSize: '0.85rem' }}>Ngân hàng:</span>
                 <strong style={{ color: 'var(--host-text-main)' }}>{bankInfo.bankName}</strong>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <div className="host-fin-info-row">
                 <span style={{ color: 'var(--host-text-muted)', fontSize: '0.85rem' }}>Số tài khoản:</span>
                 <strong style={{ color: 'var(--host-text-main)', letterSpacing: '1px' }}>
                   {bankInfo.accountNumber}
@@ -99,21 +93,7 @@ export const HostFinancialsPage = ({
                 <strong style={{ color: 'var(--host-text-main)' }}>{bankInfo.accountHolder}</strong>
               </div>
 
-              <div
-                style={{
-                  marginTop: '1.25rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: '0.8rem',
-                  color: '#059669',
-                  background: 'var(--host-emerald-soft)',
-                  padding: '8px 12px',
-                  borderRadius: 'var(--host-radius-md)',
-                  fontWeight: 700,
-                  lineHeight: 1.4,
-                }}
-              >
+              <div className="host-fin-kyc-verified-box">
                 <TbShieldCheck style={{ fontSize: '1.25rem', flexShrink: 0 }} />
                 <span>Đã xác thực KYC & sẵn sàng nhận tiền tự động</span>
               </div>
@@ -188,18 +168,7 @@ export const HostFinancialsPage = ({
           <hr style={{ border: 'none', borderTop: '1px solid var(--host-border-subtle)', margin: '1.25rem 0' }} />
 
           {/* 1. Pending Escrow Balance (Tạm giữ chờ Admin giải ngân) */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '0.9rem 1.25rem',
-              borderRadius: 'var(--host-radius-md)',
-              background: '#fffbeb',
-              border: '1px solid rgba(245, 158, 11, 0.3)',
-              marginBottom: '0.85rem',
-            }}
-          >
+          <div className="host-fin-escrow-box">
             <div>
               <span style={{ fontSize: '0.78rem', color: '#b45309', fontWeight: 700, display: 'block' }}>
                 ⏳ Đang chờ Admin giải ngân (Escrow)
@@ -214,17 +183,7 @@ export const HostFinancialsPage = ({
           </div>
 
           {/* 2. Available Balance Card (Đã giải ngân về ví) */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '1rem 1.25rem',
-              borderRadius: 'var(--host-radius-md)',
-              background: '#f0fdf4',
-              border: '1px solid rgba(16, 185, 129, 0.2)',
-            }}
-          >
+          <div className="host-fin-avail-box">
             <div>
               <span style={{ fontSize: '0.8rem', color: '#15803d', fontWeight: 700, display: 'block' }}>
                 ✅ Số dư khả dụng (Đã nhận về ví)
@@ -260,15 +219,7 @@ export const HostFinancialsPage = ({
             payoutHistory.map((po) => (
               <div
                 key={po.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.75rem 0.9rem',
-                  borderRadius: 'var(--host-radius-md)',
-                  background: '#f8fafc',
-                  border: '1px solid var(--host-border-subtle)',
-                }}
+                className="host-fin-history-item"
               >
                 <div>
                   <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--host-text-main)' }}>
@@ -305,7 +256,7 @@ export const HostFinancialsPage = ({
               </div>
             ))
           ) : (
-            <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--host-text-muted)' }}>
+            <div className="host-fin-history-empty">
               <div style={{ fontSize: '2rem', marginBottom: '0.5rem', opacity: 0.6 }}>💸</div>
               <div style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--host-text-main)', marginBottom: '0.25rem' }}>
                 Chưa có lịch sử nhận tiền

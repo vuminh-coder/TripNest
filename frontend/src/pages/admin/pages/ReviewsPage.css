@@ -1,0 +1,123 @@
+/* ==========================================================================
+   REVIEWS & RADAR MODERATION PAGE CSS (Admin Portal)
+   ========================================================================== */
+
+.adm-rev-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.adm-rev-card {
+  padding: 1.25rem;
+  margin-bottom: 0;
+}
+
+.adm-rev-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.adm-rev-author-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adm-rev-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.adm-rev-guest-name {
+  font-weight: 800;
+  color: var(--adm-text-main, #0f172a);
+  font-size: 0.94rem;
+}
+
+.adm-rev-sub-meta {
+  font-size: 0.76rem;
+  color: var(--adm-text-muted, #64748b);
+}
+
+.adm-rev-room-name {
+  color: #0ea5e9;
+}
+
+.adm-rev-badges-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.adm-rev-score-badge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: #fffbeb;
+  color: #b45309;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.84rem;
+}
+
+.adm-rev-star-icon {
+  color: #f59e0b;
+}
+
+.adm-rev-radar-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: var(--adm-bg-surface, #f8fafc);
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--adm-radius-sm, 8px);
+  margin-bottom: 0.85rem;
+  border: 1px solid var(--adm-border, #edf2f7);
+}
+
+.adm-rev-radar-item {
+  font-size: 0.74rem;
+  color: #475569;
+}
+
+.adm-rev-dot-sep {
+  color: #cbd5e1;
+}
+
+.adm-rev-comment {
+  color: #334155;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  margin-bottom: 0.75rem;
+}
+
+.adm-rev-host-reply-box {
+  background: var(--adm-bg-surface, #f8fafc);
+  border-left: 3px solid #ff385c;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--adm-text-muted, #64748b);
+}
+
+.adm-rev-actions-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  border-top: 1px solid var(--adm-border-subtle, #f1f5f9);
+  padding-top: 0.65rem;
+}
+
+.adm-rev-pagination-box {
+  padding: 0;
+}

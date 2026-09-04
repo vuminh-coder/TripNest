@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './HostsKycPage.css';
 import { TbStar, TbEye, TbSearch, TbShieldCheck } from 'react-icons/tb';
 import AdminPageHeader from '../common/AdminPageHeader';
 import AdminTableWrapper from '../common/AdminTableWrapper';
@@ -26,7 +27,7 @@ export const HostsKycPage = ({ hosts, onOpenKycModal, onToggleSuperhost }) => {
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div>
+    <div className="adm-hosts-kyc-container">
       {/* Header */}
       <AdminPageHeader
         title="Thẩm Định KYC & Đối Tác Chủ Nhà"
@@ -35,28 +36,16 @@ export const HostsKycPage = ({ hosts, onOpenKycModal, onToggleSuperhost }) => {
       />
 
       {/* Filter Bar */}
-      <div className="admin-card-box" style={{ padding: '0.85rem 1.25rem', marginBottom: '1.25rem' }}>
-        <div className="admin-filter-bar" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: '#f8fafc',
-              border: '1px solid #edf2f7',
-              borderRadius: '8px',
-              padding: '0.42rem 0.85rem',
-              flex: 1,
-              minWidth: '240px',
-            }}
-          >
-            <TbSearch style={{ color: '#94a3b8' }} />
+      <div className="admin-card-box adm-kyc-filter-box">
+        <div className="adm-kyc-filter-bar">
+          <div className="adm-kyc-search-wrap">
+            <TbSearch className="adm-kyc-search-icon" />
             <input
               type="text"
               placeholder="Tìm tên chủ nhà, SĐT, số CCCD..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ border: 'none', background: 'transparent', width: '100%', fontSize: '0.84rem', outline: 'none' }}
+              className="adm-kyc-search-input"
             />
           </div>
 
@@ -97,7 +86,7 @@ export const HostsKycPage = ({ hosts, onOpenKycModal, onToggleSuperhost }) => {
           <tbody>
             {paginated.length === 0 ? (
               <tr>
-                <td colSpan="8" style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#94a3b8' }}>
+                <td colSpan="8" className="adm-kyc-empty-state">
                   Không tìm thấy hồ sơ chủ nhà nào.
                 </td>
               </tr>
@@ -106,28 +95,20 @@ export const HostsKycPage = ({ hosts, onOpenKycModal, onToggleSuperhost }) => {
                 <tr key={host.id}>
                   {/* Host Name & Avatar */}
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div className="adm-kyc-host-cell">
                       <img
                         src={host.avatar}
                         alt={host.name}
-                        style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                        className="adm-kyc-avatar"
                       />
                       <div style={{ minWidth: 0 }}>
                         <div
-                          style={{
-                            fontWeight: 800,
-                            color: '#0f172a',
-                            fontSize: '0.88rem',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            maxWidth: '180px',
-                          }}
+                          className="adm-kyc-name"
                           title={host.name}
                         >
                           {host.name}
                         </div>
-                        <div style={{ fontSize: '0.74rem', color: '#64748b', whiteSpace: 'nowrap' }}>
+                        <div className="adm-kyc-display-name">
                           {host.display_name}
                         </div>
                       </div>
@@ -136,29 +117,29 @@ export const HostsKycPage = ({ hosts, onOpenKycModal, onToggleSuperhost }) => {
 
                   {/* Contact */}
                   <td className="td-nowrap">
-                    <div style={{ fontSize: '0.84rem', fontWeight: 600, color: '#0f172a' }}>{host.phone}</div>
-                    <div style={{ fontSize: '0.74rem', color: '#64748b' }}>{host.email}</div>
+                    <div className="adm-kyc-phone">{host.phone}</div>
+                    <div className="adm-kyc-email">{host.email}</div>
                   </td>
 
                   {/* ID */}
                   <td className="td-nowrap">
-                    <span style={{ fontWeight: 700, color: '#0ea5e9', fontFamily: 'monospace', fontSize: '0.88rem' }}>
+                    <span className="adm-kyc-idcard">
                       {host.id_card_number}
                     </span>
                   </td>
 
                   {/* Bank */}
                   <td className="td-nowrap">
-                    <div style={{ fontWeight: 600, color: '#059669', fontSize: '0.84rem' }}>{host.bank_name}</div>
-                    <div style={{ fontSize: '0.74rem', color: '#64748b' }}>STK: {host.account_number}</div>
+                    <div className="adm-kyc-bank-name">{host.bank_name}</div>
+                    <div className="adm-kyc-bank-acc">STK: {host.account_number}</div>
                   </td>
 
                   {/* Rating */}
                   <td className="td-nowrap">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 700, fontSize: '0.84rem' }}>
-                      <TbStar style={{ color: '#f59e0b' }} />
+                    <div className="adm-kyc-rating-wrap">
+                      <TbStar className="adm-kyc-star-icon" />
                       <span>{host.rating}</span>
-                      <span style={{ color: '#94a3b8', fontSize: '0.72rem' }}>({host.reviews_count})</span>
+                      <span className="adm-kyc-reviews-sub">({host.reviews_count})</span>
                     </div>
                   </td>
 
@@ -176,19 +157,7 @@ export const HostsKycPage = ({ hosts, onOpenKycModal, onToggleSuperhost }) => {
                   {/* Superhost */}
                   <td className="td-nowrap">
                     <button
-                      style={{
-                        padding: '3px 8px',
-                        borderRadius: '999px',
-                        border: host.is_superhost ? '1px solid #fde68a' : '1px solid #edf2f7',
-                        background: host.is_superhost ? '#fffbeb' : '#f8fafc',
-                        color: host.is_superhost ? '#d97706' : '#64748b',
-                        fontSize: '0.74rem',
-                        fontWeight: 800,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '3px',
-                      }}
+                      className={`adm-kyc-superhost-btn ${host.is_superhost ? 'active' : 'inactive'}`}
                       onClick={() => onToggleSuperhost(host.id)}
                       title="Bật/tắt huy hiệu Superhost"
                     >
@@ -201,8 +170,7 @@ export const HostsKycPage = ({ hosts, onOpenKycModal, onToggleSuperhost }) => {
                   <td style={{ textAlign: 'right' }}>
                     <div className="td-actions-group">
                       <button
-                        className="btn-admin-primary"
-                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.78rem' }}
+                        className="btn-admin-primary adm-kyc-inspect-btn"
                         onClick={() => onOpenKycModal(host)}
                       >
                         <TbEye />

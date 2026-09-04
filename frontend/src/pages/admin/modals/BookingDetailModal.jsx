@@ -1,23 +1,20 @@
 import React from 'react';
+import './BookingDetailModal.css';
 import {
   TbX,
   TbCalendarEvent,
   TbUser,
   TbHome,
-  TbReceipt,
   TbCheck,
   TbBan,
   TbCreditCard,
   TbClock,
-  TbSparkles,
   TbPhone,
   TbMail,
   TbShieldCheck,
   TbUsers,
   TbFileInvoice,
   TbBuildingBank,
-  TbNotes,
-  TbPrinter,
 } from 'react-icons/tb';
 import { useConfirm } from '@/context/ConfirmContext';
 import { useToast } from '@/context/ToastContext';
@@ -89,181 +86,83 @@ export const BookingDetailModal = ({ booking, onClose, onUpdateStatus }) => {
   const paymentInfo = getPaymentBadge(booking.payment_method, booking.payment_status);
 
   return (
-    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 110 }}>
+    <div className="modal-overlay adm-bookdet-overlay" onClick={onClose}>
       <div
-        className="modal-container"
-        style={{
-          width: '780px',
-          maxWidth: '95vw',
-          maxHeight: '92vh',
-          overflowY: 'auto',
-          borderRadius: '20px',
-          padding: '1.75rem',
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.22)',
-          background: '#ffffff',
-        }}
+        className="modal-container adm-bookdet-container"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 1. Header Section */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingBottom: '1.25rem',
-            borderBottom: '1px solid #f1f5f9',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            <div
-              style={{
-                width: '46px',
-                height: '46px',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
-                color: '#ffffff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.5rem',
-                boxShadow: '0 8px 16px -4px rgba(124, 58, 237, 0.35)',
-              }}
-            >
+        <div className="adm-bookdet-header">
+          <div className="adm-bookdet-header-left">
+            <div className="adm-bookdet-icon-wrap">
               <TbFileInvoice />
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0, letterSpacing: '-0.3px' }}>
-                  Hóa Đơn Đặt Phòng <span style={{ color: '#7c3aed', fontFamily: 'monospace' }}>#{booking.id}</span>
+              <div className="adm-bookdet-title-row">
+                <h2 className="adm-bookdet-title">
+                  Hóa Đơn Đặt Phòng <span className="adm-bookdet-id-code">#{booking.id}</span>
                 </h2>
                 <span
+                  className="adm-bookdet-status-badge"
                   style={{
-                    fontSize: '0.72rem',
-                    fontWeight: 800,
-                    padding: '3px 10px',
-                    borderRadius: '999px',
                     background: statusInfo.bg,
                     color: statusInfo.text,
                     border: `1px solid ${statusInfo.border}`,
-                    letterSpacing: '0.5px',
                   }}
                 >
                   {statusInfo.label}
                 </span>
               </div>
-              <p style={{ color: '#64748b', fontSize: '0.8rem', marginTop: '3px', margin: 0 }}>
+              <p className="adm-bookdet-date-sub">
                 Ngày tạo đơn: <strong style={{ color: '#334155' }}>{formatDateVN(booking.created_at)}</strong> · TripNest Escrow Protection
               </p>
             </div>
           </div>
 
           <button
-            className="modal-close-btn"
+            className="adm-bookdet-close-btn"
             onClick={onClose}
-            style={{
-              position: 'static',
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#64748b',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
           >
             <TbX style={{ fontSize: '1.2rem' }} />
           </button>
         </div>
 
         {/* 2. Main Content Body */}
-        <div style={{ padding: '1.25rem 0' }}>
+        <div className="adm-bookdet-body">
           {/* Top 2 Cards: Guest Info & Accommodation Info */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+          <div className="adm-bookdet-2col-top">
             {/* Customer Info Card */}
-            <div
-              style={{
-                background: '#f8fafc',
-                padding: '1.15rem 1.25rem',
-                borderRadius: '14px',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  color: '#64748b',
-                  fontWeight: 800,
-                  fontSize: '0.74rem',
-                  letterSpacing: '0.6px',
-                  textTransform: 'uppercase',
-                  marginBottom: '0.65rem',
-                }}
-              >
+            <div className="adm-bookdet-card-gray">
+              <div className="adm-bookdet-card-head">
                 <TbUser style={{ color: '#7c3aed', fontSize: '0.95rem' }} />
                 <span>Thông Tin Khách Hàng</span>
               </div>
-              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#0f172a' }}>
+              <div className="adm-bookdet-guest-name">
                 {booking.guest_name}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.84rem', color: '#475569', marginTop: '5px' }}>
+              <div className="adm-bookdet-contact-row">
                 <TbMail style={{ color: '#94a3b8' }} />
                 <span>{booking.guest_email || 'Chưa cung cấp email'}</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.84rem', color: '#475569', marginTop: '3px' }}>
+              <div className="adm-bookdet-contact-row">
                 <TbPhone style={{ color: '#94a3b8' }} />
                 <strong style={{ color: '#0f172a' }}>{booking.guest_phone || '0912 345 678'}</strong>
               </div>
             </div>
 
             {/* Accommodation & Host Info Card */}
-            <div
-              style={{
-                background: '#f8fafc',
-                padding: '1.15rem 1.25rem',
-                borderRadius: '14px',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  color: '#64748b',
-                  fontWeight: 800,
-                  fontSize: '0.74rem',
-                  letterSpacing: '0.6px',
-                  textTransform: 'uppercase',
-                  marginBottom: '0.65rem',
-                }}
-              >
+            <div className="adm-bookdet-card-gray">
+              <div className="adm-bookdet-card-head">
                 <TbHome style={{ color: '#0284c7', fontSize: '0.95rem' }} />
                 <span>Chỗ Ở & Chủ Nhà</span>
               </div>
               <div
-                style={{
-                  fontWeight: 800,
-                  fontSize: '0.96rem',
-                  color: '#0f172a',
-                  lineHeight: '1.35',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}
+                className="adm-bookdet-room-name"
                 title={booking.room_name}
               >
                 {booking.room_name}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: '#0284c7', fontWeight: 700, marginTop: '6px' }}>
+              <div className="adm-bookdet-host-row">
                 <TbShieldCheck style={{ fontSize: '1rem', color: '#0ea5e9' }} />
                 <span>Chủ nhà: {booking.host_name || 'Minh Vũ'}</span>
                 <span style={{ fontSize: '0.7rem', background: '#e0f2fe', color: '#0369a1', padding: '1px 6px', borderRadius: '4px' }}>Superhost</span>
@@ -272,27 +171,13 @@ export const BookingDetailModal = ({ booking, onClose, onUpdateStatus }) => {
           </div>
 
           {/* 3 Elevated Info Tiles: Schedule, Guests, Payment */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1.4fr 0.9fr 1.3fr',
-              gap: '0.85rem',
-              marginBottom: '1.25rem',
-            }}
-          >
+          <div className="adm-bookdet-3tiles-grid">
             {/* Tile 1: Lịch trình */}
-            <div
-              style={{
-                background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
-                padding: '0.9rem 1rem',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-              }}
-            >
-              <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div className="adm-bookdet-tile">
+              <span className="adm-bookdet-tile-label">
                 <TbCalendarEvent style={{ color: '#2563eb' }} /> Lịch Trình Lưu Trú
               </span>
-              <p style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.92rem', marginTop: '4px', margin: 0, whiteSpace: 'nowrap' }}>
+              <p className="adm-bookdet-tile-val">
                 {formatDateVN(booking.check_in)} ➔ {formatDateVN(booking.check_out)}
               </p>
               <div style={{ marginTop: '3px' }}>
@@ -302,238 +187,157 @@ export const BookingDetailModal = ({ booking, onClose, onUpdateStatus }) => {
               </div>
             </div>
 
-            {/* Tile 2: Số lượng */}
-            <div
-              style={{
-                background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
-                padding: '0.9rem 1rem',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-              }}
-            >
-              <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <TbUsers style={{ color: '#7c3aed' }} /> Số Lượng Khách
+            {/* Tile 2: Khách lưu trú */}
+            <div className="adm-bookdet-tile">
+              <span className="adm-bookdet-tile-label">
+                <TbUsers style={{ color: '#7c3aed' }} /> Khách Lưu Trú
               </span>
-              <p style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.92rem', marginTop: '4px', margin: 0 }}>
-                {booking.guests_count || booking.guests || 2} khách lưu trú
+              <p className="adm-bookdet-tile-val">
+                {booking.guests_count || booking.guests || 2} Khách
               </p>
-              <div style={{ marginTop: '3px', fontSize: '0.72rem', color: '#64748b' }}>
-                Toàn bộ căn hộ/phòng
+              <div style={{ marginTop: '3px' }}>
+                <span style={{ fontSize: '0.72rem', background: '#ede9fe', color: '#6d28d9', fontWeight: 700, padding: '1px 6px', borderRadius: '4px' }}>
+                  Tiêu chuẩn phòng
+                </span>
               </div>
             </div>
 
-            {/* Tile 3: Thanh toán */}
-            <div
-              style={{
-                background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
-                padding: '0.9rem 1rem',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-              }}
-            >
-              <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <TbBuildingBank style={{ color: '#059669' }} /> Cổng Thanh Toán
+            {/* Tile 3: Phương thức & Tình trạng TT */}
+            <div className="adm-bookdet-tile">
+              <span className="adm-bookdet-tile-label">
+                <TbCreditCard style={{ color: '#059669' }} /> Thanh Toán
               </span>
-              <p style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.92rem', marginTop: '4px', margin: 0 }}>
+              <p className="adm-bookdet-tile-val" style={{ fontSize: '0.84rem' }}>
                 {paymentInfo.name}
               </p>
               <div style={{ marginTop: '3px' }}>
                 <span
                   style={{
-                    fontSize: '0.7rem',
-                    background: paymentInfo.isPaid ? '#ecfdf5' : '#fffbeb',
-                    color: paymentInfo.isPaid ? '#059669' : '#d97706',
-                    border: `1px solid ${paymentInfo.isPaid ? '#a7f3d0' : '#fde68a'}`,
-                    fontWeight: 800,
+                    fontSize: '0.72rem',
+                    background: paymentInfo.isPaid ? '#dcfce7' : '#fef3c7',
+                    color: paymentInfo.isPaid ? '#15803d' : '#b45309',
+                    fontWeight: 700,
                     padding: '1px 6px',
                     borderRadius: '4px',
                   }}
                 >
-                  ✓ {paymentInfo.statusLabel}
+                  ● {paymentInfo.statusLabel}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* 4. Financial Breakdown Table */}
-          <div style={{ marginBottom: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
-                Bảng Kê Chi Tiết Tài Chính
-              </h3>
-              <span style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 700, background: '#ecfdf5', padding: '2px 8px', borderRadius: '6px', border: '1px solid #a7f3d0' }}>
-                100% Escrow Bảo Đảm
+          {/* 4. Financial & Escrow Summary Box */}
+          <div className="adm-bookdet-financial-box">
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingBottom: '0.75rem',
+                borderBottom: '1px solid #f1f5f9',
+                marginBottom: '0.75rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 800, color: '#4c1d95', fontSize: '0.88rem' }}>
+                <TbBuildingBank style={{ fontSize: '1.1rem' }} />
+                <span>Hạch Toán Dòng Tiền & Ký Quỹ Escrow</span>
+              </div>
+              <span style={{ fontSize: '0.72rem', color: '#6d28d9', background: '#f5f3ff', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                Hợp đồng điện tử bảo chứng
               </span>
             </div>
 
-            <div
-              style={{
-                border: '1px solid #e2e8f0',
-                borderRadius: '14px',
-                overflow: 'hidden',
-                background: '#ffffff',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
-              }}
-            >
-              {/* Row 1 */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem 1.25rem', borderBottom: '1px solid #f1f5f9', fontSize: '0.88rem' }}>
-                <span style={{ color: '#475569' }}>Giá gốc phòng nghỉ ({totalNights} đêm)</span>
-                <strong style={{ color: '#0f172a' }}>{formatVND(booking.base_price)}</strong>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div className="adm-bookdet-escrow-row">
+                <span style={{ color: '#64748b' }}>Đơn giá phòng ({totalNights} đêm):</span>
+                <span style={{ fontWeight: 600, color: '#0f172a' }}>{formatVND(booking.total_price ? Math.round(booking.total_price * 0.88) : 0)}</span>
               </div>
-
-              {/* Row 2 */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem 1.25rem', borderBottom: '1px solid #f1f5f9', fontSize: '0.88rem' }}>
-                <span style={{ color: '#475569' }}>Phí dọn dẹp vệ sinh</span>
-                <strong style={{ color: '#0f172a' }}>{formatVND(booking.cleaning_fee)}</strong>
+              <div className="adm-bookdet-escrow-row">
+                <span style={{ color: '#64748b' }}>Phí dịch vụ nền tảng (Hoa hồng 12%):</span>
+                <span style={{ fontWeight: 700, color: '#7c3aed' }}>
+                  {formatVND(booking.total_price ? Math.round(booking.total_price * 0.12) : 0)}
+                </span>
               </div>
-
-              {/* Row 3 */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem 1.25rem', borderBottom: '1px solid #f1f5f9', fontSize: '0.88rem', background: '#faf5ff' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ color: '#6b21a8', fontWeight: 600 }}>Phí dịch vụ nền tảng TripNest (12%)</span>
-                  <span style={{ fontSize: '0.68rem', background: '#f3e8ff', color: '#7c3aed', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>VAT & Bảo hiểm</span>
-                </div>
-                <strong style={{ color: '#7c3aed' }}>{formatVND(booking.service_fee)}</strong>
-              </div>
-
-              {/* Grand Total Row */}
               <div
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '1rem 1.25rem',
-                  background: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)',
-                  borderTop: '1px solid #fecdd3',
+                  paddingTop: '0.75rem',
+                  borderTop: '1.5px dashed #e2e8f0',
+                  marginTop: '4px',
                 }}
               >
                 <div>
-                  <span style={{ fontSize: '0.98rem', fontWeight: 800, color: '#9f1239', display: 'block' }}>
-                    Tổng thanh toán của khách
-                  </span>
-                  <span style={{ fontSize: '0.72rem', color: '#be123c' }}>
-                    Đã thanh toán đầy đủ qua cổng trung gian
-                  </span>
+                  <span style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0f172a' }}>Tổng Tiền Khách Thanh Toán:</span>
+                  <div style={{ fontSize: '0.74rem', color: '#059669', fontWeight: 600 }}>Đã bao gồm thuế GTGT & bảo hiểm du lịch</div>
                 </div>
-                <strong style={{ fontSize: '1.3rem', fontWeight: 900, color: '#e11d48', letterSpacing: '-0.3px' }}>
+                <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#ff385c' }}>
                   {formatVND(booking.total_price)}
-                </strong>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* 5. Special Requests Box */}
-          {booking.special_requests && (
-            <div
-              style={{
-                background: '#fffbeb',
-                border: '1px solid #fde68a',
-                borderRadius: '12px',
-                padding: '0.85rem 1.1rem',
-                color: '#92400e',
-                fontSize: '0.85rem',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '8px',
-              }}
-            >
-              <TbNotes style={{ fontSize: '1.2rem', color: '#d97706', flexShrink: 0, marginTop: '2px' }} />
-              <div>
-                <strong style={{ color: '#b45309' }}>Yêu cầu đặc biệt của khách:</strong>
-                <span style={{ color: '#78350f', marginLeft: '4px' }}>"{booking.special_requests}"</span>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* 6. Footer Action Bar */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderTop: '1px solid #f1f5f9',
-            paddingTop: '1.25rem',
-          }}
-        >
+        {/* 3. Footer Action Buttons */}
+        <div className="adm-bookdet-footer">
           <button
-            style={{
-              padding: '0.65rem 1.25rem',
-              borderRadius: '10px',
-              border: '1.5px solid #e2e8f0',
-              background: '#ffffff',
-              fontWeight: 700,
-              color: '#64748b',
-              cursor: 'pointer',
-              fontSize: '0.85rem',
-              transition: 'all 0.2s ease',
-            }}
+            type="button"
+            className="btn-admin-secondary"
             onClick={onClose}
           >
-            Đóng
+            Đóng Cửa Sổ
           </button>
 
           <div style={{ display: 'flex', gap: '8px' }}>
-            {booking.status !== 'cancelled' && (
-              <button
-                style={{
-                  padding: '0.65rem 1.1rem',
-                  borderRadius: '10px',
-                  border: '1.5px solid #fecaca',
-                  background: '#fef2f2',
-                  color: '#b91c1c',
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                  fontSize: '0.85rem',
-                  transition: 'all 0.2s ease',
-                }}
-                onClick={async () => {
-                  const isConfirmed = await confirm({
-                    title: 'Hủy đơn & hoàn tiền?',
-                    message: `Hủy đơn đặt phòng ${booking.id} và hoàn tiền cho khách lưu trú?`,
-                    type: 'danger',
-                    confirmText: 'Xác nhận hủy & hoàn tiền',
-                    cancelText: 'Đóng',
-                  });
-                  if (isConfirmed) {
-                    onUpdateStatus(booking.id, 'cancelled', 'Admin can thiệp hủy theo yêu cầu');
-                    toast.info('Hủy đơn phòng', `Đã hủy đơn ${booking.id} và kích hoạt hoàn tiền.`);
-                    onClose();
-                  }
-                }}
-              >
-                <TbBan />
-                <span>Hủy Đơn & Hoàn Tiền</span>
-              </button>
-            )}
-
             {booking.status === 'pending' && (
               <button
+                type="button"
                 className="btn-admin-primary"
                 onClick={() => {
                   onUpdateStatus(booking.id, 'confirmed');
                   onClose();
                 }}
               >
-                <TbCheck />
-                <span>Duyệt Xác Nhận Đơn</span>
+                <TbCheck /> Duyệt Xác Nhận Đơn
               </button>
             )}
 
-            {booking.status === 'confirmed' && (
+            {booking.status !== 'cancelled' && (
               <button
-                className="btn-admin-primary"
-                style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)' }}
-                onClick={() => {
-                  onUpdateStatus(booking.id, 'completed');
-                  onClose();
+                type="button"
+                style={{
+                  padding: '0.52rem 1.1rem',
+                  borderRadius: 'var(--adm-radius-sm)',
+                  border: '1px solid #fecaca',
+                  background: '#fef2f2',
+                  color: '#dc2626',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                }}
+                onClick={async () => {
+                  const isConfirmed = await confirm({
+                    title: 'Hủy Đơn Đặt Phòng Này?',
+                    message: `Bạn có chắc chắn muốn hủy đơn #${booking.id} của khách ${booking.guest_name}? Tiền sẽ được hoàn trả theo chính sách hủy phòng.`,
+                    confirmText: 'Xác Nhận Hủy Đơn',
+                    cancelText: 'Giữ Lại',
+                    type: 'danger',
+                  });
+
+                  if (isConfirmed) {
+                    onUpdateStatus(booking.id, 'cancelled', 'Hủy bởi Quản trị viên');
+                    toast.success('Đã hủy đơn thành công', `Đơn #${booking.id} đã được chuyển sang trạng thái HỦY.`);
+                    onClose();
+                  }
                 }}
               >
-                <TbCheck />
-                <span>Đánh Dấu Hoàn Tất Chuyến Đi</span>
+                <TbBan /> Hủy Đơn Đặt Phòng
               </button>
             )}
           </div>
@@ -542,4 +346,5 @@ export const BookingDetailModal = ({ booking, onClose, onUpdateStatus }) => {
     </div>
   );
 };
+
 export default BookingDetailModal;

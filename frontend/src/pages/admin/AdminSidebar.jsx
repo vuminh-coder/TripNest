@@ -14,6 +14,7 @@ import {
   TbChevronLeft,
   TbChevronRight,
   TbLayoutSidebarLeftCollapse,
+  TbPlaneDeparture,
 } from 'react-icons/tb';
 
 export const AdminSidebar = ({
@@ -21,6 +22,7 @@ export const AdminSidebar = ({
   onNavigate,
   collapsed,
   setCollapsed,
+  onOpenBookings,
   pendingKycCount = 0,
   pendingRoleUpgradeCount = 0,
 }) => {
@@ -35,7 +37,7 @@ export const AdminSidebar = ({
       group: 'Vận Hành & Chỗ Ở',
       items: [
         { id: 'accommodations', label: 'Cơ Sở Lưu Trú', icon: TbBuildingCastle },
-        { id: 'bookings', label: 'Đơn Đặt Phòng', icon: TbCalendarEvent },
+        { id: 'bookings', label: 'Đơn Đặt Phòng (Tất cả)', icon: TbCalendarEvent },
         {
           id: 'hosts_kyc',
           label: 'Thẩm Định KYC Chủ Nhà',
@@ -108,7 +110,13 @@ export const AdminSidebar = ({
                 <button
                   key={item.id}
                   className={`admin-nav-item ${isActive ? 'active' : ''}`}
-                  onClick={() => onNavigate(item.id)}
+                  onClick={() => {
+                    if (item.isAction && item.action) {
+                      item.action();
+                    } else {
+                      onNavigate(item.id);
+                    }
+                  }}
                   title={collapsed ? `${item.label} ${item.badge ? `(${item.badge})` : ''}` : ''}
                 >
                   <Icon />

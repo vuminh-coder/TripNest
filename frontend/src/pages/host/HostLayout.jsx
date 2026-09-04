@@ -17,91 +17,13 @@ import { useToast } from '@/context/ToastContext';
 import { useConfirm } from '@/context/ConfirmContext';
 import { apiService } from '@/services/api';
 
-const DEFAULT_LISTINGS = [
-  {
-    id: 'ACC-1',
-    roomId: '1',
-    nameVi: 'Biệt thự The Oasis Garden Retreat Đà Lạt',
-    accommodationType: 'villa',
-    city: 'Đà Lạt',
-    district: 'Phường 10',
-    address: '15 Đường Khe Sanh, Đà Lạt',
-    priceVND: 2500000,
-    priceUSD: 100,
-    maxGuests: 6,
-    bedrooms: 3,
-    beds: 3,
-    bathrooms: 3,
-    rating: 4.98,
-    reviewsCount: 34,
-    status: 'published',
-    thumbnail:
-      'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
-    ],
-    amenities: ['Hồ bơi riêng', 'WiFi tốc độ cao', 'Bếp nấu ăn đầy đủ', 'Bếp nướng BBQ'],
-    createdAt: '12/06/2026',
-  },
-  {
-    id: 'ACC-2',
-    roomId: '2',
-    nameVi: 'Grand Sunset Ocean Villa Phú Quốc',
-    accommodationType: 'resort',
-    city: 'Phú Quốc',
-    district: 'Bãi Trường',
-    address: 'Đường Trần Hưng Đạo, Dương Đông',
-    priceVND: 4200000,
-    priceUSD: 168,
-    maxGuests: 8,
-    bedrooms: 4,
-    beds: 4,
-    bathrooms: 4,
-    rating: 4.95,
-    reviewsCount: 28,
-    status: 'published',
-    thumbnail:
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&auto=format&fit=crop&q=80',
-    ],
-    amenities: ['View thiên nhiên tuyệt đẹp', 'Hồ bơi riêng', 'WiFi tốc độ cao', 'Điều hòa 2 chiều'],
-    createdAt: '18/07/2026',
-  },
-  {
-    id: 'ACC-3',
-    roomId: '3',
-    nameVi: 'Mây Homestay & Coffee View Thung Lũng Sapa',
-    accommodationType: 'homestay',
-    city: 'Sa Pa',
-    district: 'Tả Van',
-    address: 'Bản Tả Van, Sa Pa',
-    priceVND: 1650000,
-    priceUSD: 66,
-    maxGuests: 4,
-    bedrooms: 2,
-    beds: 2,
-    bathrooms: 1.5,
-    rating: 4.92,
-    reviewsCount: 19,
-    status: 'published',
-    thumbnail:
-      'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&auto=format&fit=crop&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&auto=format&fit=crop&q=80',
-    ],
-    amenities: ['WiFi tốc độ cao', 'Chỗ đỗ xe miễn phí', 'Smart TV 4K'],
-    createdAt: '02/08/2026',
-  },
-];
-
+const DEFAULT_LISTINGS = [];
 const DEFAULT_BOOKINGS = [];
 
 export const HostLayout = ({
   onSwitchToClient,
   onOpenRoomDetail,
+  onOpenBookings,
   currency = 'VND',
 }) => {
   const getInitialTabFromUrl = () => {
@@ -175,11 +97,12 @@ export const HostLayout = ({
 
   // Fetch Accommodations, Bookings, Payouts from Backend
   const refreshAccommodations = async () => {
+    setLoadingListings(true);
     try {
-      setLoadingListings(true);
       const data = await apiService.getHostAccommodations();
-      if (Array.isArray(data) && data.length > 0) {
-        setListings(data);
+      const list = Array.isArray(data) ? data : data?.data || [];
+      if (Array.isArray(list) && list.length > 0) {
+        setListings(list);
       }
     } catch (e) {
       console.error('Error loading host accommodations:', e);
@@ -191,8 +114,9 @@ export const HostLayout = ({
   const refreshBookings = async () => {
     try {
       const data = await apiService.getHostBookings();
-      if (Array.isArray(data) && data.length > 0) {
-        setBookings(data);
+      const list = Array.isArray(data) ? data : data?.data || [];
+      if (Array.isArray(list) && list.length > 0) {
+        setBookings(list);
       }
     } catch (e) {
       console.error('Error loading host bookings:', e);
@@ -210,8 +134,9 @@ export const HostLayout = ({
             accountHolder: data.payoutAccount.account_holder_name || 'NGUYEN VAN AN',
           });
         }
-        if (Array.isArray(data.transactions) && data.transactions.length > 0) {
-          setPayoutHistory(data.transactions);
+        const txList = Array.isArray(data.transactions) ? data.transactions : (data.payoutHistory || []);
+        if (Array.isArray(txList)) {
+          setPayoutHistory(txList);
         }
         if (typeof data.availableBalance === 'number') {
           setAvailableBalance(data.availableBalance);
@@ -276,11 +201,20 @@ export const HostLayout = ({
       try {
         const statsRes = await apiService.getHostDashboardStats();
         if (isMounted && statsRes?.success) {
-          setBookings(statsRes.recentBookings || []);
+          const bList = statsRes.recentBookings || statsRes.data?.recentBookings;
+          if (Array.isArray(bList) && bList.length > 0) {
+            setBookings(bList);
+          }
         }
         const payoutsRes = await apiService.getHostPayouts?.();
         if (isMounted && payoutsRes?.success) {
-          setPayoutHistory(payoutsRes.payoutHistory || []);
+          const pList = payoutsRes.transactions || payoutsRes.payoutHistory || [];
+          if (Array.isArray(pList)) {
+            setPayoutHistory(pList);
+          }
+          if (typeof payoutsRes.availableBalance === 'number') {
+            setAvailableBalance(payoutsRes.availableBalance);
+          }
         }
       } catch (err) {
         console.warn('Sync Host Backend Data:', err);
@@ -440,9 +374,9 @@ export const HostLayout = ({
     );
     setBookings(updatedBookings);
 
-    const grossAmount = target?.totalAmount || 7500000;
-    const commissionFee = Math.round(grossAmount * 0.12);
-    const netPayoutAmount = target?.hostEarnings || (grossAmount - commissionFee);
+    const grossAmount = target?.grossAmount || (target?.basePrice && target?.cleaningFee ? target.basePrice + target.cleaningFee : (target?.totalAmount || 7500000));
+    const commissionFee = target?.commissionFee || target?.serviceFee || Math.round(grossAmount * 0.12);
+    const netPayoutAmount = target?.hostEarnings || target?.hostPayoutAmount || Math.max(0, grossAmount - commissionFee);
 
     // 1. Asynchronous backend check-out
     try {
@@ -566,6 +500,7 @@ export const HostLayout = ({
         onNavigate={handleNavigate}
         collapsed={collapsed}
         setCollapsed={setCollapsed}
+        onOpenBookings={onOpenBookings}
         pendingBookingsCount={pendingCount}
       />
 
@@ -576,6 +511,7 @@ export const HostLayout = ({
           activeTab={activeTab}
           onNavigate={handleNavigate}
           onExitHost={onSwitchToClient}
+          onOpenBookings={onOpenBookings}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           currency={currency}

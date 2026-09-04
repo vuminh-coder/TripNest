@@ -1,0 +1,874 @@
+/* ==========================================================================
+   Map & Directions Dedicated Page Styling - TripNest (Minimalist Luxury Light)
+   ========================================================================== */
+
+.map-page-main-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+/* 1. TOP HEADER BAR */
+.map-page-top-bar {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 10px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  z-index: 20;
+  flex-shrink: 0;
+}
+
+.map-page-top-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+  gap: 1rem;
+}
+
+.map-top-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.map-back-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.map-back-nav-btn:hover {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+  transform: translateX(-2px);
+}
+
+.map-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.crumb-link {
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.crumb-link:hover {
+  color: #0f172a;
+  text-decoration: underline;
+}
+
+.crumb-sep {
+  font-size: 0.76rem;
+  color: #cbd5e1;
+}
+
+.crumb-current {
+  color: #0f172a;
+  font-weight: 700;
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.map-top-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.map-top-copy-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.map-top-book-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+/* 2. SPLIT LAYOUT WRAPPER (SYNCHRONIZED WITH 1280PX CONTAINER) */
+.map-page-content-wrapper {
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 16px 24px 20px 24px;
+  box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-page-split-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+/* LEFT SIDEBAR: HIERARCHICAL CONTROLLER */
+.map-left-sidebar {
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+/* 1. Destination Hero Card */
+.map-dest-hero-card {
+  display: flex;
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.map-dest-thumb {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.map-dest-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.map-dest-city-chip {
+  align-self: flex-start;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-bottom: 3px;
+}
+
+.map-dest-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 3px 0;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.map-dest-rating-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  margin-bottom: 3px;
+}
+
+.map-star-score {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.map-reviews-count {
+  color: #64748b;
+}
+
+.map-location-tag {
+  background: #ecfdf5;
+  color: #059669;
+  font-weight: 700;
+  font-size: 0.7rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.map-dest-address-text {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-dest-pin-icon {
+  color: #ff385c;
+  flex-shrink: 0;
+}
+
+/* 2. Route Origin & Destination Box */
+.map-route-box {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.map-route-node {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.map-node-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.map-node-dot.origin {
+  background: #0284c7;
+  box-shadow: 0 0 0 2.5px rgba(2, 132, 199, 0.2);
+}
+
+.map-node-dot.dest {
+  background: #ff385c;
+  box-shadow: 0 0 0 2.5px rgba(255, 56, 92, 0.2);
+}
+
+.map-route-line-connector {
+  position: absolute;
+  top: 26px;
+  left: 17px;
+  width: 2px;
+  height: 36px;
+  background: repeating-linear-gradient(to bottom, #cbd5e1 0, #cbd5e1 3px, transparent 3px, transparent 6px);
+}
+
+.map-swap-route-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  z-index: 2;
+}
+
+.map-swap-route-btn:hover {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+  transform: translateY(-50%) rotate(180deg);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+}
+
+.map-swap-route-btn svg {
+  font-size: 1.15rem;
+}
+
+.map-node-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.map-node-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.map-node-type {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.3px;
+}
+
+.map-gps-live-indicator {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #059669;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.map-gps-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.map-origin-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.map-origin-pill:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.map-gps-pulsing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+  flex-shrink: 0;
+}
+
+.map-origin-name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-origin-input {
+  width: 100%;
+  background: #ffffff;
+  border: 1.5px solid #0284c7;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  outline: none;
+}
+
+.map-dest-node-name {
+  display: block;
+  font-size: 0.8rem;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 3. Travel Mode Selector */
+.map-mode-selector-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.map-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.map-modes-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.map-mode-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  padding: 6px 2px;
+  border-radius: 8px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.map-mode-tab svg {
+  font-size: 1.05rem;
+  color: #64748b;
+}
+
+.map-mode-tab span {
+  font-size: 0.64rem;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+
+.map-mode-tab:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.map-mode-tab.active {
+  background: #f0f9ff;
+  border-color: #0284c7;
+  color: #0284c7;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.12);
+}
+
+.map-mode-tab.active svg {
+  color: #0284c7;
+}
+
+.map-mode-tab.active span {
+  color: #0284c7;
+}
+
+/* 4. Real-time Metrics Card */
+.map-metrics-card {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.map-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+}
+
+.map-metric-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.map-m-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.map-m-val {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.25;
+}
+
+.map-m-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.map-m-val.highlight .map-m-main {
+  color: #ff385c;
+}
+
+.map-m-sub {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.map-m-divider {
+  width: 1px;
+  height: 34px;
+  background: #e2e8f0;
+}
+
+.map-safety-banner {
+  font-size: 0.68rem;
+  color: #059669;
+  background: #ecfdf5;
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  padding: 4px 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+/* 5. Quick Presets */
+.map-presets-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.map-presets-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.map-presets-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.map-preset-button {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.map-preset-button:hover {
+  background: #f1f5f9;
+  border-color: #0284c7;
+  color: #0284c7;
+}
+
+.map-preset-button.selected {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+}
+
+/* 6. Surroundings & Nearby Attractions */
+.map-surroundings-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.map-surroundings-title {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.map-surroundings-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.map-surrounding-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.map-surrounding-card:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+.map-surr-icon-box {
+  color: #ff385c;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.map-surr-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-surr-meta strong {
+  font-size: 0.74rem;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-surr-meta span {
+  font-size: 0.66rem;
+  color: #64748b;
+}
+
+.map-surr-action-arrow {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+
+/* 7. External Google Maps Button Footer */
+.map-external-footer {
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.map-external-app-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1.5px solid #0284c7;
+  color: #0284c7;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.map-external-app-btn:hover {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+/* RIGHT STAGE: FULL VIEWPORT MAP */
+.map-right-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #e2e8f0;
+}
+
+/* FLOATING SMART OPTIMAL ROUTE BADGE (Top Right of Map) */
+.map-floating-top-controls {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.map-single-optimal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(2, 132, 199, 0.92);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+  backdrop-filter: blur(8px);
+}
+
+.map-single-optimal-badge svg {
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
+.map-full-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  filter: saturate(1.08) contrast(1.02);
+}
+
+/* COMPACT FLOATING BADGE AT BOTTOM-LEFT CORNER */
+.map-floating-bottom-badge {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 999px;
+  padding: 6px 14px 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.map-pulse-circle-mini {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fef2f2;
+  color: #ff385c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.map-floating-info-mini {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.map-badge-venue {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-badge-coords {
+  font-size: 0.7rem;
+  color: #0284c7;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.map-badge-verified-tag {
+  background: #fef2f2;
+  color: #ff385c;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+/* Responsive Rules */
+@media (max-width: 960px) {
+  .map-page-main-container {
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+  }
+  .map-page-split-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 500px;
+    height: auto;
+    overflow: visible;
+  }
+  .map-left-sidebar {
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+    overflow: visible;
+  }
+  .map-right-viewport {
+    height: 500px;
+  }
+}

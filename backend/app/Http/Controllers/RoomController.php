@@ -178,6 +178,8 @@ class RoomController extends Controller
             ],
             'amenities' => $amenityNames,
             'description' => $room->description,
+            'latitude' => $accommodation?->latitude ? (float)$accommodation->latitude : null,
+            'longitude' => $accommodation?->longitude ? (float)$accommodation->longitude : null,
             'reviewsBreakdown' => $radar,
             'accommodation' => [
                 'id' => $accommodation?->id,
@@ -187,6 +189,8 @@ class RoomController extends Controller
                 'starRating' => $accommodation?->star_rating ?? 5,
                 'address' => $accommodation?->address,
                 'city' => $accommodation?->city,
+                'latitude' => $accommodation?->latitude ? (float)$accommodation->latitude : null,
+                'longitude' => $accommodation?->longitude ? (float)$accommodation->longitude : null,
                 'images' => $accommodation?->images->pluck('image_url')->toArray() ?: [],
             ],
         ];

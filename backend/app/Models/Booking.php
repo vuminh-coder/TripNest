@@ -30,6 +30,8 @@ class Booking extends Model
         'voucher_id',
         'total_price',
         'status',
+        'checked_in_at',
+        'checked_out_at',
         'cancellation_reason',
         'cancelled_at',
         'special_requests',
@@ -48,6 +50,8 @@ class Booking extends Model
             'service_fee' => 'decimal:2',
             'discount_amount' => 'decimal:2',
             'total_price' => 'decimal:2',
+            'checked_in_at' => 'datetime',
+            'checked_out_at' => 'datetime',
             'cancelled_at' => 'datetime',
         ];
     }
@@ -80,5 +84,69 @@ class Booking extends Model
     public function payoutTransactions(): HasMany
     {
         return $this->hasMany(PayoutTransaction::class, 'booking_id');
+    }
+
+    // ===== Status Constants =====
+    const STATUS_PENDING = 'pending';
+    const STATUS_CONFIRMED = 'confirmed';
+    const STATUS_CHECKED_IN = 'checked_in';
+    const STATUS_COMPLETED = 'completed';
+    const STATUS_CANCELLED = 'cancelled';
+    const STATUS_REFUNDED = 'refunded';
+
+    const STATUS_LABELS = [
+        'pending' => 'Chờ xác nhận',
+        'confirmed' => 'Đã xác nhận',
+        'checked_in' => 'Đang ở',
+        'completed' => 'Đã hoàn thành',
+        'cancelled' => 'Đã hủy',
+        'refunded' => 'Đã hoàn tiền',
+    ];
+
+    // ===== Query Scopes =====
+    public function scopeUpcoming($query)
+    {
+        return $query->whereIn('status', [self::STATUS_CONFIRMED, self::STATUS_PENDING]);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', self::STATUS_CHECKED_IN);
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', self::STATUS_COMPLETED);
+    }
+
+    public function scopeCancelled($query)
+    {
+        return $query->whereIn('status', [self::STATUS_CANCELLED, self::STATUS_REFUNDED]);
+    }
+
+    // ===== Accessors =====
+    public function getStatusLabelAttribute(): string
+    {
+        return self::STATUS_LABELS[$this->status] ?? $this->status;
+    }
+
+    public function getCanCancelAttribute(): bool
+    {
+        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_CONFIRMED]);
+    }
+
+    public function getCanCheckInAttribute(): bool
+    {
+        return $this->status === self::STATUS_CONFIRMED;
+    }
+
+    public function getCanCheckOutAttribute(): bool
+    {
+        return $this->status === self::STATUS_CHECKED_IN;
+    }
+
+    public function getCanReviewAttribute(): bool
+    {
+        return $this->status === self::STATUS_COMPLETED && !$this->review;
     }
 }

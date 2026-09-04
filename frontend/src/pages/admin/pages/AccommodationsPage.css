@@ -1,0 +1,170 @@
+/* ==========================================================================
+   ACCOMMODATIONS PAGE CSS (Admin Portal)
+   ========================================================================== */
+
+.adm-acc-filter-box {
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.adm-acc-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.adm-acc-search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--adm-bg-surface, #f8fafc);
+  border: 1px solid var(--adm-border, #edf2f7);
+  border-radius: var(--adm-radius-sm, 8px);
+  padding: 0.42rem 0.85rem;
+  flex: 1;
+  min-width: 220px;
+}
+
+.adm-acc-search-icon {
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+.adm-acc-search-input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 0.84rem;
+  outline: none;
+  color: var(--adm-text-main, #0f172a);
+}
+
+.adm-acc-row-suspended {
+  background: #fffafa !important;
+}
+
+.adm-acc-info-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adm-acc-thumbnail {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--adm-radius-sm, 8px);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--adm-border, #e2e8f0);
+}
+
+.adm-acc-thumbnail.suspended {
+  border: 1.5px solid #fca5a5;
+}
+
+.adm-acc-meta {
+  min-width: 0;
+}
+
+.adm-acc-name {
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: var(--adm-text-main, #0f172a);
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.adm-acc-name.suspended {
+  color: #991b1b;
+}
+
+.adm-acc-category-sub {
+  font-size: 0.74rem;
+  color: var(--adm-text-muted, #64748b);
+  margin-top: 1px;
+  white-space: nowrap;
+}
+
+.adm-acc-host-name {
+  font-weight: 600;
+  color: var(--adm-text-main, #0f172a);
+  fontSize: 0.86rem;
+}
+
+.adm-acc-city-cell {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 600;
+  font-size: 0.84rem;
+}
+
+.adm-acc-city-icon {
+  color: #ff385c;
+}
+
+.adm-acc-price {
+  color: var(--adm-text-main, #0f172a);
+  font-weight: 800;
+}
+
+.adm-acc-rating-cell {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 700;
+  font-size: 0.84rem;
+}
+
+.adm-acc-star-icon {
+  color: #f59e0b;
+}
+
+.adm-acc-review-count {
+  color: var(--adm-text-muted, #94a3b8);
+  font-size: 0.72rem;
+}
+
+.adm-acc-status-select {
+  padding: 3px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--adm-border, #edf2f7);
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adm-acc-status-select.published {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.adm-acc-status-select.suspended {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.adm-acc-status-select.maintenance {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.adm-acc-status-select.paused {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.adm-acc-flags-wrap {
+  display: flex;
+  gap: 4px;
+}
+
+.adm-acc-empty-state {
+  text-align: center;
+  padding: 3.5rem 1rem;
+  color: var(--adm-text-muted, #94a3b8);
+}

@@ -1,0 +1,104 @@
+/* ==========================================================================
+   EXPERIENCES PAGE CSS (Admin Portal)
+   ========================================================================== */
+
+.adm-exp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.adm-exp-card {
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+.adm-exp-media {
+  position: relative;
+}
+
+.adm-exp-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.adm-exp-status-pill {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.adm-exp-content {
+  padding: 1rem 1.15rem;
+}
+
+.adm-exp-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--adm-text-muted, #64748b);
+  font-size: 0.78rem;
+  margin-bottom: 4px;
+}
+
+.adm-exp-pin-icon {
+  color: #ff385c;
+}
+
+.adm-exp-title {
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: var(--adm-text-main, #0f172a);
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+
+.adm-exp-caption {
+  font-size: 0.78rem;
+  color: var(--adm-text-muted, #64748b);
+  margin-bottom: 0.85rem;
+  line-height: 1.4;
+}
+
+.adm-exp-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--adm-border-subtle, #f1f5f9);
+  padding-top: 0.75rem;
+}
+
+.adm-exp-price-label {
+  font-size: 0.66rem;
+  color: var(--adm-text-muted, #64748b);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.adm-exp-price-val {
+  color: #ff385c;
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+.adm-exp-toggle-btn {
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--adm-radius-sm, 8px);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adm-exp-toggle-btn.active {
+  border: 1px solid var(--adm-border, #edf2f7);
+  background: #f8fafc;
+  color: #475569;
+}
+
+.adm-exp-toggle-btn.paused {
+  border: 1px solid #bbf7d0;
+  background: #ecfdf5;
+  color: #059669;
+}

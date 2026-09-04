@@ -430,9 +430,11 @@ export const Header = ({
                       </p>
                     </div>
 
-                    <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenBookings(); }}>
-                      <TbCalendarEvent /> Chuyến đi của tôi
-                    </button>
+                    {user?.role !== 'admin' && user?.role !== 'host' && (
+                      <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenBookings(); }}>
+                        <TbCalendarEvent /> Chuyến đi của tôi
+                      </button>
+                    )}
                     <button className="menu-option-item" onClick={() => { setIsMenuOpen(false); onOpenWishlist(); }}>
                       <TbHeart /> Danh sách yêu thích ({wishlistCount})
                     </button>

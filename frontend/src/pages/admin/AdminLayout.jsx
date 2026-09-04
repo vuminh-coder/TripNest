@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import './admin.css';
 import { adminService } from '../../services/adminApi';
 import { useToast } from '@/context/ToastContext';
@@ -27,8 +28,25 @@ import PayoutConfirmModal from './modals/PayoutConfirmModal';
 import UserEditModal from './modals/UserEditModal';
 import UserDetailModal from './modals/UserDetailModal';
 
-export const AdminLayout = ({ onExitAdmin }) => {
+// Skeletons
+import {
+  AdminDashboardSkeleton,
+  AdminTableSkeleton,
+  AdminFinancialsSkeleton,
+  AdminReviewsSkeleton,
+} from '@/components/common/skeletons';
+
+export const AdminLayout = ({ onExitAdmin, onOpenBookings }) => {
   const toast = useToast();
+  const user = useSelector((state) => state.userInfo);
+  const currentUser = user?.id ? user : (() => {
+    try {
+      return JSON.parse(localStorage.getItem('tripnest_user') || '{}');
+    } catch {
+      return {};
+    }
+  })();
+  const isAdmin = currentUser?.role === 'admin';
 
   // Determine initial page from URL path
   const getInitialTabFromUrl = () => {
@@ -138,8 +156,12 @@ export const AdminLayout = ({ onExitAdmin }) => {
   };
 
   useEffect(() => {
+    if (!isAdmin) {
+      setLoading(false);
+      return;
+    }
     loadData();
-  }, []);
+  }, [isAdmin]);
 
   const handleResetData = async () => {
     adminService.resetDemoData();
@@ -271,6 +293,77 @@ export const AdminLayout = ({ onExitAdmin }) => {
     (u) => u.role_upgrade_request && u.role_upgrade_request.status === 'pending'
   ).length;
 
+  if (!isAdmin) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#f8fafc',
+          padding: '24px',
+          fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '520px',
+            width: '100%',
+            background: 'white',
+            borderRadius: '24px',
+            padding: '48px 36px',
+            textAlign: 'center',
+            boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.12)',
+            border: '1px solid #e2e8f0',
+          }}
+        >
+          <div
+            style={{
+              width: '80px',
+              height: '80px',
+              background: '#fee2e2',
+              color: '#ef4444',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '40px',
+              margin: '0 auto 24px',
+            }}
+          >
+            🛡️
+          </div>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: '0 0 12px', letterSpacing: '-0.02em' }}>
+            403 - Quyền truy cập bị từ chối
+          </h2>
+          <p style={{ fontSize: '0.95rem', color: '#64748b', lineHeight: 1.65, margin: '0 0 32px' }}>
+            Bạn đang đăng nhập với tư cách <strong>{currentUser?.role === 'host' ? 'Chủ Nhà (Host)' : 'Khách (Guest)'}</strong>. Bạn không có thẩm quyền Quản trị viên (Admin) để truy cập hoặc thao tác trên Cổng Quản Trị Hệ Thống TripNest.
+          </p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button
+              onClick={onExitAdmin}
+              style={{
+                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                color: 'white',
+                border: 'none',
+                padding: '12px 28px',
+                borderRadius: '12px',
+                fontWeight: 700,
+                fontSize: '0.95rem',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.3)',
+                transition: 'all 0.2s',
+              }}
+            >
+              Quay về Trang Chủ
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-portal-wrapper">
       {/* Sidebar Navigation */}
@@ -279,6 +372,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
         onNavigate={handleNavigate}
         collapsed={collapsed}
         setCollapsed={setCollapsed}
+        onOpenBookings={onOpenBookings}
         pendingKycCount={stats.pendingKycCount || 0}
         pendingRoleUpgradeCount={pendingRoleUpgradeCount}
       />
@@ -289,6 +383,7 @@ export const AdminLayout = ({ onExitAdmin }) => {
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           onExitAdmin={onExitAdmin}
+          onOpenBookings={onOpenBookings}
           onResetData={handleResetData}
           pendingKycCount={stats.pendingKycCount || 0}
         />
@@ -296,9 +391,15 @@ export const AdminLayout = ({ onExitAdmin }) => {
         {/* Distinct Page View */}
         <main className="admin-content-view">
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '5rem 0', color: '#64748b', fontWeight: 600 }}>
-              Đang tải dữ liệu Trung Tâm Quản Trị TripNest...
-            </div>
+            activeTab === 'dashboard' ? (
+              <AdminDashboardSkeleton />
+            ) : activeTab === 'financials' ? (
+              <AdminFinancialsSkeleton />
+            ) : activeTab === 'reviews' ? (
+              <AdminReviewsSkeleton />
+            ) : (
+              <AdminTableSkeleton titleWidth="260px" rows={8} />
+            )
           ) : (
             <>
               {activeTab === 'dashboard' && (

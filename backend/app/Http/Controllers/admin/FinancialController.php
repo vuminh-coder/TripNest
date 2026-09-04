@@ -49,6 +49,7 @@ class FinancialController extends Controller
             'host.user',
             'host.defaultPayoutAccount',
             'booking.room.accommodation',
+            'booking.voucher',
             'payoutAccount',
         ])
         ->orderBy('created_at', 'desc')
@@ -56,18 +57,28 @@ class FinancialController extends Controller
         ->map(function ($p) {
             $host = $p->host;
             $account = $p->payoutAccount ?: $host?->defaultPayoutAccount;
+            $booking = $p->booking;
 
-            return [
-                'id' => $p->payout_code ?: 'POT-' . $p->id,
-                'payoutId' => $p->id,
-                'host_id' => $p->host_id,
-                'host_name' => $host?->host_display_name ?: 'Chủ nhà TripNest',
-                'host_avatar' => $host?->user?->avatar_url ?: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100',
-                'booking_code' => $p->booking?->booking_code ?: 'TN-000000',
-                'room_title' => $p->booking?->room?->room_name_vi ?: 'Không gian nghỉ dưỡng',
-                'gross_amount' => (float)$p->gross_amount,
-                'commission_fee' => (float)$p->platform_commission_fee,
-                'net_payout' => (float)$p->net_payout_amount,
+                $gross = (float)$p->gross_amount;
+                $commission = (float)$p->platform_commission_fee > 0 ? (float)$p->platform_commission_fee : round($gross * 0.12);
+                $net = ((float)$p->net_payout_amount > 0 && (float)$p->net_payout_amount < $gross)
+                    ? (float)$p->net_payout_amount
+                    : max(0, $gross - $commission);
+
+                return [
+                    'id' => $p->payout_code ?: 'POT-' . $p->id,
+                    'payoutId' => $p->id,
+                    'host_id' => $p->host_id,
+                    'host_name' => $host?->host_display_name ?: 'Chủ nhà TripNest',
+                    'host_avatar' => $host?->user?->avatar_url ?: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100',
+                    'booking_code' => $booking?->booking_code ?: 'TN-000000',
+                    'room_title' => $booking?->room?->room_name_vi ?: 'Không gian nghỉ dưỡng',
+                    'gross_amount' => $gross,
+                    'commission_fee' => $commission,
+                    'net_payout' => $net,
+                    'voucher_discount' => (float)($booking?->discount_amount ?: 0),
+                    'voucher_code' => $booking?->voucher?->code,
+                    'guest_paid' => (float)($booking?->total_price ?: ($gross + $commission)),
                 'bank_name' => $account?->bank_name ?: 'Vietcombank',
                 'account_number' => $account?->account_number ?: '9988776655',
                 'account_holder' => $account?->account_holder_name ?: 'CHỦ NHÀ TRIPNEST',
@@ -114,7 +125,7 @@ class FinancialController extends Controller
      */
     public function getBookings(Request $request): JsonResponse
     {
-        $bookings = Booking::with(['user.account', 'room.accommodation.host'])
+        $bookings = Booking::with(['user.account', 'room.accommodation.host', 'voucher'])
             ->orderBy('id', 'desc')
             ->get()
             ->map(function ($b) {
@@ -134,6 +145,9 @@ class FinancialController extends Controller
                     'base_price' => (float)$b->base_price,
                     'cleaning_fee' => (float)$b->cleaning_fee,
                     'service_fee' => (float)$b->service_fee,
+                    'discount_amount' => (float)$b->discount_amount,
+                    'voucher_code' => $b->voucher?->code ?: '',
+                    'voucher_title' => $b->voucher?->title ?: '',
                     'total_price' => (float)$b->total_price,
                     'currency' => $b->currency ?: 'VND',
                     'payment_method' => 'Chuyển khoản / Cổng thanh toán',

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './HostAccommodationsPage.css';
 import {
   TbSearch,
   TbPlus,
@@ -9,7 +10,6 @@ import {
   TbEdit,
   TbTrash,
   TbX,
-  TbFilter,
 } from 'react-icons/tb';
 
 export const HostAccommodationsPage = ({
@@ -45,7 +45,7 @@ export const HostAccommodationsPage = ({
   return (
     <div className="host-panel-card">
       {/* Table SaaS Toolbar */}
-      <div className="host-panel-header" style={{ flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="host-panel-header host-acc-header">
         <div>
           <h3 className="host-panel-title">
             <TbBuildingCastle style={{ color: 'var(--host-primary)' }} />
@@ -53,47 +53,22 @@ export const HostAccommodationsPage = ({
           </h3>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="host-acc-controls">
           {/* Search Box */}
-          <div style={{ position: 'relative' }}>
-            <TbSearch
-              style={{
-                position: 'absolute',
-                left: '10px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: '#94a3b8',
-              }}
-            />
+          <div className="host-acc-search-wrap">
+            <TbSearch className="host-acc-search-icon" />
             <input
               type="text"
               placeholder="Tìm theo tên, địa chỉ..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                padding: '0.45rem 0.85rem 0.45rem 2rem',
-                borderRadius: 'var(--host-radius-md)',
-                border: '1px solid var(--host-border-strong)',
-                fontSize: '0.85rem',
-                outline: 'none',
-                width: '210px',
-                background: '#ffffff',
-              }}
+              className="host-acc-search-input"
             />
             {searchTerm && (
               <button
                 type="button"
                 onClick={() => setSearchTerm('')}
-                style={{
-                  position: 'absolute',
-                  right: '8px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#94a3b8',
-                }}
+                className="host-acc-search-clear"
               >
                 <TbX />
               </button>
@@ -104,15 +79,7 @@ export const HostAccommodationsPage = ({
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            style={{
-              padding: '0.45rem 0.85rem',
-              borderRadius: 'var(--host-radius-md)',
-              border: '1px solid var(--host-border-strong)',
-              fontSize: '0.85rem',
-              outline: 'none',
-              background: '#ffffff',
-              color: 'var(--host-text-main)',
-            }}
+            className="host-acc-select-type"
           >
             <option value="all">Tất cả loại hình</option>
             <option value="villa">Biệt thự (Villa)</option>
@@ -135,36 +102,13 @@ export const HostAccommodationsPage = ({
       {/* SaaS Data Table */}
       <div className="host-table-wrap">
         {isLoading ? (
-          <div style={{ padding: '4rem 1.5rem', textAlign: 'center', color: 'var(--host-text-muted)' }}>
-            <div
-              style={{
-                width: '40px',
-                height: '40px',
-                border: '3px solid var(--host-border-strong)',
-                borderTopColor: 'var(--host-primary)',
-                borderRadius: '50%',
-                margin: '0 auto 1rem',
-                animation: 'spin 0.8s linear infinite',
-              }}
-            />
+          <div className="host-acc-loading-box">
+            <div className="host-acc-loading-spinner" />
             <p style={{ fontSize: '0.92rem', fontWeight: 600 }}>Đang tải danh sách chỗ ở từ hệ thống...</p>
           </div>
         ) : filteredListings.length === 0 ? (
-          <div style={{ padding: '3.5rem 1.5rem', textAlign: 'center' }}>
-            <div
-              style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '50%',
-                background: '#f1f5f9',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.75rem',
-                color: 'var(--host-text-muted)',
-                margin: '0 auto 1rem',
-              }}
-            >
+          <div className="host-acc-empty-box">
+            <div className="host-acc-empty-icon">
               <TbBuildingCastle />
             </div>
             <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--host-text-main)', margin: '0 0 6px 0' }}>
@@ -199,46 +143,27 @@ export const HostAccommodationsPage = ({
               {filteredListings.map((item) => (
                 <tr key={item.id}>
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div className="host-acc-cell-flex">
                       <img
                         src={item.thumbnail}
                         alt={item.nameVi}
-                        style={{
-                          width: '64px',
-                          height: '52px',
-                          borderRadius: 'var(--host-radius-sm)',
-                          objectFit: 'cover',
-                          flexShrink: 0,
-                        }}
+                        className="host-acc-thumb"
                       />
                       <div>
                         <div
-                          style={{
-                            fontWeight: 700,
-                            color: 'var(--host-text-main)',
-                            maxWidth: '280px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
+                          className="host-acc-name"
+                          title={item.nameVi}
                         >
                           {item.nameVi}
                         </div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--host-text-muted)' }}>
+                        <div className="host-acc-address">
                           {item.address || item.city}
                         </div>
                       </div>
                     </div>
                   </td>
                   <td>
-                    <span
-                      style={{
-                        textTransform: 'capitalize',
-                        fontWeight: 600,
-                        color: 'var(--host-text-muted)',
-                        fontSize: '0.82rem',
-                      }}
-                    >
+                    <span className="host-acc-type-badge">
                       {item.accommodationType}
                     </span>
                   </td>
@@ -251,54 +176,52 @@ export const HostAccommodationsPage = ({
                     </span>
                   </td>
                   <td>
-                    <span style={{ fontSize: '0.84rem' }}>
-                      {item.maxGuests} khách · {item.bedrooms} phòng ngủ
+                    <span style={{ fontSize: '0.84rem', color: 'var(--host-text-main)' }}>
+                      {item.guests} khách · {item.bedrooms} PN · {item.bathrooms} WC
                     </span>
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      className={`host-chip ${item.status === 'published' ? 'success' : 'neutral'}`}
-                      onClick={() => onToggleStatus(item.id)}
-                      style={{ cursor: 'pointer', border: 'none' }}
-                      title="Bấm để bật/tắt mở bán"
-                    >
-                      {item.status === 'published' ? (
-                        <>
-                          <TbToggleRight style={{ fontSize: '1.15rem' }} /> Đang mở bán
-                        </>
-                      ) : (
-                        <>
-                          <TbToggleLeft style={{ fontSize: '1.15rem' }} /> Tạm dừng
-                        </>
-                      )}
-                    </button>
+                    <span className={`status-pill ${item.status}`}>
+                      {item.status === 'published'
+                        ? 'ĐANG MỞ BÁN'
+                        : item.status === 'paused'
+                        ? 'TẠM ẨN'
+                        : item.status === 'suspended'
+                        ? 'ĐÌNH CHỈ'
+                        : 'BẢO TRÌ'}
+                    </span>
                   </td>
-                  <td>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                      {onOpenRoomDetail && (
-                        <button
-                          type="button"
-                          className="host-action-btn"
-                          onClick={() => onOpenRoomDetail(item.roomId || item.id)}
-                          title="Xem trang khách"
-                        >
-                          <TbEye />
-                        </button>
-                      )}
+                  <td style={{ textAlign: 'right' }}>
+                    <div className="host-acc-actions">
                       <button
                         type="button"
-                        className="host-action-btn"
+                        className="host-btn-action default"
+                        title="Xem chi tiết chỗ ở"
+                        onClick={() => onOpenRoomDetail && onOpenRoomDetail(item)}
+                      >
+                        <TbEye />
+                      </button>
+                      <button
+                        type="button"
+                        className="host-btn-action default"
+                        title="Chỉnh sửa thông tin chỗ ở"
                         onClick={() => onEditListing(item)}
-                        title="Chỉnh sửa thông tin"
                       >
                         <TbEdit />
                       </button>
                       <button
                         type="button"
-                        className="host-action-btn delete"
-                        onClick={() => onDeleteListing(item.id)}
+                        className={`host-btn-action ${item.status === 'published' ? 'warning' : 'success'}`}
+                        title={item.status === 'published' ? 'Tạm ẩn mở bán' : 'Kích hoạt mở bán'}
+                        onClick={() => onToggleStatus(item.id)}
+                      >
+                        {item.status === 'published' ? <TbToggleRight /> : <TbToggleLeft />}
+                      </button>
+                      <button
+                        type="button"
+                        className="host-btn-action danger"
                         title="Xóa chỗ ở"
+                        onClick={() => onDeleteListing(item.id)}
                       >
                         <TbTrash />
                       </button>

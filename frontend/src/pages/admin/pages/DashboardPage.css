@@ -1,0 +1,153 @@
+/* ==========================================================================
+   DASHBOARD PAGE CSS (Admin Portal)
+   ========================================================================== */
+
+.adm-dash-stats-grid {
+  margin-bottom: 1.5rem;
+}
+
+.adm-dash-stat-green {
+  color: #059669 !important;
+}
+
+.adm-dash-progress-wrap {
+  margin-top: 4px;
+  width: 130px;
+}
+
+.adm-dash-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--adm-text-muted, #64748b);
+  margin-bottom: 2px;
+}
+
+.adm-dash-progress-track {
+  width: 100%;
+  height: 5px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.adm-dash-progress-bar {
+  height: 100%;
+  background: #0ea5e9;
+  border-radius: 999px;
+}
+
+.adm-dash-kyc-alert {
+  color: #e11d48 !important;
+}
+
+.adm-dash-2col-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 1.25rem;
+}
+
+.adm-dash-box {
+  margin-bottom: 0;
+}
+
+.adm-dash-dot-red {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  display: inline-block;
+}
+
+.adm-dash-view-all-btn {
+  font-size: 0.8rem;
+  color: #ff385c;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.adm-dash-empty-kyc {
+  text-align: center;
+  padding: 1.75rem 0;
+  color: #059669;
+}
+
+.adm-dash-empty-icon {
+  font-size: 2.2rem;
+  margin-bottom: 4px;
+}
+
+.adm-dash-kyc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.adm-dash-kyc-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--adm-bg-surface, #f8fafc);
+  border-radius: 12px;
+  border: 1px solid var(--adm-border, #edf2f7);
+}
+
+.adm-dash-kyc-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adm-dash-kyc-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.adm-dash-kyc-name {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--adm-text-main, #0f172a);
+}
+
+.adm-dash-kyc-idcard {
+  font-size: 0.74rem;
+  color: var(--adm-text-muted, #64748b);
+}
+
+.adm-dash-kyc-idcard-code {
+  font-family: monospace;
+}
+
+.adm-dash-recent-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.adm-dash-recent-id {
+  font-size: 0.88rem;
+  color: var(--adm-text-main, #0f172a);
+}
+
+.adm-dash-recent-guest {
+  font-size: 0.78rem;
+  color: var(--adm-text-muted, #64748b);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+.adm-dash-recent-price {
+  font-weight: 800;
+  color: var(--adm-text-main, #0f172a);
+  font-size: 0.9rem;
+}

@@ -1,0 +1,132 @@
+/* ==========================================================================
+   CATEGORIES & AMENITIES PAGE CSS (Admin Portal)
+   ========================================================================== */
+
+.adm-cat-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 1.25rem;
+}
+
+.adm-cat-box {
+  margin-bottom: 0;
+}
+
+.adm-cat-list {
+  padding: 0.85rem 1.15rem;
+}
+
+.adm-cat-items-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.adm-cat-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.85rem;
+  background: var(--adm-bg-surface, #f8fafc);
+  border-radius: 9px;
+  border: 1px solid var(--adm-border, #edf2f7);
+}
+
+.adm-cat-label-wrap {
+  white-space: nowrap;
+}
+
+.adm-cat-label-vi {
+  color: var(--adm-text-main, #0f172a);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.adm-cat-label-en {
+  font-size: 0.74rem;
+  color: var(--adm-text-muted, #64748b);
+  margin-left: 6px;
+}
+
+.adm-cat-toggle-btn {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.adm-cat-toggle-btn.active {
+  border: 1px solid #bbf7d0;
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.adm-cat-toggle-btn.inactive {
+  border: 1px solid var(--adm-border, #edf2f7);
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+/* Amenities section */
+.adm-amenity-form {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 1rem;
+}
+
+.adm-amenity-input {
+  flex: 1;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--adm-radius-sm, 8px);
+  border: 1px solid var(--adm-border, #edf2f7);
+  font-size: 0.82rem;
+  outline: none;
+}
+
+.adm-amenity-select {
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--adm-radius-sm, 8px);
+  border: 1px solid var(--adm-border, #edf2f7);
+  font-size: 0.82rem;
+  font-weight: 600;
+  outline: none;
+}
+
+.adm-amenity-btn-submit {
+  padding: 0.45rem 0.85rem;
+}
+
+.adm-amenity-chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.adm-amenity-chip {
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--adm-radius-sm, 8px);
+  border: 1px solid var(--adm-border, #edf2f7);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.adm-amenity-chip.basic {
+  background: #f8fafc;
+  color: var(--adm-text-main, #0f172a);
+}
+
+.adm-amenity-chip.standout {
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+.adm-amenity-chip.luxury {
+  background: #fffbeb;
+  color: #b45309;
+}

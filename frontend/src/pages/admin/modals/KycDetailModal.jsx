@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './KycDetailModal.css';
 import { TbX, TbShieldCheck, TbShieldX, TbBuildingBank, TbCheck, TbAlertTriangle, TbZoomIn, TbUser, TbId, TbPhone, TbMail } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
 
@@ -24,34 +25,20 @@ export const KycDetailModal = ({ host, onClose, onApprove, onReject }) => {
   const backDocImg = host.id_card_back || 'https://images.unsplash.com/photo-1589330694653-ded6df03f754?w=600';
 
   return (
-    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 110 }}>
+    <div className="modal-overlay adm-kycdet-overlay" onClick={onClose}>
       <div
-        className="modal-container"
-        style={{ width: '840px', maxWidth: '95vw', maxHeight: '92vh' }}
+        className="modal-container adm-kycdet-container"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Fixed Header */}
-        <div className="kyc-modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            <div
-              style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: '10px',
-                background: '#e0f2fe',
-                color: '#0284c7',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.45rem',
-                flexShrink: 0,
-              }}
-            >
+        <div className="adm-kycdet-header">
+          <div className="adm-kycdet-header-left">
+            <div className="adm-kycdet-icon-wrap">
               <TbShieldCheck />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                <h2 className="adm-kycdet-title">
                   Thẩm Định Hồ Sơ Định Danh KYC
                 </h2>
                 <span className={`status-pill ${host.kyc_status}`}>
@@ -62,7 +49,7 @@ export const KycDetailModal = ({ host, onClose, onApprove, onReject }) => {
                     : 'TỪ CHỐI'}
                 </span>
               </div>
-              <p style={{ color: '#64748b', fontSize: '0.82rem', margin: '2px 0 0 0' }}>
+              <p className="adm-kycdet-sub-text">
                 Chủ nhà: <strong>{host.name}</strong> • Mã ID: #{host.id}
               </p>
             </div>
@@ -79,74 +66,54 @@ export const KycDetailModal = ({ host, onClose, onApprove, onReject }) => {
         </div>
 
         {/* Scrollable Body */}
-        <div className="kyc-modal-body">
+        <div className="adm-kycdet-body">
           {/* Host Info Grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '1rem',
-              background: '#f8fafc',
-              padding: '1.15rem 1.25rem',
-              borderRadius: '10px',
-              border: '1px solid #e2e8f0',
-            }}
-          >
+          <div className="adm-kycdet-info-grid">
             <div>
-              <span style={{ fontSize: '0.74rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="adm-kycdet-field-label">
                 <TbUser style={{ fontSize: '0.9rem' }} /> Tên hiển thị
               </span>
-              <p style={{ fontWeight: 700, fontSize: '0.92rem', color: '#0f172a', margin: '3px 0 0 0' }}>
+              <p className="adm-kycdet-field-val">
                 {host.display_name || host.name}
               </p>
             </div>
 
             <div>
-              <span style={{ fontSize: '0.74rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="adm-kycdet-field-label">
                 <TbId style={{ fontSize: '0.9rem' }} /> Số CCCD / Hộ chiếu
               </span>
-              <p style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0284c7', margin: '3px 0 0 0' }}>
+              <p className="adm-kycdet-idcard-val">
                 {host.id_card_number || 'Chưa cung cấp'}
               </p>
             </div>
 
             <div>
-              <span style={{ fontSize: '0.74rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="adm-kycdet-field-label">
                 <TbPhone style={{ fontSize: '0.9rem' }} /> Điện thoại
               </span>
-              <p style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0f172a', margin: '3px 0 0 0' }}>
+              <p className="adm-kycdet-field-val">
                 {host.phone || 'Chưa cập nhật'}
               </p>
             </div>
 
             <div>
-              <span style={{ fontSize: '0.74rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="adm-kycdet-field-label">
                 <TbMail style={{ fontSize: '0.9rem' }} /> Email liên hệ
               </span>
-              <p style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0f172a', margin: '3px 0 0 0' }}>
+              <p className="adm-kycdet-field-val">
                 {host.email || 'Chưa cập nhật'}
               </p>
             </div>
           </div>
 
           {/* Bank Account Info */}
-          <div
-            style={{
-              background: '#f0fdf4',
-              padding: '0.9rem 1.25rem',
-              borderRadius: '10px',
-              border: '1px solid #bbf7d0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-            }}
-          >
-            <TbBuildingBank style={{ fontSize: '1.8rem', color: '#16a34a', flexShrink: 0 }} />
+          <div className="adm-kycdet-bank-box">
+            <TbBuildingBank className="adm-kycdet-bank-icon" />
             <div>
-              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#16a34a', textTransform: 'uppercase' }}>
+              <span className="adm-kycdet-bank-label">
                 Tài khoản nhận tiền Payouts
               </span>
-              <p style={{ fontSize: '0.92rem', fontWeight: 700, color: '#14532d', margin: '2px 0 0 0' }}>
+              <p className="adm-kycdet-bank-val">
                 {host.bank_name || 'Ngân hàng'} • STK: <strong>{host.account_number || 'N/A'}</strong> ({host.account_holder || host.name})
               </p>
             </div>
@@ -163,7 +130,7 @@ export const KycDetailModal = ({ host, onClose, onApprove, onReject }) => {
               </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="adm-kycdet-docs-grid">
               {/* Mặt trước */}
               <div className="kyc-doc-card">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>
@@ -216,8 +183,8 @@ export const KycDetailModal = ({ host, onClose, onApprove, onReject }) => {
 
           {/* Rejection Note Form if Active */}
           {isRejecting && (
-            <div style={{ background: '#fef2f2', border: '1.5px solid #fecaca', borderRadius: '10px', padding: '1.15rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#b91c1c', fontWeight: 800, marginBottom: '0.5rem', fontSize: '0.88rem' }}>
+            <div className="adm-kycdet-reject-box">
+              <div className="adm-kycdet-reject-title">
                 <TbAlertTriangle style={{ fontSize: '1.1rem' }} />
                 <span>Nhập lý do từ chối phê duyệt hồ sơ KYC:</span>
               </div>
@@ -225,7 +192,7 @@ export const KycDetailModal = ({ host, onClose, onApprove, onReject }) => {
                 placeholder="VD: Ảnh chụp mờ không rõ số CCCD, hoặc thông tin tên không khớp tài khoản ngân hàng thụ hưởng..."
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', minHeight: '80px', fontSize: '0.86rem', outline: 'none', background: 'white' }}
+                className="adm-kycdet-reject-textarea"
               />
               <div style={{ display: 'flex', gap: '8px', marginTop: '0.75rem', justifyContent: 'flex-end' }}>
                 <button
@@ -248,123 +215,56 @@ export const KycDetailModal = ({ host, onClose, onApprove, onReject }) => {
         </div>
 
         {/* Fixed Footer Actions */}
-        <div className="kyc-modal-footer">
+        <div className="adm-kycdet-footer">
           <button
             type="button"
-            style={{
-              padding: '0.55rem 1.25rem',
-              borderRadius: '8px',
-              border: '1.5px solid #e2e8f0',
-              background: 'white',
-              fontWeight: 700,
-              color: '#64748b',
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-            }}
+            className="btn-admin-secondary"
             onClick={onClose}
           >
-            Đóng
+            Đóng Cửa Sổ
           </button>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
-            {!isRejecting && (
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {host.kyc_status !== 'rejected' && (
               <button
                 type="button"
-                style={{
-                  padding: '0.55rem 1.15rem',
-                  borderRadius: '8px',
-                  border: '1.5px solid #fecaca',
-                  background: '#fef2f2',
-                  color: '#b91c1c',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                }}
-                onClick={() => setIsRejecting(true)}
+                className="btn-admin-danger"
+                onClick={() => setIsRejecting(!isRejecting)}
               >
                 <TbShieldX />
-                <span>Từ Chối Hồ Sơ</span>
+                <span>{isRejecting ? 'Thu gọn lý do' : 'Từ Chối Hồ Sơ'}</span>
               </button>
             )}
 
-            <button
-              type="button"
-              className="btn-admin-primary"
-              style={{
-                background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
-                boxShadow: '0 4px 12px rgba(22, 163, 74, 0.3)',
-                padding: '0.55rem 1.25rem',
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-              }}
-              onClick={() => {
-                onApprove(host.id);
-                onClose();
-              }}
-            >
-              <TbCheck style={{ fontSize: '1.1rem' }} />
-              <span>Phê Duyệt KYC (Verified)</span>
-            </button>
+            {host.kyc_status !== 'verified' && (
+              <button
+                type="button"
+                className="btn-admin-success"
+                onClick={() => {
+                  onApprove(host.id);
+                  toast.success('Phê duyệt thành công!', `Đã xác thực danh tính KYC cho ${host.name}.`);
+                  onClose();
+                }}
+              >
+                <TbCheck />
+                <span>Phê Duyệt KYC</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Lightbox Zoom */}
+      {/* Lightbox Modal for Zooming Document */}
       {activeImageZoom && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(15, 23, 42, 0.88)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 120,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '2rem',
-            cursor: 'zoom-out',
-          }}
+          className="kyc-lightbox-overlay"
           onClick={() => setActiveImageZoom(null)}
         >
-          <div style={{ position: 'relative', maxWidth: '85vw', maxHeight: '85vh' }} onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              style={{
-                position: 'absolute',
-                top: '-15px',
-                right: '-15px',
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                background: '#ffffff',
-                border: 'none',
-                color: '#0f172a',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.2rem',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-              }}
-              onClick={() => setActiveImageZoom(null)}
-            >
+          <div className="kyc-lightbox-wrapper" onClick={(e) => e.stopPropagation()}>
+            <img src={activeImageZoom} alt="Giấy tờ phóng to" className="kyc-lightbox-img" />
+            <button className="kyc-lightbox-close-btn" onClick={() => setActiveImageZoom(null)}>
               <TbX />
             </button>
-            <img
-              src={activeImageZoom}
-              alt="Zoomed Document"
-              style={{
-                maxWidth: '85vw',
-                maxHeight: '85vh',
-                borderRadius: '10px',
-                objectFit: 'contain',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-                display: 'block',
-              }}
-            />
           </div>
         </div>
       )}
@@ -373,4 +273,3 @@ export const KycDetailModal = ({ host, onClose, onApprove, onReject }) => {
 };
 
 export default KycDetailModal;
-

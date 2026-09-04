@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
+import './HostBookingsPage.css';
 import {
   TbCalendarEvent,
   TbSearch,
-  TbCheck,
   TbX,
   TbLogin,
   TbLogout,
@@ -37,7 +37,7 @@ export const HostBookingsPage = ({
 
   return (
     <div className="host-panel-card">
-      <div className="host-panel-header" style={{ flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="host-panel-header host-bk-header">
         <div>
           <h3 className="host-panel-title">
             <TbCalendarEvent style={{ color: 'var(--host-indigo)' }} />
@@ -45,9 +45,9 @@ export const HostBookingsPage = ({
           </h3>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        <div className="host-bk-controls">
           {/* Status Filter Tabs */}
-          <div style={{ display: 'flex', background: '#f1f5f9', padding: '3px', borderRadius: 'var(--host-radius-md)' }}>
+          <div className="host-bk-tabs-wrap">
             {[
               { id: 'all', label: 'Tất cả' },
               { id: 'confirmed', label: 'Đã xác nhận' },
@@ -59,17 +59,7 @@ export const HostBookingsPage = ({
                 key={tab.id}
                 type="button"
                 onClick={() => setStatusFilter(tab.id)}
-                style={{
-                  padding: '4px 10px',
-                  border: 'none',
-                  borderRadius: 'var(--host-radius-sm)',
-                  fontSize: '0.78rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  background: statusFilter === tab.id ? '#ffffff' : 'transparent',
-                  color: statusFilter === tab.id ? 'var(--host-primary)' : 'var(--host-text-muted)',
-                  boxShadow: statusFilter === tab.id ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                }}
+                className={`host-bk-tab-btn ${statusFilter === tab.id ? 'active' : ''}`}
               >
                 {tab.label}
               </button>
@@ -77,30 +67,14 @@ export const HostBookingsPage = ({
           </div>
 
           {/* Search Box */}
-          <div style={{ position: 'relative' }}>
-            <TbSearch
-              style={{
-                position: 'absolute',
-                left: '10px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: '#94a3b8',
-              }}
-            />
+          <div className="host-bk-search-wrap">
+            <TbSearch className="host-bk-search-icon" />
             <input
               type="text"
               placeholder="Tìm theo tên, mã vé..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                padding: '0.45rem 0.85rem 0.45rem 2rem',
-                borderRadius: 'var(--host-radius-md)',
-                border: '1px solid var(--host-border-strong)',
-                fontSize: '0.85rem',
-                outline: 'none',
-                width: '180px',
-                background: '#ffffff',
-              }}
+              className="host-bk-search-input"
             />
           </div>
         </div>
@@ -171,8 +145,25 @@ export const HostBookingsPage = ({
                   </td>
                   <td>
                     <strong style={{ color: '#059669', fontSize: '0.92rem' }}>
-                      {formatPrice(b.hostEarnings || b.totalPrice || 2500000)}
+                      {formatPrice(
+                        b.hostEarnings ??
+                        b.hostPayoutAmount ??
+                        (b.grossAmount && b.commissionFee ? b.grossAmount - b.commissionFee : null) ??
+                        (b.basePrice && b.cleaningFee ? b.basePrice + b.cleaningFee - (b.serviceFee || Math.round(b.basePrice * 0.12)) : null) ??
+                        (b.totalPrice ? Math.round(b.totalPrice * 0.88) : null) ??
+                        (b.totalAmount ? Math.round(b.totalAmount * 0.88) : 0)
+                      )}
                     </strong>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--host-text-muted)', whiteSpace: 'nowrap' }}>
+                      {b.commissionFee || b.serviceFee
+                        ? `Đã trừ 12% (-${formatPrice(b.commissionFee || b.serviceFee)})`
+                        : 'Đã trừ 12% phí sàn'}
+                    </div>
+                    {b.hasVoucher && (
+                      <div style={{ fontSize: '0.68rem', color: '#059669', fontWeight: 600, marginTop: 2 }}>
+                        🎟️ {b.voucherCode || 'Voucher VIP'}
+                      </div>
+                    )}
                   </td>
                   <td>
                     <span
@@ -207,19 +198,12 @@ export const HostBookingsPage = ({
                     </span>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px', alignItems: 'center' }}>
+                    <div className="host-bk-actions-group">
                       {/* Check-in Trigger */}
                       {b.status === 'confirmed' && (
                         <button
                           type="button"
-                          className="host-btn-primary"
-                          style={{
-                            padding: '5px 12px',
-                            fontSize: '0.78rem',
-                            borderRadius: '6px',
-                            background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                            whiteSpace: 'nowrap',
-                          }}
+                          className="host-btn-primary host-bk-checkin-btn"
                           onClick={() => onCheckInBooking && onCheckInBooking(b.id || b.code)}
                           title="Xác nhận khách đã tới nhận phòng"
                         >
@@ -231,14 +215,7 @@ export const HostBookingsPage = ({
                       {b.status === 'checked_in' && (
                         <button
                           type="button"
-                          className="host-btn-primary"
-                          style={{
-                            padding: '5px 12px',
-                            fontSize: '0.78rem',
-                            borderRadius: '6px',
-                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                            whiteSpace: 'nowrap',
-                          }}
+                          className="host-btn-primary host-bk-checkout-btn"
                           onClick={() => onCheckOutBooking && onCheckOutBooking(b.id || b.code)}
                           title="Xác nhận khách đã trả phòng & tạo lệnh Payout"
                         >
@@ -248,20 +225,7 @@ export const HostBookingsPage = ({
 
                       {/* Completed State Badge */}
                       {b.status === 'completed' && (
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            fontSize: '0.76rem',
-                            color: '#059669',
-                            fontWeight: 800,
-                            padding: '4px 8px',
-                            background: '#ecfdf5',
-                            borderRadius: '4px',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
+                        <span className="host-bk-completed-badge">
                           <TbSparkles /> Payout Tạo Xong
                         </span>
                       )}

@@ -1,0 +1,143 @@
+/* ==========================================================================
+   HOST DASHBOARD PAGE CSS (Host Portal)
+   ========================================================================== */
+
+.host-dash-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.host-dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 0.25rem;
+}
+
+.host-dash-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--host-text-main, #0f172a);
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.host-dash-subtitle {
+  font-size: 0.84rem;
+  color: var(--host-text-muted, #64748b);
+  margin: 3px 0 0 0;
+}
+
+.host-dash-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.1rem;
+}
+
+.host-dash-balance-sub {
+  font-size: 0.76rem;
+  margin-top: 3px;
+  display: block;
+  white-space: nowrap;
+}
+
+.host-dash-balance-sub.pending {
+  color: #d97706;
+  font-weight: 700;
+}
+
+.host-dash-balance-sub.cleared {
+  color: var(--host-text-muted, #64748b);
+  font-weight: 500;
+}
+
+.host-dash-superhost-tag {
+  font-size: 0.76rem;
+  color: #d97706;
+  font-weight: 700;
+  margin-top: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.host-dash-view-all-btn {
+  background: none;
+  border: none;
+  color: var(--host-primary, #ff385c);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.host-dash-empty-state {
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+}
+
+.host-dash-empty-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fff1f2;
+  color: #ff385c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin: 0 auto 1rem;
+}
+
+.host-dash-empty-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--host-text-main, #0f172a);
+  margin: 0 0 0.4rem 0;
+}
+
+.host-dash-empty-desc {
+  font-size: 0.84rem;
+  color: var(--host-text-muted, #64748b);
+  max-width: 420px;
+  margin: 0 auto 1.25rem;
+  line-height: 1.5;
+}
+
+.host-dash-code-tag {
+  color: var(--host-primary, #ff385c);
+  font-size: 0.88rem;
+  font-family: monospace;
+  display: inline-block;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.host-dash-room-title {
+  font-weight: 600;
+  color: #334155;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  fontSize: 0.85rem;
+}
+
+.host-dash-room-city {
+  font-size: 0.74rem;
+  color: var(--host-text-muted, #64748b);
+  white-space: nowrap;
+}
+
+.host-dash-net-payout {
+  font-weight: 800;
+  color: #059669;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}

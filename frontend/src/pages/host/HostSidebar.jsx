@@ -10,6 +10,7 @@ import {
   TbChevronLeft,
   TbAward,
   TbSparkles,
+  TbPlaneDeparture,
 } from 'react-icons/tb';
 
 export const HostSidebar = ({
@@ -18,8 +19,19 @@ export const HostSidebar = ({
   collapsed,
   setCollapsed,
   onOpenWizard,
+  onOpenBookings,
   pendingBookingsCount = 0,
 }) => {
+  const currentUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('tripnest_user') || '{}');
+    } catch {
+      return {};
+    }
+  })();
+  const hostName = currentUser?.name || currentUser?.full_name || currentUser?.host_name || 'Minh Hoàng';
+  const hostAvatar = currentUser?.avatar || currentUser?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80';
+
   const navGroups = [
     {
       group: 'Tổng Quan',
@@ -28,18 +40,13 @@ export const HostSidebar = ({
       ],
     },
     {
-      group: 'Quản Lý Chỗ Ở',
+      group: 'Vận Hành Đón Khách',
       items: [
         { id: 'accommodations', label: 'Cơ Sở Lưu Trú', icon: TbBuildingCastle },
         { id: 'new_listing', label: 'Đăng Ký Chỗ Nghỉ', icon: TbPlus },
-      ],
-    },
-    {
-      group: 'Vận Hành Đón Khách',
-      items: [
         {
           id: 'bookings',
-          label: 'Đơn Đặt Phòng',
+          label: 'Đơn Đặt Phòng (Host)',
           icon: TbCalendarEvent,
           badge: pendingBookingsCount > 0 ? pendingBookingsCount : null,
         },
@@ -172,12 +179,12 @@ export const HostSidebar = ({
         <div className="host-sidebar-footer">
           <div className="host-user-card">
             <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-              alt="Host Avatar"
+              src={hostAvatar}
+              alt={hostName}
               className="host-user-avatar"
             />
             <div className="host-user-info">
-              <span className="host-user-name">Minh Vũ</span>
+              <span className="host-user-name">{hostName}</span>
               <span className="host-user-role">★ Chủ nhà Siêu cấp</span>
             </div>
           </div>

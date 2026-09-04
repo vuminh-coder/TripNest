@@ -122,7 +122,7 @@ export const WishlistModal = ({
                         {room.city}, {room.country}
                       </span>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '2px', fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>
-                        <TbStarFilled style={{ color: '#f59e0b', fontSize: '0.85rem' }} /> {room.rating}
+                        <TbStarFilled style={{ color: '#ff385c', fontSize: '0.85rem' }} /> {room.rating}
                       </span>
                     </div>
 

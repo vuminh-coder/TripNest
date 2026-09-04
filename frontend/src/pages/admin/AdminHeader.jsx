@@ -1,4 +1,4 @@
-import { TbSearch, TbArrowLeft, TbRotateClockwise, TbBell } from 'react-icons/tb';
+import { TbSearch, TbArrowLeft, TbRotateClockwise, TbBell, TbPlaneDeparture } from 'react-icons/tb';
 import { useConfirm } from '@/context/ConfirmContext';
 import { useToast } from '@/context/ToastContext';
 
@@ -6,6 +6,7 @@ export const AdminHeader = ({
   searchTerm,
   setSearchTerm,
   onExitAdmin,
+  onOpenBookings,
   onResetData,
   pendingKycCount = 0,
 }) => {

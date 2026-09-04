@@ -1,0 +1,215 @@
+/* ==========================================================================
+   BOOKING DETAIL MODAL CSS (Admin Portal)
+   ========================================================================== */
+
+.adm-bookdet-overlay {
+  z-index: 110;
+}
+
+.adm-bookdet-container {
+  width: 780px;
+  max-width: 95vw;
+  max-height: 92vh;
+  overflow-y: auto;
+  border-radius: 20px;
+  padding: 1.75rem;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.22);
+  background: #ffffff;
+}
+
+.adm-bookdet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--adm-border-subtle, #f1f5f9);
+}
+
+.adm-bookdet-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.adm-bookdet-icon-wrap {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 8px 16px -4px rgba(124, 58, 237, 0.35);
+}
+
+.adm-bookdet-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.adm-bookdet-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--adm-text-main, #0f172a);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.adm-bookdet-id-code {
+  color: #7c3aed;
+  font-family: monospace;
+}
+
+.adm-bookdet-status-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+}
+
+.adm-bookdet-date-sub {
+  color: var(--adm-text-muted, #64748b);
+  font-size: 0.8rem;
+  margin-top: 3px;
+  margin: 0;
+}
+
+.adm-bookdet-close-btn {
+  position: static;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.adm-bookdet-body {
+  padding: 1.25rem 0;
+}
+
+.adm-bookdet-2col-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.adm-bookdet-card-gray {
+  background: #f8fafc;
+  padding: 1.15rem 1.25rem;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.adm-bookdet-card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  font-weight: 800;
+  font-size: 0.74rem;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-bottom: 0.65rem;
+}
+
+.adm-bookdet-guest-name {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--adm-text-main, #0f172a);
+}
+
+.adm-bookdet-contact-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.84rem;
+  color: #475569;
+  margin-top: 4px;
+}
+
+.adm-bookdet-room-name {
+  font-weight: 800;
+  font-size: 0.96rem;
+  color: var(--adm-text-main, #0f172a);
+  line-height: 1.35;
+}
+
+.adm-bookdet-host-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #0284c7;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.adm-bookdet-3tiles-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 0.9fr 1.3fr;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.adm-bookdet-tile {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.adm-bookdet-tile-label {
+  font-size: 0.7rem;
+  color: var(--adm-text-muted, #64748b);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.adm-bookdet-tile-val {
+  font-weight: 800;
+  color: var(--adm-text-main, #0f172a);
+  font-size: 0.92rem;
+  margin-top: 4px;
+}
+
+.adm-bookdet-financial-box {
+  background: #ffffff;
+  border: 1.5px solid #ede9fe;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.04);
+}
+
+.adm-bookdet-escrow-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.45rem 0;
+  font-size: 0.86rem;
+}
+
+.adm-bookdet-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--adm-border-subtle, #f1f5f9);
+}

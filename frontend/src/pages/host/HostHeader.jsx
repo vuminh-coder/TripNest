@@ -5,6 +5,7 @@ import {
   TbPlus,
   TbChevronRight,
   TbWorld,
+  TbPlaneDeparture,
 } from 'react-icons/tb';
 
 export const HostHeader = ({
@@ -12,6 +13,7 @@ export const HostHeader = ({
   onNavigate,
   onExitHost,
   onOpenWizard,
+  onOpenBookings,
   searchTerm,
   setSearchTerm,
   currency = 'VND',
