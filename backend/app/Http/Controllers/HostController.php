@@ -18,7 +18,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class HostController extends Controller
 {
@@ -36,8 +38,8 @@ class HostController extends Controller
             return $account->user->host;
         }
 
-        // Nếu tài khoản có vai trò host hoặc admin nhưng chưa có bản ghi host, khởi tạo tương ứng
-        if (($account->role === 'host' || $account->role === 'admin') && $account->user) {
+        // Nếu tài khoản đã xác thực user, khởi tạo bản ghi host nếu chưa có
+        if ($account->user) {
             $host = Host::firstOrCreate(
                 ['user_id' => $account->user->id],
                 [
@@ -59,6 +61,10 @@ class HostController extends Controller
                 ]
             );
 
+            if ($account->role !== 'admin' && $account->role !== 'host') {
+                $account->update(['role' => 'host']);
+            }
+
             // Tạo tài khoản payout mặc định nếu chưa có
             if (!$host->defaultPayoutAccount) {
                 HostPayoutAccount::create([
@@ -76,6 +82,45 @@ class HostController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Upload hình ảnh chỗ nghỉ từ thiết bị
+     */
+    public function uploadImage(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:10240', // tối đa 10MB
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tệp ảnh không hợp lệ hoặc vượt quá 10MB.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $file = $request->file('image');
+            $fileName = 'acc_' . time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('accommodations', $fileName, 'public');
+
+            // Tạo URL tuyệt đối có thể truy cập từ browser
+            $url = asset('storage/' . $path);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Tải ảnh lên thành công!',
+                'url' => $url,
+                'path' => $path,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể tải ảnh lên: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -361,19 +406,20 @@ class HostController extends Controller
             'nameVi' => 'required|string|max:255',
             'accommodationType' => 'required|string|in:hotel,resort,villa,homestay,apartment,cabin,yacht',
             'roomTypeCode' => 'nullable|string|max:50',
-            'categoryId' => 'nullable|integer',
+            'categoryId' => 'nullable',
             'city' => 'required|string|max:100',
             'district' => 'nullable|string|max:100',
             'address' => 'required|string|max:255',
             'description' => 'required|string',
-            'priceVND' => 'required|numeric|min:100000',
-            'cleaningFeeVND' => 'nullable|numeric|min:0',
-            'maxGuests' => 'required|integer|min:1|max:50',
-            'bedrooms' => 'required|integer|min:1|max:20',
-            'beds' => 'required|integer|min:1|max:30',
-            'bathrooms' => 'required|numeric|min:1|max:20',
             'images' => 'required|array|min:1',
             'images.*' => 'required|string',
+            'rooms' => 'nullable|array',
+            'priceVND' => 'nullable|numeric|min:50000',
+            'cleaningFeeVND' => 'nullable|numeric|min:0',
+            'maxGuests' => 'nullable|integer|min:1|max:50',
+            'bedrooms' => 'nullable|integer|min:1|max:20',
+            'beds' => 'nullable|integer|min:1|max:30',
+            'bathrooms' => 'nullable|numeric|min:1|max:20',
             'amenities' => 'nullable|array',
             'houseRules' => 'nullable|string',
             'cancellationPolicy' => 'nullable|string',
@@ -395,11 +441,41 @@ class HostController extends Controller
         try {
             DB::beginTransaction();
 
-            $categoryId = $request->input('categoryId') ?: (Category::first()?->id ?: 1);
-            $priceVND = (float)$request->input('priceVND');
-            $priceUSD = round($priceVND / 25000, 2);
+            $rawCat = $request->input('categoryId') ?: $request->input('category');
+            $catModel = null;
+            if (is_numeric($rawCat)) {
+                $catModel = Category::find($rawCat);
+            } elseif (is_string($rawCat) && !empty($rawCat)) {
+                $catModel = Category::where('slug', $rawCat)->first();
+            }
+            $categoryId = $catModel ? $catModel->id : (Category::first()?->id ?: 1);
+
+            $cityCoordinates = [
+                'Đà Lạt' => ['lat' => 11.9404, 'lng' => 108.4583, 'dist' => 'Cách trung tâm TP. Đà Lạt 2.5 km · Gần thung lũng & rừng thông'],
+                'Phú Quốc' => ['lat' => 10.2899, 'lng' => 103.9840, 'dist' => 'Cách bãi biển 300 m · Cách sân bay Phú Quốc 15 km'],
+                'Đà Nẵng' => ['lat' => 16.0544, 'lng' => 108.2022, 'dist' => 'Cách bãi biển Mỹ Khê 800 m · Trung tâm TP. Đà Nẵng'],
+                'Hạ Long' => ['lat' => 20.9599, 'lng' => 107.0425, 'dist' => 'Tầm nhìn trực diện Vịnh Hạ Long · Cách cảng tàu 1.2 km'],
+                'Hội An' => ['lat' => 15.8801, 'lng' => 108.3380, 'dist' => 'Cách Phố Cổ Hội An 1.5 km · Không gian yên bình ven sông'],
+                'Vũng Tàu' => ['lat' => 10.3460, 'lng' => 107.0843, 'dist' => 'Cách Bãi Sau 400 m · Cách ngọn hải đăng Vũng Tàu 2 km'],
+                'Hà Nội' => ['lat' => 21.0285, 'lng' => 105.8542, 'dist' => 'Khu vực trung tâm Thủ đô · Gần Hồ Hoàn Kiếm'],
+                'TP. Hồ Chí Minh' => ['lat' => 10.8231, 'lng' => 106.6297, 'dist' => 'Trung tâm đô thị sầm uất · Thuận tiện di chuyển'],
+                'Sa Pa' => ['lat' => 22.3364, 'lng' => 103.8438, 'dist' => 'View thung lũng Mường Hoa & đỉnh Fansipan hùng vĩ'],
+                'Nha Trang' => ['lat' => 12.2388, 'lng' => 109.1967, 'dist' => 'Cách bờ biển Trần Phú 200 m · View vịnh biển'],
+            ];
+
+            $city = $request->input('city', 'Đà Lạt');
+            $geo = $cityCoordinates[$city] ?? ['lat' => 11.9404, 'lng' => 108.4583, 'dist' => 'Cách trung tâm ' . $city . ' 2.0 km'];
+            $latitude = $request->input('latitude') ?: $geo['lat'];
+            $longitude = $request->input('longitude') ?: $geo['lng'];
+            $distanceDesc = $request->input('distanceDescription') ?: $geo['dist'];
+
+            $inputRooms = $request->input('rooms', []);
+            $defaultPriceVND = (float)$request->input('priceVND', 1500000);
+            if (!empty($inputRooms) && is_array($inputRooms)) {
+                $minRoomPrice = min(array_map(fn($r) => (float)($r['priceVND'] ?? 1500000), $inputRooms));
+                if ($minRoomPrice > 0) $defaultPriceVND = $minRoomPrice;
+            }
             $cleaningFeeVND = (float)$request->input('cleaningFeeVND', 350000);
-            $cleaningFeeUSD = round($cleaningFeeVND / 25000, 2);
 
             // 1. Tạo Accommodation
             $accommodation = Accommodation::create([
@@ -409,9 +485,12 @@ class HostController extends Controller
                 'accommodation_type' => $request->input('accommodationType'),
                 'description' => $request->input('description'),
                 'address' => $request->input('address'),
-                'city' => $request->input('city'),
+                'city' => $city,
                 'district' => $request->input('district', ''),
                 'country' => 'Việt Nam',
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'distance_description' => $distanceDesc,
                 'check_in_time' => '14:00:00',
                 'check_out_time' => '12:00:00',
                 'house_rules' => $request->input('houseRules', 'Không hút thuốc trong phòng, giữ gìn vệ sinh chung.'),
@@ -434,8 +513,8 @@ class HostController extends Controller
 
             // 3. Gắn Tiện ích (Amenities)
             $amenityNames = $request->input('amenities', []);
+            $amenityIds = [];
             if (!empty($amenityNames)) {
-                $amenityIds = [];
                 foreach ($amenityNames as $aName) {
                     $amenity = Amenity::firstOrCreate(
                         ['name_vi' => $aName],
@@ -446,51 +525,115 @@ class HostController extends Controller
                 $accommodation->amenities()->sync($amenityIds);
             }
 
-            // 4. Tạo Room chính dưới Accommodation
-            $room = Room::create([
-                'accommodation_id' => $accommodation->id,
-                'room_name_vi' => $accommodation->name_vi,
-                'room_type_code' => $request->input('roomTypeCode', $accommodation->accommodation_type),
-                'space_type' => 'entire_place',
-                'description' => $accommodation->description,
-                'room_size_m2' => $request->input('roomSizeM2', 75.0),
-                'price_per_night' => $priceVND,
-                'cleaning_fee' => $cleaningFeeVND,
-                'service_fee_percent' => 12.00,
-                'max_guests' => (int)$request->input('maxGuests'),
-                'bedrooms_count' => (int)$request->input('bedrooms'),
-                'beds_count' => (int)$request->input('beds'),
-                'bathrooms_count' => (float)$request->input('bathrooms'),
-                'total_inventory' => 1,
-                'rating' => 5.00,
-                'reviews_count' => 0,
-                'is_guest_favorite' => true,
-                'status' => 'available',
-            ]);
+            // 4. Tạo Danh sách Hạng phòng (Rooms)
+            $createdRooms = [];
 
-            // 5. Thêm Album ảnh Room
-            foreach ($images as $index => $imgUrl) {
-                RoomImage::create([
-                    'room_id' => $room->id,
-                    'image_url' => $imgUrl,
-                    'caption' => 'Ảnh phòng',
-                    'display_order' => $index + 1,
-                    'is_thumbnail' => ($index === 0),
+            if (is_array($inputRooms) && count($inputRooms) > 0) {
+                // Chế độ Multi-room: lặp qua từng hạng phòng
+                foreach ($inputRooms as $rIdx => $rItem) {
+                    $rNameVi = !empty($rItem['roomNameVi']) ? $rItem['roomNameVi'] : ($accommodation->name_vi . ' - Hạng phòng ' . ($rIdx + 1));
+                    $rPrice = (float)($rItem['priceVND'] ?? $defaultPriceVND);
+                    $rCleaning = (float)($rItem['cleaningFeeVND'] ?? $cleaningFeeVND);
+                    $rSpaceType = in_array($rItem['spaceType'] ?? '', ['entire_place', 'private_room', 'shared_room']) 
+                        ? $rItem['spaceType'] 
+                        : ($accommodation->accommodation_type === 'hotel' || $accommodation->accommodation_type === 'resort' ? 'private_room' : 'entire_place');
+                    $rTypeCode = !empty($rItem['roomTypeCode']) ? $rItem['roomTypeCode'] : \Illuminate\Support\Str::slug($rNameVi);
+                    $rMaxGuests = (int)($rItem['maxGuests'] ?? $request->input('maxGuests', 2));
+                    $rBedrooms = (int)($rItem['bedrooms'] ?? $request->input('bedrooms', 1));
+                    $rBeds = (int)($rItem['beds'] ?? $request->input('beds', 1));
+                    $rBaths = (float)($rItem['bathrooms'] ?? $request->input('bathrooms', 1));
+                    $rSize = (float)($rItem['roomSizeM2'] ?? $request->input('roomSizeM2', 40.0));
+                    $rInventory = (int)($rItem['totalInventory'] ?? 1);
+                    $rDesc = !empty($rItem['description']) ? $rItem['description'] : $accommodation->description;
+
+                    $room = Room::create([
+                        'accommodation_id' => $accommodation->id,
+                        'room_name_vi' => $rNameVi,
+                        'room_type_code' => $rTypeCode,
+                        'space_type' => $rSpaceType,
+                        'description' => $rDesc,
+                        'room_size_m2' => $rSize,
+                        'price_per_night' => $rPrice,
+                        'cleaning_fee' => $rCleaning,
+                        'service_fee_percent' => 12.00,
+                        'max_guests' => $rMaxGuests,
+                        'bedrooms_count' => $rBedrooms,
+                        'beds_count' => $rBeds,
+                        'bathrooms_count' => $rBaths,
+                        'total_inventory' => $rInventory,
+                        'rating' => 5.00,
+                        'reviews_count' => 0,
+                        'is_guest_favorite' => ($rIdx === 0),
+                        'status' => 'available',
+                    ]);
+
+                    $roomImgs = !empty($rItem['images']) && is_array($rItem['images']) ? $rItem['images'] : $images;
+                    foreach ($roomImgs as $index => $imgUrl) {
+                        RoomImage::create([
+                            'room_id' => $room->id,
+                            'image_url' => $imgUrl,
+                            'caption' => $rNameVi,
+                            'display_order' => $index + 1,
+                            'is_thumbnail' => ($index === 0),
+                        ]);
+                    }
+
+                    if (!empty($amenityIds)) {
+                        $room->amenities()->sync($amenityIds);
+                    }
+
+                    $createdRooms[] = $room;
+                }
+            } else {
+                // Chế độ Cho thuê nguyên căn hoặc single room
+                $singleRoomName = $request->input('roomNameVi') ?: ($request->input('rentalMode') === 'entire_place' ? 'Toàn bộ chỗ nghỉ nguyên căn' : $accommodation->name_vi);
+                $room = Room::create([
+                    'accommodation_id' => $accommodation->id,
+                    'room_name_vi' => $singleRoomName,
+                    'room_type_code' => $request->input('roomTypeCode', $accommodation->accommodation_type),
+                    'space_type' => $request->input('spaceType', 'entire_place'),
+                    'description' => $accommodation->description,
+                    'room_size_m2' => (float)$request->input('roomSizeM2', 75.0),
+                    'price_per_night' => $defaultPriceVND,
+                    'cleaning_fee' => $cleaningFeeVND,
+                    'service_fee_percent' => 12.00,
+                    'max_guests' => (int)$request->input('maxGuests', 4),
+                    'bedrooms_count' => (int)$request->input('bedrooms', 2),
+                    'beds_count' => (int)$request->input('beds', 2),
+                    'bathrooms_count' => (float)$request->input('bathrooms', 2),
+                    'total_inventory' => (int)$request->input('totalInventory', 1),
+                    'rating' => 5.00,
+                    'reviews_count' => 0,
+                    'is_guest_favorite' => true,
+                    'status' => 'available',
                 ]);
-            }
 
-            if (!empty($amenityIds)) {
-                $room->amenities()->sync($amenityIds);
+                foreach ($images as $index => $imgUrl) {
+                    RoomImage::create([
+                        'room_id' => $room->id,
+                        'image_url' => $imgUrl,
+                        'caption' => 'Ảnh phòng',
+                        'display_order' => $index + 1,
+                        'is_thumbnail' => ($index === 0),
+                    ]);
+                }
+
+                if (!empty($amenityIds)) {
+                    $room->amenities()->sync($amenityIds);
+                }
+
+                $createdRooms[] = $room;
             }
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Đăng ký chỗ nghỉ mới thành công! Phòng của bạn đã sẵn sàng đón khách.',
+                'message' => 'Đăng ký chỗ nghỉ mới thành công! ' . count($createdRooms) . ' hạng phòng đã sẵn sàng đón khách.',
                 'data' => [
                     'accommodationId' => $accommodation->id,
-                    'roomId' => $room->id,
+                    'roomId' => $createdRooms[0]->id,
+                    'roomsCount' => count($createdRooms),
                     'nameVi' => $accommodation->name_vi,
                     'status' => $accommodation->status,
                 ],

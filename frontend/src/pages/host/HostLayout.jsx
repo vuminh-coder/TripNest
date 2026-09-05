@@ -24,6 +24,7 @@ export const HostLayout = ({
   onSwitchToClient,
   onOpenRoomDetail,
   onOpenBookings,
+  onAccommodationCreated,
   currency = 'VND',
 }) => {
   const getInitialTabFromUrl = () => {
@@ -270,6 +271,9 @@ export const HostLayout = ({
 
   const handleListingCreated = async (newListing) => {
     await refreshAccommodations();
+    if (onAccommodationCreated) {
+      onAccommodationCreated(newListing);
+    }
     setActiveTab('accommodations');
     toast.success(
       'Đăng bán chỗ ở thành công!',

@@ -9,7 +9,6 @@
 
 <body style="margin: 0; padding: 0; background-color: #f4f6f8; font-family: Arial, Helvetica, sans-serif; color: #333333;">
 
-```
 <div style="max-width: 600px; margin: 30px auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
 
     <!-- Header -->
@@ -104,7 +103,6 @@
     </div>
 
 </div>
-```
 
 </body>
 </html>

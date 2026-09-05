@@ -181,51 +181,63 @@ export const apiService = {
   },
 
   async forgotPassword(email){
-    const res = await fetch(`${API_BASE_URL}/auth/forgot-password`,{
+    const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
       method: "POST",
-      headers: {"Content-type": "application/json"},
-      body: JSON.stringify({"email": email})
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({ email: email })
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       const error = new Error(data.message || 'Có lỗi xảy ra. Vui lòng thử lại');
       error.response = data;
+      error.status = res.status;
       throw error;
     }
     return data;
   },
 
-  async verifyOtp(email,otp){
-    const res = await fetch(`${API_BASE_URL}/auth/verify-otp`,{
+  async verifyOtp(email, otp){
+    const res = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
       method: "POST",
-      headers: {"Content-type": "application/json"},
-      body: JSON.stringify({"email": email,"otp": otp})
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({ email: email, otp: otp })
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       const error = new Error(data.message || 'Có lỗi xảy ra. Vui lòng thử lại');
       error.response = data;
+      error.status = res.status;
       throw error;
     }
     return data;
   },
 
-  async resetPasswordCaseForgot(email,resetToken,newPassword){
-    const res = await fetch(`${API_BASE_URL}/auth/forgot-password/reset`,{
+  async resetPasswordCaseForgot(email, resetToken, newPassword){
+    const res = await fetch(`${API_BASE_URL}/auth/forgot-password/reset`, {
       method: "POST",
-      headers: {"Content-type": "application/json"},
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
       body: JSON.stringify({
-        "email": email,
-        "reset_token": resetToken,
-        "new_password": newPassword
+        email: email,
+        reset_token: resetToken,
+        new_password: newPassword
       })
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       const error = new Error(data.message || 'Có lỗi xảy ra. Vui lòng thử lại');
       error.response = data;
+      error.status = res.status;
       throw error;
     }
     return data;
@@ -654,32 +666,34 @@ export const apiService = {
     }
   },
 
-  // 19. Tạo mới chỗ ở & phòng (Listing Wizard 6 Bước)
-  async createHostAccommodation(payload) {
-    try {
-      const res = await fetch(`${API_BASE_URL}/host/accommodations`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || 'Lỗi khi lưu chỗ nghỉ');
-      }
-      return data;
-    } catch (e) {
-      const localId = 'ACC-' + Date.now();
-      return {
-        success: true,
-        message: 'Đăng ký chỗ nghỉ mới thành công (chế độ dự phòng)!',
-        data: {
-          accommodationId: localId,
-          roomId: localId,
-          nameVi: payload.nameVi,
-          status: 'published',
-        },
-      };
+  // 19. Tải ảnh lên máy chủ (Host Upload Image)
+  async uploadHostImage(file) {
+    let token = localStorage.getItem('token');
+    if (!token) {
+      const user = JSON.parse(localStorage.getItem('tripnest_user') || 'null');
+      token = user?.token;
     }
+    const headers = {
+      Accept: 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const res = await fetch(`${API_BASE_URL}/host/upload-image`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const msg = data.message || (data.errors ? Object.values(data.errors).flat().join(', ') : 'Lỗi khi tải ảnh lên máy chủ');
+      throw new Error(msg);
+    }
+    return data;
   },
 
   // 20. Cập nhật thông tin chỗ ở
@@ -830,7 +844,8 @@ export const apiService = {
     });
     const data = await res.json();
     if (!res.ok) {
-      const err = new Error(data.message || 'Không thể tạo chỗ nghỉ.');
+      const errorDetail = data.errors ? Object.values(data.errors).flat().join('. ') : '';
+      const err = new Error(errorDetail ? `${data.message || 'Lỗi đăng ký'}: ${errorDetail}` : (data.message || 'Không thể tạo chỗ nghỉ.'));
       err.response = data;
       throw err;
     }

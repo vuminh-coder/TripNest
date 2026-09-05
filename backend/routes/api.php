@@ -34,7 +34,9 @@ Route::prefix('auth')->group(function () {
     Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::post('/update-profile', [AuthController::class, 'updateProfile']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/forgot-password/send-otp', [AuthController::class, 'sendOtp']);
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
     Route::post('/forgot-password/verify-otp', [AuthController::class, 'verifyOtp']);
     Route::post('/forgot-password/reset', [AuthController::class, 'resetPassword']);
 });
@@ -86,6 +88,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/host/dashboard-stats', [HostController::class, 'getDashboardStats']);
     Route::get('/host/accommodations', [HostController::class, 'getAccommodations']);
     Route::post('/host/accommodations', [HostController::class, 'storeAccommodation']);
+    Route::post('/host/upload-image', [HostController::class, 'uploadImage']);
     Route::put('/host/accommodations/{id}', [HostController::class, 'updateAccommodation']);
     Route::patch('/host/accommodations/{id}/status', [HostController::class, 'toggleStatus']);
     Route::delete('/host/accommodations/{id}', [HostController::class, 'deleteAccommodation']);

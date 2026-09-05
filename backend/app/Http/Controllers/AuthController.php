@@ -10,8 +10,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -368,7 +368,11 @@ class AuthController extends Controller
         // Sinh mã OTP 6 số
         $otp = (string) rand(100000, 999999);
 
-        Mail::to($account->email)->send(new SendOtpMail($otp));
+        try {
+            Mail::to($account->email)->send(new SendOtpMail($otp));
+        } catch (\Throwable $mailEx) {
+            Log::warning('SendOtpMail warning: ' . $mailEx->getMessage());
+        }
 
         $resultSaveOtp = PasswordOtp::create([
             "account_id" => $account->id,
@@ -379,8 +383,17 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Mã xác minh OTP 6 chữ số đã được gửi đến email của bạn!'
+            'message' => 'Mã xác minh OTP 6 chữ số đã được gửi đến email của bạn!',
+            'otp_demo' => config('app.env') !== 'production' ? $otp : null,
         ], 200);
+    }
+
+    /**
+     * Alias for forgotPassword method
+     */
+    public function sendOtp(Request $request): JsonResponse
+    {
+        return $this->forgotPassword($request);
     }
 
     /**

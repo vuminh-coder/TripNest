@@ -591,6 +591,17 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const reloadAccommodations = async () => {
+    try {
+      const rms = await apiService.getAccommodations();
+      if (Array.isArray(rms)) {
+        setRooms(rms);
+      }
+    } catch (e) {
+      console.error('Error reloading accommodations in App:', e);
+    }
+  };
+
   // Load initial data & auto-fetch accommodation/room if on detail URL
   useEffect(() => {
     const fetchData = async () => {
@@ -1068,9 +1079,13 @@ function App() {
       <HostLayout
         currency={currency}
         onSwitchToClient={() => {
+          reloadAccommodations();
           setIsHostOpen(false);
           window.history.pushState({}, '', '/');
           window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onAccommodationCreated={() => {
+          reloadAccommodations();
         }}
         onOpenRoomDetail={(roomId) => {
           const found = rooms.find((r) => String(r.id) === String(roomId));

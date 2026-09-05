@@ -112,9 +112,11 @@ export const ForgotPasswordModal = ({
       const res = await apiService.forgotPassword(email.trim());
 
       if (res.success) {
-        // setDemoOtp(res.otp_demo || '892341');
+        if (res.otp_demo) {
+          setDemoOtp(res.otp_demo);
+        }
         setStep('otp');
-        setCountdown(60*5);
+        setCountdown(60 * 5);
         setIsCounting(true);
         // Auto-focus ô OTP đầu tiên
         setTimeout(() => {
@@ -125,7 +127,13 @@ export const ForgotPasswordModal = ({
         setErrorCode(res.code || 'UNKNOWN_ERROR');
       }
     } catch (err) {
-      setError('Lỗi kết nối đến máy chủ Backend.');
+      const resp = err.response;
+      if (resp && resp.message) {
+        setError(resp.message);
+        setErrorCode(resp.code || 'ERROR');
+      } else {
+        setError(err.message || 'Lỗi kết nối đến máy chủ Backend.');
+      }
     } finally {
       setLoading(false);
     }
@@ -183,7 +191,13 @@ export const ForgotPasswordModal = ({
         setErrorCode(res.code || 'OTP_INVALID');
       }
     } catch (err) {
-      setError('Lỗi xác thực mã OTP với máy chủ.');
+      const resp = err.response;
+      if (resp && resp.message) {
+        setError(resp.message);
+        setErrorCode(resp.code || 'OTP_INVALID');
+      } else {
+        setError(err.message || 'Lỗi xác thực mã OTP với máy chủ.');
+      }
     } finally {
       setLoading(false);
     }
@@ -198,16 +212,19 @@ export const ForgotPasswordModal = ({
     try {
       const res = await apiService.forgotPassword(email.trim());
       if (res.success) {
-        setDemoOtp(res.otp_demo || '892341');
+        if (res.otp_demo) {
+          setDemoOtp(res.otp_demo);
+        }
         setOtp(['', '', '', '', '', '']);
-        setCountdown(60);
+        setCountdown(60 * 5);
         setIsCounting(true);
         if (otpInputRefs.current[0]) otpInputRefs.current[0].focus();
       } else {
         setError(res.message);
       }
     } catch (err) {
-      setError('Không thể gửi lại mã OTP.');
+      const resp = err.response;
+      setError(resp?.message || err.message || 'Không thể gửi lại mã OTP.');
     } finally {
       setLoading(false);
     }
@@ -240,7 +257,8 @@ export const ForgotPasswordModal = ({
         setError(res.message || 'Không thể đổi mật khẩu. Vui lòng thử lại.');
       }
     } catch (err) {
-      setError('Lỗi kết nối máy chủ khi cập nhật mật khẩu.');
+      const resp = err.response;
+      setError(resp?.message || err.message || 'Lỗi kết nối máy chủ khi cập nhật mật khẩu.');
     } finally {
       setLoading(false);
     }
