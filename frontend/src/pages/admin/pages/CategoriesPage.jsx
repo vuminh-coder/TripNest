@@ -340,10 +340,11 @@ export const CategoriesPage = ({
                 </p>
               </div>
               <button
-                className="adm-btn adm-btn-primary adm-btn-glow"
+                type="button"
+                className="adm-btn adm-btn-primary adm-btn-glow adm-cat-create-btn"
                 onClick={handleOpenCreateCategory}
               >
-                <TbPlus />
+                <TbPlus className="adm-btn-icon" />
                 <span>Thêm Danh Mục Mới</span>
               </button>
             </div>

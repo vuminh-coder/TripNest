@@ -1260,6 +1260,88 @@
   flex-shrink: 0;
 }
 
+/* ================== UNIFIED ADMIN BUTTON SYSTEM (.adm-btn) ================== */
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--adm-font-base, 'Be Vietnam Pro', sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--adm-radius-lg, 10px);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.adm-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.25);
+}
+
+.adm-btn:active {
+  transform: scale(0.98);
+}
+
+.adm-btn:disabled,
+.adm-btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Primary Button - Signature TripNest Coral/Rose Gradient */
+.adm-btn-primary {
+  background: var(--adm-primary-gradient, linear-gradient(135deg, #ff385c 0%, #e11d48 100%));
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 12px rgba(255, 56, 92, 0.28), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.adm-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff244d 0%, #d6113b 100%);
+  box-shadow: 0 6px 18px rgba(255, 56, 92, 0.42), 0 2px 4px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1.5px);
+  color: #ffffff !important;
+}
+
+/* Secondary Button */
+.adm-btn-secondary {
+  background: #ffffff;
+  color: var(--adm-text-main, #0f172a) !important;
+  border: 1px solid var(--adm-border-strong, #e2e8f0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.adm-btn-secondary:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Danger Button */
+.adm-btn-danger {
+  background: #ef4444;
+  color: #ffffff !important;
+  border: 1px solid #dc2626;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+}
+
+.adm-btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+  transform: translateY(-1px);
+}
+
 /* Responsive */
 @media (max-width: 992px) {
   .admin-sidebar {

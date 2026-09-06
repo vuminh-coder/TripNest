@@ -360,14 +360,84 @@
   max-width: 680px;
 }
 
-.adm-btn-glow {
-  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
-  transition: all 0.2s ease;
+/* Primary Action Button (Create Category - Ultra-Luxury ProMax Style) */
+.adm-cat-create-btn,
+.adm-panel-header .adm-btn-primary {
+  background: linear-gradient(135deg, #ff385c 0%, #e11d48 100%) !important;
+  color: #ffffff !important;
+  font-family: var(--adm-font-base, 'Be Vietnam Pro', sans-serif);
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 0.72rem 1.45rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255, 56, 92, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: -0.15px;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
 }
 
-.adm-btn-glow:hover {
-  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.4);
-  transform: translateY(-1px);
+/* Shimmer Sheen effect on hover */
+.adm-cat-create-btn::after,
+.adm-panel-header .adm-btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  transform: skewX(-20deg);
+  transition: none;
+}
+
+.adm-cat-create-btn:hover::after,
+.adm-panel-header .adm-btn-primary:hover::after {
+  left: 140%;
+  transition: all 0.75s ease-in-out;
+}
+
+.adm-cat-create-btn svg,
+.adm-cat-create-btn .adm-btn-icon,
+.adm-panel-header .adm-btn-primary svg {
+  font-size: 1.25rem;
+  stroke-width: 2.6;
+  color: #ffffff !important;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.adm-cat-create-btn:hover,
+.adm-panel-header .adm-btn-primary:hover {
+  background: linear-gradient(135deg, #ff244d 0%, #d6113b 100%) !important;
+  box-shadow: 0 8px 24px rgba(255, 56, 92, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  color: #ffffff !important;
+}
+
+.adm-cat-create-btn:hover svg,
+.adm-cat-create-btn:hover .adm-btn-icon,
+.adm-panel-header .adm-btn-primary:hover svg {
+  transform: rotate(90deg) scale(1.15);
+}
+
+.adm-cat-create-btn:active,
+.adm-panel-header .adm-btn-primary:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(255, 56, 92, 0.3);
 }
 
 /* --------------------------------------------------------------------------
@@ -853,20 +923,72 @@
 }
 
 .adm-btn-add-amenity {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-  border-color: #6d28d9;
-  padding: 0.65rem 1.25rem;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+  padding: 0.72rem 1.45rem;
+  font-family: var(--adm-font-base, 'Be Vietnam Pro', sans-serif);
+  font-size: 0.92rem;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  justify-content: center;
+  gap: 0.55rem;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.25);
   white-space: nowrap;
+  cursor: pointer;
+  letter-spacing: -0.15px;
+  text-decoration: none;
+  user-select: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.adm-btn-add-amenity::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  transform: skewX(-20deg);
+  transition: none;
+}
+
+.adm-btn-add-amenity:hover::after {
+  left: 140%;
+  transition: all 0.75s ease-in-out;
+}
+
+.adm-btn-add-amenity svg {
+  font-size: 1.25rem;
+  stroke-width: 2.6;
+  color: #ffffff !important;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .adm-btn-add-amenity:hover {
-  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.45);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%) !important;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
+  color: #ffffff !important;
+}
+
+.adm-btn-add-amenity:hover svg {
+  transform: rotate(90deg) scale(1.15);
+}
+
+.adm-btn-add-amenity:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
 }
 
 /* Amenities Cards Full Grid */
