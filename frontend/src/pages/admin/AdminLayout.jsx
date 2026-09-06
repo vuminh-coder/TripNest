@@ -229,8 +229,23 @@ export const AdminLayout = ({
   };
 
   const handleSaveUser = async (userData) => {
-    const updated = await adminService.saveUser(userData);
-    setUsers(updated);
+    if (userData && userData.id) {
+      setUsers((prev) => {
+        const exists = prev.some((u) => u.id === userData.id);
+        if (exists) {
+          return prev.map((u) => (u.id === userData.id ? { ...u, ...userData } : u));
+        }
+        return [userData, ...prev];
+      });
+    }
+    try {
+      const freshUsers = await adminService.getUsers();
+      if (freshUsers && freshUsers.length) {
+        setUsers(freshUsers);
+      }
+    } catch (e) {
+      console.warn('Làm mới danh sách người dùng thất bại:', e);
+    }
     setIsEditUserOpen(false);
     setEditUser(null);
   };

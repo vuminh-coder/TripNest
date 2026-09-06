@@ -134,27 +134,46 @@ export const UserEditModal = ({ user, onClose, onSave }) => {
     }
 
     try {
+      let token = localStorage.getItem('token');
+      if (!token) {
+        try {
+          const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+          token = storedUser?.token;
+        } catch {
+          token = null;
+        }
+      }
+
+      const headers = {
+        Accept: 'application/json',
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          Authorization: token ? `Bearer ${token}` : '',
-          Accept: 'application/json',
-        },
+        headers,
         body: data,
       });
 
       const result = await response.json();
-      if (result.success && result.data) {
+      if (response.ok && (result.success || result.data)) {
         toast.success(
           user ? 'Cập nhật thành công!' : 'Thêm người dùng thành công!',
           result.message || 'Dữ liệu người dùng đã được lưu vào hệ thống.'
         );
 
-        onSave(result.data);
+        onSave(result.data || result);
       } else {
+        let errorMsg = result.message || 'Không thể lưu dữ liệu.';
+        if (result.errors && typeof result.errors === 'object') {
+          const detailErrors = Object.values(result.errors).flat().filter(Boolean).join(' ');
+          if (detailErrors) errorMsg = detailErrors;
+        }
         toast.error(
           user ? 'Cập nhật thất bại!' : 'Thêm người dùng thất bại!',
-          result.message || 'Không thể lưu dữ liệu.'
+          errorMsg
         );
       }
     } catch (err) {
