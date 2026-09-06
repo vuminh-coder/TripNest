@@ -515,7 +515,7 @@ class HostController extends Controller
             foreach ($images as $index => $imgUrl) {
                 AccommodationImage::create([
                     'accommodation_id' => $accommodation->id,
-                    'image_url' => $imgUrl,
+                    'image_url' => $this->sanitizeImageUrl($imgUrl),
                     'caption' => 'Không gian ' . $accommodation->name_vi,
                     'display_order' => $index + 1,
                     'is_thumbnail' => ($index === 0),
@@ -593,7 +593,7 @@ class HostController extends Controller
                     foreach ($roomImgs as $index => $imgUrl) {
                         RoomImage::create([
                             'room_id' => $room->id,
-                            'image_url' => $imgUrl,
+                            'image_url' => $this->sanitizeImageUrl($imgUrl),
                             'caption' => $rNameVi,
                             'display_order' => $index + 1,
                             'is_thumbnail' => ($index === 0),
@@ -642,7 +642,7 @@ class HostController extends Controller
                 foreach ($singleRoomImages as $index => $imgUrl) {
                     RoomImage::create([
                         'room_id' => $room->id,
-                        'image_url' => $imgUrl,
+                        'image_url' => $this->sanitizeImageUrl($imgUrl),
                         'caption' => 'Ảnh không gian ' . $singleRoomName,
                         'display_order' => $index + 1,
                         'is_thumbnail' => ($index === 0),
@@ -745,7 +745,7 @@ class HostController extends Controller
                     foreach ($images as $index => $imgUrl) {
                         AccommodationImage::create([
                             'accommodation_id' => $accommodation->id,
-                            'image_url' => $imgUrl,
+                            'image_url' => $this->sanitizeImageUrl($imgUrl),
                             'caption' => 'Không gian ' . $accommodation->name_vi,
                             'display_order' => $index + 1,
                             'is_thumbnail' => ($index === 0),
@@ -831,7 +831,7 @@ class HostController extends Controller
                         foreach ($roomImgs as $index => $imgUrl) {
                             RoomImage::create([
                                 'room_id' => $room->id,
-                                'image_url' => $imgUrl,
+                                'image_url' => $this->sanitizeImageUrl($imgUrl),
                                 'caption' => $rNameVi,
                                 'display_order' => $index + 1,
                                 'is_thumbnail' => ($index === 0),
@@ -879,7 +879,7 @@ class HostController extends Controller
                         foreach ($images as $index => $imgUrl) {
                             RoomImage::create([
                                 'room_id' => $mainRoom->id,
-                                'image_url' => $imgUrl,
+                                'image_url' => $this->sanitizeImageUrl($imgUrl),
                                 'caption' => 'Ảnh phòng',
                                 'display_order' => $index + 1,
                                 'is_thumbnail' => ($index === 0),
@@ -1186,4 +1186,41 @@ class HostController extends Controller
             'payoutAccount' => $account,
         ]);
     }
+
+    /**
+     * Làm sạch và trích xuất URL ảnh trực tiếp từ các liên kết tìm kiếm (Bing, Google Images...)
+     */
+    private function sanitizeImageUrl(?string $url): string
+    {
+        if (empty($url)) return '';
+        $url = trim($url);
+
+        // Trích xuất direct image URL nếu người dùng paste link Bing Image Search
+        if (str_contains($url, 'bing.com/images/search')) {
+            $parsed = parse_url($url);
+            if (!empty($parsed['query'])) {
+                parse_str($parsed['query'], $queryParams);
+                if (!empty($queryParams['mediaurl'])) {
+                    return urldecode($queryParams['mediaurl']);
+                }
+                if (!empty($queryParams['cdnurl'])) {
+                    return urldecode($queryParams['cdnurl']);
+                }
+            }
+        }
+
+        // Trích xuất direct image URL nếu người dùng paste link Google Image Search
+        if (str_contains($url, 'google.com/imgres') || str_contains($url, 'google.com/images')) {
+            $parsed = parse_url($url);
+            if (!empty($parsed['query'])) {
+                parse_str($parsed['query'], $queryParams);
+                if (!empty($queryParams['imgurl'])) {
+                    return urldecode($queryParams['imgurl']);
+                }
+            }
+        }
+
+        return $url;
+    }
 }
+

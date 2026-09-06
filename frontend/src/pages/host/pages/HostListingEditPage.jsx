@@ -46,6 +46,30 @@ import {
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/services/api';
 
+// Trích xuất direct image URL nếu người dùng dán link từ công cụ tìm kiếm (Bing, Google Images...)
+const cleanImageUrl = (rawUrl) => {
+  if (!rawUrl) return '';
+  const trimmed = rawUrl.trim();
+  try {
+    const parsed = new URL(trimmed);
+    // Bing Image Search: ?mediaurl=... hoặc ?cdnurl=...
+    if (parsed.hostname.includes('bing.com') && parsed.pathname.includes('/images/search')) {
+      const mediaurl = parsed.searchParams.get('mediaurl');
+      if (mediaurl) return decodeURIComponent(mediaurl);
+      const cdnurl = parsed.searchParams.get('cdnurl');
+      if (cdnurl) return decodeURIComponent(cdnurl);
+    }
+    // Google Image Search: ?imgurl=...
+    if (parsed.hostname.includes('google.com') && (parsed.pathname.includes('/imgres') || parsed.pathname.includes('/images'))) {
+      const imgurl = parsed.searchParams.get('imgurl');
+      if (imgurl) return decodeURIComponent(imgurl);
+    }
+  } catch {
+    // Giữ nguyên chuỗi nếu không parse được
+  }
+  return trimmed;
+};
+
 // 5 ảnh Ngoại cảnh & Khuôn viên Cơ sở lưu trú (Hero Gallery trang Accommodation)
 const DEFAULT_ACCOMMODATION_EXTERIOR_IMAGES = [
   'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&auto=format&fit=crop&q=80',
@@ -560,7 +584,7 @@ export const HostListingEditPage = ({
 
   // Multi-Room Image Album Handlers
   const handleAddRoomImageUrl = (roomId, urlInput) => {
-    const url = (urlInput || '').trim();
+    const url = cleanImageUrl(urlInput);
     if (!url) return;
     if (!/^https?:\/\//i.test(url)) {
       toast.warning('Định dạng URL', 'Vui lòng dán link bắt đầu bằng http:// hoặc https://');
@@ -641,7 +665,7 @@ export const HostListingEditPage = ({
   // Entire Place Interior Image Handlers
   const handleAddEntirePlaceImageUrl = (e) => {
     if (e) e.preventDefault();
-    const url = newEntireImageUrl.trim();
+    const url = cleanImageUrl(newEntireImageUrl);
     if (!url) return;
     if (!/^https?:\/\//i.test(url)) {
       toast.warning('Định dạng URL', 'Vui lòng dán link bắt đầu bằng http:// hoặc https://');
@@ -730,7 +754,7 @@ export const HostListingEditPage = ({
 
   const handleAddImageUrl = (e) => {
     if (e) e.preventDefault();
-    const url = newImageUrl.trim();
+    const url = cleanImageUrl(newImageUrl);
     if (!url) return;
     if (!/^https?:\/\//i.test(url)) {
       toast.warning('Định dạng URL', 'Vui lòng dán link bắt đầu bằng http:// hoặc https://');
