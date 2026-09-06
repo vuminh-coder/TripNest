@@ -162,75 +162,67 @@ const CancelDialog = ({ booking, onConfirm, onClose, isLoading }) => {
           </div>
 
           {/* Refund Policy Preview */}
-          <div
-            style={{
-              background: policyBg,
-              border: `1.5px solid ${policyBorder}`,
-              borderRadius: '12px',
-              padding: '14px 16px',
-              marginBottom: '14px',
-            }}
-          >
+          <div className={`cancel-refund-preview cancel-refund-preview--${pct >= 100 ? 'full' : pct > 0 ? 'partial' : 'none'}`}>
             {previewLoading ? (
-              <div style={{ textAlign: 'center', color: '#64748b', padding: '10px 0' }}>
-                <span className="action-spinner" style={{ marginRight: 8 }} />
+              <div className="cancel-refund-loading">
+                <span className="action-spinner" />
                 Đang tính toán chính sách hoàn tiền...
               </div>
             ) : (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  <span style={{ fontSize: '1.3rem' }}>{policyIcon}</span>
-                  <strong style={{ color: policyColor, fontSize: '0.92rem' }}>
+                <div className="cancel-refund-policy-badge">
+                  <span className="cancel-refund-policy-icon">{policyIcon}</span>
+                  <span className="cancel-refund-policy-text">
                     {refund?.policy_description || `Hoàn tiền ${pct}%`}
-                  </strong>
+                  </span>
                 </div>
 
                 {refund?.breakdown && (
-                  <div style={{ fontSize: '0.82rem', display: 'flex', flexDirection: 'column', gap: 4, color: '#334155' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Phí phòng hoàn lại:</span>
-                      <span style={{ fontWeight: 600 }}>
+                  <div className="cancel-refund-breakdown">
+                    <div className="cancel-refund-row">
+                      <span>Tiền phòng</span>
+                      <span className="cancel-refund-val">
                         {Number(refund.breakdown.base_price_refund).toLocaleString()} ₫
                       </span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Phí vệ sinh hoàn lại:</span>
-                      <span style={{ fontWeight: 600 }}>
+                    <div className="cancel-refund-row">
+                      <span>Phí vệ sinh</span>
+                      <span className="cancel-refund-val">
                         {Number(refund.breakdown.cleaning_fee_refund).toLocaleString()} ₫
                       </span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Phí dịch vụ {refund.service_fee_refundable ? '(hoàn)' : '(không hoàn)'}:</span>
-                      <span style={{ fontWeight: 600, color: refund.service_fee_refundable ? '#059669' : '#dc2626' }}>
+                    <div className="cancel-refund-row">
+                      <span>Phí dịch vụ sàn</span>
+                      <span className={`cancel-refund-val ${refund.service_fee_refundable ? 'cancel-refund-val--ok' : 'cancel-refund-val--no'}`}>
                         {refund.service_fee_refundable
                           ? `${Number(refund.breakdown.service_fee_refund).toLocaleString()} ₫`
-                          : '0 ₫'}
+                          : '0 ₫ (giữ lại)'}
                       </span>
                     </div>
                     {Number(refund.breakdown.discount_deducted || 0) > 0 && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#be123c' }}>
-                        <span>Giảm giá voucher / ưu đãi đã trừ:</span>
-                        <span style={{ fontWeight: 600 }}>
-                          -{Number(refund.breakdown.discount_deducted).toLocaleString()} ₫
+                      <div className="cancel-refund-row cancel-refund-row--discount">
+                        <span>🏷️ Voucher / ưu đãi đã áp dụng</span>
+                        <span className="cancel-refund-val cancel-refund-val--discount">
+                          −{Number(refund.breakdown.discount_deducted).toLocaleString()} ₫
                         </span>
                       </div>
                     )}
-                    <hr style={{ border: 'none', borderTop: `1px solid ${policyBorder}`, margin: '6px 0' }} />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', alignItems: 'center' }}>
-                      <strong style={{ color: policyColor }}>
-                        💰 {pct >= 100 ? 'HOÀN TIỀN TOÀN BỘ (100%)' : pct > 0 ? `HOÀN TIỀN ${pct}%` : 'KHÔNG HOÀN TIỀN'}
-                      </strong>
-                      <strong style={{ color: policyColor, fontSize: '1.15rem' }}>
+                    <div className="cancel-refund-divider" />
+                    <div className="cancel-refund-total">
+                      <span className="cancel-refund-total-label">
+                        {pct >= 100 ? '💰 Bạn nhận lại toàn bộ' : pct > 0 ? `💰 Bạn nhận lại (${pct}%)` : '❌ Không hoàn tiền'}
+                      </span>
+                      <span className="cancel-refund-total-amount">
                         {Number(refundAmt).toLocaleString()} ₫
-                      </strong>
+                      </span>
                     </div>
                   </div>
                 )}
 
                 {refundAmt > 0 && (
-                  <div style={{ fontSize: '0.76rem', color: '#64748b', marginTop: 8 }}>
-                    Phương thức: {refund?.refund_method === 'bank_transfer' ? 'Chuyển khoản ngân hàng' : refund?.refund_method || 'Cổng thanh toán'} •
-                    Thời gian: {refund?.estimated_days || '5-10 ngày làm việc'}
+                  <div className="cancel-refund-method">
+                    📋 {refund?.refund_method === 'bank_transfer' ? 'Chuyển khoản ngân hàng' : refund?.refund_method || 'Cổng thanh toán'}
+                    &nbsp;•&nbsp;Trong {refund?.estimated_days || '5-10 ngày làm việc'}
                   </div>
                 )}
               </>
@@ -648,54 +640,26 @@ export const MyTripsPage = ({
 
                     {(status === 'cancelled' || status === 'refunded') && b.cancellationReason && (
                       <div className="trip-cancel-reason-box">
-                        <TbAlertCircle /> <strong>Lý do hủy đơn (Đã lưu CSDL):</strong> {b.cancellationReason}
+                        <TbAlertCircle /> <strong>Lý do hủy:</strong> {b.cancellationReason}
                       </div>
                     )}
 
                     {/* Refund Info for Cancelled Bookings */}
                     {(status === 'cancelled' || status === 'refunded') && (b.refundAmount > 0 || b.refundPercentage > 0) && (
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 8,
-                          padding: '8px 12px',
-                          borderRadius: 8,
-                          fontSize: '0.82rem',
-                          fontWeight: 600,
-                          marginTop: 6,
-                          background: b.refundPercentage >= 100 ? '#f0fdf4' : b.refundPercentage > 0 ? '#fffbeb' : '#fef2f2',
-                          color: b.refundPercentage >= 100 ? '#059669' : b.refundPercentage > 0 ? '#d97706' : '#dc2626',
-                          border: `1px solid ${b.refundPercentage >= 100 ? '#a7f3d0' : b.refundPercentage > 0 ? '#fde68a' : '#fecaca'}`,
-                        }}
-                      >
-                        <TbReceiptRefund style={{ fontSize: '1.1rem', flexShrink: 0 }} />
+                      <div className={`trip-refund-badge trip-refund-badge--${b.refundPercentage >= 100 ? 'full' : b.refundPercentage > 0 ? 'partial' : 'none'}`}>
+                        <TbReceiptRefund className="trip-refund-badge-icon" />
                         <span>
-                          Hoàn tiền {b.refundPercentage}% = {Number(b.refundAmount).toLocaleString()} ₫
-                          {b.refundSummary?.status === 'processing' && ' • Đang xử lý'}
-                          {b.refundSummary?.status === 'completed' && ' • Đã hoàn tiền'}
+                          Hoàn {b.refundPercentage >= 100 ? 'toàn bộ' : `${b.refundPercentage}%`}: <strong>{Number(b.refundAmount).toLocaleString()} ₫</strong>
+                          {b.refundSummary?.status === 'processing' && <span className="trip-refund-status"> • Đang xử lý</span>}
+                          {b.refundSummary?.status === 'completed' && <span className="trip-refund-status trip-refund-status--done"> • Đã hoàn</span>}
                         </span>
                       </div>
                     )}
 
                     {(status === 'cancelled' || status === 'refunded') && b.refundPercentage === 0 && (
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 8,
-                          padding: '8px 12px',
-                          borderRadius: 8,
-                          fontSize: '0.82rem',
-                          fontWeight: 600,
-                          marginTop: 6,
-                          background: '#fef2f2',
-                          color: '#dc2626',
-                          border: '1px solid #fecaca',
-                        }}
-                      >
-                        <TbCircleX style={{ fontSize: '1.1rem', flexShrink: 0 }} />
-                        <span>Không hoàn tiền — đã quá giờ nhận phòng</span>
+                      <div className="trip-refund-badge trip-refund-badge--none">
+                        <TbCircleX className="trip-refund-badge-icon" />
+                        <span>Không hoàn tiền — Đã quá giờ nhận phòng</span>
                       </div>
                     )}
                   </div>

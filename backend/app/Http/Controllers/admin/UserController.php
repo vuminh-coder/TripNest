@@ -388,15 +388,111 @@ class UserController extends Controller
 
             DB::transaction(function () use ($user) {
                 $account = $user->account;
-                $user->wishlists()->delete();
-                $user->bookings()->delete();
-                $user->reviews()->delete();
-                if ($user->host) {
-                    $user->host->rooms()->delete();
-                    $user->host->delete();
+                $host = $user->host;
+
+                // 1. Thu thập danh sách đơn đặt phòng liên quan tới user (với vai trò khách thuê)
+                $guestBookingIds = DB::table('bookings')->where('user_id', $user->id)->pluck('id')->toArray();
+
+                // 2. Thu thập danh sách cơ sở lưu trú, phòng và đơn đặt phòng liên quan tới host
+                $accommodationIds = [];
+                $roomIds = [];
+                $hostBookingIds = [];
+                $hostPayoutAccountIds = [];
+
+                if ($host) {
+                    $hostPayoutAccountIds = DB::table('host_payout_accounts')->where('host_id', $host->id)->pluck('id')->toArray();
+                    // Lấy toàn bộ cơ sở lưu trú (kể cả đã bị soft-delete) để tránh vi phạm FK ON DELETE RESTRICT
+                    $accommodationIds = DB::table('accommodations')->where('host_id', $host->id)->pluck('id')->toArray();
+                    if (!empty($accommodationIds)) {
+                        // Lấy toàn bộ phòng (kể cả đã bị soft-delete)
+                        $roomIds = DB::table('rooms')->whereIn('accommodation_id', $accommodationIds)->pluck('id')->toArray();
+                        if (!empty($roomIds)) {
+                            $hostBookingIds = DB::table('bookings')->whereIn('room_id', $roomIds)->pluck('id')->toArray();
+                        }
+                    }
                 }
-                $user->delete();
-                $account?->delete();
+
+                $allBookingIds = array_values(array_unique(array_merge($guestBookingIds, $hostBookingIds)));
+
+                // 3. Xóa các giao dịch giải ngân (payout_transactions) có FK liên quan (ON DELETE RESTRICT)
+                if ($host || !empty($allBookingIds)) {
+                    $payoutQuery = DB::table('payout_transactions');
+                    $hasCondition = false;
+                    if ($host) {
+                        $payoutQuery->where('host_id', $host->id);
+                        $hasCondition = true;
+                    }
+                    if (!empty($hostPayoutAccountIds)) {
+                        if ($hasCondition) {
+                            $payoutQuery->orWhereIn('payout_account_id', $hostPayoutAccountIds);
+                        } else {
+                            $payoutQuery->whereIn('payout_account_id', $hostPayoutAccountIds);
+                            $hasCondition = true;
+                        }
+                    }
+                    if (!empty($allBookingIds)) {
+                        if ($hasCondition) {
+                            $payoutQuery->orWhereIn('booking_id', $allBookingIds);
+                        } else {
+                            $payoutQuery->whereIn('booking_id', $allBookingIds);
+                            $hasCondition = true;
+                        }
+                    }
+                    if ($hasCondition) {
+                        $payoutQuery->delete();
+                    }
+                }
+
+                // 4. Xóa tài khoản nhận tiền của host (host_payout_accounts)
+                if ($host && !empty($hostPayoutAccountIds)) {
+                    DB::table('host_payout_accounts')->where('host_id', $host->id)->delete();
+                }
+
+                // 5. Xóa các bảng phụ thuộc vào bookings và bản thân bookings
+                if (!empty($allBookingIds)) {
+                    DB::table('refunds')->whereIn('booking_id', $allBookingIds)->delete();
+                    DB::table('payments')->whereIn('booking_id', $allBookingIds)->delete();
+                    DB::table('reviews')->whereIn('booking_id', $allBookingIds)->delete();
+                    DB::table('bookings')->whereIn('id', $allBookingIds)->delete();
+                }
+
+                // 6. Xóa các phòng và dữ liệu liên quan (hard-delete để xóa sạch ràng buộc FK)
+                if (!empty($roomIds)) {
+                    DB::table('room_images')->whereIn('room_id', $roomIds)->delete();
+                    DB::table('room_amenity')->whereIn('room_id', $roomIds)->delete();
+                    DB::table('wishlists')->whereIn('room_id', $roomIds)->delete();
+                    DB::table('reviews')->whereIn('room_id', $roomIds)->delete();
+                    DB::table('rooms')->whereIn('id', $roomIds)->delete();
+                }
+
+                // 7. Xóa các cơ sở lưu trú và dữ liệu liên quan (hard-delete)
+                if (!empty($accommodationIds)) {
+                    DB::table('accommodation_images')->whereIn('accommodation_id', $accommodationIds)->delete();
+                    DB::table('accommodation_amenity')->whereIn('accommodation_id', $accommodationIds)->delete();
+                    DB::table('accommodations')->whereIn('id', $accommodationIds)->delete();
+                }
+
+                // 8. Gỡ liên kết trải nghiệm và xóa host
+                if ($host) {
+                    DB::table('experiences')->where('host_id', $host->id)->update(['host_id' => null]);
+                    DB::table('hosts')->where('id', $host->id)->delete();
+                }
+
+                // 9. Xóa danh sách yêu thích và đánh giá của user
+                DB::table('wishlists')->where('user_id', $user->id)->delete();
+                DB::table('reviews')->where('user_id', $user->id)->delete();
+
+                // 10. Xóa phiên làm việc và token xác thực
+                DB::table('sessions')->where('user_id', $user->id)->delete();
+                if ($account) {
+                    DB::table('personal_access_tokens')->where('tokenable_id', $account->id)->delete();
+                }
+
+                // 11. Xóa hồ sơ user và tài khoản
+                DB::table('users')->where('id', $user->id)->delete();
+                if ($account) {
+                    DB::table('accounts')->where('id', $account->id)->delete();
+                }
             });
 
             return response()->json([
