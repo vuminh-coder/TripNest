@@ -6,8 +6,12 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000
 const getAuthHeaders = () => {
   let token = localStorage.getItem('token');
   if (!token) {
-    const user = JSON.parse(localStorage.getItem('tripnest_user') || 'null');
-    token = user?.token;
+    try {
+      const user = JSON.parse(localStorage.getItem('tripnest_user') || localStorage.getItem('user') || '{}');
+      token = user?.token;
+    } catch {
+      token = null;
+    }
   }
   const headers = {
     'Content-Type': 'application/json',
@@ -448,54 +452,47 @@ export const apiService = {
       const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel-preview`, {
         headers: getAuthHeaders(),
       });
-      if (!res.ok) throw new Error('Cancel preview error');
-      return await res.json();
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Không thể tải thông tin chính sách hoàn tiền.');
+      }
+      return data;
     } catch (e) {
       console.warn('Cancel preview fallback:', e);
       return {
         success: false,
-        refund: { percentage: 100, amount: 0, policy_description: 'Không thể tải chính sách hoàn tiền.' },
+        message: e.message,
+        refund: { percentage: 100, amount: 0, policy_description: 'Chính sách hoàn tiền tiêu chuẩn.' },
       };
     }
   },
 
   async cancelBooking(bookingId, reason = 'Khách hàng yêu cầu hủy qua ứng dụng.', isHostCancel = false) {
-    try {
-      const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ reason, host_cancel: isHostCancel }),
-      });
-      const data = await res.json();
-
-      const refundData = data?.refund;
-
-      // Update localStorage to stay in sync
-      this._updateLocalBookingStatus(bookingId, 'cancelled', {
-        cancellationReason: reason,
-        cancelledAt: new Date().toISOString(),
-        refundAmount: refundData?.amount ?? 0,
-        refundPercentage: refundData?.percentage ?? (isHostCancel ? 100 : 0),
-        refundSummary: refundData,
-        canCancel: false,
-        canCheckIn: false,
-        canCheckOut: false,
-      });
-
-      return data;
-    } catch (e) {
-      // Offline fallback
-      this._updateLocalBookingStatus(bookingId, 'cancelled', {
-        cancellationReason: reason,
-        cancelledAt: new Date().toISOString(),
-        refundAmount: 0,
-        refundPercentage: isHostCancel ? 100 : 0,
-        canCancel: false,
-        canCheckIn: false,
-        canCheckOut: false,
-      });
-      return { success: true, message: 'Đã hủy đơn đặt phòng.' };
+    const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ reason, host_cancel: isHostCancel }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.success === false) {
+      throw new Error(data.message || 'Máy chủ từ chối hủy đặt phòng.');
     }
+
+    const refundData = data?.refund;
+
+    // Update localStorage to stay in sync
+    this._updateLocalBookingStatus(bookingId, 'cancelled', {
+      cancellationReason: reason,
+      cancelledAt: new Date().toISOString(),
+      refundAmount: refundData?.amount ?? 0,
+      refundPercentage: refundData?.percentage ?? (isHostCancel ? 100 : 0),
+      refundSummary: refundData,
+      canCancel: false,
+      canCheckIn: false,
+      canCheckOut: false,
+    });
+
+    return data;
   },
 
   async checkIn(bookingId) {

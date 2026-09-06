@@ -141,9 +141,9 @@ const CancelDialog = ({ booking, onConfirm, onClose, isLoading }) => {
             Hủy đơn đặt phòng
           </h3>
           <button
-            className="auth-modal-close-btn"
+            className="cancel-dialog-header-close"
             onClick={onClose}
-            style={{ position: 'static', width: 32, height: 32 }}
+            title="Đóng"
           >
             <TbX />
           </button>
@@ -207,12 +207,20 @@ const CancelDialog = ({ booking, onConfirm, onClose, isLoading }) => {
                           : '0 ₫'}
                       </span>
                     </div>
+                    {Number(refund.breakdown.discount_deducted || 0) > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#be123c' }}>
+                        <span>Giảm giá voucher / ưu đãi đã trừ:</span>
+                        <span style={{ fontWeight: 600 }}>
+                          -{Number(refund.breakdown.discount_deducted).toLocaleString()} ₫
+                        </span>
+                      </div>
+                    )}
                     <hr style={{ border: 'none', borderTop: `1px solid ${policyBorder}`, margin: '6px 0' }} />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', alignItems: 'center' }}>
                       <strong style={{ color: policyColor }}>
-                        💰 {pct >= 100 ? 'HOÀN TIỀN TOÀN BỘ' : pct > 0 ? `HOÀN TIỀN ${pct}%` : 'KHÔNG HOÀN TIỀN'}
+                        💰 {pct >= 100 ? 'HOÀN TIỀN TOÀN BỘ (100%)' : pct > 0 ? `HOÀN TIỀN ${pct}%` : 'KHÔNG HOÀN TIỀN'}
                       </strong>
-                      <strong style={{ color: policyColor, fontSize: '1.1rem' }}>
+                      <strong style={{ color: policyColor, fontSize: '1.15rem' }}>
                         {Number(refundAmt).toLocaleString()} ₫
                       </strong>
                     </div>
@@ -421,13 +429,14 @@ export const MyTripsPage = ({
     if (!cancelTarget) return;
     setCancelLoading(true);
     try {
-      // Call Backend API -> MySQL DB update
-      const res = await apiService.cancelBooking(cancelTarget.id, reason);
+      // Ưu tiên truyền mã đặt phòng booking_code hoặc ID số
+      const targetIdentifier = cancelTarget.id || cancelTarget.bookingId;
+      const res = await apiService.cancelBooking(targetIdentifier, reason);
       const refundInfo = res?.refund;
 
       setBookings((prev) =>
         prev.map((b) =>
-          b.id === cancelTarget.id
+          (b.id === cancelTarget.id || b.bookingId === cancelTarget.bookingId)
             ? {
                 ...b,
                 status: 'cancelled',
@@ -443,7 +452,7 @@ export const MyTripsPage = ({
         )
       );
 
-      if (onCancelBooking) onCancelBooking(cancelTarget.id, reason, refundInfo);
+      if (onCancelBooking) onCancelBooking(targetIdentifier, reason, refundInfo);
 
       const refundMsg = refundInfo
         ? refundInfo.percentage > 0
@@ -452,6 +461,9 @@ export const MyTripsPage = ({
         : 'Thông tin hủy đơn đã được cập nhật vào cơ sở dữ liệu.';
 
       toast.success('Đã hủy đặt phòng thành công!', refundMsg);
+
+      // Đồng bộ dữ liệu tươi mới nhất từ MySQL Database
+      await fetchBookingsFromDB();
     } catch (err) {
       toast.error('Không thể hủy phòng', err.message || 'Lỗi hệ thống khi gửi yêu cầu hủy.');
     } finally {

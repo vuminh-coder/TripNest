@@ -1,5 +1,5 @@
 {
-    "timestamp": "2026-09-06 05:02:34",
+    "timestamp": "2026-09-06 15:41:32",
     "suites": {
         "Database Schema": [
             {
@@ -10,17 +10,17 @@
             {
                 "name": "Accommodations -> Category Foreign Key",
                 "status": "PASSED",
-                "details": "100% chỗ ở (174\/174) gắn chặt với category_id hợp lệ."
+                "details": "100% chỗ ở (177\/177) gắn chặt với category_id hợp lệ."
             },
             {
                 "name": "Amenities & Pivot Tables Integrity",
                 "status": "PASSED",
-                "details": "Tiện nghi: 28 mục | Pivot acc: 974 dòng | Pivot room: 2478 dòng."
+                "details": "Tiện nghi: 31 mục | Pivot acc: 986 dòng | Pivot room: 2490 dòng."
             },
             {
                 "name": "Reviews FK & 6-Dimension Radar JSON",
                 "status": "PASSED",
-                "details": "Reviews: 116 dòng | FK booking_id: 4 | JSON Radar 6 trục hợp lệ."
+                "details": "Reviews: 112 dòng | FK booking_id: 4 | JSON Radar 6 trục hợp lệ."
             },
             {
                 "name": "Experiences Host FK & Column Sanity",
@@ -47,7 +47,7 @@
             {
                 "name": "Database Sync for Cancelled Bookings",
                 "status": "PASSED",
-                "details": "Đơn đã hủy trong DB: 5 | Bản ghi refunds: 4 | Lệnh Payout hủy: 1"
+                "details": "Đơn đã hủy trong DB: 9 | Bản ghi refunds: 7 | Lệnh Payout hủy: 2"
             }
         ],
         "Category API": [
@@ -64,19 +64,19 @@
             {
                 "name": "CategoryController@adminDestroy Safe Protection",
                 "status": "PASSED",
-                "details": "Chặn xóa an toàn danh mục 'Tất cả chỗ ở' (có 5 chỗ ở). Mã HTTP 400."
+                "details": "Chặn xóa an toàn danh mục 'Tất cả chỗ ở' (có 6 chỗ ở). Mã HTTP 400."
             }
         ],
         "Amenity API": [
             {
                 "name": "AmenityController@store",
                 "status": "PASSED",
-                "details": "Thêm tiện nghi mới thành công (ID: 54)."
+                "details": "Thêm tiện nghi mới thành công (ID: 61)."
             },
             {
                 "name": "AmenityController@destroy",
                 "status": "PASSED",
-                "details": "Xóa tiện nghi thử nghiệm (ID: 54) dọn dẹp sạch sẽ."
+                "details": "Xóa tiện nghi thử nghiệm (ID: 61) dọn dẹp sạch sẽ."
             }
         ],
         "Experience API": [
@@ -102,7 +102,7 @@
             {
                 "name": "Financials Payouts & Refunds Math Totals",
                 "status": "PASSED",
-                "details": "Đã giải ngân: 96.322.000 ₫ | Đang chờ (Escrow): 26.776.000 ₫ | Tổng hoàn tiền đơn hủy: 6.966.000 ₫"
+                "details": "Đã giải ngân: 96.322.000 ₫ | Đang chờ (Escrow): 28.806.000 ₫ | Tổng hoàn tiền đơn hủy: 26.162.000 ₫"
             }
         ]
     },
