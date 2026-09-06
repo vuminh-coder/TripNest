@@ -29,6 +29,8 @@ class Booking extends Model
         'discount_amount',
         'voucher_id',
         'total_price',
+        'refund_amount',
+        'refund_percentage',
         'status',
         'checked_in_at',
         'checked_out_at',
@@ -50,6 +52,8 @@ class Booking extends Model
             'service_fee' => 'decimal:2',
             'discount_amount' => 'decimal:2',
             'total_price' => 'decimal:2',
+            'refund_amount' => 'decimal:2',
+            'refund_percentage' => 'integer',
             'checked_in_at' => 'datetime',
             'checked_out_at' => 'datetime',
             'cancelled_at' => 'datetime',
@@ -84,6 +88,43 @@ class Booking extends Model
     public function payoutTransactions(): HasMany
     {
         return $this->hasMany(PayoutTransaction::class, 'booking_id');
+    }
+
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class, 'booking_id');
+    }
+
+    /**
+     * Tổng hợp thông tin hoàn tiền của booking
+     */
+    public function getRefundSummaryAttribute(): ?array
+    {
+        if ($this->status !== self::STATUS_CANCELLED && $this->status !== self::STATUS_REFUNDED) {
+            return null;
+        }
+
+        $refund = $this->refunds()->latest()->first();
+        if (!$refund) {
+            return [
+                'percentage' => (int)($this->refund_percentage ?? 100),
+                'amount' => (float)($this->refund_amount ?? $this->total_price),
+                'status' => 'pending',
+                'policy' => 'full_48h',
+                'policy_label' => 'Hoàn tiền 100%',
+            ];
+        }
+
+        return [
+            'percentage' => (int)$refund->refund_percentage,
+            'amount' => (float)$refund->refund_amount,
+            'status' => $refund->status,
+            'status_label' => $refund->status_label,
+            'policy' => $refund->policy_applied,
+            'policy_label' => $refund->policy_label,
+            'refund_method' => $refund->refund_method,
+            'processed_at' => $refund->processed_at?->toISOString(),
+        ];
     }
 
     // ===== Status Constants =====

@@ -1210,15 +1210,44 @@
 }
 
 .tn-urgency-note {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #e11d48;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #b91c1c;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 6px 10px;
   text-align: center;
   white-space: nowrap;
+  letter-spacing: -0.1px;
+  box-shadow: 0 1px 2px rgba(225, 29, 72, 0.04);
+}
+
+.tn-urgency-icon {
+  font-size: 1rem;
+  color: #ef4444;
+  flex-shrink: 0;
+  animation: tnPulseBolt 2.2s infinite ease-in-out;
+}
+
+@keyframes tnPulseBolt {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.85;
+    color: #dc2626;
+  }
 }
 
 /* --------------------------------------------------------------------------
-   FLOATING STICKY SUMMARY BOTTOM BAR
+   FLOATING STICKY SUMMARY BOTTOM BAR (Ultra-Clean Luxury Glassmorphic Design)
    -------------------------------------------------------------------------- */
 .tn-floating-summary-bar {
   position: fixed;
@@ -1226,18 +1255,28 @@
   left: 0;
   right: 0;
   z-index: 9999;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #ffffff;
-  padding: 1rem 1.5rem;
-  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s ease;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 0.85rem 2rem;
+  box-shadow: 
+    0 -1px 0 0 rgba(255, 255, 255, 0.8) inset,
+    0 -12px 36px -4px rgba(15, 23, 42, 0.08),
+    0 -4px 12px -2px rgba(15, 23, 42, 0.04);
+  animation: tnSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s ease;
 }
 
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+@keyframes tnSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .tn-floating-inner {
@@ -1252,20 +1291,70 @@
 .tn-floating-summary-info {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
   flex-wrap: wrap;
 }
 
+/* 1. Soft Elegant Room Count Badge */
 .tn-floating-rooms-badge {
-  background: #ff385c;
-  color: #ffffff;
-  font-size: 0.85rem;
-  font-weight: 800;
-  padding: 4px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+  color: #e11d48;
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 6px 14px;
   border-radius: 999px;
   white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(225, 29, 72, 0.06);
 }
 
+.tn-badge-bed-icon {
+  font-size: 1.05rem;
+  color: #ff385c;
+}
+
+.tn-badge-nights {
+  font-weight: 500;
+  color: #be123c;
+}
+
+.tn-badge-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f43f5e;
+  box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+  animation: tnBadgePulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+  flex-shrink: 0;
+}
+
+@keyframes tnBadgePulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(244, 63, 94, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+  }
+}
+
+/* 2. Delicate Divider */
+.tn-floating-divider {
+  width: 1px;
+  height: 28px;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+/* 3. Price Display */
 .tn-floating-price-box {
   display: flex;
   align-items: baseline;
@@ -1274,27 +1363,118 @@
 }
 
 .tn-floating-label {
-  font-size: 0.9rem;
-  color: #cbd5e1;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: none;
 }
 
 .tn-floating-val {
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: #ffffff;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+  font-family: inherit;
   white-space: nowrap;
 }
 
 .tn-floating-tax-note {
   font-size: 0.75rem;
-  color: #94a3b8;
+  font-weight: 500;
+  color: #64748b;
+  background: #f8fafc;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  margin-left: 2px;
+}
+
+/* 4. Actions Group */
+.tn-floating-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-shrink: 0;
+}
+
+.tn-floating-guarantee {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1fae5;
+  white-space: nowrap;
+}
+
+.tn-guarantee-icon {
+  font-size: 1rem;
+  color: #10b981;
 }
 
 .tn-floating-submit-btn {
-  border-radius: 8px;
-  padding: 0.85rem 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ff385c 0%, #e00b41 50%, #d70466 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem 2.2rem;
   font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
   white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(255, 56, 92, 0.35);
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tn-floating-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 56, 92, 0.45);
+  filter: brightness(1.04);
+}
+
+.tn-floating-submit-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 56, 92, 0.3);
+}
+
+.tn-floating-submit-btn .tn-btn-arrow-icon {
+  font-size: 1.15rem;
+  transition: transform 0.2s ease;
+}
+
+.tn-floating-submit-btn:hover .tn-btn-arrow-icon {
+  transform: translateX(4px);
+}
+
+/* Room Capacity Alert */
+.tn-room-capacity-alert {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin-top: 0.6rem;
+  line-height: 1.4;
+}
+
+.tn-room-capacity-alert svg {
+  font-size: 1.05rem;
+  color: #d97706;
+  flex-shrink: 0;
 }
 
 /* --------------------------------------------------------------------------

@@ -352,16 +352,17 @@ function App() {
 
       const bookRoomId = getBookingRoomIdFromUrl();
       if (bookRoomId) {
-        const found = rooms.find((r) => String(r.id) === String(bookRoomId));
-        if (found) {
-          handleStartCheckout(found, {});
-        } else {
-          apiService.getRoomById(bookRoomId).then((single) => {
-            if (single && (single.id || single.title)) {
-              handleStartCheckout(single, {});
-            }
-          });
-        }
+        apiService.getRoomById(bookRoomId).then((single) => {
+          if (single && (single.id || single.title)) {
+            handleStartCheckout(single, {});
+          } else {
+            const found = rooms.find((r) => String(r.id) === String(bookRoomId));
+            if (found) handleStartCheckout(found, {});
+          }
+        }).catch(() => {
+          const found = rooms.find((r) => String(r.id) === String(bookRoomId));
+          if (found) handleStartCheckout(found, {});
+        });
         return;
       }
 
@@ -496,10 +497,25 @@ function App() {
   };
 
   // Level 3: Select child room and navigate to /room/:id
-  const handleSelectRoom = async (roomOrId) => {
+  const handleSelectRoom = async (roomOrId, bookingContext) => {
     setIsMyTripsOpen(false);
     const roomId = typeof roomOrId === 'object' && roomOrId !== null ? roomOrId.id : roomOrId;
     const roomObj = typeof roomOrId === 'object' && roomOrId !== null ? roomOrId : { id: roomId };
+
+    // Synchronize searchParams with the active bookingContext (checkIn, checkOut, guests, nights)
+    if (bookingContext) {
+      setSearchParams((prev) => ({
+        ...prev,
+        ...bookingContext,
+        checkIn: bookingContext.checkIn || bookingContext.checkInDate || prev.checkIn,
+        checkInDate: bookingContext.checkIn || bookingContext.checkInDate || prev.checkInDate,
+        checkOut: bookingContext.checkOut || bookingContext.checkOutDate || prev.checkOut,
+        checkOutDate: bookingContext.checkOut || bookingContext.checkOutDate || prev.checkOutDate,
+        guests: bookingContext.guests || prev.guests,
+        nights: bookingContext.nights || prev.nights,
+      }));
+    }
+
     setSelectedRoom(roomObj);
     setSelectedAccommodation(null);
     setCheckoutData(null);
@@ -559,6 +575,20 @@ function App() {
   const handleStartCheckout = (roomToBook, bookingParams) => {
     const token = localStorage.getItem('token');
     const isLoggedIn = Boolean(token || (user && user.id));
+
+    // Synchronize global searchParams with this bookingParams
+    if (bookingParams) {
+      setSearchParams((prev) => ({
+        ...prev,
+        ...bookingParams,
+        checkIn: bookingParams.checkIn || bookingParams.checkInDate || prev.checkIn,
+        checkInDate: bookingParams.checkIn || bookingParams.checkInDate || prev.checkInDate,
+        checkOut: bookingParams.checkOut || bookingParams.checkOutDate || prev.checkOut,
+        checkOutDate: bookingParams.checkOut || bookingParams.checkOutDate || prev.checkOutDate,
+        guests: bookingParams.guests || prev.guests,
+        nights: bookingParams.nights || prev.nights,
+      }));
+    }
 
     if (!isLoggedIn) {
       toast.info(
@@ -698,9 +728,18 @@ function App() {
     const guestPhone = bookingData.phone || bookingData.guest_phone || bookingData.guestPhone || '0912 345 678';
     const guestEmail = bookingData.email || bookingData.guest_email || 'guest@tripnest.vn';
     const roomTitle = bookingData.roomTitle || bookingData.room?.title || bookingData.room?.name || 'Chỗ nghỉ cao cấp TripNest';
-    const checkIn = bookingData.checkIn || bookingData.check_in_date || bookingData.checkInDate || '25/08/2026';
-    const checkOut = bookingData.checkOut || bookingData.check_out_date || bookingData.checkOutDate || '28/08/2026';
-    const nights = bookingData.nights || 3;
+    const today = new Date();
+    const dTomorrow = new Date(today);
+    dTomorrow.setDate(today.getDate() + 1);
+    const dAfterTomorrow = new Date(today);
+    dAfterTomorrow.setDate(today.getDate() + 3);
+    const defaultCheckIn = dTomorrow.toISOString().split('T')[0];
+    const defaultCheckOut = dAfterTomorrow.toISOString().split('T')[0];
+
+    const checkIn = bookingData.checkIn || bookingData.check_in_date || bookingData.checkInDate || defaultCheckIn;
+    const checkOut = bookingData.checkOut || bookingData.check_out_date || bookingData.checkOutDate || defaultCheckOut;
+    const calcNights = Math.max(1, Math.round((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)));
+    const nights = Number(bookingData.nights) || (isNaN(calcNights) ? 2 : calcNights);
     const guests = bookingData.guests || bookingData.guests_count || 2;
 
     const newBooking = {
@@ -767,10 +806,11 @@ function App() {
           check_out: checkOut.includes('/') ? checkOut.split('/').reverse().join('-') : checkOut,
           nights,
           guests_count: guests,
-          base_price: hostEarnings,
+          base_price: bookingData.base_price || hostEarnings,
           cleaning_fee: bookingData.cleaning_fee || 0,
-          service_fee: Math.round(totalPrice * 0.12),
+          service_fee: bookingData.service_fee || Math.round(totalPrice * 0.12),
           total_price: totalPrice,
+          host_earnings: hostEarnings,
           currency: 'VND',
           payment_method: bookingData.paymentMethod || 'Credit Card (Visa)',
           payment_status: 'paid',
@@ -801,7 +841,7 @@ function App() {
   };
 
   // Cancel booking — update status instead of removing from list
-  const handleCancelBooking = (bookingId, reason = '') => {
+  const handleCancelBooking = (bookingId, reason = '', refundData = null) => {
     setBookings((prev) =>
       prev.map((b) =>
         b.id === bookingId
@@ -810,6 +850,9 @@ function App() {
               status: 'cancelled',
               cancellationReason: reason || 'Khách hàng yêu cầu hủy.',
               cancelledAt: new Date().toISOString(),
+              refundAmount: refundData?.amount ?? b.refundAmount ?? 0,
+              refundPercentage: refundData?.percentage ?? b.refundPercentage ?? 0,
+              refundSummary: refundData ?? b.refundSummary,
               canCancel: false,
               canCheckIn: false,
               canCheckOut: false,
@@ -823,10 +866,30 @@ function App() {
       const hostBookings = JSON.parse(localStorage.getItem('tripnest_host_bookings') || '[]');
       const updated = hostBookings.map((b) =>
         (b.code === bookingId || b.id === bookingId)
-          ? { ...b, status: 'cancelled' }
+          ? {
+              ...b,
+              status: 'cancelled',
+              cancellationReason: reason || b.cancellationReason,
+              refundAmount: refundData?.amount ?? b.refundAmount ?? 0,
+              refundPercentage: refundData?.percentage ?? b.refundPercentage ?? 0,
+            }
           : b
       );
       localStorage.setItem('tripnest_host_bookings', JSON.stringify(updated));
+
+      const hostPayouts = JSON.parse(localStorage.getItem('tripnest_host_payout_history') || '[]');
+      if (Array.isArray(hostPayouts)) {
+        localStorage.setItem(
+          'tripnest_host_payout_history',
+          JSON.stringify(
+            hostPayouts.map((p) =>
+              p.bookingCode === bookingId || p.note?.includes(bookingId)
+                ? { ...p, status: 'cancelled' }
+                : p
+            )
+          )
+        );
+      }
     } catch {}
 
     // Sync to Admin Portal localStorage
@@ -837,15 +900,35 @@ function App() {
         const adminData = JSON.parse(raw);
         if (adminData.bookings) {
           adminData.bookings = adminData.bookings.map((b) =>
-            b.id === bookingId ? { ...b, status: 'cancelled' } : b
+            b.id === bookingId || b.code === bookingId
+              ? {
+                  ...b,
+                  status: 'cancelled',
+                  cancellation_reason: reason || b.cancellation_reason,
+                  refund_amount: refundData?.amount ?? b.refund_amount ?? 0,
+                  refund_percentage: refundData?.percentage ?? b.refund_percentage ?? 0,
+                }
+              : b
           );
+          if (adminData.payouts && Array.isArray(adminData.payouts)) {
+            adminData.payouts = adminData.payouts.map((p) =>
+              p.booking_code === bookingId || p.bookingCode === bookingId || p.note?.includes(bookingId)
+                ? { ...p, status: 'cancelled' }
+                : p
+            );
+          }
           const totalRev = adminData.bookings
             .filter((b) => b.status !== 'cancelled' && b.status !== 'refunded')
             .reduce((sum, b) => sum + (b.total_price || 0), 0);
+          const cancelledList = adminData.bookings.filter((b) => b.status === 'cancelled' || b.status === 'refunded');
+          const totalRefunded = cancelledList.reduce((sum, b) => sum + (b.refund_amount || b.refundAmount || 0), 0);
+
           adminData.stats = {
             ...adminData.stats,
             totalRevenueVND: totalRev,
             commissionRevenueVND: Math.round(totalRev * 0.12),
+            totalRefundedVND: totalRefunded,
+            cancelledBookingsCount: cancelledList.length,
           };
           localStorage.setItem(STORAGE_KEY, JSON.stringify(adminData));
         }
@@ -1069,6 +1152,19 @@ function App() {
       <AdminLayout
         onExitAdmin={handleExitAdmin}
         onOpenBookings={handleOpenMyTrips}
+        onSwitchToHost={() => {
+          setIsAdminOpen(false);
+          setIsHostOpen(true);
+          window.history.pushState({}, '', '/host');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onLogout={async () => {
+          await apiService.logout();
+          dispatch({ type: 'UPDATE', payload: {} });
+          setIsAdminOpen(false);
+          window.history.pushState({}, '', '/');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
       />
     );
   }
@@ -1097,6 +1193,13 @@ function App() {
           }
         }}
         onOpenBookings={handleOpenMyTrips}
+        onLogout={async () => {
+          await apiService.logout();
+          dispatch({ type: 'UPDATE', payload: {} });
+          setIsHostOpen(false);
+          window.history.pushState({}, '', '/');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
       />
     );
   }
@@ -1222,7 +1325,7 @@ function App() {
             searchParams={searchParams}
             onBack={handleBackFromAccommodation}
             onSelectAccommodation={handleSelectAccommodation}
-            onOpenRoomDetail={handleSelectRoom}
+            onOpenRoomDetail={(roomItem, bookingContext) => handleSelectRoom(roomItem, bookingContext)}
             onOpenMapPage={handleOpenMapPage}
             currency={currency}
             isFavorite={wishlistIds.includes(selectedAccommodation.id)}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import './HostListingWizardPage.css';
 import {
   TbArrowLeft,
@@ -34,15 +34,66 @@ import {
   TbLoader,
   TbDoor,
   TbCopy,
+  TbPaw,
+  TbDeviceLaptop,
+  TbBeach,
+  TbWashMachine,
+  TbShieldCheck,
+  TbCoffee,
+  TbBarbell,
+  TbSearch,
+  TbInfoCircle,
+  TbDiamond,
 } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/services/api';
 
-const DEFAULT_SAMPLE_IMAGES = [
+// 5 ảnh Ngoại cảnh & Khuôn viên Cơ sở lưu trú (Hiển thị ở Hero Gallery 5 ảnh trang Accommodation)
+const DEFAULT_ACCOMMODATION_EXTERIOR_IMAGES = [
   'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&auto=format&fit=crop&q=80',
   'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&auto=format&fit=crop&q=80',
   'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1200&auto=format&fit=crop&q=80',
 ];
+
+// 5 ảnh Nội thất Chi tiết Không gian Bên trong Căn (Cho thuê Nguyên căn - Hiển thị ở Room Detail)
+const DEFAULT_ENTIRE_INTERIOR_IMAGES = [
+  'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=1200&auto=format&fit=crop&q=80', // Phòng ngủ Master
+  'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200&auto=format&fit=crop&q=80', // Phòng ngủ phụ 2
+  'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=1200&auto=format&fit=crop&q=80', // Phòng khách sang trọng
+  'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=1200&auto=format&fit=crop&q=80', // Bếp ăn tiện nghi
+  'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1200&auto=format&fit=crop&q=80', // Phòng tắm Jacuzzi
+];
+
+// 5 ảnh Mẫu cho Hạng phòng Deluxe King (Multi-Room)
+const SAMPLE_DELUXE_ROOM_IMAGES = [
+  'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=1200&auto=format&fit=crop&q=80',
+];
+
+// 5 ảnh Mẫu cho Hạng phòng Suite Gia Đình (Multi-Room)
+const SAMPLE_SUITE_ROOM_IMAGES = [
+  'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&auto=format&fit=crop&q=80',
+];
+
+// 5 ảnh Mẫu cho Hạng phòng Villa / Penthouse (Multi-Room)
+const SAMPLE_VILLA_ROOM_IMAGES = [
+  'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&auto=format&fit=crop&q=80',
+];
+
+const WIZARD_DRAFT_KEY = 'tripnest_host_new_listing_draft';
 
 export const HostListingWizardPage = ({
   onCancel,
@@ -50,17 +101,10 @@ export const HostListingWizardPage = ({
   currency = 'VND',
 }) => {
   const toast = useToast();
+  const [isDraftRestored, setIsDraftRestored] = useState(false);
+  const hasShownDraftToastRef = useRef(false);
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 6;
-
-  const stepTitles = [
-    'Loại hình & Vị trí',
-    'Cấu hình Hạng phòng & Sức chứa',
-    'Tiện ích nổi bật',
-    'Bộ sưu tập hình ảnh',
-    'Tiêu đề & Định giá',
-    'Xem trước & Xuất bản',
-  ];
 
   // 1. Form State: Type, Category, Rental Mode & Location
   const [accommodationType, setAccommodationType] = useState('villa');
@@ -71,7 +115,7 @@ export const HostListingWizardPage = ({
   const [district, setDistrict] = useState('Phường 3');
   const [address, setAddress] = useState('12 Đường Khe Sanh, Đà Lạt');
 
-  // 2. Multi-Room Configuration State (Chuyên sâu)
+  // 2. Multi-Room Configuration State (Mỗi phòng tối thiểu 5 ảnh)
   const [rooms, setRooms] = useState([
     {
       id: 'rm-1',
@@ -86,6 +130,8 @@ export const HostListingWizardPage = ({
       cleaningFeeVND: 150000,
       totalInventory: 3,
       description: 'Phòng tiêu chuẩn cao cấp với 1 giường King-size, ban công ngắm cảnh rừng thông mây ngàn.',
+      images: [...SAMPLE_DELUXE_ROOM_IMAGES],
+      imageUrl: SAMPLE_DELUXE_ROOM_IMAGES[0],
     },
     {
       id: 'rm-2',
@@ -100,8 +146,11 @@ export const HostListingWizardPage = ({
       cleaningFeeVND: 250000,
       totalInventory: 2,
       description: 'Không gian ấm cúng sang trọng gồm 2 phòng ngủ riêng biệt, phòng khách mở và bồn tắm tiện nghi.',
+      images: [...SAMPLE_SUITE_ROOM_IMAGES],
+      imageUrl: SAMPLE_SUITE_ROOM_IMAGES[0],
     },
   ]);
+  const [activeRoomIndex, setActiveRoomIndex] = useState(0);
 
   // Single Entire Place Specs (dùng khi rentalMode === 'entire_place')
   const [entireRoomName, setEntireRoomName] = useState('Toàn bộ Biệt thự Nghỉ dưỡng Nguyên căn');
@@ -112,20 +161,44 @@ export const HostListingWizardPage = ({
   const [entireRoomSizeM2, setEntireRoomSizeM2] = useState(250);
   const [entirePriceVND, setEntirePriceVND] = useState(4500000);
   const [entireCleaningFeeVND, setEntireCleaningFeeVND] = useState(400000);
+  // Bộ ảnh nội thất bên trong căn nguyên căn (ít nhất 5 ảnh)
+  const [entirePlaceImages, setEntirePlaceImages] = useState([...DEFAULT_ENTIRE_INTERIOR_IMAGES]);
+  const [newEntireImageUrl, setNewEntireImageUrl] = useState('');
+  const [isUploadingEntireImage, setIsUploadingEntireImage] = useState(false);
 
-  // 3. Amenities State
+  const stepTitles = [
+    'Loại hình & Vị trí',
+    rentalMode === 'entire_place' ? 'Cấu hình Trọn căn & Giá' : `Cấu hình Hạng phòng & Giá (${rooms.length} phòng)`,
+    'Tiện ích nổi bật',
+    'Bộ sưu tập hình ảnh',
+    'Tiêu đề, Mô tả & Quy định',
+    'Xem trước & Xuất bản',
+  ];
+
+  const handleSelectAccommodationType = (typeId) => {
+    setAccommodationType(typeId);
+    if (typeId === 'hotel' || typeId === 'resort') {
+      setRentalMode('multi_room');
+    } else if (typeId === 'cabin' || typeId === 'apartment' || typeId === 'yacht') {
+      setRentalMode('entire_place');
+    }
+  };
+
+  // 3. Amenities State & Filters
   const [amenities, setAmenities] = useState([]);
   const [selectedAmenities, setSelectedAmenities] = useState([
-    'Hồ bơi riêng',
-    'WiFi tốc độ cao',
-    'Bếp nấu ăn đầy đủ',
-    'View thiên nhiên tuyệt đẹp',
-    'Điều hòa 2 chiều',
-    'Chỗ đỗ xe miễn phí',
+    'Hồ bơi nước ấm vô cực',
+    'Wifi tốc độ cao (150 Mbps)',
+    'Bếp nấu đầy đủ dụng cụ & gia vị',
+    'View ngắm mây & đồi núi tuyệt đẹp',
+    'Điều hòa & Máy sưởi hai chiều',
+    'Chỗ đỗ xe ô tô miễn phí tại chỗ',
   ]);
+  const [amenityCategoryFilter, setAmenityCategoryFilter] = useState('all');
+  const [amenitySearchQuery, setAmenitySearchQuery] = useState('');
 
-  // 4. Images State
-  const [images, setImages] = useState(DEFAULT_SAMPLE_IMAGES);
+  // 4. Images State (5 ảnh Ngoại cảnh & Toàn cảnh Accommodation)
+  const [images, setImages] = useState([...DEFAULT_ACCOMMODATION_EXTERIOR_IMAGES]);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
@@ -153,19 +226,42 @@ export const HostListingWizardPage = ({
   ];
 
   // Helper map amenity icon
-  const renderAmenityIcon = (iconName) => {
-    const key = (iconName || '').toLowerCase();
-    if (key.includes('wifi')) return <TbWifi />;
-    if (key.includes('pool') || key.includes('bơi') || key.includes('swimming')) return <TbSwimming />;
-    if (key.includes('kitchen') || key.includes('bếp') || key.includes('tool')) return <TbToolsKitchen2 />;
-    if (key.includes('air') || key.includes('điều hòa')) return <TbAirConditioning />;
-    if (key.includes('car') || key.includes('xe') || key.includes('parking')) return <TbCar />;
-    if (key.includes('bbq') || key.includes('flame') || key.includes('nướng')) return <TbFlame />;
-    if (key.includes('tv') || key.includes('device')) return <TbDeviceTv />;
-    if (key.includes('view') || key.includes('sparkle') || key.includes('thiên nhiên')) return <TbSparkles />;
+  const renderAmenityIcon = (nameOrIcon) => {
+    const key = (nameOrIcon || '').toLowerCase();
+    if (key.includes('wifi') || key.includes('mạng') || key.includes('internet')) return <TbWifi />;
+    if (key.includes('bơi') || key.includes('pool') || key.includes('swimming')) return <TbSwimming />;
+    if (key.includes('kitchen') || key.includes('bếp') || key.includes('nấu') || key.includes('dụng cụ')) return <TbToolsKitchen2 />;
+    if (key.includes('bbq') || key.includes('nướng') || key.includes('flame')) return <TbFlame />;
+    if (key.includes('sưởi') || key.includes('lò sưởi') || key.includes('fireplace')) return <TbFlame />;
+    if (key.includes('air') || key.includes('điều hòa') || key.includes('máy lạnh')) return <TbAirConditioning />;
+    if (key.includes('car') || key.includes('xe') || key.includes('đỗ xe') || key.includes('bãi đỗ') || key.includes('parking')) return <TbCar />;
+    if (key.includes('tv') || key.includes('tivi') || key.includes('smart tv')) return <TbDeviceTv />;
+    if (key.includes('jacuzzi') || key.includes('sục') || key.includes('bồn tắm') || key.includes('tắm') || key.includes('bath') || key.includes('sauna') || key.includes('xông hơi')) return <TbBath />;
+    if (key.includes('washer') || key.includes('giặt') || key.includes('sấy')) return <TbWashMachine />;
+    if (key.includes('pet') || key.includes('thú cưng') || key.includes('chó') || key.includes('mèo')) return <TbPaw />;
+    if (key.includes('workspace') || key.includes('làm việc') || key.includes('laptop') || key.includes('bàn')) return <TbDeviceLaptop />;
+    if (key.includes('beach') || key.includes('biển') || key.includes('bãi biển')) return <TbBeach />;
+    if (key.includes('safe') || key.includes('két sắt') || key.includes('an toàn')) return <TbShieldCheck />;
+    if (key.includes('breakfast') || key.includes('ăn sáng') || key.includes('sáng') || key.includes('coffee') || key.includes('cà phê')) return <TbCoffee />;
+    if (key.includes('fitness') || key.includes('gym') || key.includes('thể hình') || key.includes('thể thao') || key.includes('barbell')) return <TbBarbell />;
     if (key.includes('bed') || key.includes('giường')) return <TbBed />;
-    if (key.includes('bath') || key.includes('tắm')) return <TbBath />;
-    return <TbCheck />;
+    return <TbSparkles />;
+  };
+
+  const getAmenityLabel = (item) => {
+    if (!item) return '';
+    if (typeof item === 'string') return item;
+    return item.name_vi || item.name || item.label_vi || item.label || '';
+  };
+
+  const toggleAmenity = (item) => {
+    const name = getAmenityLabel(item);
+    if (!name) return;
+    if (selectedAmenities.includes(name)) {
+      setSelectedAmenities(selectedAmenities.filter((a) => a !== name));
+    } else {
+      setSelectedAmenities([...selectedAmenities, name]);
+    }
   };
 
   // Load Categories & Amenities on mount
@@ -177,7 +273,7 @@ export const HostListingWizardPage = ({
           const filtered = cats.filter((c) => c.slug !== 'all');
           setCategoriesList(filtered);
           if (filtered.length > 0) {
-            setCategoryId(filtered[0].id);
+            setCategoryId((prev) => prev || filtered[0].id);
           }
         }
       } catch (e) {
@@ -187,18 +283,30 @@ export const HostListingWizardPage = ({
       try {
         const data = await apiService.getAmenities();
         const amList = data?.amenities || (Array.isArray(data) ? data : []);
-        if (amList.length > 0) {
+        if (Array.isArray(amList) && amList.length > 0) {
           setAmenities(amList);
         } else {
           setAmenities([
-            { id: 1, name_vi: 'Hồ bơi riêng', icon: 'TbSwimming' },
-            { id: 2, name_vi: 'WiFi tốc độ cao', icon: 'TbWifi' },
-            { id: 3, name_vi: 'Bếp nấu ăn đầy đủ', icon: 'TbToolsKitchen2' },
-            { id: 4, name_vi: 'Điều hòa 2 chiều', icon: 'TbAirConditioning' },
-            { id: 5, name_vi: 'Chỗ đỗ xe miễn phí', icon: 'TbCar' },
-            { id: 6, name_vi: 'Bếp nướng BBQ', icon: 'TbFlame' },
-            { id: 7, name_vi: 'Smart TV 4K', icon: 'TbDeviceTv' },
-            { id: 8, name_vi: 'View thiên nhiên tuyệt đẹp', icon: 'TbSparkles' },
+            { id: 1, code: 'wifi', name_vi: 'Wifi tốc độ cao (150 Mbps)', icon: 'TbWifi', category: 'basic' },
+            { id: 2, code: 'kitchen', name_vi: 'Bếp nấu đầy đủ dụng cụ & gia vị', icon: 'TbToolsKitchen2', category: 'basic' },
+            { id: 3, code: 'pool', name_vi: 'Hồ bơi nước ấm vô cực', icon: 'TbSwimming', category: 'standout' },
+            { id: 4, code: 'bbq', name_vi: 'Bếp nướng BBQ ngoài trời', icon: 'TbFlame', category: 'standout' },
+            { id: 5, code: 'fireplace', name_vi: 'Lò sưởi ấm cúng trong nhà', icon: 'TbFlame', category: 'standout' },
+            { id: 6, code: 'parking', name_vi: 'Chỗ đỗ xe ô tô miễn phí tại chỗ', icon: 'TbCar', category: 'basic' },
+            { id: 7, code: 'ac', name_vi: 'Điều hòa & Máy sưởi hai chiều', icon: 'TbAirConditioning', category: 'basic' },
+            { id: 8, code: 'washer', name_vi: 'Máy giặt & Máy sấy quần áo', icon: 'TbWashMachine', category: 'basic' },
+            { id: 9, code: 'pet_friendly', name_vi: 'Cho phép mang theo thú cưng', icon: 'TbPaw', category: 'standout' },
+            { id: 10, code: 'workspace', name_vi: 'Bàn làm việc chuyên dụng', icon: 'TbDeviceLaptop', category: 'basic' },
+            { id: 11, code: 'jacuzzi', name_vi: 'Bồn tắm sục Jacuzzi ngoài trời', icon: 'TbBath', category: 'luxury' },
+            { id: 12, code: 'private_beach', name_vi: 'Lối đi thẳng ra bãi biển riêng', icon: 'TbBeach', category: 'luxury' },
+            { id: 13, code: 'tv', name_vi: 'Smart TV 4K màn hình lớn', icon: 'TbDeviceTv', category: 'basic' },
+            { id: 14, code: 'mountain_view', name_vi: 'View ngắm mây & đồi núi tuyệt đẹp', icon: 'TbSparkles', category: 'standout' },
+            { id: 15, code: 'balcony', name_vi: 'Ban công ngắm cảnh riêng biệt', icon: 'TbSparkles', category: 'standout' },
+            { id: 16, code: 'ev_charger', name_vi: 'Trạm sạc xe điện (EV Charger)', icon: 'TbCar', category: 'standout' },
+            { id: 17, code: 'sauna', name_vi: 'Phòng xông hơi Sauna / Spa', icon: 'TbBath', category: 'luxury' },
+            { id: 18, code: 'safe', name_vi: 'Két sắt an toàn trong phòng', icon: 'TbShieldCheck', category: 'basic' },
+            { id: 19, code: 'breakfast', name_vi: 'Phục vụ bữa sáng hàng ngày', icon: 'TbCoffee', category: 'luxury' },
+            { id: 20, code: 'fitness', name_vi: 'Phòng tập thể dục / Gym tại chỗ', icon: 'TbBarbell', category: 'luxury' },
           ]);
         }
       } catch (e) {
@@ -208,20 +316,222 @@ export const HostListingWizardPage = ({
     loadInitialData();
   }, []);
 
-  const toggleAmenity = (name) => {
-    if (selectedAmenities.includes(name)) {
-      setSelectedAmenities(selectedAmenities.filter((a) => a !== name));
-    } else {
-      setSelectedAmenities([...selectedAmenities, name]);
+  // 1. Restore draft from localStorage on initial mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(WIZARD_DRAFT_KEY);
+      if (saved) {
+        const draft = JSON.parse(saved);
+        if (draft.currentStep) setCurrentStep(draft.currentStep);
+        if (draft.accommodationType) setAccommodationType(draft.accommodationType);
+        if (draft.rentalMode) setRentalMode(draft.rentalMode);
+        if (draft.categoryId) setCategoryId(draft.categoryId);
+        if (draft.city) setCity(draft.city);
+        if (draft.district !== undefined) setDistrict(draft.district);
+        if (draft.address !== undefined) setAddress(draft.address);
+
+        if (draft.entireRoomName !== undefined) setEntireRoomName(draft.entireRoomName);
+        if (draft.entireMaxGuests) setEntireMaxGuests(Number(draft.entireMaxGuests));
+        if (draft.entireBedrooms) setEntireBedrooms(Number(draft.entireBedrooms));
+        if (draft.entireBeds) setEntireBeds(Number(draft.entireBeds));
+        if (draft.entireBathrooms) setEntireBathrooms(Number(draft.entireBathrooms));
+        if (draft.entireRoomSizeM2) setEntireRoomSizeM2(Number(draft.entireRoomSizeM2));
+        if (draft.entirePriceVND) setEntirePriceVND(Number(draft.entirePriceVND));
+        if (draft.entireCleaningFeeVND !== undefined) setEntireCleaningFeeVND(Number(draft.entireCleaningFeeVND));
+        if (Array.isArray(draft.entirePlaceImages) && draft.entirePlaceImages.length > 0) {
+          setEntirePlaceImages(draft.entirePlaceImages);
+        }
+
+        if (Array.isArray(draft.rooms) && draft.rooms.length > 0) {
+          setRooms(draft.rooms);
+        }
+        if (draft.activeRoomIndex !== undefined) setActiveRoomIndex(Number(draft.activeRoomIndex));
+
+        if (Array.isArray(draft.selectedAmenities)) setSelectedAmenities(draft.selectedAmenities);
+        if (Array.isArray(draft.images) && draft.images.length > 0) setImages(draft.images);
+
+        if (draft.nameVi !== undefined) setNameVi(draft.nameVi);
+        if (draft.description !== undefined) setDescription(draft.description);
+        if (draft.houseRules !== undefined) setHouseRules(draft.houseRules);
+        if (draft.cancellationPolicy !== undefined) setCancellationPolicy(draft.cancellationPolicy);
+
+        if (!hasShownDraftToastRef.current) {
+          hasShownDraftToastRef.current = true;
+          toast.info('Đã khôi phục bản nháp', 'Tiến trình đăng ký chỗ nghỉ trước đó đã được tự động phục hồi từ bộ nhớ.');
+        }
+      }
+    } catch (err) {
+      console.warn('Lỗi đọc bản nháp wizard từ localStorage:', err);
+    } finally {
+      setIsDraftRestored(true);
+    }
+  }, []);
+
+  // 2. Auto-save draft to localStorage whenever form changes
+  useEffect(() => {
+    if (!isDraftRestored) return;
+
+    const draft = {
+      currentStep,
+      accommodationType,
+      rentalMode,
+      categoryId,
+      city,
+      district,
+      address,
+      entireRoomName,
+      entireMaxGuests,
+      entireBedrooms,
+      entireBeds,
+      entireBathrooms,
+      entireRoomSizeM2,
+      entirePriceVND,
+      entireCleaningFeeVND,
+      entirePlaceImages,
+      rooms,
+      activeRoomIndex,
+      selectedAmenities,
+      images,
+      nameVi,
+      description,
+      houseRules,
+      cancellationPolicy,
+      lastSaved: new Date().toISOString(),
+    };
+
+    try {
+      localStorage.setItem(WIZARD_DRAFT_KEY, JSON.stringify(draft));
+    } catch (err) {
+      console.warn('Lỗi lưu bản nháp wizard vào localStorage:', err);
+    }
+  }, [
+    isDraftRestored,
+    currentStep,
+    accommodationType,
+    rentalMode,
+    categoryId,
+    city,
+    district,
+    address,
+    entireRoomName,
+    entireMaxGuests,
+    entireBedrooms,
+    entireBeds,
+    entireBathrooms,
+    entireRoomSizeM2,
+    entirePriceVND,
+    entireCleaningFeeVND,
+    entirePlaceImages,
+    rooms,
+    activeRoomIndex,
+    selectedAmenities,
+    images,
+    nameVi,
+    description,
+    houseRules,
+    cancellationPolicy,
+  ]);
+
+  const handleResetDraft = () => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa bản nháp và làm lại từ đầu?')) {
+      try {
+        localStorage.removeItem(WIZARD_DRAFT_KEY);
+      } catch (e) {}
+      setCurrentStep(1);
+      setAccommodationType('villa');
+      setRentalMode('entire_place');
+      setCategoryId(1);
+      setCity('Đà Lạt');
+      setDistrict('Phường 3');
+      setAddress('12 Đường Khe Sanh, Đà Lạt');
+      setEntireRoomName('Toàn bộ Biệt thự Nghỉ dưỡng Nguyên căn');
+      setEntireMaxGuests(8);
+      setEntireBedrooms(4);
+      setEntireBeds(5);
+      setEntireBathrooms(4);
+      setEntireRoomSizeM2(250);
+      setEntirePriceVND(4500000);
+      setEntireCleaningFeeVND(400000);
+      setEntirePlaceImages([...DEFAULT_ENTIRE_INTERIOR_IMAGES]);
+      setRooms([
+        {
+          id: 'rm-1',
+          roomNameVi: 'Phòng Deluxe King Hướng Rừng Thông',
+          spaceType: 'private_room',
+          maxGuests: 2,
+          bedrooms: 1,
+          beds: 1,
+          bathrooms: 1,
+          roomSizeM2: 38,
+          priceVND: 1800000,
+          cleaningFeeVND: 150000,
+          totalInventory: 3,
+          description: 'Phòng tiêu chuẩn cao cấp với 1 giường King-size, ban công ngắm cảnh rừng thông mây ngàn.',
+          images: [...SAMPLE_DELUXE_ROOM_IMAGES],
+          imageUrl: SAMPLE_DELUXE_ROOM_IMAGES[0],
+        },
+        {
+          id: 'rm-2',
+          roomNameVi: 'Phòng Suite Gia Đình 2 Phòng Ngủ',
+          spaceType: 'private_room',
+          maxGuests: 4,
+          bedrooms: 2,
+          beds: 2,
+          bathrooms: 2,
+          roomSizeM2: 75,
+          priceVND: 3200000,
+          cleaningFeeVND: 250000,
+          totalInventory: 2,
+          description: 'Không gian ấm cúng sang trọng gồm 2 phòng ngủ riêng biệt, phòng khách mở và bồn tắm tiện nghi.',
+          images: [...SAMPLE_SUITE_ROOM_IMAGES],
+          imageUrl: SAMPLE_SUITE_ROOM_IMAGES[0],
+        },
+      ]);
+      setActiveRoomIndex(0);
+      setSelectedAmenities([
+        'Hồ bơi nước ấm vô cực',
+        'Wifi tốc độ cao (150 Mbps)',
+        'Bếp nấu đầy đủ dụng cụ & gia vị',
+        'View ngắm mây & đồi núi tuyệt đẹp',
+        'Điều hòa & Máy sưởi hai chiều',
+        'Chỗ đỗ xe ô tô miễn phí tại chỗ',
+      ]);
+      setImages([...DEFAULT_ACCOMMODATION_EXTERIOR_IMAGES]);
+      setNameVi('The Sunset Valley Luxury Villa & Resort Đà Lạt');
+      setDescription(
+        'Khu nghỉ dưỡng sân vườn cao cấp view thung lũng rừng thông thơ mộng, không gian mở ngập tràn ánh sáng tự nhiên và đầy đủ tiện nghi chuẩn mực quốc tế.'
+      );
+      setHouseRules('Không hút thuốc trong phòng, giữ gìn không gian chung sau 22:00, xuất trình CMND/CCCD khi nhận phòng.');
+      setCancellationPolicy('Hủy miễn phí 100% trước 48h nhận phòng. Thanh toán linh hoạt tại chỗ nghỉ.');
+      toast.success('Đã làm mới', 'Đã xóa bản nháp và nạp lại dữ liệu khởi tạo.');
     }
   };
+
+  // Filtered Amenities Computed
+  const filteredAmenities = useMemo(() => {
+    return amenities.filter((a) => {
+      const name = getAmenityLabel(a);
+      if (!name) return false;
+      if (amenityCategoryFilter !== 'all' && a.category && a.category !== amenityCategoryFilter) {
+        return false;
+      }
+      if (amenitySearchQuery.trim()) {
+        const q = amenitySearchQuery.toLowerCase().trim();
+        return name.toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }, [amenities, amenityCategoryFilter, amenitySearchQuery]);
 
   // Room Management Handlers (Multi-Room)
   const handleAddRoom = () => {
     const newRoomNum = rooms.length + 1;
+    const defaultSample = newRoomNum % 3 === 1
+      ? SAMPLE_DELUXE_ROOM_IMAGES
+      : (newRoomNum % 3 === 2 ? SAMPLE_SUITE_ROOM_IMAGES : SAMPLE_VILLA_ROOM_IMAGES);
     const newRoom = {
       id: 'rm-' + Date.now(),
-      roomNameVi: `Hạng phòng ${newRoomNum} - Tiêu chuẩn mới`,
+      roomNameVi: `Hạng phòng ${newRoomNum} - Tiêu chuẩn cao cấp`,
       spaceType: 'private_room',
       maxGuests: 2,
       bedrooms: 1,
@@ -232,9 +542,12 @@ export const HostListingWizardPage = ({
       cleaningFeeVND: 150000,
       totalInventory: 1,
       description: 'Không gian phòng nghỉ tinh tế, đầy đủ tiện nghi cao cấp.',
+      images: [...defaultSample],
+      imageUrl: defaultSample[0],
     };
     setRooms([...rooms, newRoom]);
-    toast.success('Đã thêm hạng phòng', 'Bạn có thể chỉnh sửa thông số cho hạng phòng vừa tạo.');
+    setActiveRoomIndex(rooms.length);
+    toast.success('Đã thêm hạng phòng', 'Đã thêm hạng phòng mới với bộ 5 ảnh thực tế mẫu.');
   };
 
   const handleUpdateRoom = (roomId, field, value) => {
@@ -246,8 +559,158 @@ export const HostListingWizardPage = ({
       toast.warning('Yêu cầu tối thiểu', 'Cơ sở lưu trú cần có ít nhất 1 hạng phòng đón khách.');
       return;
     }
-    setRooms(rooms.filter((r) => r.id !== roomId));
+    const updated = rooms.filter((r) => r.id !== roomId);
+    setRooms(updated);
+    if (activeRoomIndex >= updated.length) {
+      setActiveRoomIndex(Math.max(0, updated.length - 1));
+    }
     toast.info('Đã xóa hạng phòng', 'Đã gỡ hạng phòng khỏi danh sách.');
+  };
+
+  // Multi-Room Image Album Handlers
+  const handleAddRoomImageUrl = (roomId, urlInput) => {
+    const url = (urlInput || '').trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) {
+      toast.warning('Định dạng URL', 'Vui lòng dán link bắt đầu bằng http:// hoặc https://');
+      return;
+    }
+    setRooms(rooms.map((r) => {
+      if (r.id !== roomId) return r;
+      const curImgs = Array.isArray(r.images) ? [...r.images] : (r.imageUrl ? [r.imageUrl] : []);
+      if (curImgs.includes(url)) {
+        toast.info('Ảnh trùng lặp', 'Ảnh này đã có trong danh mục của phòng.');
+        return r;
+      }
+      const updated = [...curImgs, url];
+      return { ...r, images: updated, imageUrl: updated[0] };
+    }));
+    toast.success('Đã thêm ảnh', 'Đã thêm 1 ảnh vào album của hạng phòng.');
+  };
+
+  const handleRemoveRoomImage = (roomId, imgIndex) => {
+    setRooms(rooms.map((r) => {
+      if (r.id !== roomId) return r;
+      const curImgs = Array.isArray(r.images) ? [...r.images] : (r.imageUrl ? [r.imageUrl] : []);
+      if (curImgs.length <= 1) {
+        toast.warning('Yêu cầu tối thiểu', 'Hạng phòng cần ít nhất 1 ảnh thực tế.');
+        return r;
+      }
+      const updated = curImgs.filter((_, idx) => idx !== imgIndex);
+      return { ...r, images: updated, imageUrl: updated[0] || '' };
+    }));
+  };
+
+  const handleSetRoomCoverImage = (roomId, imgIndex) => {
+    if (imgIndex === 0) return;
+    setRooms(rooms.map((r) => {
+      if (r.id !== roomId) return r;
+      const curImgs = Array.isArray(r.images) ? [...r.images] : (r.imageUrl ? [r.imageUrl] : []);
+      const target = curImgs[imgIndex];
+      const rest = curImgs.filter((_, idx) => idx !== imgIndex);
+      const updated = [target, ...rest];
+      return { ...r, images: updated, imageUrl: target };
+    }));
+    toast.info('Đã đổi ảnh chính', 'Đã đặt ảnh này làm ảnh bìa chính cho hạng phòng.');
+  };
+
+  const handleUploadRoomImages = async (roomId, e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    try {
+      toast.info('Đang tải ảnh...', `Đang tải ${files.length} ảnh phòng lên hệ thống.`);
+      const uploadedUrls = [];
+      for (const file of files) {
+        const res = await apiService.uploadHostImage(file);
+        if (res && res.url) uploadedUrls.push(res.url);
+      }
+      if (uploadedUrls.length > 0) {
+        setRooms(rooms.map((r) => {
+          if (r.id !== roomId) return r;
+          const curImgs = Array.isArray(r.images) ? [...r.images] : (r.imageUrl ? [r.imageUrl] : []);
+          const updated = [...curImgs, ...uploadedUrls];
+          return { ...r, images: updated, imageUrl: updated[0] };
+        }));
+        toast.success('Tải ảnh thành công', `Đã thêm ${uploadedUrls.length} ảnh vào album hạng phòng.`);
+      }
+    } catch (err) {
+      toast.error('Lỗi tải ảnh', err.message || 'Không thể tải ảnh.');
+    }
+    e.target.value = '';
+  };
+
+  const handleApplySampleRoomImages = (roomId, sampleSet) => {
+    setRooms(rooms.map((r) => {
+      if (r.id !== roomId) return r;
+      return { ...r, images: [...sampleSet], imageUrl: sampleSet[0] };
+    }));
+    toast.success('Đã áp dụng ảnh mẫu', 'Đã cập nhật bộ 5 ảnh thực tế mẫu cho hạng phòng.');
+  };
+
+  // Entire Place Interior Image Handlers
+  const handleAddEntirePlaceImageUrl = (e) => {
+    if (e) e.preventDefault();
+    const url = newEntireImageUrl.trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) {
+      toast.warning('Định dạng URL', 'Vui lòng dán link bắt đầu bằng http:// hoặc https://');
+      return;
+    }
+    if (entirePlaceImages.includes(url)) {
+      toast.info('Ảnh trùng lặp', 'Ảnh này đã có trong bộ sưu tập nội thất căn.');
+      return;
+    }
+    setEntirePlaceImages([...entirePlaceImages, url]);
+    setNewEntireImageUrl('');
+    toast.success('Đã thêm ảnh', 'Đã thêm ảnh nội thất chi tiết vào căn nguyên căn.');
+  };
+
+  const handleRemoveEntirePlaceImage = (index) => {
+    if (entirePlaceImages.length <= 1) {
+      toast.warning('Yêu cầu tối thiểu', 'Cần ít nhất 1 ảnh không gian bên trong căn.');
+      return;
+    }
+    setEntirePlaceImages(entirePlaceImages.filter((_, i) => i !== index));
+  };
+
+  const handleSetEntirePlaceCoverImage = (index) => {
+    if (index === 0) return;
+    const target = entirePlaceImages[index];
+    const rest = entirePlaceImages.filter((_, i) => i !== index);
+    setEntirePlaceImages([target, ...rest]);
+    toast.info('Ảnh chính nội thất', 'Đã đặt ảnh này làm ảnh chính không gian bên trong căn.');
+  };
+
+  const handleUploadEntirePlaceImages = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setIsUploadingEntireImage(true);
+    try {
+      const uploaded = [];
+      for (const file of files) {
+        const res = await apiService.uploadHostImage(file);
+        if (res && res.url) uploaded.push(res.url);
+      }
+      if (uploaded.length > 0) {
+        setEntirePlaceImages((prev) => [...prev, ...uploaded]);
+        toast.success('Tải ảnh thành công', `Đã thêm ${uploaded.length} ảnh nội thất vào căn.`);
+      }
+    } catch (err) {
+      toast.error('Lỗi upload', err.message || 'Không thể tải ảnh');
+    } finally {
+      setIsUploadingEntireImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleApplyDefaultEntirePlaceImages = () => {
+    setEntirePlaceImages([...DEFAULT_ENTIRE_INTERIOR_IMAGES]);
+    toast.success('Đã áp dụng mẫu', 'Đã nạp bộ 5 ảnh nội thất chuẩn cho căn nguyên căn.');
+  };
+
+  const handleApplyDefaultExteriorImages = () => {
+    setImages([...DEFAULT_ACCOMMODATION_EXTERIOR_IMAGES]);
+    toast.success('Đã áp dụng mẫu', 'Đã nạp bộ 5 ảnh ngoại cảnh chuẩn mực cho cơ sở lưu trú.');
   };
 
   // Image Handlers
@@ -333,9 +796,15 @@ export const HostListingWizardPage = ({
           cleaningFeeVND: entireCleaningFeeVND,
           totalInventory: 1,
           description,
+          imageUrl: entirePlaceImages[0] || '',
+          images: entirePlaceImages,
         },
       ]
-    : rooms;
+    : rooms.map((r) => ({
+        ...r,
+        images: Array.isArray(r.images) && r.images.length > 0 ? r.images : (r.imageUrl ? [r.imageUrl] : []),
+        imageUrl: (Array.isArray(r.images) && r.images.length > 0) ? r.images[0] : (r.imageUrl || ''),
+      }));
 
   const minPriceVND = Math.min(...previewRooms.map((r) => Number(r.priceVND) || 1500000));
   const maxPriceVND = Math.max(...previewRooms.map((r) => Number(r.priceVND) || 1500000));
@@ -343,7 +812,7 @@ export const HostListingWizardPage = ({
     ? entireMaxGuests
     : Math.max(...previewRooms.map((r) => Number(r.maxGuests) || 2));
 
-  // Step Transition Validation
+  // Step Transition Validation (Tối thiểu 5 ảnh nội thất chi tiết & 5 ảnh ngoại cảnh)
   const validateStep = (step) => {
     switch (step) {
       case 1:
@@ -353,18 +822,42 @@ export const HostListingWizardPage = ({
       case 2:
         if (rentalMode === 'entire_place') {
           if (!entirePriceVND || entirePriceVND < 50000) { toast.warning('Giá chưa hợp lệ', 'Vui lòng nhập giá niêm yết mỗi đêm (tối thiểu 50.000 ₫).'); return false; }
+          if (entirePlaceImages.length < 5) {
+            toast.warning('Yêu cầu ảnh nội thất', `Vui lòng tải hoặc thêm tối thiểu 5 ảnh nội thất chi tiết bên trong căn (hiện có ${entirePlaceImages.length}/5 ảnh).`);
+            return false;
+          }
         } else {
           if (rooms.length === 0) { toast.warning('Thiếu hạng phòng', 'Vui lòng thêm ít nhất 1 hạng phòng.'); return false; }
           const invalidRoom = rooms.find((r) => !r.priceVND || r.priceVND < 50000);
-          if (invalidRoom) { toast.warning('Giá chưa hợp lệ', `Hạng phòng "${invalidRoom.roomNameVi}" cần có giá tối thiểu 50.000 ₫/đêm.`); return false; }
+          if (invalidRoom) {
+            toast.warning('Giá chưa hợp lệ', `Hạng phòng "${invalidRoom.roomNameVi}" cần có giá tối thiểu 50.000 ₫/đêm.`);
+            const targetIdx = rooms.findIndex((r) => r.id === invalidRoom.id);
+            if (targetIdx !== -1) setActiveRoomIndex(targetIdx);
+            return false;
+          }
           const noName = rooms.find((r) => !r.roomNameVi || !r.roomNameVi.trim());
-          if (noName) { toast.warning('Thiếu tên phòng', 'Mỗi hạng phòng cần có tên hiển thị.'); return false; }
+          if (noName) {
+            toast.warning('Thiếu tên phòng', 'Mỗi hạng phòng cần có tên hiển thị.');
+            const targetIdx = rooms.findIndex((r) => r.id === noName.id);
+            if (targetIdx !== -1) setActiveRoomIndex(targetIdx);
+            return false;
+          }
+          const missingImgsRoom = rooms.find((r) => !r.images || r.images.length < 5);
+          if (missingImgsRoom) {
+            toast.warning('Yêu cầu ảnh hạng phòng', `Hạng phòng "${missingImgsRoom.roomNameVi}" cần tối thiểu 5 ảnh thực tế (hiện có ${missingImgsRoom.images?.length || 0}/5 ảnh).`);
+            const targetIdx = rooms.findIndex((r) => r.id === missingImgsRoom.id);
+            if (targetIdx !== -1) setActiveRoomIndex(targetIdx);
+            return false;
+          }
         }
         return true;
       case 3:
         return true; // amenities optional
       case 4:
-        if (images.length === 0) { toast.warning('Thiếu hình ảnh', 'Vui lòng cung cấp ít nhất 1 ảnh đại diện cho chỗ nghỉ.'); return false; }
+        if (images.length < 5) {
+          toast.warning('Thiếu hình ảnh cơ sở', `Vui lòng cung cấp tối thiểu 5 ảnh ngoại cảnh / toàn cảnh cơ sở lưu trú (hiện có ${images.length}/5 ảnh).`);
+          return false;
+        }
         return true;
       case 5:
         if (!nameVi.trim()) { toast.warning('Thiếu tiêu đề', 'Vui lòng nhập tên cơ sở lưu trú.'); return false; }
@@ -388,8 +881,8 @@ export const HostListingWizardPage = ({
       setCurrentStep(5);
       return;
     }
-    if (images.length === 0) {
-      toast.warning('Thiếu hình ảnh', 'Vui lòng cung cấp ít nhất 1 ảnh đại diện.');
+    if (images.length < 5) {
+      toast.warning('Thiếu hình ảnh', 'Vui lòng cung cấp ít nhất 5 ảnh ngoại cảnh cơ sở.');
       setCurrentStep(4);
       return;
     }
@@ -421,7 +914,10 @@ export const HostListingWizardPage = ({
           roomSizeM2: Number(r.roomSizeM2),
           totalInventory: Number(r.totalInventory || 1),
           description: r.description || description,
+          imageUrl: r.imageUrl || '',
+          images: Array.isArray(r.images) && r.images.length > 0 ? r.images : (r.imageUrl ? [r.imageUrl] : []),
         })),
+        roomImages: rentalMode === 'entire_place' ? entirePlaceImages : undefined,
         // Root fallbacks for backward compatibility
         priceVND: minPriceVND,
         cleaningFeeVND: previewRooms[0]?.cleaningFeeVND || 350000,
@@ -433,6 +929,9 @@ export const HostListingWizardPage = ({
       };
 
       const result = await apiService.createHostAccommodation(payload);
+      try {
+        localStorage.removeItem(WIZARD_DRAFT_KEY);
+      } catch (e) {}
 
       const newListing = {
         id: result?.data?.accommodationId || ('ACC-' + Date.now()),
@@ -497,137 +996,132 @@ export const HostListingWizardPage = ({
           </p>
         </div>
 
-        {onCancel && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             type="button"
             className="host-btn-client"
-            onClick={onCancel}
-            title="Hủy và quay lại danh sách"
+            onClick={handleResetDraft}
+            title="Xóa bản nháp và làm lại từ đầu"
+            style={{ fontSize: '0.78rem', padding: '4px 8px' }}
           >
-            <TbX /> Hủy bỏ
+            Làm lại từ đầu
           </button>
-        )}
+          {onCancel && (
+            <button
+              type="button"
+              className="host-btn-client"
+              onClick={onCancel}
+              title="Hủy và quay lại danh sách"
+            >
+              <TbX /> Hủy bỏ
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Stepper Progress Bar */}
-      <div className="wizard-stepper-strip" style={{ padding: '0.65rem 1.65rem', gap: '6px', display: 'flex' }}>
-        {Array.from({ length: totalSteps }).map((_, i) => (
-          <div
-            key={i}
-            className={`wizard-step-pill ${i + 1 <= currentStep ? 'active' : ''}`}
-            style={{
-              height: '5px',
-              flex: 1,
-              borderRadius: '999px',
-              background: i + 1 <= currentStep ? 'var(--host-primary, #059669)' : '#e2e8f0',
-              transition: 'all 0.25s ease',
-            }}
-          />
-        ))}
+      {/* Modern 6-Step Visual Stepper */}
+      <div className="host-wiz-stepper-container">
+        <div className="host-wiz-stepper-track">
+          {stepTitles.map((title, i) => {
+            const stepNum = i + 1;
+            const isCompleted = stepNum < currentStep;
+            const isActive = stepNum === currentStep;
+            const shortLabels = [
+              'Loại hình',
+              'Cấu hình phòng',
+              'Tiện ích',
+              'Ảnh cơ sở',
+              'Tiêu đề & Nội quy',
+              'Hoàn tất',
+            ];
+            return (
+              <div
+                key={i}
+                className={`host-wiz-step-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}
+                onClick={() => setCurrentStep(stepNum)}
+                role="button"
+                tabIndex={0}
+                title={`Chuyển sang Bước ${stepNum}: ${shortLabels[i]}`}
+              >
+                <div className="host-wiz-step-circle">
+                  {isCompleted ? <TbCheck size={16} /> : stepNum}
+                </div>
+                <span className="host-wiz-step-label">{shortLabels[i]}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Body Content */}
-      <div style={{ padding: '1.65rem' }}>
+      <div className="host-wiz-body">
         {/* STEP 1: TYPE, RENTAL MODE, CATEGORY & LOCATION */}
         {currentStep === 1 && (
           <div>
-            <h4 style={{ fontSize: '1.02rem', fontWeight: 800, marginBottom: '0.85rem', color: 'var(--host-text-main)' }}>
+            <h4 className="host-wiz-section-title">
               1. Chọn loại hình chỗ nghỉ của bạn
             </h4>
-            <div className="types-selector-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <div className="host-wiz-types-grid">
               {typesList.map((t) => (
                 <div
                   key={t.id}
-                  className={`type-select-card ${accommodationType === t.id ? 'active' : ''}`}
-                  onClick={() => setAccommodationType(t.id)}
-                  style={{
-                    padding: '0.95rem 0.75rem',
-                    borderRadius: 'var(--host-radius-md, 8px)',
-                    border: accommodationType === t.id ? '2px solid var(--host-primary, #059669)' : '1.5px solid #e2e8f0',
-                    background: accommodationType === t.id ? '#ecfdf5' : '#ffffff',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    transition: 'all 0.15s ease',
-                  }}
+                  className={`host-wiz-type-card ${accommodationType === t.id ? 'selected' : ''}`}
+                  onClick={() => handleSelectAccommodationType(t.id)}
                 >
-                  <div className="type-card-icon" style={{ fontSize: '1.65rem', color: accommodationType === t.id ? 'var(--host-primary, #059669)' : '#64748b' }}>
+                  <div className="host-wiz-type-card-icon">
                     {t.icon}
                   </div>
-                  <div className="type-card-title" style={{ fontSize: '0.88rem', fontWeight: 700, marginTop: '4px' }}>
+                  <div className="host-wiz-type-card-title">
                     {t.name}
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* RENTAL MODE (QUAN TRỌNG) */}
-            <h4 style={{ fontSize: '1.02rem', fontWeight: 800, margin: '1.25rem 0 0.85rem 0', color: 'var(--host-text-main)' }}>
+            {/* RENTAL MODE */}
+            <h4 className="host-wiz-section-title">
               2. Hình thức cho thuê chỗ nghỉ
             </h4>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div className="host-rental-mode-grid">
               <div
+                className={`host-rental-mode-card ${rentalMode === 'entire_place' ? 'selected' : ''}`}
                 onClick={() => setRentalMode('entire_place')}
-                style={{
-                  padding: '1rem 1.15rem',
-                  borderRadius: '10px',
-                  border: rentalMode === 'entire_place' ? '2.5px solid var(--host-primary, #059669)' : '1.5px solid #e2e8f0',
-                  background: rentalMode === 'entire_place' ? '#ecfdf5' : '#ffffff',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <TbHome style={{ fontSize: '1.3rem', color: rentalMode === 'entire_place' ? 'var(--host-primary, #059669)' : '#64748b' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <TbHome style={{ fontSize: '1.35rem', color: rentalMode === 'entire_place' ? 'var(--host-primary, #059669)' : '#64748b' }} />
                   <strong style={{ fontSize: '0.96rem', color: '#0f172a' }}>Cho thuê Trọn gói Nguyên căn</strong>
                 </div>
-                <p style={{ fontSize: '0.79rem', color: '#64748b', margin: 0, lineHeight: 1.45 }}>
+                <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
                   Khách được sử dụng toàn bộ không gian riêng tư (Thích hợp cho Biệt thự villa, Căn hộ cao cấp, Cabin, Homestay nguyên căn).
                 </p>
               </div>
 
               <div
+                className={`host-rental-mode-card ${rentalMode === 'multi_room' ? 'selected' : ''}`}
                 onClick={() => setRentalMode('multi_room')}
-                style={{
-                  padding: '1rem 1.15rem',
-                  borderRadius: '10px',
-                  border: rentalMode === 'multi_room' ? '2.5px solid var(--host-primary, #059669)' : '1.5px solid #e2e8f0',
-                  background: rentalMode === 'multi_room' ? '#ecfdf5' : '#ffffff',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <TbDoor style={{ fontSize: '1.3rem', color: rentalMode === 'multi_room' ? 'var(--host-primary, #059669)' : '#64748b' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <TbDoor style={{ fontSize: '1.35rem', color: rentalMode === 'multi_room' ? 'var(--host-primary, #059669)' : '#64748b' }} />
                   <strong style={{ fontSize: '0.96rem', color: '#0f172a' }}>Cơ sở nhiều Hạng phòng riêng lẻ</strong>
                 </div>
-                <p style={{ fontSize: '0.79rem', color: '#64748b', margin: 0, lineHeight: 1.45 }}>
+                <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
                   Cơ sở có nhiều phòng với các mức giá và diện tích khác nhau để khách lựa chọn (Thích hợp cho Khách sạn, Resort, Khu phòng nghỉ).
                 </p>
               </div>
             </div>
 
-            <h4 style={{ fontSize: '1.02rem', fontWeight: 800, margin: '1.25rem 0 0.85rem 0', color: 'var(--host-text-main)' }}>
+            <h4 className="host-wiz-section-title">
               3. Danh mục phong cách trải nghiệm (Hiển thị trên CategoryBar Trang Chủ)
             </h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.65rem', marginBottom: '1.5rem' }}>
+            <div className="host-wiz-categories-grid">
               {categoriesList.map((cat) => (
                 <div
                   key={cat.id}
+                  className={`host-wiz-cat-card ${categoryId === cat.id ? 'selected' : ''}`}
                   onClick={() => setCategoryId(cat.id)}
-                  style={{
-                    padding: '0.7rem 0.9rem',
-                    borderRadius: '8px',
-                    border: categoryId === cat.id ? '2px solid var(--host-primary, #059669)' : '1.5px solid #e2e8f0',
-                    background: categoryId === cat.id ? '#ecfdf5' : '#ffffff',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    transition: 'all 0.15s ease',
-                  }}
                 >
-                  <TbSparkles style={{ color: categoryId === cat.id ? 'var(--host-primary, #059669)' : '#94a3b8' }} />
-                  <span style={{ fontSize: '0.88rem', fontWeight: categoryId === cat.id ? 700 : 500 }}>
+                  <TbSparkles size={16} style={{ color: categoryId === cat.id ? 'var(--host-primary, #059669)' : '#94a3b8' }} />
+                  <span className="host-wiz-cat-name">
                     {cat.label_vi || cat.name_vi || cat.label || cat.name}
                   </span>
                 </div>
@@ -905,34 +1399,153 @@ export const HostListingWizardPage = ({
                         onChange={(e) => setEntireCleaningFeeVND(Number(e.target.value))}
                         style={{ width: '100%', padding: '0.58rem 0.85rem', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.95rem', fontWeight: 600, boxSizing: 'border-box' }}
                       />
+                      <span style={{ fontSize: '0.76rem', color: '#64748b', fontWeight: 600, display: 'block', marginTop: '4px' }}>
+                        Tương đương ~{formatPrice(entireCleaningFeeVND || 0)}/lần
+                      </span>
                     </div>
+                  </div>
+                </div>
+
+                {/* Album ảnh nội thất chi tiết bên trong căn (ít nhất 5 ảnh) */}
+                <div className="host-photo-section">
+                  <div className="host-photo-header-strip">
+                    <div>
+                      <h5 className="host-photo-title">
+                        <TbPhoto style={{ fontSize: '1.2rem', color: 'var(--host-primary, #059669)' }} />
+                        Bộ sưu tập ảnh không gian bên trong căn (Tối thiểu 5 ảnh nội thất chi tiết) *
+                      </h5>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--host-text-muted)', margin: '3px 0 0 0', lineHeight: 1.45 }}>
+                        Bao gồm phòng ngủ, phòng khách, phòng tắm, bếp ăn bên trong căn. Hiển thị độc lập khi khách xem chi tiết căn (Room Detail) và <strong>tách biệt hoàn toàn với 5 ảnh ngoại cảnh</strong> ở Bước 4.
+                      </p>
+                    </div>
+                    <div className={`host-photo-compliance-badge ${entirePlaceImages.length >= 5 ? 'valid' : 'needed'}`}>
+                      {entirePlaceImages.length >= 5 ? <TbCheck size={14} /> : <TbInfoCircle size={14} />}
+                      <span>{entirePlaceImages.length >= 5 ? `Đạt chuẩn: ${entirePlaceImages.length}/5 ảnh` : `Cần thêm: ${entirePlaceImages.length}/5 ảnh`}</span>
+                    </div>
+                  </div>
+
+                  {/* Input Toolbar: URL & Upload & Sample */}
+                  <div className="host-photo-toolbar">
+                    <div className="host-photo-input-wrap">
+                      <TbLink className="host-photo-input-icon" />
+                      <input
+                        type="url"
+                        className="host-photo-input"
+                        placeholder="Dán link ảnh nội thất (https://...)"
+                        value={newEntireImageUrl}
+                        onChange={(e) => setNewEntireImageUrl(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleAddEntirePlaceImageUrl(e); }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="host-photo-btn host-photo-btn-primary"
+                      onClick={handleAddEntirePlaceImageUrl}
+                    >
+                      <TbPlus size={15} /> Thêm link
+                    </button>
+                    <label className="host-photo-btn host-photo-btn-outline">
+                      {isUploadingEntireImage ? <TbLoader className="spin" size={15} /> : <TbUpload size={15} />}
+                      {isUploadingEntireImage ? 'Đang tải...' : 'Tải từ máy'}
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        disabled={isUploadingEntireImage}
+                        onChange={handleUploadEntirePlaceImages}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="host-photo-btn host-photo-btn-sample"
+                      onClick={handleApplyDefaultEntirePlaceImages}
+                      title="Nạp nhanh 5 ảnh nội thất biệt thự mẫu chất lượng cao"
+                    >
+                      <TbSparkles size={15} /> Nạp 5 ảnh mẫu
+                    </button>
+                  </div>
+
+                  {/* Thumbnail Grid */}
+                  <div className="host-photo-grid">
+                    {entirePlaceImages.map((imgUrl, idx) => (
+                      <div key={idx} className="host-photo-card">
+                        <img
+                          src={imgUrl}
+                          alt={`Nội thất ${idx + 1}`}
+                          onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=300'; }}
+                        />
+                        {idx === 0 ? (
+                          <div className="host-photo-star-btn is-main" title="Ảnh chính">
+                            <TbStarFilled size={13} />
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            className="host-photo-star-btn"
+                            onClick={() => handleSetEntirePlaceCoverImage(idx)}
+                            title="Đặt làm ảnh chính"
+                          >
+                            <TbStarFilled size={13} />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="host-photo-delete-btn"
+                          onClick={() => handleRemoveEntirePlaceImage(idx)}
+                          title="Xóa ảnh này"
+                        >
+                          <TbTrash size={13} />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             ) : (
               /* MODE B: CƠ SỞ NHIỀU HẠNG PHÒNG (MULTI-ROOM) */
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <div>
-                    <h4 style={{ fontSize: '1.02rem', fontWeight: 800, margin: 0, color: 'var(--host-text-main)' }}>
-                      Danh sách các Hạng phòng trong cơ sở
-                    </h4>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--host-text-muted)', margin: '3px 0 0 0' }}>
-                      Thêm và thiết lập giá cho từng hạng phòng (VD: Phòng Deluxe, Phòng Suite, Penthouse...).
-                    </p>
+                {/* Thanh chuyển đổi giữa các hạng phòng (Sub-Tabs) */}
+                <div className="host-room-switcher-nav">
+                  <div className="host-room-switcher-pills">
+                    {rooms.map((r, rIdx) => {
+                      const isActive = rIdx === Math.min(Math.max(0, activeRoomIndex), Math.max(0, rooms.length - 1));
+                      const imgCount = (r.images || []).length;
+                      const isImgValid = imgCount >= 5;
+                      return (
+                        <button
+                          key={r.id || rIdx}
+                          type="button"
+                          className={`host-room-pill-btn ${isActive ? 'active' : ''}`}
+                          onClick={() => setActiveRoomIndex(rIdx)}
+                          title={`Chuyển sang: ${r.roomNameVi || `Hạng phòng ${rIdx + 1}`}`}
+                        >
+                          <TbDoor size={16} />
+                          <span>{r.roomNameVi || `Hạng phòng ${rIdx + 1}`}</span>
+                          <span className={`host-room-pill-badge ${isImgValid ? 'valid' : 'warning'}`}>
+                            {imgCount}/5 ảnh
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
+
                   <button
                     type="button"
                     onClick={handleAddRoom}
-                    className="host-btn-primary"
-                    style={{ padding: '0.48rem 1rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    className="host-room-add-pill-btn"
+                    title="Thêm một hạng phòng mới vào cơ sở"
                   >
-                    <TbPlus /> Thêm hạng phòng mới
+                    <TbPlus size={15} /> Thêm hạng phòng
                   </button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-                  {rooms.map((room, idx) => (
+                {/* Hiển thị chi tiết 1 hạng phòng đang chọn */}
+                {rooms[Math.min(Math.max(0, activeRoomIndex), Math.max(0, rooms.length - 1))] && (() => {
+                  const safeIdx = Math.min(Math.max(0, activeRoomIndex), Math.max(0, rooms.length - 1));
+                  const room = rooms[safeIdx];
+                  const idx = safeIdx;
+                  return (
                     <div
                       key={room.id}
                       style={{
@@ -951,7 +1564,10 @@ export const HostListingWizardPage = ({
                         {rooms.length > 1 && (
                           <button
                             type="button"
-                            onClick={() => handleRemoveRoom(room.id)}
+                            onClick={() => {
+                              handleRemoveRoom(room.id);
+                              if (activeRoomIndex >= rooms.length - 1) setActiveRoomIndex(Math.max(0, rooms.length - 2));
+                            }}
                             style={{
                               border: 'none',
                               background: '#fee2e2',
@@ -1000,71 +1616,104 @@ export const HostListingWizardPage = ({
                         </div>
                       </div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.65rem', marginBottom: '0.75rem' }}>
-                        <div>
-                          <label style={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.75rem', marginBottom: '1rem' }}>
+                        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px 10px', textAlign: 'center' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>
                             Khách tối đa
                           </label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={room.maxGuests}
-                            onChange={(e) => handleUpdateRoom(room.id, 'maxGuests', Number(e.target.value))}
-                            style={{ width: '100%', padding: '0.42rem', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center', fontWeight: 700, boxSizing: 'border-box' }}
-                          />
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateRoom(room.id, 'maxGuests', Math.max(1, (room.maxGuests || 2) - 1))}
+                              style={{ width: '26px', height: '26px', borderRadius: '50%', border: '1px solid #cbd5e1', background: '#f8fafc', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >-</button>
+                            <span style={{ minWidth: '24px', textAlign: 'center', fontWeight: 800, fontSize: '0.92rem', color: '#0f172a' }}>{room.maxGuests || 2}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateRoom(room.id, 'maxGuests', (room.maxGuests || 2) + 1)}
+                              style={{ width: '26px', height: '26px', borderRadius: '50%', border: '1px solid #cbd5e1', background: '#f8fafc', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >+</button>
+                          </div>
                         </div>
-                        <div>
-                          <label style={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>
+
+                        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px 10px', textAlign: 'center' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>
                             Phòng ngủ
                           </label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={room.bedrooms}
-                            onChange={(e) => handleUpdateRoom(room.id, 'bedrooms', Number(e.target.value))}
-                            style={{ width: '100%', padding: '0.42rem', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center', fontWeight: 700, boxSizing: 'border-box' }}
-                          />
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateRoom(room.id, 'bedrooms', Math.max(1, (room.bedrooms || 1) - 1))}
+                              style={{ width: '26px', height: '26px', borderRadius: '50%', border: '1px solid #cbd5e1', background: '#f8fafc', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >-</button>
+                            <span style={{ minWidth: '24px', textAlign: 'center', fontWeight: 800, fontSize: '0.92rem', color: '#0f172a' }}>{room.bedrooms || 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateRoom(room.id, 'bedrooms', (room.bedrooms || 1) + 1)}
+                              style={{ width: '26px', height: '26px', borderRadius: '50%', border: '1px solid #cbd5e1', background: '#f8fafc', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >+</button>
+                          </div>
                         </div>
-                        <div>
-                          <label style={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>
+
+                        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px 10px', textAlign: 'center' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>
                             Số giường
                           </label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={room.beds}
-                            onChange={(e) => handleUpdateRoom(room.id, 'beds', Number(e.target.value))}
-                            style={{ width: '100%', padding: '0.42rem', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center', fontWeight: 700, boxSizing: 'border-box' }}
-                          />
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateRoom(room.id, 'beds', Math.max(1, (room.beds || 1) - 1))}
+                              style={{ width: '26px', height: '26px', borderRadius: '50%', border: '1px solid #cbd5e1', background: '#f8fafc', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >-</button>
+                            <span style={{ minWidth: '24px', textAlign: 'center', fontWeight: 800, fontSize: '0.92rem', color: '#0f172a' }}>{room.beds || 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateRoom(room.id, 'beds', (room.beds || 1) + 1)}
+                              style={{ width: '26px', height: '26px', borderRadius: '50%', border: '1px solid #cbd5e1', background: '#f8fafc', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >+</button>
+                          </div>
                         </div>
-                        <div>
-                          <label style={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>
+
+                        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px 10px', textAlign: 'center' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>
                             Phòng tắm
                           </label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={room.bathrooms}
-                            onChange={(e) => handleUpdateRoom(room.id, 'bathrooms', Number(e.target.value))}
-                            style={{ width: '100%', padding: '0.42rem', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center', fontWeight: 700, boxSizing: 'border-box' }}
-                          />
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateRoom(room.id, 'bathrooms', Math.max(1, (room.bathrooms || 1) - 1))}
+                              style={{ width: '26px', height: '26px', borderRadius: '50%', border: '1px solid #cbd5e1', background: '#f8fafc', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >-</button>
+                            <span style={{ minWidth: '24px', textAlign: 'center', fontWeight: 800, fontSize: '0.92rem', color: '#0f172a' }}>{room.bathrooms || 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateRoom(room.id, 'bathrooms', (room.bathrooms || 1) + 1)}
+                              style={{ width: '26px', height: '26px', borderRadius: '50%', border: '1px solid #cbd5e1', background: '#f8fafc', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >+</button>
+                          </div>
                         </div>
-                        <div>
-                          <label style={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>
-                            Diện tích (m²)
+
+                        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px 10px', textAlign: 'center' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '6px' }}>
+                            Diện tích
                           </label>
-                          <input
-                            type="number"
-                            value={room.roomSizeM2}
-                            onChange={(e) => handleUpdateRoom(room.id, 'roomSizeM2', Number(e.target.value))}
-                            style={{ width: '100%', padding: '0.42rem', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center', fontWeight: 700, boxSizing: 'border-box' }}
-                          />
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <input
+                              type="number"
+                              min="10"
+                              value={room.roomSizeM2 || 35}
+                              onChange={(e) => handleUpdateRoom(room.id, 'roomSizeM2', Number(e.target.value))}
+                              style={{ width: '56px', height: '26px', padding: '0 4px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '0.88rem', fontWeight: 800, textAlign: 'center', color: '#0f172a' }}
+                            />
+                            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700, marginLeft: '4px' }}>m²</span>
+                          </div>
                         </div>
                       </div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                      {/* Giá & Phí vệ sinh phòng */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem', marginBottom: '0.85rem' }}>
                         <div>
-                          <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '3px' }}>
+                          <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
                             Giá niêm yết mỗi đêm (VND) *
                           </label>
                           <input
@@ -1072,11 +1721,14 @@ export const HostListingWizardPage = ({
                             step="50000"
                             value={room.priceVND}
                             onChange={(e) => handleUpdateRoom(room.id, 'priceVND', Number(e.target.value))}
-                            style={{ width: '100%', padding: '0.48rem 0.75rem', borderRadius: '6px', border: '1.5px solid #cbd5e1', fontSize: '0.88rem', fontWeight: 700, color: '#059669', boxSizing: 'border-box' }}
+                            style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.9rem', fontWeight: 700, color: '#059669', boxSizing: 'border-box' }}
                           />
+                          <span style={{ fontSize: '0.74rem', color: '#059669', fontWeight: 600, display: 'block', marginTop: '3px' }}>
+                            ~ {formatPrice(room.priceVND)} / đêm
+                          </span>
                         </div>
                         <div>
-                          <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '3px' }}>
+                          <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
                             Phí vệ sinh phòng (VND)
                           </label>
                           <input
@@ -1084,50 +1736,173 @@ export const HostListingWizardPage = ({
                             step="50000"
                             value={room.cleaningFeeVND}
                             onChange={(e) => handleUpdateRoom(room.id, 'cleaningFeeVND', Number(e.target.value))}
-                            style={{ width: '100%', padding: '0.48rem 0.75rem', borderRadius: '6px', border: '1.5px solid #cbd5e1', fontSize: '0.88rem', fontWeight: 600, boxSizing: 'border-box' }}
+                            style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.88rem', fontWeight: 600, boxSizing: 'border-box' }}
                           />
-                        </div>
-                      </div>
-
-                      {/* Loại không gian phòng */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                        <div>
-                          <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '3px' }}>
-                            Loại không gian phòng
-                          </label>
-                          <select
-                            value={room.spaceType || 'private_room'}
-                            onChange={(e) => handleUpdateRoom(room.id, 'spaceType', e.target.value)}
-                            style={{ width: '100%', padding: '0.48rem 0.75rem', borderRadius: '6px', border: '1.5px solid #cbd5e1', fontSize: '0.86rem', fontWeight: 600, background: '#fff', boxSizing: 'border-box' }}
-                          >
-                            <option value="private_room">Phòng riêng (Private Room)</option>
-                            <option value="shared_room">Phòng chung (Shared Room)</option>
-                            <option value="entire_place">Nguyên căn (Entire Place)</option>
-                          </select>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                          <span style={{ fontSize: '0.76rem', color: '#059669', fontWeight: 600, lineHeight: 1.4 }}>
-                            Giá: {formatPrice(room.priceVND)}/đêm
+                          <span style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 600, display: 'block', marginTop: '3px' }}>
+                            ~ {formatPrice(room.cleaningFeeVND || 0)} / lần
                           </span>
                         </div>
                       </div>
 
                       {/* Mô tả hạng phòng */}
-                      <div>
-                        <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '3px' }}>
-                          Mô tả hạng phòng
+                      <div style={{ marginBottom: '1rem' }}>
+                        <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                          Mô tả đặc điểm hạng phòng
                         </label>
                         <textarea
                           rows={2}
                           value={room.description || ''}
                           onChange={(e) => handleUpdateRoom(room.id, 'description', e.target.value)}
                           placeholder="Mô tả ngắn gọn về hạng phòng (nội thất, tầm nhìn, tiện nghi đặc biệt...)"
-                          style={{ width: '100%', padding: '0.48rem 0.75rem', borderRadius: '6px', border: '1.5px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box', resize: 'vertical' }}
+                          style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', boxSizing: 'border-box', resize: 'vertical' }}
                         />
                       </div>
+
+                      {/* Album ảnh riêng của hạng phòng (Ít nhất 5 ảnh) */}
+                      <div className="host-photo-section">
+                        <div className="host-photo-header-strip">
+                          <div>
+                            <h5 className="host-photo-title">
+                              <TbPhoto style={{ fontSize: '1.2rem', color: 'var(--host-primary, #059669)' }} />
+                              Bộ sưu tập ảnh thực tế hạng phòng #{idx + 1} (Tối thiểu 5 ảnh) *
+                            </h5>
+                            <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '3px 0 0 0', lineHeight: 1.45 }}>
+                              Bao gồm ảnh giường ngủ, không gian làm việc, phòng tắm, ban công view của riêng hạng phòng này.
+                            </p>
+                          </div>
+                          <div className={`host-photo-compliance-badge ${(room.images || []).length >= 5 ? 'valid' : 'needed'}`}>
+                            {(room.images || []).length >= 5 ? <TbCheck size={14} /> : <TbInfoCircle size={14} />}
+                            <span>{(room.images || []).length >= 5 ? `Đạt chuẩn: ${room.images.length}/5 ảnh` : `Cần thêm: ${(room.images || []).length}/5 ảnh`}</span>
+                          </div>
+                        </div>
+
+                        {/* Toolbar: URL & Upload & Sample */}
+                        <div className="host-photo-toolbar">
+                          <div className="host-photo-input-wrap">
+                            <TbLink className="host-photo-input-icon" />
+                            <input
+                              type="url"
+                              id={`wiz-room-input-${room.id}`}
+                              placeholder="Dán link ảnh hạng phòng (https://)..."
+                              className="host-photo-input"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleAddRoomImageUrl(room.id, e.currentTarget.value);
+                                  e.currentTarget.value = '';
+                                }
+                              }}
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            className="host-photo-btn host-photo-btn-primary"
+                            onClick={() => {
+                              const input = document.getElementById(`wiz-room-input-${room.id}`);
+                              if (input) {
+                                handleAddRoomImageUrl(room.id, input.value);
+                                input.value = '';
+                              }
+                            }}
+                          >
+                            <TbPlus size={15} /> Thêm link
+                          </button>
+                          <label className="host-photo-btn host-photo-btn-outline">
+                            <TbUpload size={15} />
+                            <span>Tải từ máy</span>
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              onChange={(e) => handleUploadRoomImages(room.id, e)}
+                              style={{ display: 'none' }}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            className="host-photo-btn host-photo-btn-sample"
+                            onClick={() => {
+                              const sample = idx === 0 ? SAMPLE_DELUXE_ROOM_IMAGES : (idx === 1 ? SAMPLE_SUITE_ROOM_IMAGES : SAMPLE_VILLA_ROOM_IMAGES);
+                              handleApplySampleRoomImages(room.id, sample);
+                            }}
+                            title="Nạp nhanh 5 ảnh thực tế mẫu chất lượng cao cho hạng phòng này"
+                          >
+                            <TbSparkles size={15} /> Nạp 5 ảnh mẫu
+                          </button>
+                        </div>
+
+                        {/* Room Photos Thumbnail Grid */}
+                        <div className="host-photo-grid">
+                          {(room.images || []).map((imgUrl, iIdx) => (
+                            <div key={iIdx} className="host-photo-card">
+                              <img
+                                src={imgUrl}
+                                alt={`Ảnh ${iIdx + 1}`}
+                                onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=300'; }}
+                              />
+                              {iIdx === 0 ? (
+                                <div className="host-photo-star-btn is-main" title="Ảnh chính">
+                                  <TbStarFilled size={13} />
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="host-photo-star-btn"
+                                  onClick={() => handleSetRoomCoverImage(room.id, iIdx)}
+                                  title="Đặt làm ảnh chính"
+                                >
+                                  <TbStarFilled size={13} />
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                className="host-photo-delete-btn"
+                                onClick={() => handleRemoveRoomImage(room.id, iIdx)}
+                                title="Xóa ảnh này"
+                              >
+                                <TbTrash size={13} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Footer chuyển hạng phòng Trước / Tiếp theo */}
+                      <div className="host-room-nav-footer">
+                        <button
+                          type="button"
+                          className="host-room-nav-btn"
+                          disabled={safeIdx === 0}
+                          onClick={() => setActiveRoomIndex(safeIdx - 1)}
+                        >
+                          <TbArrowLeft size={15} /> Hạng phòng trước
+                        </button>
+
+                        <div className="host-room-nav-summary">
+                          <span>Đang cấu hình <strong>{safeIdx + 1}</strong> / <strong>{rooms.length}</strong> hạng phòng</span>
+                        </div>
+
+                        {safeIdx < rooms.length - 1 ? (
+                          <button
+                            type="button"
+                            className="host-room-nav-btn"
+                            onClick={() => setActiveRoomIndex(safeIdx + 1)}
+                          >
+                            Hạng phòng tiếp theo <TbArrowRight size={15} />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="host-room-nav-btn"
+                            style={{ color: 'var(--host-primary, #059669)', borderColor: 'var(--host-primary, #059669)', background: 'var(--host-primary-soft, #ecfdf5)' }}
+                            onClick={handleAddRoom}
+                          >
+                            <TbPlus size={15} /> Thêm hạng phòng mới
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
               </div>
             )}
           </div>
@@ -1136,39 +1911,112 @@ export const HostListingWizardPage = ({
         {/* STEP 3: AMENITIES */}
         {currentStep === 3 && (
           <div>
-            <h4 style={{ fontSize: '1.02rem', fontWeight: 800, marginBottom: '0.35rem', color: 'var(--host-text-main)' }}>
-              Tiện ích nổi bật tại chỗ ở
-            </h4>
-            <p style={{ fontSize: '0.82rem', color: 'var(--host-text-muted)', marginBottom: '1.25rem' }}>
-              Những tiện nghi đặc biệt sẽ giúp chỗ ở của bạn nổi bật và thu hút nhiều lượt đặt phòng hơn.
-            </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', gap: '1rem', flexWrap: 'wrap' }}>
+              <div>
+                <h4 style={{ fontSize: '1.08rem', fontWeight: 800, marginBottom: '0.35rem', color: 'var(--host-text-main)' }}>
+                  <TbSparkles style={{ color: 'var(--host-primary, #059669)', verticalAlign: 'middle', marginRight: '6px' }} />
+                  Tiện ích nổi bật tại chỗ ở (Amenities)
+                </h4>
+                <p style={{ fontSize: '0.84rem', color: 'var(--host-text-muted)', margin: 0 }}>
+                  Những tiện nghi chất lượng cao sẽ giúp chỗ ở của bạn nổi bật và thu hút nhiều lượt đặt phòng hơn.
+                </p>
+              </div>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'var(--host-primary-soft, #ecfdf5)',
+                color: 'var(--host-primary, #059669)',
+                border: '1px solid var(--host-primary-border, #a7f3d0)',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                fontSize: '0.8rem',
+                fontWeight: 800,
+                whiteSpace: 'nowrap'
+              }}>
+                <TbCheck size={14} />
+                <span>Đã chọn: {selectedAmenities.length} tiện ích</span>
+              </div>
+            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-              {amenities.map((a) => {
-                const name = a.name_vi || a.name;
-                const isChecked = selectedAmenities.includes(name);
-                return (
-                  <div
-                    key={a.id || name}
-                    onClick={() => toggleAmenity(name)}
+            {/* Toolbar: Categories & Search */}
+            <div className="host-amenities-search-bar">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {[
+                  { id: 'all', label: 'Tất cả tiện ích', icon: <TbSparkles size={14} /> },
+                  { id: 'standout', label: 'Nổi bật & View', icon: <TbStarFilled size={14} /> },
+                  { id: 'basic', label: 'Thiết yếu & Bếp', icon: <TbToolsKitchen2 size={14} /> },
+                  { id: 'luxury', label: 'Sang trọng & Spa', icon: <TbDiamond size={14} /> },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setAmenityCategoryFilter(cat.id)}
                     style={{
-                      padding: '0.8rem 1rem',
-                      borderRadius: '8px',
-                      border: isChecked ? '2px solid var(--host-primary, #059669)' : '1.5px solid #e2e8f0',
-                      background: isChecked ? '#ecfdf5' : '#ffffff',
+                      border: amenityCategoryFilter === cat.id ? '1.5px solid var(--host-primary, #059669)' : '1.5px solid #cbd5e1',
+                      background: amenityCategoryFilter === cat.id ? 'var(--host-primary, #059669)' : '#ffffff',
+                      color: amenityCategoryFilter === cat.id ? '#ffffff' : '#475569',
+                      padding: '0.45rem 0.85rem',
+                      borderRadius: '20px',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
                       cursor: 'pointer',
-                      display: 'flex',
+                      display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '10px',
+                      gap: '5px',
                       transition: 'all 0.15s ease',
                     }}
                   >
-                    <span style={{ fontSize: '1.3rem', color: isChecked ? 'var(--host-primary, #059669)' : '#94a3b8', display: 'flex', alignItems: 'center' }}>
+                    {cat.icon}
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="host-search-input-group">
+                <TbSearch />
+                <input
+                  type="text"
+                  className="host-search-input"
+                  placeholder="Tìm nhanh tiện ích..."
+                  value={amenitySearchQuery}
+                  onChange={(e) => setAmenitySearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Grid Cards */}
+            <div className="host-amenities-grid">
+              {filteredAmenities.map((a, idx) => {
+                const name = getAmenityLabel(a);
+                if (!name) return null;
+                const isChecked = selectedAmenities.includes(name);
+                return (
+                  <div
+                    key={a.id || name || idx}
+                    className={`host-amenity-card ${isChecked ? 'selected' : ''}`}
+                    onClick={() => toggleAmenity(name)}
+                  >
+                    <div style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      background: isChecked ? '#ffffff' : '#f1f5f9',
+                      color: isChecked ? 'var(--host-primary, #059669)' : '#475569',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.2rem',
+                      flexShrink: 0,
+                    }}>
                       {renderAmenityIcon(a.icon || name)}
-                    </span>
-                    <span style={{ fontSize: '0.88rem', fontWeight: isChecked ? 700 : 500, color: isChecked ? '#065f46' : '#1e293b' }}>
+                    </div>
+                    <span className="host-amenity-name" style={{ color: isChecked ? '#065f46' : '#1e293b', flex: 1 }}>
                       {name}
                     </span>
+                    <div style={{ width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--host-primary, #059669)', fontWeight: 900 }}>
+                      {isChecked && <TbCheck size={16} />}
+                    </div>
                   </div>
                 );
               })}
@@ -1176,160 +2024,108 @@ export const HostListingWizardPage = ({
           </div>
         )}
 
-        {/* STEP 4: PHOTOS */}
+        {/* STEP 4: IMAGES */}
         {currentStep === 4 && (
-          <div>
-            <h4 style={{ fontSize: '1.02rem', fontWeight: 800, marginBottom: '0.35rem', color: 'var(--host-text-main)' }}>
-              Bộ sưu tập hình ảnh cơ sở & phòng nghỉ
-            </h4>
-            <p style={{ fontSize: '0.82rem', color: 'var(--host-text-muted)', marginBottom: '1.25rem' }}>
-              Hình ảnh chất lượng cao là yếu tố quyết định hàng đầu của du khách. Bạn có thể tải ảnh từ thiết bị hoặc dán link ảnh trực tiếp.
-            </p>
+          <div className="host-photo-section" style={{ marginTop: 0, background: '#ffffff' }}>
+            <div className="host-photo-header-strip">
+              <div>
+                <h4 className="host-photo-title" style={{ fontSize: '1.05rem' }}>
+                  <TbPhoto style={{ fontSize: '1.25rem', color: 'var(--host-primary, #059669)' }} />
+                  Bộ sưu tập ảnh toàn cảnh & ngoại cảnh cơ sở (Tối thiểu 5 ảnh) *
+                </h4>
+                <p style={{ fontSize: '0.82rem', color: 'var(--host-text-muted)', margin: '3px 0 0 0', lineHeight: 1.45 }}>
+                  5 ảnh này sẽ hiển thị tại <strong>Hero Gallery 5 ảnh trên trang chi tiết cơ sở (Accommodation)</strong> và thẻ tìm kiếm. Bao gồm mặt tiền, sân vườn, hồ bơi, khuôn viên chung... tách biệt với ảnh nội thất phòng.
+                </p>
+              </div>
+              <div className={`host-photo-compliance-badge ${images.length >= 5 ? 'valid' : 'needed'}`}>
+                {images.length >= 5 ? <TbCheck size={14} /> : <TbInfoCircle size={14} />}
+                <span>{images.length >= 5 ? `Đạt chuẩn: ${images.length}/5 ảnh` : `Cần thêm: ${images.length}/5 ảnh`}</span>
+              </div>
+            </div>
 
             {/* Upload Toolbar */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '1.25rem', alignItems: 'center' }}>
-              {/* Device Upload */}
-              <div>
+            <div className="host-photo-toolbar">
+              <div className="host-photo-input-wrap">
+                <TbLink className="host-photo-input-icon" />
+                <input
+                  type="url"
+                  className="host-photo-input"
+                  placeholder="Dán link ảnh trực tiếp (https://...)"
+                  value={newImageUrl}
+                  onChange={(e) => setNewImageUrl(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAddImageUrl(e); }}
+                />
+              </div>
+              <button
+                type="button"
+                className="host-photo-btn host-photo-btn-primary"
+                onClick={handleAddImageUrl}
+              >
+                <TbPlus size={15} /> Thêm link
+              </button>
+              <label className="host-photo-btn host-photo-btn-outline">
+                {isUploading ? <TbLoader className="spin" size={15} /> : <TbUpload size={15} />}
+                {isUploading ? 'Đang tải...' : 'Tải từ máy'}
                 <input
                   type="file"
                   id="wizard-upload-input"
                   multiple
                   accept="image/jpeg,image/png,image/webp,image/jpg"
+                  disabled={isUploading}
                   style={{ display: 'none' }}
                   onChange={handleAddImageFromDevice}
                 />
-                <label
-                  htmlFor="wizard-upload-input"
-                  className="host-btn-primary"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '0.6rem 1.15rem',
-                    fontSize: '0.86rem',
-                    cursor: isUploading ? 'not-allowed' : 'pointer',
-                    opacity: isUploading ? 0.7 : 1,
-                  }}
-                >
-                  {isUploading ? <TbLoader className="spin" /> : <TbUpload />}
-                  {isUploading ? 'Đang tải lên server...' : 'Tải ảnh từ thiết bị'}
-                </label>
-              </div>
-
-              {/* URL Input Form */}
-              <form onSubmit={handleAddImageUrl} style={{ display: 'flex', gap: '6px', flex: 1, minWidth: '280px' }}>
-                <input
-                  type="url"
-                  placeholder="Hoặc dán link ảnh trực tiếp (http/https)..."
-                  value={newImageUrl}
-                  onChange={(e) => setNewImageUrl(e.target.value)}
-                  style={{
-                    flex: 1,
-                    padding: '0.58rem 0.85rem',
-                    borderRadius: 'var(--host-radius-md, 8px)',
-                    border: '1.5px solid #cbd5e1',
-                    fontSize: '0.88rem',
-                    outline: 'none',
-                  }}
-                />
-                <button
-                  type="submit"
-                  className="host-btn-client"
-                  style={{ padding: '0.58rem 1rem', fontSize: '0.84rem' }}
-                >
-                  <TbPlus /> Thêm link
-                </button>
-              </form>
+              </label>
+              <button
+                type="button"
+                className="host-photo-btn host-photo-btn-sample"
+                onClick={handleApplyDefaultExteriorImages}
+                title="Áp dụng ngay 5 ảnh ngoại cảnh khuôn viên chất lượng cao"
+              >
+                <TbSparkles size={15} /> Nạp 5 ảnh ngoại cảnh mẫu
+              </button>
             </div>
 
             {/* Images Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px' }}>
+            <div className="host-photo-grid">
               {images.map((img, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    position: 'relative',
-                    height: '120px',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    border: idx === 0 ? '2.5px solid var(--host-primary, #059669)' : '1px solid #e2e8f0',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                  }}
-                >
+                <div key={idx} className="host-photo-card">
                   <img
                     src={img}
                     alt={`Chỗ ở ${idx}`}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => {
                       e.currentTarget.onerror = null;
                       e.currentTarget.src = 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800';
                     }}
                   />
                   {idx === 0 ? (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        top: 6,
-                        left: 6,
-                        background: 'var(--host-primary, #059669)',
-                        color: '#fff',
-                        fontSize: '0.7rem',
-                        fontWeight: 800,
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                      }}
-                    >
-                      Ảnh bìa
-                    </span>
+                    <div className="host-photo-star-btn is-main" title="Ảnh bìa chính">
+                      <TbStarFilled size={13} />
+                    </div>
                   ) : (
                     <button
                       type="button"
+                      className="host-photo-star-btn"
                       onClick={() => handleSetCoverImage(idx)}
                       title="Đặt làm ảnh bìa"
-                      style={{
-                        position: 'absolute',
-                        top: 6,
-                        left: 6,
-                        background: 'rgba(0,0,0,0.6)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        fontSize: '0.68rem',
-                        padding: '2px 6px',
-                        cursor: 'pointer',
-                      }}
                     >
-                      Đặt ảnh bìa
+                      <TbStarFilled size={13} />
                     </button>
                   )}
                   <button
                     type="button"
+                    className="host-photo-delete-btn"
                     onClick={() => handleRemoveImage(idx)}
-                    style={{
-                      position: 'absolute',
-                      top: 6,
-                      right: 6,
-                      background: 'rgba(0,0,0,0.65)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '50%',
-                      width: '24px',
-                      height: '24px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                    }}
                     title="Xóa ảnh này"
                   >
-                    <TbX style={{ fontSize: '0.85rem' }} />
+                    <TbTrash size={13} />
                   </button>
                 </div>
               ))}
             </div>
 
-            <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#64748b' }}>
-              * Tổng cộng: <strong>{images.length}</strong> ảnh. Ảnh đầu tiên sẽ hiển thị làm thẻ đại diện trên Trang Chủ.
+            <div style={{ marginTop: '0.85rem', fontSize: '0.8rem', color: '#64748b' }}>
+              * Tổng cộng: <strong>{images.length}</strong> ảnh ngoại cảnh. Ảnh đầu tiên sẽ hiển thị làm thẻ đại diện trên Trang Chủ.
             </div>
           </div>
         )}
@@ -1341,18 +2137,25 @@ export const HostListingWizardPage = ({
               1. Tiêu đề cơ sở & mô tả không gian
             </h4>
 
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--host-text-main)', display: 'block', marginBottom: '5px' }}>
-                Tên cơ sở lưu trú nổi bật *
-              </label>
+            <div style={{ marginBottom: '1.15rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--host-text-main)', margin: 0 }}>
+                  Tên cơ sở lưu trú nổi bật *
+                </label>
+                <span style={{ fontSize: '0.74rem', color: nameVi.length > 50 ? '#d97706' : '#64748b' }}>
+                  {nameVi.length}/60 ký tự (Khuyên dùng: 30 - 50)
+                </span>
+              </div>
               <input
                 type="text"
+                maxLength={60}
                 value={nameVi}
                 onChange={(e) => setNameVi(e.target.value)}
                 placeholder="Ví dụ: The Sunset Valley Luxury Villa & Resort Đà Lạt..."
                 style={{
                   width: '100%',
-                  padding: '0.58rem 0.85rem',
+                  height: '40px',
+                  padding: '0 12px',
                   borderRadius: 'var(--host-radius-md, 8px)',
                   border: '1.5px solid #cbd5e1',
                   fontSize: '0.9rem',
@@ -1365,23 +2168,31 @@ export const HostListingWizardPage = ({
             </div>
 
             <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--host-text-main)', display: 'block', marginBottom: '5px' }}>
-                Mô tả tổng quan về trải nghiệm lưu trú *
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--host-text-main)', margin: 0 }}>
+                  Mô tả tổng quan về trải nghiệm lưu trú *
+                </label>
+                <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                  {description.length}/1000 ký tự
+                </span>
+              </div>
               <textarea
-                rows={3}
+                rows={4}
+                maxLength={1000}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Mô tả vẻ đẹp, cảnh quan thiên nhiên và trải nghiệm nghỉ dưỡng..."
                 style={{
                   width: '100%',
-                  padding: '0.58rem 0.85rem',
+                  padding: '0.65rem 0.85rem',
                   borderRadius: 'var(--host-radius-md, 8px)',
                   border: '1.5px solid #cbd5e1',
                   fontSize: '0.88rem',
                   outline: 'none',
                   boxSizing: 'border-box',
                   resize: 'vertical',
+                  minHeight: '100px',
+                  lineHeight: 1.5,
                 }}
                 required
               />
@@ -1397,10 +2208,10 @@ export const HostListingWizardPage = ({
                   Nội quy chỗ ở
                 </label>
                 <textarea
-                  rows={2}
+                  rows={3}
                   value={houseRules}
                   onChange={(e) => setHouseRules(e.target.value)}
-                  style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', boxSizing: 'border-box', minHeight: '80px', lineHeight: 1.45 }}
                 />
               </div>
 
@@ -1409,22 +2220,20 @@ export const HostListingWizardPage = ({
                   Chính sách hủy phòng
                 </label>
                 <textarea
-                  rows={2}
+                  rows={3}
                   value={cancellationPolicy}
                   onChange={(e) => setCancellationPolicy(e.target.value)}
-                  style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.85rem', boxSizing: 'border-box', minHeight: '80px', lineHeight: 1.45 }}
                 />
               </div>
             </div>
-
-            {/* Pricing for entire_place đã được chuyển về Bước 2 */}
           </div>
         )}
 
         {/* STEP 6: PREVIEW & PUBLISH */}
         {currentStep === 6 && (
           <div style={{ textAlign: 'center' }}>
-            <h4 style={{ fontSize: '1.08rem', fontWeight: 800, marginBottom: '0.3rem', color: 'var(--host-text-main)' }}>
+            <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.3rem', color: 'var(--host-text-main)' }}>
               Xem trước hiển thị trên Trang Chủ & Trang Chi Tiết
             </h4>
             <p style={{ fontSize: '0.82rem', color: 'var(--host-text-muted)', marginBottom: '1.25rem' }}>
@@ -1435,7 +2244,7 @@ export const HostListingWizardPage = ({
               {/* Left: Card on Homepage */}
               <div>
                 <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b', marginBottom: '6px', textTransform: 'uppercase' }}>
-                  1. Hiển thị Thẻ Trang Chủ (Listing Card)
+                  Thẻ hiển thị trang chủ
                 </div>
                 <div
                   className="live-preview-box"
@@ -1443,7 +2252,7 @@ export const HostListingWizardPage = ({
                     borderRadius: '12px',
                     overflow: 'hidden',
                     border: '1px solid #e2e8f0',
-                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.08)',
                     background: '#fff',
                   }}
                 >
@@ -1493,7 +2302,7 @@ export const HostListingWizardPage = ({
                   </div>
 
                   <div className="live-preview-body" style={{ padding: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                       <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748b' }}>
                         {city} · {accommodationType.toUpperCase()}
                       </span>
@@ -1502,7 +2311,7 @@ export const HostListingWizardPage = ({
                       </span>
                     </div>
 
-                    <h4 className="live-preview-title" style={{ fontSize: '0.96rem', fontWeight: 700, margin: '3px 0 6px 0', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <h4 className="host-preview-title">
                       {nameVi}
                     </h4>
 
@@ -1525,18 +2334,6 @@ export const HostListingWizardPage = ({
                         </strong>
                         <span style={{ fontSize: '0.74rem', color: '#64748b' }}> / đêm</span>
                       </div>
-                      <span
-                        style={{
-                          background: '#ecfdf5',
-                          color: '#059669',
-                          fontSize: '0.7rem',
-                          fontWeight: 700,
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                        }}
-                      >
-                        Sẵn sàng đón khách
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -1546,7 +2343,7 @@ export const HostListingWizardPage = ({
               {previewRooms.length > 1 && (
                 <div>
                   <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b', marginBottom: '6px', textTransform: 'uppercase' }}>
-                    2. Bảng Hạng phòng trong Trang Chi Tiết (Ma trận phòng)
+                    Bảng hạng phòng ({previewRooms.length} phòng)
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {previewRooms.map((rm, i) => (
@@ -1560,21 +2357,22 @@ export const HostListingWizardPage = ({
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
+                          gap: '12px',
                         }}
                       >
-                        <div>
-                          <strong style={{ fontSize: '0.88rem', color: '#0f172a', display: 'block' }}>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <strong style={{ fontSize: '0.88rem', color: '#0f172a', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {rm.roomNameVi}
                           </strong>
                           <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
                             {rm.maxGuests} khách · {rm.bedrooms} PN · {rm.beds} giường · {rm.bathrooms} WC · {rm.roomSizeM2} m²
                           </span>
                         </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <strong style={{ fontSize: '0.92rem', color: 'var(--host-primary, #059669)', display: 'block' }}>
+                        <div style={{ textAlign: 'right', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                          <strong style={{ fontSize: '0.92rem', color: 'var(--host-primary, #059669)', display: 'block', whiteSpace: 'nowrap' }}>
                             {formatPrice(rm.priceVND)}
                           </strong>
-                          <span style={{ fontSize: '0.7rem', color: '#64748b' }}>/ đêm</span>
+                          <span style={{ fontSize: '0.7rem', color: '#64748b', whiteSpace: 'nowrap' }}>/ đêm</span>
                         </div>
                       </div>
                     ))}
@@ -1587,7 +2385,7 @@ export const HostListingWizardPage = ({
       </div>
 
       {/* Footer Navigation Actions */}
-      <div className="wizard-footer-actions" style={{ padding: '1rem 1.65rem', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="host-wiz-footer">
         {currentStep > 1 ? (
           <button
             type="button"
@@ -1628,22 +2426,15 @@ export const HostListingWizardPage = ({
             style={{
               fontSize: '0.88rem',
               padding: '0.58rem 1.35rem',
-              background: 'var(--host-primary, #059669)',
-              cursor: isPublishing ? 'not-allowed' : 'pointer',
+              background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+              boxShadow: '0 4px 14px rgba(5, 150, 105, 0.35)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
             }}
           >
-            {isPublishing ? (
-              <>
-                <TbLoader className="spin" /> Đang lưu & xuất bản...
-              </>
-            ) : (
-              <>
-                <TbCheck style={{ fontSize: '1.1rem' }} /> HOÀN TẤT & ĐĂNG BÁN
-              </>
-            )}
+            {isPublishing ? <TbLoader className="spin" size={18} /> : <TbCheck size={18} />}
+            {isPublishing ? 'Đang xuất bản...' : 'HOÀN TẤT & ĐĂNG BÁN'}
           </button>
         )}
       </div>

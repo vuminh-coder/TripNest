@@ -292,16 +292,114 @@ class HotelFullDatasetSeeder extends Seeder
                     'status' => 'available',
                 ]);
 
-                // Attach room images (offset to give different photos)
-                $imgCount = count($h['images']);
-                for ($k = 0; $k < $imgCount; $k++) {
-                    $imgPick = $h['images'][($k + $rIdx) % $imgCount];
+                // Attach room images — DISTINCT per room type (not from accommodation)
+                $roomImageSets = [
+                    'deluxe_king' => [
+                        [
+                            ['url' => 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1200', 'type' => 'room', 'caption' => 'Phòng Deluxe King - Toàn cảnh'],
+                            ['url' => 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200', 'type' => 'bedroom', 'caption' => 'Giường King cỡ lớn êm ái'],
+                            ['url' => 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1200', 'type' => 'bathroom', 'caption' => 'Phòng tắm đứng hiện đại'],
+                            ['url' => 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1200', 'type' => 'view', 'caption' => 'View từ ban công phòng'],
+                            ['url' => 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=1200', 'type' => 'detail', 'caption' => 'Bàn làm việc & tiện nghi'],
+                        ],
+                        [
+                            ['url' => 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=1200', 'type' => 'room', 'caption' => 'Phòng Deluxe King sang trọng'],
+                            ['url' => 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200', 'type' => 'bedroom', 'caption' => 'Giường King êm ái view đẹp'],
+                            ['url' => 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1200', 'type' => 'bathroom', 'caption' => 'Phòng tắm sang trọng'],
+                            ['url' => 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200', 'type' => 'view', 'caption' => 'Tầm nhìn từ phòng'],
+                            ['url' => 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=1200', 'type' => 'detail', 'caption' => 'Nội thất tinh tế'],
+                        ],
+                        [
+                            ['url' => 'https://images.unsplash.com/photo-1631049552240-59c37f38802b?w=1200', 'type' => 'room', 'caption' => 'Phòng Deluxe King tối giản'],
+                            ['url' => 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=1200', 'type' => 'bedroom', 'caption' => 'Không gian ngủ ấm cúng'],
+                            ['url' => 'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=1200', 'type' => 'bathroom', 'caption' => 'Phòng tắm tối giản hiện đại'],
+                            ['url' => 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200', 'type' => 'view', 'caption' => 'View cảnh quan'],
+                            ['url' => 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=1200', 'type' => 'detail', 'caption' => 'Chi tiết nội thất'],
+                        ],
+                        [
+                            ['url' => 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=1200', 'type' => 'room', 'caption' => 'Phòng Deluxe King đẳng cấp'],
+                            ['url' => 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200', 'type' => 'bedroom', 'caption' => 'Giường King cao cấp'],
+                            ['url' => 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1200', 'type' => 'bathroom', 'caption' => 'Phòng tắm đẳng cấp'],
+                            ['url' => 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=1200', 'type' => 'view', 'caption' => 'View panorama'],
+                            ['url' => 'https://images.unsplash.com/photo-1560185008-b033106af5c4?w=1200', 'type' => 'detail', 'caption' => 'Tiện nghi trong phòng'],
+                        ],
+                    ],
+                    'executive_suite' => [
+                        [
+                            ['url' => 'https://images.unsplash.com/photo-1591088398332-8a7791972843?w=1200', 'type' => 'room', 'caption' => 'Suite Cao Cấp - Phòng khách'],
+                            ['url' => 'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=1200', 'type' => 'bedroom', 'caption' => 'Phòng ngủ Master Suite'],
+                            ['url' => 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=1200', 'type' => 'bathroom', 'caption' => 'Bồn tắm Jacuzzi sang trọng'],
+                            ['url' => 'https://images.unsplash.com/photo-1582719508461-905c673771eb?w=1200', 'type' => 'view', 'caption' => 'View panorama từ suite'],
+                            ['url' => 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200', 'type' => 'detail', 'caption' => 'Khu vực ăn uống & minibar'],
+                        ],
+                        [
+                            ['url' => 'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=1200', 'type' => 'room', 'caption' => 'Suite đẳng cấp'],
+                            ['url' => 'https://images.unsplash.com/photo-1560185008-b033106af5c4?w=1200', 'type' => 'bedroom', 'caption' => 'Phòng ngủ Suite view đẹp'],
+                            ['url' => 'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=1200', 'type' => 'bathroom', 'caption' => 'Phòng tắm Suite cao cấp'],
+                            ['url' => 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1200', 'type' => 'view', 'caption' => 'Tầm nhìn tuyệt đẹp'],
+                            ['url' => 'https://images.unsplash.com/photo-1560449752-3fd4bdbe8df0?w=1200', 'type' => 'detail', 'caption' => 'Khu vực ăn uống riêng'],
+                        ],
+                        [
+                            ['url' => 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=1200', 'type' => 'room', 'caption' => 'Suite phong cách hoàng gia'],
+                            ['url' => 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=1200', 'type' => 'bedroom', 'caption' => 'Phòng ngủ Master sang trọng'],
+                            ['url' => 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1200', 'type' => 'bathroom', 'caption' => 'Bồn tắm ngâm thư giãn'],
+                            ['url' => 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200', 'type' => 'view', 'caption' => 'View thung lũng/biển'],
+                            ['url' => 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=1200', 'type' => 'detail', 'caption' => 'Minibar & tiện nghi'],
+                        ],
+                        [
+                            ['url' => 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=1200', 'type' => 'room', 'caption' => 'Suite thiết kế hiện đại'],
+                            ['url' => 'https://images.unsplash.com/photo-1631049552240-59c37f38802b?w=1200', 'type' => 'bedroom', 'caption' => 'Phòng ngủ ấm cúng'],
+                            ['url' => 'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=1200', 'type' => 'bathroom', 'caption' => 'Phòng tắm thiết kế Nhật'],
+                            ['url' => 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200', 'type' => 'view', 'caption' => 'View resort từ suite'],
+                            ['url' => 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=1200', 'type' => 'detail', 'caption' => 'Nội thất sang trọng'],
+                        ],
+                    ],
+                    'pool_villa' => [
+                        [
+                            ['url' => 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200', 'type' => 'room', 'caption' => 'Villa & hồ bơi riêng'],
+                            ['url' => 'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=1200', 'type' => 'bedroom', 'caption' => 'Phòng ngủ Master Villa'],
+                            ['url' => 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200', 'type' => 'bedroom2', 'caption' => 'Phòng ngủ phụ gia đình'],
+                            ['url' => 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=1200', 'type' => 'bathroom', 'caption' => 'Phòng tắm Villa sang trọng'],
+                            ['url' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200', 'type' => 'view', 'caption' => 'Sân vườn & khuôn viên Villa'],
+                            ['url' => 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200', 'type' => 'detail', 'caption' => 'Bếp & khu BBQ ngoài trời'],
+                        ],
+                        [
+                            ['url' => 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200', 'type' => 'room', 'caption' => 'Villa hiện đại & hồ bơi vô cực'],
+                            ['url' => 'https://images.unsplash.com/photo-1591088398332-8a7791972843?w=1200', 'type' => 'bedroom', 'caption' => 'Phòng ngủ chính rộng rãi'],
+                            ['url' => 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200', 'type' => 'bedroom2', 'caption' => 'Phòng ngủ 2 cho gia đình'],
+                            ['url' => 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1200', 'type' => 'bathroom', 'caption' => 'Phòng tắm Master Villa'],
+                            ['url' => 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200', 'type' => 'view', 'caption' => 'Ngoại cảnh Villa'],
+                            ['url' => 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200', 'type' => 'detail', 'caption' => 'Phòng khách & bếp mở'],
+                        ],
+                        [
+                            ['url' => 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200', 'type' => 'room', 'caption' => 'Villa nhiệt đới & hồ bơi'],
+                            ['url' => 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=1200', 'type' => 'bedroom', 'caption' => 'Phòng ngủ Master thoáng mát'],
+                            ['url' => 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200', 'type' => 'bedroom2', 'caption' => 'Phòng ngủ phụ view vườn'],
+                            ['url' => 'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=1200', 'type' => 'bathroom', 'caption' => 'Phòng tắm mở thiên nhiên'],
+                            ['url' => 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200', 'type' => 'view', 'caption' => 'Khuôn viên xanh mát'],
+                            ['url' => 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200', 'type' => 'detail', 'caption' => 'Khu vực thư giãn'],
+                        ],
+                        [
+                            ['url' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200', 'type' => 'room', 'caption' => 'Villa view núi & hồ bơi ấm'],
+                            ['url' => 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1200', 'type' => 'bedroom', 'caption' => 'Phòng ngủ ấm cúng view thung lũng'],
+                            ['url' => 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=1200', 'type' => 'bedroom2', 'caption' => 'Phòng ngủ 2 phong cách gỗ'],
+                            ['url' => 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1200', 'type' => 'bathroom', 'caption' => 'Phòng tắm bồn ngâm'],
+                            ['url' => 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=1200', 'type' => 'view', 'caption' => 'View thiên nhiên hùng vĩ'],
+                            ['url' => 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200', 'type' => 'detail', 'caption' => 'Bếp nấu & khu BBQ'],
+                        ],
+                    ],
+                ];
+
+                $typeCode = $rt['code'];
+                $setIdx = $idx % 4;
+                $imgSet = $roomImageSets[$typeCode][$setIdx] ?? $roomImageSets['deluxe_king'][0];
+
+                foreach ($imgSet as $k => $imgData) {
                     RoomImage::create([
                         'room_id' => $room->id,
-                        'image_url' => $imgPick['image_url'],
-                        'image_type' => $imgPick['image_type'],
-                        'google_search_link' => $imgPick['google_search_link'],
-                        'caption' => $imgPick['image_description'],
+                        'image_url' => $imgData['url'],
+                        'image_type' => $imgData['type'],
+                        'caption' => $imgData['caption'],
                         'display_order' => $k + 1,
                         'is_thumbnail' => ($k === 0),
                     ]);

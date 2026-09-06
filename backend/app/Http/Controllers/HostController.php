@@ -387,6 +387,17 @@ class HostController extends Controller
                     'amenities' => $acc->amenities->pluck('name_vi')->toArray(),
                     'createdAt' => $acc->created_at?->format('d/m/Y'),
                     'roomId' => $mainRoom?->id,
+                    'roomsCount' => $acc->rooms->count(),
+                    'rooms' => $acc->rooms->map(function ($r) {
+                        return [
+                            'id' => $r->id,
+                            'roomNameVi' => $r->room_name_vi,
+                            'spaceType' => $r->space_type,
+                            'priceVND' => (float)$r->price_per_night,
+                            'maxGuests' => $r->max_guests,
+                            'images' => $r->images->pluck('image_url')->toArray(),
+                        ];
+                    })->values()->toArray(),
                 ];
             });
 
@@ -567,7 +578,18 @@ class HostController extends Controller
                         'status' => 'available',
                     ]);
 
-                    $roomImgs = !empty($rItem['images']) && is_array($rItem['images']) ? $rItem['images'] : $images;
+                    $roomImgs = [];
+                    if (!empty($rItem['images']) && is_array($rItem['images'])) {
+                        $roomImgs = array_values(array_filter($rItem['images']));
+                    } elseif (!empty($rItem['imageUrl']) && is_string($rItem['imageUrl'])) {
+                        $roomImgs = [trim($rItem['imageUrl'])];
+                    }
+
+                    if (empty($roomImgs)) {
+                        // Fallback: Nếu không nhập ảnh riêng, gán 1 ảnh từ album cơ sở theo thứ tự
+                        $roomImgs = !empty($images) ? [$images[$rIdx % count($images)]] : [];
+                    }
+
                     foreach ($roomImgs as $index => $imgUrl) {
                         RoomImage::create([
                             'room_id' => $room->id,
@@ -608,11 +630,20 @@ class HostController extends Controller
                     'status' => 'available',
                 ]);
 
-                foreach ($images as $index => $imgUrl) {
+                $singleRoomImages = [];
+                if (!empty($request->input('roomImages')) && is_array($request->input('roomImages'))) {
+                    $singleRoomImages = array_values(array_filter($request->input('roomImages')));
+                } elseif (!empty($request->input('rooms')[0]['images']) && is_array($request->input('rooms')[0]['images'])) {
+                    $singleRoomImages = array_values(array_filter($request->input('rooms')[0]['images']));
+                } else {
+                    $singleRoomImages = $images;
+                }
+
+                foreach ($singleRoomImages as $index => $imgUrl) {
                     RoomImage::create([
                         'room_id' => $room->id,
                         'image_url' => $imgUrl,
-                        'caption' => 'Ảnh phòng',
+                        'caption' => 'Ảnh không gian ' . $singleRoomName,
                         'display_order' => $index + 1,
                         'is_thumbnail' => ($index === 0),
                     ]);
@@ -737,44 +768,128 @@ class HostController extends Controller
                 $accommodation->amenities()->sync($amenityIds);
             }
 
-            // 4. Cập nhật Room chính
-            $mainRoom = $accommodation->rooms()->first();
-            if ($mainRoom) {
-                $roomData = [];
-                if ($request->filled('nameVi')) $roomData['room_name_vi'] = $request->input('nameVi');
-                if ($request->filled('accommodationType')) $roomData['room_type_code'] = $request->input('accommodationType');
-                if ($request->filled('description')) $roomData['description'] = $request->input('description');
-                if ($request->filled('roomSizeM2')) $roomData['room_size_m2'] = (float)$request->input('roomSizeM2');
-                if ($request->filled('priceVND')) {
-                    $roomData['price_per_night'] = (float)$request->input('priceVND');
-                }
-                if ($request->filled('cleaningFeeVND')) {
-                    $roomData['cleaning_fee'] = (float)$request->input('cleaningFeeVND');
-                }
-                if ($request->filled('maxGuests')) $roomData['max_guests'] = (int)$request->input('maxGuests');
-                if ($request->filled('bedrooms')) $roomData['bedrooms_count'] = (int)$request->input('bedrooms');
-                if ($request->filled('beds')) $roomData['beds_count'] = (int)$request->input('beds');
-                if ($request->filled('bathrooms')) $roomData['bathrooms_count'] = (float)$request->input('bathrooms');
+            // 4. Cập nhật Hạng phòng (Rooms)
+            $inputRooms = $request->input('rooms');
+            if (is_array($inputRooms) && count($inputRooms) > 0) {
+                $existingRoomIds = $accommodation->rooms()->pluck('id')->toArray();
+                $updatedRoomIds = [];
 
-                if (!empty($roomData)) {
-                    $mainRoom->update($roomData);
-                }
+                foreach ($inputRooms as $rIdx => $rItem) {
+                    $rId = $rItem['id'] ?? null;
+                    $room = null;
 
-                if (isset($images) && !empty($images)) {
-                    $mainRoom->images()->delete();
-                    foreach ($images as $index => $imgUrl) {
-                        RoomImage::create([
-                            'room_id' => $mainRoom->id,
-                            'image_url' => $imgUrl,
-                            'caption' => 'Ảnh phòng',
-                            'display_order' => $index + 1,
-                            'is_thumbnail' => ($index === 0),
-                        ]);
+                    // Nếu ID là số hợp lệ và thuộc chỗ ở này thì cập nhật
+                    if (is_numeric($rId) && in_array((int)$rId, $existingRoomIds)) {
+                        $room = Room::find($rId);
+                    }
+
+                    if (!$room) {
+                        $room = new Room();
+                        $room->accommodation_id = $accommodation->id;
+                        $room->rating = 5.00;
+                        $room->reviews_count = 0;
+                        $room->is_guest_favorite = ($rIdx === 0);
+                        $room->status = 'available';
+                    }
+
+                    $rNameVi = !empty($rItem['roomNameVi']) ? $rItem['roomNameVi'] : (!empty($rItem['title']) ? $rItem['title'] : ($accommodation->name_vi . ' - Hạng phòng ' . ($rIdx + 1)));
+                    $rSpaceType = in_array($rItem['spaceType'] ?? '', ['entire_place', 'private_room', 'shared_room'])
+                        ? $rItem['spaceType']
+                        : ($accommodation->accommodation_type === 'hotel' || $accommodation->accommodation_type === 'resort' ? 'private_room' : 'entire_place');
+
+                    $room->room_name_vi = $rNameVi;
+                    $room->room_type_code = !empty($rItem['roomTypeCode']) ? $rItem['roomTypeCode'] : \Illuminate\Support\Str::slug($rNameVi);
+                    $room->space_type = $rSpaceType;
+                    $room->description = !empty($rItem['description']) ? $rItem['description'] : $accommodation->description;
+                    $room->room_size_m2 = (float)($rItem['roomSizeM2'] ?? 40.0);
+                    $room->price_per_night = (float)($rItem['priceVND'] ?? $rItem['pricePerNight'] ?? 1500000);
+                    $room->cleaning_fee = (float)($rItem['cleaningFeeVND'] ?? $rItem['cleaningFee'] ?? 150000);
+                    $room->service_fee_percent = 12.00;
+                    $room->max_guests = (int)($rItem['maxGuests'] ?? 2);
+                    $room->bedrooms_count = (int)($rItem['bedrooms'] ?? $rItem['bedroomsCount'] ?? 1);
+                    $room->beds_count = (int)($rItem['beds'] ?? $rItem['bedsCount'] ?? 1);
+                    $room->bathrooms_count = (float)($rItem['bathrooms'] ?? $rItem['bathroomsCount'] ?? 1);
+                    $room->total_inventory = (int)($rItem['totalInventory'] ?? 1);
+                    $room->save();
+
+                    $updatedRoomIds[] = $room->id;
+
+                    // Cập nhật ảnh phòng
+                    $roomImgs = [];
+                    if (!empty($rItem['images']) && is_array($rItem['images'])) {
+                        $roomImgs = array_values(array_filter($rItem['images']));
+                    } elseif (!empty($rItem['imageUrl']) && is_string($rItem['imageUrl'])) {
+                        $roomImgs = [trim($rItem['imageUrl'])];
+                    }
+
+                    if (empty($roomImgs) && !empty($images)) {
+                        $roomImgs = [$images[$rIdx % count($images)]];
+                    }
+
+                    if (!empty($roomImgs)) {
+                        $room->images()->delete();
+                        foreach ($roomImgs as $index => $imgUrl) {
+                            RoomImage::create([
+                                'room_id' => $room->id,
+                                'image_url' => $imgUrl,
+                                'caption' => $rNameVi,
+                                'display_order' => $index + 1,
+                                'is_thumbnail' => ($index === 0),
+                            ]);
+                        }
+                    }
+
+                    // Gắn tiện ích
+                    if (!empty($amenityIds)) {
+                        $room->amenities()->sync($amenityIds);
                     }
                 }
 
-                if (isset($amenityIds) && !empty($amenityIds)) {
-                    $mainRoom->amenities()->sync($amenityIds);
+                // Xóa các phòng đã bị gỡ khỏi danh sách
+                $roomsToDelete = array_diff($existingRoomIds, $updatedRoomIds);
+                if (!empty($roomsToDelete)) {
+                    Room::whereIn('id', $roomsToDelete)->delete();
+                }
+            } else {
+                // Fallback: Cập nhật Room chính (cho trường hợp form cũ)
+                $mainRoom = $accommodation->rooms()->first();
+                if ($mainRoom) {
+                    $roomData = [];
+                    if ($request->filled('nameVi')) $roomData['room_name_vi'] = $request->input('nameVi');
+                    if ($request->filled('accommodationType')) $roomData['room_type_code'] = $request->input('accommodationType');
+                    if ($request->filled('description')) $roomData['description'] = $request->input('description');
+                    if ($request->filled('roomSizeM2')) $roomData['room_size_m2'] = (float)$request->input('roomSizeM2');
+                    if ($request->filled('priceVND')) {
+                        $roomData['price_per_night'] = (float)$request->input('priceVND');
+                    }
+                    if ($request->filled('cleaningFeeVND')) {
+                        $roomData['cleaning_fee'] = (float)$request->input('cleaningFeeVND');
+                    }
+                    if ($request->filled('maxGuests')) $roomData['max_guests'] = (int)$request->input('maxGuests');
+                    if ($request->filled('bedrooms')) $roomData['bedrooms_count'] = (int)$request->input('bedrooms');
+                    if ($request->filled('beds')) $roomData['beds_count'] = (int)$request->input('beds');
+                    if ($request->filled('bathrooms')) $roomData['bathrooms_count'] = (float)$request->input('bathrooms');
+
+                    if (!empty($roomData)) {
+                        $mainRoom->update($roomData);
+                    }
+
+                    if (isset($images) && !empty($images)) {
+                        $mainRoom->images()->delete();
+                        foreach ($images as $index => $imgUrl) {
+                            RoomImage::create([
+                                'room_id' => $mainRoom->id,
+                                'image_url' => $imgUrl,
+                                'caption' => 'Ảnh phòng',
+                                'display_order' => $index + 1,
+                                'is_thumbnail' => ($index === 0),
+                            ]);
+                        }
+                    }
+
+                    if (isset($amenityIds) && !empty($amenityIds)) {
+                        $mainRoom->amenities()->sync($amenityIds);
+                    }
                 }
             }
 
@@ -786,7 +901,8 @@ class HostController extends Controller
                 'data' => [
                     'id' => $accommodation->id,
                     'nameVi' => $accommodation->name_vi,
-                    'priceVND' => (float)($mainRoom?->price_per_night ?: 0),
+                    'priceVND' => (float)($accommodation->rooms()->min('price_per_night') ?: 0),
+                    'roomsCount' => $accommodation->rooms()->count(),
                 ],
             ]);
 
@@ -852,6 +968,10 @@ class HostController extends Controller
     public function getHostBookings(Request $request): JsonResponse
     {
         $host = $this->getCurrentHost();
+        if (!$host) {
+            return response()->json(['success' => true, 'data' => [], 'total' => 0]);
+        }
+
         $roomIds = Room::whereHas('accommodation', function ($q) use ($host) {
             $q->where('host_id', $host->id);
         })->pluck('id');
@@ -900,6 +1020,10 @@ class HostController extends Controller
                 'status' => $b->status ?: 'confirmed',
                 'checkedInAt' => $b->checked_in_at?->format('d/m/Y H:i'),
                 'checkedOutAt' => $b->checked_out_at?->format('d/m/Y H:i'),
+                'cancelledAt' => $b->cancelled_at?->format('d/m/Y H:i'),
+                'cancellationReason' => $b->cancellation_reason,
+                'refundAmount' => (float)($b->refund_amount ?? 0),
+                'refundPercentage' => (int)($b->refund_percentage ?? 0),
                 'createdAt' => $b->created_at?->format('d/m/Y H:i'),
             ];
         });
@@ -917,6 +1041,17 @@ class HostController extends Controller
     public function getPayouts(Request $request): JsonResponse
     {
         $host = $this->getCurrentHost();
+        if (!$host) {
+            return response()->json([
+                'success' => true,
+                'payoutAccount' => null,
+                'availableBalance' => 0,
+                'pendingEscrowBalance' => 0,
+                'transactions' => [],
+                'payoutHistory' => [],
+            ]);
+        }
+
         $payoutAccount = $host->defaultPayoutAccount;
         $payoutQuery = PayoutTransaction::where('host_id', $host->id)->with('booking.room.accommodation');
 
@@ -961,6 +1096,13 @@ class HostController extends Controller
     public function requestPayout(Request $request): JsonResponse
     {
         $host = $this->getCurrentHost();
+        if (!$host) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi xác thực thông tin chủ nhà.',
+            ], 403);
+        }
+
         $payoutAccount = $host->defaultPayoutAccount;
 
         if (!$payoutAccount) {
@@ -1024,6 +1166,10 @@ class HostController extends Controller
         }
 
         $host = $this->getCurrentHost();
+        if (!$host) {
+            return response()->json(['success' => false, 'message' => 'Lỗi xác thực thông tin chủ nhà.'], 403);
+        }
+
         $account = HostPayoutAccount::updateOrCreate(
             ['host_id' => $host->id, 'is_default' => true],
             [

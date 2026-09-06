@@ -4,9 +4,74 @@
 
 .adm-fin-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.85rem;
   margin-bottom: 1.25rem;
+}
+
+@media (max-width: 1400px) {
+  .adm-fin-kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+.adm-fin-kpi-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0.95rem 1rem;
+  min-height: 104px;
+  position: relative;
+  background: var(--adm-card-bg, #ffffff);
+  border: 1px solid var(--adm-border, #e2e8f0);
+  border-radius: var(--adm-radius-md, 12px);
+  box-shadow: var(--adm-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.04));
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.adm-fin-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.adm-fin-kpi-info {
+  flex: 1;
+  min-width: 0;
+  margin-right: 0.4rem;
+}
+
+.adm-fin-kpi-info .stat-label {
+  display: block;
+  font-size: 0.69rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.25px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.2rem;
+}
+
+.adm-fin-kpi-info .stat-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+  margin: 0.2rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-fin-kpi-sub {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
 }
 
 .adm-fin-stat-green {
@@ -14,10 +79,8 @@
 }
 
 .adm-fin-stat-green-sub {
-  font-size: 0.74rem;
-  color: #059669;
+  color: #059669 !important;
   font-weight: 600;
-  margin-top: 2px;
 }
 
 .adm-fin-stat-amber {
@@ -25,10 +88,8 @@
 }
 
 .adm-fin-stat-amber-sub {
-  font-size: 0.74rem;
-  color: #b45309;
+  color: #b45309 !important;
   font-weight: 600;
-  margin-top: 2px;
 }
 
 .adm-fin-stat-blue {
@@ -36,15 +97,28 @@
 }
 
 .adm-fin-stat-blue-sub {
-  font-size: 0.74rem;
-  color: #0284c7;
+  color: #0284c7 !important;
   font-weight: 600;
-  margin-top: 2px;
+}
+
+.adm-fin-stat-red {
+  color: #dc2626 !important;
+}
+
+.adm-fin-stat-red-sub {
+  color: #b91c1c !important;
+  font-weight: 600;
 }
 
 .adm-fin-icon-blue {
   background: #eff6ff !important;
   color: #2563eb !important;
+}
+
+.adm-fin-icon-red {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fee2e2 !important;
 }
 
 .adm-fin-filter-box {
@@ -162,14 +236,34 @@
 
 .adm-fin-bank-name {
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   color: var(--adm-text-main, #0f172a);
+  margin-bottom: 3px;
 }
 
-.adm-fin-bank-acc {
-  font-size: 0.74rem;
-  color: var(--adm-text-muted, #64748b);
-  font-family: monospace;
+.adm-fin-bank-acc-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f8fafc;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.adm-fin-stk-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.3px;
+}
+
+.adm-fin-stk-num {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  letter-spacing: 0.6px;
 }
 
 .adm-fin-tx-ref {
@@ -178,6 +272,64 @@
   margin-top: 2px;
   font-weight: 700;
   font-family: monospace;
+}
+
+/* Action Buttons */
+.adm-fin-actions-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.adm-fin-approve-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  height: 30px;
+  border-radius: var(--adm-radius-sm, 7px);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.08);
+}
+
+.adm-fin-approve-btn:hover {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+  color: #065f46;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(16, 185, 129, 0.15);
+}
+
+.adm-fin-receipt-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--adm-radius-sm, 7px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--adm-border, #e2e8f0);
+  background: #ffffff;
+  color: #64748b;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.adm-fin-receipt-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
 }
 
 .adm-fin-empty-state {

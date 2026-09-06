@@ -107,10 +107,22 @@ class RoomController extends Controller
         $host = $accommodation?->host;
         $hostUser = $host?->user;
 
-        $images = $room->images->pluck('image_url')->toArray();
-        if (empty($images)) {
-            $images = ['https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&auto=format&fit=crop&q=80'];
+        $roomSpecificImages = $room->images->pluck('image_url')->toArray();
+        $accomImages = $accommodation ? $accommodation->images->pluck('image_url')->toArray() : [];
+
+        // Hợp nhất thông minh: Ảnh riêng của phòng làm Hero chính, sau đó là ảnh khuôn viên & tiện ích chỗ ở cha
+        $mergedImages = $roomSpecificImages;
+        foreach ($accomImages as $aImg) {
+            if (!in_array($aImg, $mergedImages)) {
+                $mergedImages[] = $aImg;
+            }
         }
+
+        if (empty($mergedImages)) {
+            $mergedImages = ['https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&auto=format&fit=crop&q=80'];
+        }
+
+        $images = $mergedImages;
 
         $amenityNames = $room->amenities->pluck('name_vi')->toArray();
 
@@ -158,6 +170,7 @@ class RoomController extends Controller
             'isGuestFavorite' => (bool)$room->is_guest_favorite,
             'isSuperhost' => (bool)($host?->is_superhost ?? true),
             'images' => $images,
+            'roomSpecificImages' => $roomSpecificImages,
             'host' => [
                 'id' => $host?->id,
                 'name' => $host?->host_display_name ?: 'Chủ nhà TripNest',

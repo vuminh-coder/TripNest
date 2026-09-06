@@ -179,7 +179,7 @@ export const HostAccommodationsPage = ({
                   </td>
                   <td>
                     <span style={{ fontSize: '0.84rem', color: 'var(--host-text-main)' }}>
-                      {item.guests} khách · {item.bedrooms} PN · {item.bathrooms} WC
+                      {(item.guests || item.max_guests || item.maxGuests || 2)} khách · {item.bedrooms || 1} PN · {item.bathrooms || 1} WC
                     </span>
                   </td>
                   <td>

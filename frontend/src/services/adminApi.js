@@ -90,6 +90,11 @@ export const adminService = {
           escrowPendingVND: statsData.escrowPendingVND || 0,
           payoutsCompletedVND: statsData.payoutsCompletedVND || 0,
           pendingPayoutsCount: statsData.pendingPayoutsCount || 0,
+          completedPayoutsCount: statsData.completedPayoutsCount || 0,
+          cancelledPayoutsCount: statsData.cancelledPayoutsCount || 0,
+          totalRefundedVND: statsData.totalRefundedVND || 0,
+          cancelledBookingsCount: statsData.cancelledBookingsCount || 0,
+          validBookingsCount: statsData.validBookingsCount || (statsData.totalBookings - statsData.cancelledBookingsCount) || 0,
           totalBookings: statsData.totalBookings || 0,
           completedBookings: statsData.completedBookings || 0,
           pendingKycCount: 0,
@@ -106,9 +111,10 @@ export const adminService = {
 
     const totalBookings = bookings.length;
     const completedBookings = bookings.filter((b) => b?.status === 'completed').length;
-    const totalRev = bookings
-      .filter((b) => b?.status !== 'cancelled')
-      .reduce((sum, b) => sum + (b?.total_price || 0), 0);
+    const cancelledList = bookings.filter((b) => b?.status === 'cancelled' || b?.status === 'refunded');
+    const validList = bookings.filter((b) => b?.status !== 'cancelled' && b?.status !== 'refunded');
+    const totalRev = validList.reduce((sum, b) => sum + (b?.total_price || 0), 0);
+    const totalRefunded = cancelledList.reduce((sum, b) => sum + (b?.refund_amount || b?.refundAmount || 0), 0);
     const commission = Math.round(totalRev * 0.12);
     const pendingKyc = hosts.filter((h) => h?.kyc_status === 'pending').length;
 
@@ -116,6 +122,9 @@ export const adminService = {
       ...stats,
       totalRevenueVND: totalRev > 0 ? totalRev : (stats.totalRevenueVND || 0),
       commissionRevenueVND: commission > 0 ? commission : (stats.commissionRevenueVND || 0),
+      totalRefundedVND: totalRefunded > 0 ? totalRefunded : (stats.totalRefundedVND || 0),
+      cancelledBookingsCount: cancelledList.length > 0 ? cancelledList.length : (stats.cancelledBookingsCount || 0),
+      validBookingsCount: validList.length > 0 ? validList.length : (stats.validBookingsCount || 0),
       totalBookings: totalBookings > 0 ? totalBookings : (stats.totalBookings || 0),
       completedBookings: completedBookings > 0 ? completedBookings : (stats.completedBookings || 0),
       pendingKycCount: pendingKyc > 0 ? pendingKyc : (stats.pendingKycCount || 0),
@@ -275,11 +284,14 @@ export const adminService = {
   async updateBookingStatus(bookingId, newStatus, reason = '') {
     try {
       if (newStatus === 'cancelled') {
-        await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel`, {
+        const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel`, {
           method: 'POST',
           headers: getAuthHeaders(),
           body: JSON.stringify({ reason }),
         });
+        if (res.ok) {
+          return await this.getBookings();
+        }
       } else if (newStatus === 'checked_in') {
         await fetch(`${API_BASE_URL}/bookings/${bookingId}/check-in`, {
           method: 'POST',
@@ -302,11 +314,34 @@ export const adminService = {
           ...item,
           status: newStatus,
           cancellation_reason: reason || item.cancellation_reason,
+          cancelled_at: newStatus === 'cancelled' ? new Date().toISOString() : item.cancelled_at,
           payment_status: newStatus === 'cancelled' ? 'refunded' : item.payment_status,
         };
       }
       return item;
     });
+
+    if (newStatus === 'cancelled') {
+      if (data.payouts && Array.isArray(data.payouts)) {
+        data.payouts = data.payouts.map((p) =>
+          (p.booking_code === bookingId || p.bookingCode === bookingId || p.note?.includes(bookingId))
+            ? { ...p, status: 'cancelled' }
+            : p
+        );
+      }
+      const validBookings = (data.bookings || []).filter((b) => b.status !== 'cancelled' && b.status !== 'refunded');
+      const totalRev = validBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
+      const cancelledList = (data.bookings || []).filter((b) => b.status === 'cancelled' || b.status === 'refunded');
+      const totalRefunded = cancelledList.reduce((sum, b) => sum + (b.refund_amount || b.refundAmount || 0), 0);
+      data.stats = {
+        ...data.stats,
+        totalRevenueVND: totalRev,
+        commissionRevenueVND: Math.round(totalRev * 0.12),
+        totalRefundedVND: totalRefunded,
+        cancelledBookingsCount: cancelledList.length,
+      };
+    }
+
     saveStoredData(data);
     return await this.getBookings();
   },
@@ -738,7 +773,11 @@ export const adminService = {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/reviews/${reviewId}/status`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
       });
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
@@ -830,6 +869,86 @@ export const adminService = {
     return data.categories || [];
   },
 
+  async createCategory(category) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/categories`, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(category),
+      });
+      if (res.ok) {
+        return await this.getCategories();
+      }
+    } catch (e) {
+      console.warn('Backend create category failed:', e);
+    }
+
+    const data = getStoredData();
+    const newCat = {
+      id: Date.now(),
+      slug: category.slug || ('cat_' + Date.now()),
+      label_vi: category.label_vi,
+      label_en: category.label_en || category.label_vi,
+      icon: category.icon || 'TbHome',
+      description: category.description || '',
+      display_order: Number(category.display_order || 0),
+      is_active: true,
+      accommodations_count: 0,
+    };
+    data.categories = [...(data.categories || []), newCat];
+    saveStoredData(data);
+    return data.categories;
+  },
+
+  async updateCategory(id, category) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(category),
+      });
+      if (res.ok) {
+        return await this.getCategories();
+      }
+    } catch (e) {
+      console.warn('Backend update category failed:', e);
+    }
+
+    const data = getStoredData();
+    data.categories = (data.categories || []).map((c) => {
+      if (c.id === id || c.slug === id) {
+        return { ...c, ...category };
+      }
+      return c;
+    });
+    saveStoredData(data);
+    return data.categories;
+  },
+
+  async deleteCategory(id) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        return await this.getCategories();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Không thể xóa danh mục.');
+      }
+    } catch (e) {
+      console.warn('Backend delete category failed:', e);
+      throw e;
+    }
+  },
+
   async toggleCategoryActive(slugOrId) {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/categories/${slugOrId}/toggle`, {
@@ -876,7 +995,10 @@ export const adminService = {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/amenities`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(amenity),
       });
       if (res.ok) {
@@ -929,6 +1051,92 @@ export const adminService = {
     return data.experiences || [];
   },
 
+  async createExperience(payload) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/experiences`, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        return await this.getExperiences();
+      }
+    } catch (e) {
+      console.warn('Backend create experience failed:', e);
+    }
+
+    const data = getStoredData();
+    const newExp = {
+      id: Date.now(),
+      title: payload.title_vi || payload.title,
+      title_vi: payload.title_vi || payload.title,
+      city: payload.city,
+      caption: payload.caption || 'Trải nghiệm du lịch khám phá',
+      description: payload.description || '',
+      price: Number(payload.price || payload.price_per_person || 500000),
+      price_per_person: Number(payload.price || payload.price_per_person || 500000),
+      priceVND: Number(payload.price || payload.price_per_person || 500000),
+      duration_hours: Number(payload.duration_hours || 3),
+      image: payload.image_url || payload.image || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800',
+      image_url: payload.image_url || payload.image || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800',
+      rating: 5.0,
+      reviews_count: 0,
+      is_active: true,
+      status: 'active',
+      host: payload.host || {
+        id: 1,
+        name: 'Chủ tour địa phương',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120',
+        is_superhost: true,
+        kyc_status: 'verified',
+      },
+    };
+    data.experiences = [newExp, ...(data.experiences || [])];
+    saveStoredData(data);
+    return data.experiences;
+  },
+
+  async updateExperience(id, payload) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/experiences/${id}`, {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        return await this.getExperiences();
+      }
+    } catch (e) {
+      console.warn('Backend update experience failed:', e);
+    }
+
+    const data = getStoredData();
+    data.experiences = (data.experiences || []).map((exp) => {
+      if (exp.id === id) {
+        return {
+          ...exp,
+          ...payload,
+          title: payload.title_vi || payload.title || exp.title,
+          title_vi: payload.title_vi || payload.title || exp.title_vi,
+          price: payload.price !== undefined ? Number(payload.price) : exp.price,
+          price_per_person: payload.price !== undefined ? Number(payload.price) : exp.price_per_person,
+          priceVND: payload.price !== undefined ? Number(payload.price) : exp.priceVND,
+          image: payload.image_url || payload.image || exp.image,
+          image_url: payload.image_url || payload.image || exp.image_url,
+        };
+      }
+      return exp;
+    });
+    saveStoredData(data);
+    return data.experiences;
+  },
+
   async toggleExperienceActive(id) {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/experiences/${id}/toggle`, {
@@ -949,6 +1157,25 @@ export const adminService = {
       }
       return exp;
     });
+    saveStoredData(data);
+    return data.experiences;
+  },
+
+  async deleteExperience(id) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/experiences/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        return await this.getExperiences();
+      }
+    } catch (e) {
+      console.warn('Backend delete experience failed:', e);
+    }
+
+    const data = getStoredData();
+    data.experiences = (data.experiences || []).filter((exp) => exp.id !== id);
     saveStoredData(data);
     return data.experiences;
   },

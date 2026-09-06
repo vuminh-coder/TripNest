@@ -383,6 +383,12 @@
   flex-shrink: 0;
 }
 
+.listing-rooms-badge.entire {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #dbeafe;
+}
+
 .listing-price-from-label {
   font-size: 0.88rem;
   color: #64748b;

@@ -2,103 +2,544 @@
    EXPERIENCES PAGE CSS (Admin Portal)
    ========================================================================== */
 
+/* 1. Top 4 KPI Metrics */
+.adm-exp-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 1200px) {
+  .adm-exp-kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+.adm-exp-kpi-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0.95rem 1.15rem;
+  min-height: 100px;
+  position: relative;
+  background: var(--adm-card-bg, #ffffff);
+  border: 1px solid var(--adm-border, #e2e8f0);
+  border-radius: var(--adm-radius-md, 12px);
+  box-shadow: var(--adm-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.04));
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.adm-exp-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.adm-exp-kpi-info {
+  flex: 1;
+  min-width: 0;
+  margin-right: 0.5rem;
+}
+
+.adm-exp-kpi-info .stat-label {
+  display: block;
+  font-size: 0.69rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.2rem;
+}
+
+.adm-exp-kpi-info .stat-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+  margin: 0.2rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-exp-kpi-sub {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.adm-exp-val-green {
+  color: #059669 !important;
+}
+
+.adm-exp-sub-green {
+  color: #059669 !important;
+  font-weight: 600;
+}
+
+.adm-exp-val-amber {
+  color: #d97706 !important;
+}
+
+.adm-exp-sub-amber {
+  color: #b45309 !important;
+  font-weight: 600;
+}
+
+.adm-exp-val-pink {
+  color: #ff385c !important;
+}
+
+/* 2. Filter Bar */
+.adm-exp-filter-box {
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.adm-exp-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.adm-exp-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 250px;
+}
+
+.adm-exp-search-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+.adm-exp-search-input {
+  width: 100%;
+  padding: 0.55rem 2.2rem 0.55rem 2.5rem;
+  border: 1px solid var(--adm-border, #e2e8f0);
+  border-radius: var(--adm-radius-md, 8px);
+  background: var(--adm-bg, #ffffff);
+  color: var(--adm-text-main, #0f172a);
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.adm-exp-search-input:focus {
+  outline: none;
+  border-color: #ff385c;
+  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.12);
+}
+
+.adm-exp-clear-search {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.adm-exp-clear-search:hover {
+  color: #475569;
+  background: #f1f5f9;
+}
+
+.adm-exp-select-wrap {
+  position: relative;
+  min-width: 180px;
+}
+
+.adm-exp-select-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.adm-exp-select {
+  width: 100%;
+  padding: 0.55rem 1rem 0.55rem 2.25rem;
+  border: 1px solid var(--adm-border, #e2e8f0);
+  border-radius: var(--adm-radius-md, 8px);
+  background: var(--adm-bg, #ffffff);
+  color: var(--adm-text-main, #0f172a);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.adm-exp-select:focus {
+  outline: none;
+  border-color: #ff385c;
+}
+
+.adm-exp-reset-btn {
+  padding: 0.55rem 0.85rem;
+  font-size: 0.82rem;
+}
+
+.adm-exp-add-btn {
+  padding: 0.55rem 1.15rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .adm-exp-add-btn {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 3. Experiences Cards Grid */
 .adm-exp-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.25rem;
 }
 
 .adm-exp-card {
   overflow: hidden;
   margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--adm-border, #e2e8f0);
+  border-radius: var(--adm-radius-lg, 14px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.adm-exp-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.07);
 }
 
 .adm-exp-media {
   position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  background: #f1f5f9;
 }
 
 .adm-exp-img {
   width: 100%;
-  height: 160px;
+  height: 100%;
   object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.adm-exp-card:hover .adm-exp-img {
+  transform: scale(1.04);
+}
+
+.adm-exp-rating-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  color: #ffffff;
+  padding: 0.22rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.adm-exp-star-icon {
+  color: #fbbf24;
+  font-size: 0.85rem;
+}
+
+.adm-exp-reviews-num {
+  color: #cbd5e1;
+  font-weight: 500;
 }
 
 .adm-exp-status-pill {
   position: absolute;
   top: 10px;
   right: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.3px;
 }
 
 .adm-exp-content {
-  padding: 1rem 1.15rem;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .adm-exp-meta-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--adm-text-muted, #64748b);
+  color: #64748b;
   font-size: 0.78rem;
-  margin-bottom: 4px;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
 }
 
 .adm-exp-pin-icon {
   color: #ff385c;
+  font-size: 0.95rem;
+}
+
+.adm-exp-clock-icon {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.adm-exp-city-tag {
+  color: #0f172a;
+}
+
+.adm-exp-dot {
+  color: #cbd5e1;
 }
 
 .adm-exp-title {
-  font-size: 0.94rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--adm-text-main, #0f172a);
   line-height: 1.35;
-  margin-bottom: 4px;
+  margin-bottom: 0.35rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .adm-exp-caption {
   font-size: 0.78rem;
   color: var(--adm-text-muted, #64748b);
+  line-height: 1.45;
   margin-bottom: 0.85rem;
-  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.3em;
 }
 
+/* Host Row */
+.adm-exp-host-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.adm-exp-host-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.adm-exp-host-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-exp-host-label {
+  font-size: 0.62rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.adm-exp-host-name {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-exp-superhost-pill {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: #fef2f2;
+  color: #ff385c;
+  border: 1px solid #fecdd3;
+  padding: 0.12rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Footer: Price & Actions */
 .adm-exp-footer-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-top: 1px solid var(--adm-border-subtle, #f1f5f9);
-  padding-top: 0.75rem;
+  padding-top: 0.85rem;
+  margin-top: auto;
+}
+
+.adm-exp-price-block {
+  display: flex;
+  flex-direction: column;
 }
 
 .adm-exp-price-label {
-  font-size: 0.66rem;
+  font-size: 0.64rem;
   color: var(--adm-text-muted, #64748b);
   text-transform: uppercase;
   font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .adm-exp-price-val {
   color: #ff385c;
-  font-size: 0.98rem;
+  font-size: 1.05rem;
   font-weight: 800;
 }
 
+.adm-exp-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
 .adm-exp-toggle-btn {
-  padding: 0.35rem 0.85rem;
-  border-radius: var(--adm-radius-sm, 8px);
-  font-size: 0.76rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--adm-radius-sm, 7px);
+  font-size: 0.74rem;
   font-weight: 700;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .adm-exp-toggle-btn.active {
-  border: 1px solid var(--adm-border, #edf2f7);
+  border: 1px solid #e2e8f0;
   background: #f8fafc;
-  color: #475569;
+  color: #64748b;
+}
+
+.adm-exp-toggle-btn.active:hover {
+  background: #f1f5f9;
+  color: #334155;
+  border-color: #cbd5e1;
 }
 
 .adm-exp-toggle-btn.paused {
   border: 1px solid #bbf7d0;
   background: #ecfdf5;
   color: #059669;
+}
+
+.adm-exp-toggle-btn.paused:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.adm-exp-action-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  border: 1px solid var(--adm-border, #e2e8f0);
+  background: #ffffff;
+  color: #64748b;
+  transition: all 0.15s ease;
+}
+
+.adm-exp-action-icon-btn.edit:hover {
+  color: #2563eb;
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.adm-exp-action-icon-btn.delete:hover {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+/* 4. Empty State */
+.adm-exp-empty-box {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.adm-exp-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.adm-exp-empty-box h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.4rem;
+}
+
+.adm-exp-empty-box p {
+  font-size: 0.85rem;
+  color: #64748b;
+  max-width: 420px;
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
 }

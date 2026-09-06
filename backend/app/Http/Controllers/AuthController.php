@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -245,6 +246,78 @@ class AuthController extends Controller
     }
 
     /**
+     * Cập nhật thông tin profile người dùng
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $account = Auth::guard('api')->user();
+        if (!$account) {
+            return response()->json(['success' => false, 'message' => 'Phiên đăng nhập đã hết hạn.'], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'full_name' => 'nullable|string|max:100',
+            'phone_number' => 'nullable|string|max:20',
+            'avatar_url' => 'nullable|string',
+            'id_card_number' => 'nullable|string|max:50',
+            'address' => 'nullable|string|max:255',
+            'gender' => 'nullable|string|in:male,female,other',
+            'date_of_birth' => 'nullable|date',
+            'bio' => 'nullable|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $account->user ?: User::create(['account_id' => $account->id]);
+
+        $userData = [];
+        if ($request->has('full_name')) $userData['full_name'] = trim($request->input('full_name'));
+        if ($request->has('phone_number')) $userData['phone_number'] = trim($request->input('phone_number'));
+        if ($request->has('avatar_url')) $userData['avatar_url'] = trim($request->input('avatar_url'));
+        if ($request->has('id_card_number')) $userData['id_card_number'] = trim($request->input('id_card_number'));
+        if ($request->has('address')) $userData['address'] = trim($request->input('address'));
+        if ($request->has('gender')) $userData['gender'] = $request->input('gender');
+        if ($request->has('date_of_birth')) $userData['date_of_birth'] = $request->input('date_of_birth');
+        if ($request->has('bio')) $userData['bio'] = $request->input('bio');
+
+        if (!empty($userData)) {
+            $user->update($userData);
+        }
+
+        $user->load(['host.defaultPayoutAccount']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật thông tin tài khoản thành công!',
+            'user' => [
+                'id' => $user->id,
+                'account_id' => $account->id,
+                'full_name' => $user->full_name,
+                'name' => $user->full_name,
+                'email' => $account->email,
+                'phone_number' => $user->phone_number,
+                'id_card_number' => $user->id_card_number,
+                'address' => $user->address,
+                'gender' => $user->gender,
+                'date_of_birth' => $user->date_of_birth ? $user->date_of_birth->format('Y-m-d') : null,
+                'bio' => $user->bio,
+                'avatar_url' => $user->avatar_url,
+                'avatar' => $user->avatar_url,
+                'role' => $account->role,
+                'status' => $account->status,
+                'is_host' => $user->host !== null,
+                'host' => $user->host,
+            ],
+        ]);
+    }
+
+    /**
      * Đổi mật khẩu tài khoản
      */
     public function updatePassword(Request $request): JsonResponse
@@ -285,6 +358,14 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Đổi mật khẩu thành công.',
         ]);
+    }
+
+    /**
+     * Alias cho updatePassword
+     */
+    public function changePassword(Request $request): JsonResponse
+    {
+        return $this->updatePassword($request);
     }
 
     /**

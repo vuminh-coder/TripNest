@@ -96,7 +96,7 @@ export const RoomDetailPage = ({
   }, []);
   const defaultOutStr = useMemo(() => {
     const d = new Date();
-    d.setDate(d.getDate() + 4);
+    d.setDate(d.getDate() + 3);
     return d.toISOString().split('T')[0];
   }, []);
 
@@ -107,6 +107,19 @@ export const RoomDetailPage = ({
   const [checkOut, setCheckOut] = useState(defaultCheckOut);
   const [guestCount, setGuestCount] = useState(Number(searchParams.guests) || 2);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Keep checkIn, checkOut, and guestCount synchronized whenever searchParams changes
+  useEffect(() => {
+    if (searchParams.checkInDate || searchParams.checkIn) {
+      setCheckIn(searchParams.checkInDate || searchParams.checkIn);
+    }
+    if (searchParams.checkOutDate || searchParams.checkOut) {
+      setCheckOut(searchParams.checkOutDate || searchParams.checkOut);
+    }
+    if (searchParams.guests) {
+      setGuestCount(Number(searchParams.guests));
+    }
+  }, [searchParams]);
 
   const getNextDayStr = (dateStr) => {
     if (!dateStr) return todayStr;
@@ -222,27 +235,37 @@ export const RoomDetailPage = ({
     );
   }
 
-  // Ensure at least 8 luxury resort photos for the 2-tier collage layout
+  // Smart Album Composition:
+  // 1. Ảnh riêng của hạng phòng này (room.roomSpecificImages || room.images) luôn đứng đầu làm Hero chính
+  // 2. Ảnh khuôn viên & tiện ích của cơ sở lưu trú cha (accommodation.images) lấp đầy các vị trí còn lại
+  // 3. Loại bỏ hoàn toàn ảnh Unsplash giả lập ngẫu nhiên
   const galleryPhotos = useMemo(() => {
-    const base = room.images && room.images.length > 0 ? room.images : [];
-    const fallbackList = [
-      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800',
-      'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800',
-      'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800',
-      'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800',
-      'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800',
-      'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800',
-      'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800',
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
-    ];
-    const merged = [...base];
-    for (const fb of fallbackList) {
-      if (merged.length < 8 && !merged.includes(fb)) {
-        merged.push(fb);
+    const roomPhotos = Array.isArray(room.roomSpecificImages) && room.roomSpecificImages.length > 0
+      ? room.roomSpecificImages
+      : (Array.isArray(room.images) && room.images.length > 0 ? room.images : []);
+
+    const accomPhotos = Array.isArray(room.accommodation?.images)
+      ? room.accommodation.images
+      : (Array.isArray(room.accommodationImages) ? room.accommodationImages : []);
+
+    const merged = [...roomPhotos];
+    for (const aImg of accomPhotos) {
+      if (!merged.includes(aImg)) {
+        merged.push(aImg);
       }
     }
+
+    if (merged.length === 0) {
+      merged.push('https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800');
+    }
+
+    // Nếu tổng số ảnh của cả phòng + cơ sở vẫn ít hơn 3, nhân bản lặp ảnh cơ sở để bố cục không bị vỡ
+    while (merged.length < 3 && merged.length > 0) {
+      merged.push(merged[0]);
+    }
+
     return merged;
-  }, [room.images]);
+  }, [room]);
 
   // Alias for lightbox and reserve functions
   const images = galleryPhotos;
@@ -316,10 +339,13 @@ export const RoomDetailPage = ({
 
   const nights = calculateNights();
 
-  // Price calculations
-  const pricePerNight = currency === 'USD' ? room.priceUSD : (room.priceVND || room.priceUSD * 25000);
+  const pricePerNight = currency === 'USD' 
+    ? (room.priceUSD || 100) 
+    : (room.priceVND || room.pricePerNight || (room.priceUSD ? room.priceUSD * 25000 : 2250000));
   const baseTotal = pricePerNight * nights;
-  const cleaningFee = currency === 'USD' ? 30 : (room.cleaning_fee_vnd || room.cleaningFee || room.cleaning_fee || 350000);
+  const cleaningFee = currency === 'USD' 
+    ? (room.cleaningFeeUSD || room.cleaning_fee_usd || 30) 
+    : (room.cleaningFeeVND || room.cleaning_fee_vnd || room.cleaningFee || room.cleaning_fee || 350000);
   const serviceFee = Math.round(baseTotal * 0.12);
   const grandTotal = baseTotal + cleaningFee + serviceFee;
 
@@ -346,9 +372,14 @@ export const RoomDetailPage = ({
   const handleReserve = () => {
     const bookingParams = {
       checkIn,
+      checkInDate: checkIn,
       checkOut,
+      checkOutDate: checkOut,
       nights,
       guests: guestCount,
+      basePrice: baseTotal,
+      cleaningFee: cleaningFee,
+      serviceFee: serviceFee,
       totalPrice: grandTotal,
       currency,
     };
@@ -509,9 +540,9 @@ export const RoomDetailPage = ({
                     alt={`${room.title} - Chi tiết ${actualIndex + 1}`}
                     className="collage-img"
                   />
-                  {isLastItem && (
+                  {isLastItem && galleryPhotos.length > 8 && (
                     <div className="collage-more-overlay">
-                      <span>+38 ảnh</span>
+                      <span>+{galleryPhotos.length - 8} ảnh</span>
                     </div>
                   )}
                 </div>

@@ -14,10 +14,12 @@ import {
   TbChevronRight,
   TbX,
   TbArrowLeft,
+  TbArrowRight,
   TbWifi,
   TbToolsKitchen2,
   TbSwimming,
   TbFlame,
+  TbBolt,
   TbCar,
   TbAirConditioning,
   TbWashMachine,
@@ -97,9 +99,47 @@ export const AccommodationDetailPage = ({
     return d.toISOString().split('T')[0];
   }, []);
 
+  const getNextDayStr = (dateStr) => {
+    if (!dateStr) return tomorrowStr;
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  };
+
+  const formatVNDate = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
+
   const [checkIn, setCheckIn] = useState(searchParams.checkInDate || tomorrowStr);
   const [checkOut, setCheckOut] = useState(searchParams.checkOutDate || defaultOutStr);
+
+  const handleCheckInChange = (newIn) => {
+    setCheckIn(newIn);
+    if (!checkOut || new Date(newIn) >= new Date(checkOut)) {
+      setCheckOut(getNextDayStr(newIn));
+    }
+  };
+
   const [guestCount, setGuestCount] = useState(Number(searchParams.guests) || 2);
+
+  // Sync state if searchParams change from global navigation
+  useEffect(() => {
+    if (searchParams.checkInDate || searchParams.checkIn) {
+      setCheckIn(searchParams.checkInDate || searchParams.checkIn);
+    }
+    if (searchParams.checkOutDate || searchParams.checkOut) {
+      setCheckOut(searchParams.checkOutDate || searchParams.checkOut);
+    }
+    if (searchParams.guests) {
+      setGuestCount(Number(searchParams.guests));
+    }
+  }, [searchParams]);
   const toast = useToast();
   const [activeTab, setActiveTab] = useState('overview');
   const [copiedLink, setCopiedLink] = useState(false);
@@ -199,15 +239,32 @@ export const AccommodationDetailPage = ({
         },
       ];
 
-  // Distinguish between Entire Place (Villa / Homestay / Cabin / Penthouse) vs Multi-room Resort / Hotel
+  // Distinguish between Entire Place (1 unit: Villa / Homestay nguyên căn / Cabin / Penthouse) vs Multi-room (2+ rooms or private rooms)
   const isEntirePlace = useMemo(() => {
-    const type = accommodation?.accommodationType?.toLowerCase() || '';
-    if (type === 'villa' || type === 'homestay' || type === 'cabin' || type === 'apartment') {
+    if (!roomsList || roomsList.length === 0) return true;
+
+    // Explicit rental mode from accommodation metadata
+    if (accommodation?.rentalMode === 'entire_place') {
       return true;
     }
-    if (roomsList.length === 1 && (roomsList[0].spaceType === 'entire_place' || accommodation?.spaceType === 'entire_place')) {
-      return true;
+    if (accommodation?.rentalMode === 'multi_room') {
+      return false;
     }
+
+    // If there is only 1 room, check if it's entire place
+    if (roomsList.length === 1) {
+      const singleRoom = roomsList[0];
+      if (singleRoom?.spaceType === 'entire_place' || accommodation?.spaceType === 'entire_place') {
+        return true;
+      }
+      const type = accommodation?.accommodationType?.toLowerCase() || '';
+      if (['villa', 'homestay', 'cabin', 'apartment', 'yacht'].includes(type)) {
+        return true;
+      }
+      return false;
+    }
+
+    // If there are 2 or more rooms, it's definitely a multi-room accommodation
     return false;
   }, [accommodation, roomsList]);
 
@@ -236,9 +293,30 @@ export const AccommodationDetailPage = ({
 
   // Handle single room instant booking
   const handleInstantBook = (roomItem) => {
+    const qty = selectedRoomsCount[roomItem.id] || 1;
+    const priceNight = currency === 'USD' 
+      ? (roomItem.priceUSD || 100) 
+      : (roomItem.priceVND || roomItem.pricePerNight || (roomItem.priceUSD ? roomItem.priceUSD * 25000 : 2250000));
+    const baseTotal = priceNight * nightsCount * qty;
+    const cleaningFee = currency === 'USD' 
+      ? (roomItem.cleaningFeeUSD || roomItem.cleaning_fee_usd || 30) 
+      : (roomItem.cleaningFeeVND || roomItem.cleaning_fee_vnd || roomItem.cleaningFee || roomItem.cleaning_fee || 350000);
+    const serviceFee = Math.round(baseTotal * 0.12);
+    const grandTotal = baseTotal + cleaningFee + serviceFee;
+
+    // If user selected multiple rooms across the property, proceed with all selected rooms
+    if (totalSelectedRooms > 1) {
+      handleProceedMultiRoomCheckout();
+      return;
+    }
+
     if (onStartCheckout) {
       onStartCheckout({
-        room: roomItem,
+        room: {
+          ...roomItem,
+          title: qty > 1 ? `${qty}x ${roomItem.roomNameVi || roomItem.title}` : (roomItem.roomNameVi || roomItem.title),
+          roomNameVi: qty > 1 ? `${qty}x ${roomItem.roomNameVi || roomItem.title}` : (roomItem.roomNameVi || roomItem.title),
+        },
         accommodation: accommodation,
         bookingParams: {
           checkIn: checkIn,
@@ -247,8 +325,12 @@ export const AccommodationDetailPage = ({
           checkOutDate: checkOut,
           guests: guestCount,
           nights: nightsCount,
-          roomsCount: 1,
-          totalPrice: (roomItem.priceVND || roomItem.pricePerNight || 2250000) * nightsCount,
+          roomsCount: qty,
+          selectedRoomsDetail: { [roomItem.id]: qty },
+          basePrice: baseTotal,
+          cleaningFee: cleaningFee,
+          serviceFee: serviceFee,
+          totalPrice: grandTotal,
         },
       });
     }
@@ -273,18 +355,37 @@ export const AccommodationDetailPage = ({
     });
   };
 
-  // Calculate total selected rooms & price
+  // Calculate total selected rooms & price (including all taxes and fees)
   const totalSelectedRooms = useMemo(() => {
     return Object.values(selectedRoomsCount).reduce((sum, count) => sum + count, 0);
   }, [selectedRoomsCount]);
 
-  const totalSelectedPrice = useMemo(() => {
+  const totalSelectedBase = useMemo(() => {
     return Object.entries(selectedRoomsCount).reduce((sum, [rId, count]) => {
       const found = roomsList.find((r) => String(r.id) === String(rId));
-      const price = found?.priceVND || found?.pricePerNight || 2250000;
+      const price = currency === 'USD' 
+        ? (found?.priceUSD || 100) 
+        : (found?.priceVND || found?.pricePerNight || (found?.priceUSD ? found.priceUSD * 25000 : 2250000));
       return sum + price * nightsCount * count;
     }, 0);
-  }, [selectedRoomsCount, roomsList, nightsCount]);
+  }, [selectedRoomsCount, roomsList, nightsCount, currency]);
+
+  const totalSelectedCleaning = useMemo(() => {
+    if (totalSelectedRooms <= 0) return 0;
+    const firstId = Object.keys(selectedRoomsCount)[0];
+    const found = roomsList.find((r) => String(r.id) === String(firstId));
+    return currency === 'USD' 
+      ? (found?.cleaningFeeUSD || found?.cleaning_fee_usd || 30) 
+      : (found?.cleaningFeeVND || found?.cleaning_fee_vnd || found?.cleaningFee || found?.cleaning_fee || 350000);
+  }, [totalSelectedRooms, selectedRoomsCount, roomsList, currency]);
+
+  const totalSelectedService = useMemo(() => {
+    return Math.round(totalSelectedBase * 0.12);
+  }, [totalSelectedBase]);
+
+  const totalSelectedPrice = useMemo(() => {
+    return totalSelectedBase + totalSelectedCleaning + totalSelectedService;
+  }, [totalSelectedBase, totalSelectedCleaning, totalSelectedService]);
 
   // Proceed checkout for selected rooms
   const handleProceedMultiRoomCheckout = () => {
@@ -296,9 +397,22 @@ export const AccommodationDetailPage = ({
     const [firstRoomId] = selectedEntries[0];
     const selectedRoomObj = roomsList.find((r) => String(r.id) === String(firstRoomId)) || roomsList[0];
 
+    const selectedTitles = selectedEntries
+      .map(([rId, qty]) => {
+        const found = roomsList.find((r) => String(r.id) === String(rId));
+        return `${qty}x ${found?.roomNameVi || found?.title || 'Phòng'}`;
+      })
+      .join(' + ');
+
+    const compositeRoom = {
+      ...selectedRoomObj,
+      roomNameVi: selectedEntries.length > 1 ? selectedTitles : selectedRoomObj.roomNameVi,
+      title: selectedEntries.length > 1 ? selectedTitles : selectedRoomObj.title,
+    };
+
     if (onStartCheckout) {
       onStartCheckout({
-        room: selectedRoomObj,
+        room: compositeRoom,
         accommodation: accommodation,
         bookingParams: {
           checkIn: checkIn,
@@ -309,6 +423,9 @@ export const AccommodationDetailPage = ({
           nights: nightsCount,
           roomsCount: totalSelectedRooms,
           selectedRoomsDetail: selectedRoomsCount,
+          basePrice: totalSelectedBase,
+          cleaningFee: totalSelectedCleaning,
+          serviceFee: totalSelectedService,
           totalPrice: totalSelectedPrice,
         },
       });
@@ -645,7 +762,7 @@ export const AccommodationDetailPage = ({
                 type="date"
                 value={checkIn}
                 min={todayStr}
-                onChange={(e) => setCheckIn(e.target.value)}
+                onChange={(e) => handleCheckInChange(e.target.value)}
               />
             </div>
 
@@ -654,7 +771,7 @@ export const AccommodationDetailPage = ({
               <input
                 type="date"
                 value={checkOut}
-                min={checkIn || todayStr}
+                min={getNextDayStr(checkIn)}
                 onChange={(e) => setCheckOut(e.target.value)}
               />
             </div>
@@ -788,10 +905,10 @@ export const AccommodationDetailPage = ({
         <div className="tn-matrix-header-bar">
           <div>
             <h2 className="tn-section-main-heading">
-              {isEntirePlace ? 'Thông Tin Chi Tiết Căn & Đặt Trọn Gói' : 'Danh Sách Hạng Phòng & Biệt Thự Có Sẵn'}
+              {isEntirePlace ? 'Thông Tin Chi Tiết Căn & Đặt Trọn Gói' : `Danh Sách Hạng Phòng & Biệt Thự Có Sẵn (${roomsList.length} hạng phòng)`}
             </h2>
             <p className="tn-matrix-subtitle">
-              Giá phòng tính cho <strong>{nightsCount} đêm</strong> (từ <strong>{checkIn}</strong> đến <strong>{checkOut}</strong>) cho <strong>{guestCount} khách</strong>
+              Giá phòng tính cho <strong>{nightsCount} đêm</strong> (từ <strong>{formatVNDate(checkIn)}</strong> đến <strong>{formatVNDate(checkOut)}</strong>) cho <strong>{guestCount} khách</strong>
             </p>
           </div>
 
@@ -803,11 +920,19 @@ export const AccommodationDetailPage = ({
         {/* Room Cards List */}
         <div className="tn-room-cards-matrix">
           {roomsList.map((roomItem, rIdx) => {
-            const rImages = Array.isArray(roomItem.images) && roomItem.images.length > 0
+            const hasDistinctRoomImages = Array.isArray(roomItem.images) && roomItem.images.length > 0;
+            const rImages = hasDistinctRoomImages
               ? roomItem.images
-              : images;
-            const priceNight = roomItem.priceVND || roomItem.pricePerNight || 2250000;
-            const totalPrice = priceNight * nightsCount;
+              : (images.length > rIdx ? [images[rIdx % images.length], ...images.filter((_, i) => i !== (rIdx % images.length))] : images);
+            const priceNight = currency === 'USD' 
+              ? (roomItem.priceUSD || 100) 
+              : (roomItem.priceVND || roomItem.pricePerNight || (roomItem.priceUSD ? roomItem.priceUSD * 25000 : 2250000));
+            const roomBase = priceNight * nightsCount;
+            const roomCleaning = currency === 'USD' 
+              ? (roomItem.cleaningFeeUSD || roomItem.cleaning_fee_usd || 30) 
+              : (roomItem.cleaningFeeVND || roomItem.cleaning_fee_vnd || roomItem.cleaningFee || roomItem.cleaning_fee || 350000);
+            const roomService = Math.round(roomBase * 0.12);
+            const roomGrandTotal = roomBase + roomCleaning + roomService;
             const selectedQty = selectedRoomsCount[roomItem.id] || 0;
 
             return (
@@ -816,7 +941,7 @@ export const AccommodationDetailPage = ({
                 <div className="tn-room-media-box">
                   <div
                     className="tn-room-img-wrap"
-                    onClick={() => onOpenRoomDetail && onOpenRoomDetail(roomItem)}
+                    onClick={() => onOpenRoomDetail && onOpenRoomDetail(roomItem, { checkIn, checkInDate: checkIn, checkOut, checkOutDate: checkOut, guests: guestCount, nights: nightsCount })}
                   >
                     <img src={rImages[0]} alt={roomItem.title} className="tn-room-img" />
                     <span className="tn-room-view-chip">
@@ -833,7 +958,7 @@ export const AccommodationDetailPage = ({
                   <div className="tn-room-title-line">
                     <h3
                       className="tn-room-title-link"
-                      onClick={() => onOpenRoomDetail && onOpenRoomDetail(roomItem)}
+                      onClick={() => onOpenRoomDetail && onOpenRoomDetail(roomItem, { checkIn, checkInDate: checkIn, checkOut, checkOutDate: checkOut, guests: guestCount, nights: nightsCount })}
                       title="Nhấp để xem chi tiết không gian này"
                     >
                       {roomItem.roomNameVi || roomItem.title}
@@ -859,6 +984,12 @@ export const AccommodationDetailPage = ({
                       <TbBath /> {roomItem.bathroomsCount || 1} phòng tắm riêng
                     </div>
                   </div>
+
+                  {guestCount > (roomItem.maxGuests || 2) && (
+                    <div className="tn-room-capacity-alert">
+                      <TbInfoCircle /> Đoàn của bạn có {guestCount} khách. Phòng này phù hợp {roomItem.maxGuests || 2} người (gợi ý đặt từ {Math.ceil(guestCount / (roomItem.maxGuests || 2))} phòng).
+                    </div>
+                  )}
 
                   {/* Amenities Chips */}
                   <div className="tn-room-amenities-row">
@@ -891,7 +1022,7 @@ export const AccommodationDetailPage = ({
                   <button
                     type="button"
                     className="tn-view-room-link-btn"
-                    onClick={() => onOpenRoomDetail && onOpenRoomDetail(roomItem)}
+                    onClick={() => onOpenRoomDetail && onOpenRoomDetail(roomItem, { checkIn, checkInDate: checkIn, checkOut, checkOutDate: checkOut, guests: guestCount, nights: nightsCount })}
                   >
                     Xem chi tiết bài viết & album ảnh phòng riêng →
                   </button>
@@ -901,11 +1032,11 @@ export const AccommodationDetailPage = ({
                 <div className="tn-room-pricing-box">
                   <div className="tn-price-display-wrapper">
                     <div className="tn-price-total-text">
-                      <span className="tn-price-val">{formatPrice(totalPrice, 1)}</span>
+                      <span className="tn-price-val">{formatPrice(roomGrandTotal, 1)}</span>
                       <span className="tn-price-sub">/ {nightsCount} đêm</span>
                     </div>
                     <div className="tn-price-avg">
-                      ~ {formatPrice(priceNight, 1)} / đêm
+                      ~ {formatPrice(priceNight, 1)} / đêm (gốc: {formatPrice(roomBase, 1)})
                     </div>
                     <div className="tn-tax-note">
                       Đã bao gồm thuế GTGT & phí dịch vụ
@@ -922,9 +1053,9 @@ export const AccommodationDetailPage = ({
                           className="tn-qty-dropdown"
                         >
                           <option value={0}>0 phòng (0 ₫)</option>
-                          <option value={1}>1 phòng ({formatPrice(totalPrice, 1)})</option>
-                          <option value={2}>2 phòng ({formatPrice(totalPrice * 2, 1)})</option>
-                          <option value={3}>3 phòng ({formatPrice(totalPrice * 3, 1)})</option>
+                          <option value={1}>1 phòng ({formatPrice(roomGrandTotal, 1)})</option>
+                          <option value={2}>2 phòng ({formatPrice(roomBase * 2 + roomCleaning + Math.round(roomBase * 2 * 0.12), 1)})</option>
+                          <option value={3}>3 phòng ({formatPrice(roomBase * 3 + roomCleaning + Math.round(roomBase * 3 * 0.12), 1)})</option>
                         </select>
                       </div>
                     )}
@@ -938,7 +1069,8 @@ export const AccommodationDetailPage = ({
                     </button>
 
                     <div className="tn-urgency-note">
-                      ⚡ Đặt ngay để giữ mức giá ưu đãi hôm nay
+                      <TbBolt className="tn-urgency-icon" />
+                      <span>Đặt ngay để giữ mức giá ưu đãi hôm nay</span>
                     </div>
                   </div>
                 </div>
@@ -953,23 +1085,38 @@ export const AccommodationDetailPage = ({
         <div className="tn-floating-summary-bar">
           <div className="tn-floating-inner">
             <div className="tn-floating-summary-info">
-              <span className="tn-floating-rooms-badge">
-                {totalSelectedRooms} phòng đã chọn ({nightsCount} đêm)
-              </span>
+              <div className="tn-floating-rooms-badge">
+                <span className="tn-badge-pulse-dot" />
+                <TbBed className="tn-badge-bed-icon" />
+                <span>
+                  <strong>{totalSelectedRooms}</strong> phòng đã chọn <span className="tn-badge-nights">({nightsCount} đêm)</span>
+                </span>
+              </div>
+
+              <div className="tn-floating-divider" />
+
               <div className="tn-floating-price-box">
                 <span className="tn-floating-label">Tổng thanh toán:</span>
-                <span className="tn-floating-val">{formatPrice(totalSelectedPrice, 1)}</span>
-                <span className="tn-floating-tax-note">(Đã gồm thuế & phí)</span>
+                <strong className="tn-floating-val">{formatPrice(totalSelectedPrice, 1)}</strong>
+                <span className="tn-floating-tax-note">Đã gồm thuế & phí</span>
               </div>
             </div>
 
-            <button
-              type="button"
-              className="primary-gradient-btn tn-floating-submit-btn"
-              onClick={handleProceedMultiRoomCheckout}
-            >
-              TIẾP TỤC ĐẶT PHÒNG →
-            </button>
+            <div className="tn-floating-actions">
+              <div className="tn-floating-guarantee">
+                <TbShieldCheck className="tn-guarantee-icon" />
+                <span>Bảo đảm giữ phòng 100%</span>
+              </div>
+
+              <button
+                type="button"
+                className="tn-floating-submit-btn"
+                onClick={handleProceedMultiRoomCheckout}
+              >
+                <span>TIẾP TỤC ĐẶT PHÒNG</span>
+                <TbArrowRight className="tn-btn-arrow-icon" />
+              </button>
+            </div>
           </div>
         </div>
       )}

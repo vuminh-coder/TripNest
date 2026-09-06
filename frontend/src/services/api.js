@@ -180,6 +180,24 @@ export const apiService = {
     return data;
   },
 
+  async updateProfile(payload) {
+    const res = await fetch(`${API_BASE_URL}/auth/update-profile`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const error = new Error(data.message || 'Không thể cập nhật hồ sơ.');
+      error.response = data;
+      throw error;
+    }
+    if (data.user) {
+      localStorage.setItem('tripnest_user', JSON.stringify(data.user));
+    }
+    return data;
+  },
+
   async forgotPassword(email){
     const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
       method: "POST",
@@ -425,19 +443,40 @@ export const apiService = {
     }
   },
 
-  async cancelBooking(bookingId, reason = 'Khách hàng yêu cầu hủy qua ứng dụng.') {
+  async getCancelPreview(bookingId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel-preview`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Cancel preview error');
+      return await res.json();
+    } catch (e) {
+      console.warn('Cancel preview fallback:', e);
+      return {
+        success: false,
+        refund: { percentage: 100, amount: 0, policy_description: 'Không thể tải chính sách hoàn tiền.' },
+      };
+    }
+  },
+
+  async cancelBooking(bookingId, reason = 'Khách hàng yêu cầu hủy qua ứng dụng.', isHostCancel = false) {
     try {
       const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ reason }),
+        body: JSON.stringify({ reason, host_cancel: isHostCancel }),
       });
       const data = await res.json();
+
+      const refundData = data?.refund;
 
       // Update localStorage to stay in sync
       this._updateLocalBookingStatus(bookingId, 'cancelled', {
         cancellationReason: reason,
         cancelledAt: new Date().toISOString(),
+        refundAmount: refundData?.amount ?? 0,
+        refundPercentage: refundData?.percentage ?? (isHostCancel ? 100 : 0),
+        refundSummary: refundData,
         canCancel: false,
         canCheckIn: false,
         canCheckOut: false,
@@ -449,6 +488,8 @@ export const apiService = {
       this._updateLocalBookingStatus(bookingId, 'cancelled', {
         cancellationReason: reason,
         cancelledAt: new Date().toISOString(),
+        refundAmount: 0,
+        refundPercentage: isHostCancel ? 100 : 0,
         canCancel: false,
         canCheckIn: false,
         canCheckOut: false,
@@ -529,10 +570,32 @@ export const apiService = {
       const hostBookings = JSON.parse(localStorage.getItem('tripnest_host_bookings') || '[]');
       const updatedHostBookings = hostBookings.map((b) =>
         (b.code === bookingId || b.id === bookingId)
-          ? { ...b, status: newStatus }
+          ? {
+              ...b,
+              status: newStatus,
+              cancellationReason: extraFields.cancellationReason || b.cancellationReason,
+              refundAmount: extraFields.refundAmount ?? b.refundAmount,
+              refundPercentage: extraFields.refundPercentage ?? b.refundPercentage,
+              refundSummary: extraFields.refundSummary ?? b.refundSummary,
+              cancelledAt: extraFields.cancelledAt || b.cancelledAt,
+            }
           : b
       );
       localStorage.setItem('tripnest_host_bookings', JSON.stringify(updatedHostBookings));
+
+      // 2b. If cancelled, also update host payout history in localStorage
+      try {
+        const hostPayouts = JSON.parse(localStorage.getItem('tripnest_host_payout_history') || '[]');
+        if (Array.isArray(hostPayouts) && hostPayouts.length > 0) {
+          const updatedHostPayouts = hostPayouts.map((p) => {
+            if (p.bookingCode === bookingId || p.note?.includes(bookingId)) {
+              return { ...p, status: newStatus === 'cancelled' ? 'cancelled' : p.status };
+            }
+            return p;
+          });
+          localStorage.setItem('tripnest_host_payout_history', JSON.stringify(updatedHostPayouts));
+        }
+      } catch {}
 
       // 3. Update tripnest_admin_data_v1
       const adminRaw = localStorage.getItem('tripnest_admin_data_v1');
@@ -541,22 +604,44 @@ export const apiService = {
         if (adminData.bookings) {
           adminData.bookings = adminData.bookings.map((b) =>
             (b.id === bookingId || b.code === bookingId)
-              ? { ...b, status: newStatus }
+              ? {
+                  ...b,
+                  status: newStatus,
+                  cancellation_reason: extraFields.cancellationReason || b.cancellation_reason,
+                  cancelled_at: extraFields.cancelledAt || b.cancelled_at,
+                  refund_amount: extraFields.refundAmount ?? b.refund_amount,
+                  refund_percentage: extraFields.refundPercentage ?? b.refund_percentage,
+                  payment_status: newStatus === 'cancelled' ? 'refunded' : b.payment_status,
+                }
               : b
           );
+
+          // Update admin payouts if exists
+          if (adminData.payouts && Array.isArray(adminData.payouts)) {
+            adminData.payouts = adminData.payouts.map((p) =>
+              (p.booking_code === bookingId || p.bookingCode === bookingId || p.note?.includes(bookingId))
+                ? { ...p, status: newStatus === 'cancelled' ? 'cancelled' : p.status }
+                : p
+            );
+          }
+
           // Recalculate stats strictly excluding cancelled bookings
           const validBookings = adminData.bookings.filter((b) => b.status !== 'cancelled' && b.status !== 'refunded');
           const totalRev = validBookings.reduce((sum, b) => sum + (b.total_price || b.totalAmount || 0), 0);
           const commission = validBookings.reduce((sum, b) => sum + (b.service_fee || b.commission_fee || Math.round((b.total_price || 0) * 0.12)), 0);
+          const cancelledList = adminData.bookings.filter((b) => b.status === 'cancelled' || b.status === 'refunded');
+          const totalRefunded = cancelledList.reduce((sum, b) => sum + (b.refund_amount || b.refundAmount || 0), 0);
 
           adminData.stats = {
             ...adminData.stats,
             totalRevenueVND: totalRev,
             commissionRevenueVND: commission,
+            totalRefundedVND: totalRefunded,
+            cancelledBookingsCount: cancelledList.length,
             totalBookings: adminData.bookings.length,
             completedBookings: adminData.bookings.filter((b) => b.status === 'completed').length,
             checkedInBookings: adminData.bookings.filter((b) => b.status === 'checked_in').length,
-            cancelledBookings: adminData.bookings.filter((b) => b.status === 'cancelled' || b.status === 'refunded').length,
+            cancelledBookings: cancelledList.length,
           };
           localStorage.setItem('tripnest_admin_data_v1', JSON.stringify(adminData));
         }
@@ -651,19 +736,73 @@ export const apiService = {
     }
   },
 
-  // Lấy danh sách tiện ích
-  async getAmenities(){
-    try {
-      const res = await fetch(`${API_BASE_URL}/host/amenity`, {
-        headers: getAuthHeaders(),
-      });
-      if (!res.ok) throw new Error('Network error');
-      const json = await res.json();
-      return json;
-    } catch (e) {
-      const saved = localStorage.getItem('tripnest_host_listings');
-      return saved ? JSON.parse(saved) : [];
+  // Tạo chỗ nghỉ mới (Host Create Accommodation)
+  async createHostAccommodation(payload) {
+    const res = await fetch(`${API_BASE_URL}/host/accommodations`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const msg = data.message || (data.errors ? Object.values(data.errors).flat().join(', ') : 'Không thể tạo chỗ nghỉ mới.');
+      throw new Error(msg);
     }
+    return data;
+  },
+
+  // Lấy danh sách tiện ích
+  async getAmenities() {
+    try {
+      let res = await fetch(`${API_BASE_URL}/amenities`);
+      if (!res.ok) {
+        res = await fetch(`${API_BASE_URL}/host/amenity`, {
+          headers: getAuthHeaders(),
+        });
+      }
+      if (res.ok) {
+        const json = await res.json();
+        const list = json.data || json.amenities || (Array.isArray(json) ? json : []);
+        if (Array.isArray(list) && list.length > 0) {
+          // Chuẩn hóa danh sách tiện ích trả về từ server
+          return list.map((a, idx) => {
+            const name = typeof a === 'string' ? a : (a.name_vi || a.name || a.label || `Tiện ích ${idx + 1}`);
+            return {
+              id: a.id || idx + 1,
+              code: a.code || `amenity_${idx + 1}`,
+              name_vi: name,
+              name_en: a.name_en || name,
+              icon: a.icon || 'TbSparkles',
+              category: a.category || 'basic',
+            };
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Fallback standard amenities list:', e);
+    }
+    return [
+      { id: 1, code: 'wifi', name_vi: 'Wifi tốc độ cao (150 Mbps)', icon: 'TbWifi', category: 'basic' },
+      { id: 2, code: 'kitchen', name_vi: 'Bếp nấu đầy đủ dụng cụ & gia vị', icon: 'TbToolsKitchen2', category: 'basic' },
+      { id: 3, code: 'pool', name_vi: 'Hồ bơi nước ấm vô cực', icon: 'TbSwimming', category: 'standout' },
+      { id: 4, code: 'bbq', name_vi: 'Bếp nướng BBQ ngoài trời', icon: 'TbFlame', category: 'standout' },
+      { id: 5, code: 'fireplace', name_vi: 'Lò sưởi ấm cúng trong nhà', icon: 'TbFlame', category: 'standout' },
+      { id: 6, code: 'parking', name_vi: 'Chỗ đỗ xe ô tô miễn phí tại chỗ', icon: 'TbCar', category: 'basic' },
+      { id: 7, code: 'ac', name_vi: 'Điều hòa & Máy sưởi hai chiều', icon: 'TbAirConditioning', category: 'basic' },
+      { id: 8, code: 'washer', name_vi: 'Máy giặt & Máy sấy quần áo', icon: 'TbWashMachine', category: 'basic' },
+      { id: 9, code: 'pet_friendly', name_vi: 'Cho phép mang theo thú cưng', icon: 'TbPaw', category: 'standout' },
+      { id: 10, code: 'workspace', name_vi: 'Bàn làm việc chuyên dụng', icon: 'TbDeviceLaptop', category: 'basic' },
+      { id: 11, code: 'jacuzzi', name_vi: 'Bồn tắm sục Jacuzzi ngoài trời', icon: 'TbBath', category: 'luxury' },
+      { id: 12, code: 'private_beach', name_vi: 'Lối đi thẳng ra bãi biển riêng', icon: 'TbBeach', category: 'luxury' },
+      { id: 13, code: 'tv', name_vi: 'Smart TV 4K màn hình lớn', icon: 'TbDeviceTv', category: 'basic' },
+      { id: 14, code: 'mountain_view', name_vi: 'View ngắm mây & đồi núi tuyệt đẹp', icon: 'TbSparkles', category: 'standout' },
+      { id: 15, code: 'balcony', name_vi: 'Ban công ngắm cảnh riêng biệt', icon: 'TbSparkles', category: 'standout' },
+      { id: 16, code: 'ev_charger', name_vi: 'Trạm sạc xe điện (EV Charger)', icon: 'TbCar', category: 'standout' },
+      { id: 17, code: 'sauna', name_vi: 'Phòng xông hơi Sauna / Spa', icon: 'TbBath', category: 'luxury' },
+      { id: 18, code: 'safe', name_vi: 'Két sắt an toàn trong phòng', icon: 'TbShieldCheck', category: 'basic' },
+      { id: 19, code: 'breakfast', name_vi: 'Phục vụ bữa sáng hàng ngày', icon: 'TbCoffee', category: 'luxury' },
+      { id: 20, code: 'fitness', name_vi: 'Phòng tập thể dục / Gym tại chỗ', icon: 'TbBarbell', category: 'luxury' },
+    ];
   },
 
   // 19. Tải ảnh lên máy chủ (Host Upload Image)
@@ -698,20 +837,17 @@ export const apiService = {
 
   // 20. Cập nhật thông tin chỗ ở
   async updateHostAccommodation(id, payload) {
-    try {
-      const res = await fetch(`${API_BASE_URL}/host/accommodations/${id}`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || 'Lỗi khi cập nhật chỗ nghỉ');
-      }
-      return data;
-    } catch (e) {
-      return { success: true, message: 'Đã cập nhật thông tin thành công!' };
+    const res = await fetch(`${API_BASE_URL}/host/accommodations/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const msg = data.message || (data.errors ? Object.values(data.errors).flat().join(', ') : 'Lỗi khi cập nhật chỗ nghỉ');
+      throw new Error(msg);
     }
+    return data;
   },
 
   // 21. Bật/Tắt trạng thái mở bán (Toggle Status)
@@ -864,6 +1000,10 @@ export const apiService = {
     }
   },
 
+  async toggleHostAccommodationStatus(id) {
+    return this.toggleAccommodationStatus(id);
+  },
+
   async deleteAccommodation(id) {
     try {
       const res = await fetch(`${API_BASE_URL}/host/accommodations/${id}`, {
@@ -874,6 +1014,10 @@ export const apiService = {
     } catch (e) {
       return { success: true };
     }
+  },
+
+  async deleteHostAccommodation(id) {
+    return this.deleteAccommodation(id);
   },
 
   async updatePayoutAccount(payload) {
@@ -888,7 +1032,7 @@ export const apiService = {
   async checkInBooking(bookingId) {
     try {
       const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/check-in`, {
-        method: 'PATCH',
+        method: 'POST',
         headers: getAuthHeaders(),
       });
       return await res.json();
@@ -897,16 +1041,28 @@ export const apiService = {
     }
   },
 
+  async checkIn(bookingId) {
+    return this.checkInBooking(bookingId);
+  },
+
   async checkOutBooking(bookingId) {
     try {
       const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/check-out`, {
-        method: 'PATCH',
+        method: 'POST',
         headers: getAuthHeaders(),
       });
       return await res.json();
     } catch (e) {
       return { success: true, message: 'Đã check-out và tạo lệnh giải ngân thành công.' };
     }
+  },
+
+  async checkOut(bookingId) {
+    return this.checkOutBooking(bookingId);
+  },
+
+  async hostCancelBooking(bookingId, reason = 'Chủ nhà hủy phòng.') {
+    return this.cancelBooking(bookingId, reason, true);
   },
 
   // ==========================================
@@ -1015,4 +1171,4 @@ export const apiService = {
   },
 };
 
-
+export default apiService;

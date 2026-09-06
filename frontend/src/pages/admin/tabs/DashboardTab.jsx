@@ -53,7 +53,7 @@ export const DashboardTab = ({ stats, bookings, hosts, setActiveTab, onOpenKycMo
 
         <div className="stat-card-glass">
           <div>
-            <span className="stat-label">Hoa Hồng Sàn (12%)</span>
+            <span className="stat-label">Hoa Hồng Sàn</span>
             <div className="stat-value" style={{ color: '#059669' }}>
               {formatVND(stats.commissionRevenueVND)}
             </div>

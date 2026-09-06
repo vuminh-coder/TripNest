@@ -8,6 +8,7 @@ import HostHeader from './HostHeader';
 import HostDashboardPage from './pages/HostDashboardPage';
 import HostAccommodationsPage from './pages/HostAccommodationsPage';
 import HostListingWizardPage from './pages/HostListingWizardPage';
+import HostListingEditPage from './pages/HostListingEditPage';
 import HostBookingsPage from './pages/HostBookingsPage';
 import HostReviewsPage from './pages/HostReviewsPage';
 import HostFinancialsPage from './pages/HostFinancialsPage';
@@ -26,21 +27,28 @@ export const HostLayout = ({
   onOpenBookings,
   onAccommodationCreated,
   currency = 'VND',
+  onLogout,
 }) => {
   const getInitialTabFromUrl = () => {
     const path = window.location.pathname.replace('/host', '').replace('/', '');
-    const validTabs = ['dashboard', 'accommodations', 'new_listing', 'bookings', 'reviews', 'financials'];
+    if (path.startsWith('edit_listing')) return 'edit_listing';
+    const validTabs = ['dashboard', 'accommodations', 'new_listing', 'edit_listing', 'bookings', 'reviews', 'financials'];
     return validTabs.includes(path) ? path : 'dashboard';
+  };
+
+  const getInitialEditIdFromUrl = () => {
+    const path = window.location.pathname;
+    const match = path.match(/\/host\/edit_listing\/([a-zA-Z0-9_-]+)/);
+    return match ? match[1] : null;
   };
 
   const toast = useToast();
   const confirm = useConfirm();
 
   const [activeTab, setActiveTab] = useState(getInitialTabFromUrl);
+  const [editingAccommodationId, setEditingAccommodationId] = useState(getInitialEditIdFromUrl);
   const [collapsed, setCollapsed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [editingListing, setEditingListing] = useState(null);
-  const [editImageUrl, setEditImageUrl] = useState('');
   const [isRequestingPayout, setIsRequestingPayout] = useState(false);
   const [availableBalance, setAvailableBalance] = useState(0);
   const [loadingListings, setLoadingListings] = useState(false);
@@ -182,14 +190,21 @@ export const HostLayout = ({
     localStorage.removeItem('tripnest_host_payout_history');
   }, []);
 
-  const handleNavigate = (tabId) => {
+  const handleNavigate = (tabId, extraId = null) => {
     setActiveTab(tabId);
-    window.history.pushState({}, '', `/host${tabId === 'dashboard' ? '' : `/${tabId}`}`);
+    if (tabId === 'edit_listing') {
+      const id = extraId || editingAccommodationId;
+      if (id) setEditingAccommodationId(id);
+      window.history.pushState({}, '', `/host/edit_listing/${id || ''}`);
+    } else {
+      window.history.pushState({}, '', `/host${tabId === 'dashboard' ? '' : `/${tabId}`}`);
+    }
   };
 
   useEffect(() => {
     const handlePopState = () => {
       setActiveTab(getInitialTabFromUrl());
+      setEditingAccommodationId(getInitialEditIdFromUrl());
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -440,22 +455,22 @@ export const HostLayout = ({
   const handleCancelBooking = async (id) => {
     const isConfirmed = await confirm({
       title: 'Hủy đơn đặt phòng?',
-      message: 'Bạn có chắc chắn muốn từ chối / hủy đơn đặt phòng này?',
+      message: 'Lưu ý: Nếu Host chủ động hủy đơn, hệ thống sẽ hoàn tiền 100% cho khách hàng và hủy lệnh thanh toán tương ứng cho Host.',
       type: 'danger',
-      confirmText: 'Xác nhận hủy',
+      confirmText: 'Xác nhận hủy đơn',
       cancelText: 'Giữ lại',
     });
 
     if (isConfirmed) {
-      setBookings(
-        bookings.map((b) => (b.id === id || b.code === id ? { ...b, status: 'cancelled' } : b))
-      );
       try {
-        await apiService.cancelBooking(id);
+        await apiService.cancelBooking(id, 'Chủ nhà chủ động hủy đơn đặt phòng.', true);
+        toast.info('Đã hủy đơn', 'Đã hủy đơn đặt phòng thành công và hoàn trả 100% cho khách.');
       } catch (err) {
         console.warn('Backend cancel booking error:', err);
+        toast.info('Đã hủy đơn', 'Đã cập nhật trạng thái hủy đơn.');
       }
-      toast.info('Đã hủy đơn', 'Đã hủy đơn đặt phòng thành công.');
+      refreshBookings();
+      refreshPayouts();
     }
   };
 
@@ -501,6 +516,8 @@ export const HostLayout = ({
         setCollapsed={setCollapsed}
         onOpenBookings={onOpenBookings}
         pendingBookingsCount={pendingCount}
+        onSwitchToClient={onSwitchToClient}
+        onLogout={onLogout}
       />
 
       {/* 2. Main Content Container */}
@@ -539,11 +556,8 @@ export const HostLayout = ({
               listings={listings}
               onOpenWizard={() => handleNavigate('new_listing')}
               onEditListing={(item) => {
-                setEditingListing({
-                  ...item,
-                  images: item.images?.length ? [...item.images] : item.thumbnail ? [item.thumbnail] : [],
-                });
-                setEditImageUrl('');
+                setEditingAccommodationId(item.id);
+                handleNavigate('edit_listing', item.id);
               }}
               onToggleStatus={handleToggleStatus}
               onDeleteListing={handleDeleteListing}
@@ -557,6 +571,34 @@ export const HostLayout = ({
               onCancel={() => handleNavigate('accommodations')}
               onListingCreated={(newListing) => {
                 handleListingCreated(newListing);
+              }}
+              currency={currency}
+            />
+          )}
+
+          {activeTab === 'edit_listing' && (
+            <HostListingEditPage
+              accommodationId={editingAccommodationId}
+              onCancel={() => handleNavigate('accommodations')}
+              onListingUpdated={async (updatedData) => {
+                if (updatedData && updatedData.id) {
+                  setListings((prev) =>
+                    prev.map((l) =>
+                      String(l.id) === String(updatedData.id)
+                        ? {
+                            ...l,
+                            ...updatedData,
+                            nameVi: updatedData.nameVi || l.nameVi,
+                            title: updatedData.nameVi || l.title,
+                            priceVND: updatedData.priceVND || l.priceVND,
+                            thumbnail: updatedData.images?.[0] || l.thumbnail,
+                          }
+                        : l
+                    )
+                  );
+                }
+                await refreshAccommodations();
+                handleNavigate('accommodations');
               }}
               currency={currency}
             />
@@ -589,242 +631,6 @@ export const HostLayout = ({
           )}
         </main>
       </div>
-
-      {/* Quick Edit Modal */}
-      {editingListing && (
-        <div className="wizard-modal-overlay" onClick={() => setEditingListing(null)}>
-          <div
-            className="wizard-modal-card"
-            style={{ maxWidth: '600px' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="wizard-top-header">
-              <div className="wizard-title-group">
-                <h3>Chỉnh sửa chỗ ở</h3>
-                <p>Cập nhật giá và thông tin niêm yết</p>
-              </div>
-              <button
-                type="button"
-                className="host-action-btn"
-                onClick={() => setEditingListing(null)}
-              >
-                <TbX />
-              </button>
-            </div>
-
-            <form
-              onSubmit={handleSaveEditListing}
-              style={{
-                padding: '1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem',
-              }}
-            >
-              <div>
-                <label
-                  style={{
-                    fontSize: '0.85rem',
-                    fontWeight: 700,
-                    color: 'var(--host-text-main)',
-                    display: 'block',
-                    marginBottom: '4px',
-                  }}
-                >
-                  Tên chỗ ở
-                </label>
-                <input
-                  type="text"
-                  value={editingListing.nameVi}
-                  onChange={(e) =>
-                    setEditingListing({ ...editingListing, nameVi: e.target.value })
-                  }
-                  style={{
-                    width: '100%',
-                    padding: '0.6rem',
-                    borderRadius: 'var(--host-radius-sm)',
-                    border: '1.5px solid var(--host-border-strong)',
-                    boxSizing: 'border-box',
-                  }}
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label
-                    style={{
-                      fontSize: '0.85rem',
-                      fontWeight: 700,
-                      color: 'var(--host-text-main)',
-                      display: 'block',
-                      marginBottom: '4px',
-                    }}
-                  >
-                    Giá mỗi đêm (VND)
-                  </label>
-                  <input
-                    type="number"
-                    step="50000"
-                    value={editingListing.priceVND}
-                    onChange={(e) =>
-                      setEditingListing({
-                        ...editingListing,
-                        priceVND: Number(e.target.value),
-                      })
-                    }
-                    style={{
-                      width: '100%',
-                      padding: '0.6rem',
-                      borderRadius: 'var(--host-radius-sm)',
-                      border: '1.5px solid var(--host-border-strong)',
-                      boxSizing: 'border-box',
-                    }}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label
-                    style={{
-                      fontSize: '0.85rem',
-                      fontWeight: 700,
-                      color: 'var(--host-text-main)',
-                      display: 'block',
-                      marginBottom: '4px',
-                    }}
-                  >
-                    Số khách tối đa
-                  </label>
-                  <input
-                    type="number"
-                    value={editingListing.maxGuests}
-                    onChange={(e) =>
-                      setEditingListing({
-                        ...editingListing,
-                        maxGuests: Number(e.target.value),
-                      })
-                    }
-                    style={{
-                      width: '100%',
-                      padding: '0.6rem',
-                      borderRadius: 'var(--host-radius-sm)',
-                      border: '1.5px solid var(--host-border-strong)',
-                      boxSizing: 'border-box',
-                    }}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  style={{
-                    fontSize: '0.85rem',
-                    fontWeight: 700,
-                    color: 'var(--host-text-main)',
-                    display: 'block',
-                    marginBottom: '4px',
-                  }}
-                >
-                  Địa chỉ
-                </label>
-                <input
-                  type="text"
-                  value={editingListing.address}
-                  onChange={(e) =>
-                    setEditingListing({ ...editingListing, address: e.target.value })
-                  }
-                  style={{
-                    width: '100%',
-                    padding: '0.6rem',
-                    borderRadius: 'var(--host-radius-sm)',
-                    border: '1.5px solid var(--host-border-strong)',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-
-              <div>
-                <label
-                  style={{
-                    fontSize: '0.85rem',
-                    fontWeight: 700,
-                    color: 'var(--host-text-main)',
-                    display: 'block',
-                    marginBottom: '4px',
-                  }}
-                >
-                  Hình ảnh chỗ ở
-                </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    type="url"
-                    value={editImageUrl}
-                    onChange={(e) => setEditImageUrl(e.target.value)}
-                    placeholder="Dán URL ảnh mới..."
-                    style={{
-                      flex: 1,
-                      minWidth: 0,
-                      padding: '0.6rem',
-                      borderRadius: 'var(--host-radius-sm)',
-                      border: '1.5px solid var(--host-border-strong)',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                  <button type="button" onClick={handleAddEditImage} className="host-btn-client" title="Thêm ảnh">
-                    <TbPlus /> Thêm
-                  </button>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px', marginTop: '10px' }}>
-                  {(editingListing.images || []).map((image, index) => (
-                    <div key={`${image}-${index}`} style={{ position: 'relative' }}>
-                      <img
-                        src={image}
-                        alt={`Ảnh chỗ ở ${index + 1}`}
-                        style={{ width: '100%', height: '78px', objectFit: 'cover', borderRadius: 'var(--host-radius-sm)', display: 'block' }}
-                      />
-                      {index === 0 && (
-                        <span style={{ position: 'absolute', left: '4px', bottom: '4px', background: 'rgba(15, 23, 42, 0.78)', color: 'white', borderRadius: '4px', padding: '2px 5px', fontSize: '0.68rem' }}>
-                          Ảnh bìa
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveEditImage(index)}
-                        title="Xóa ảnh"
-                        style={{ position: 'absolute', top: '4px', right: '4px', width: '24px', height: '24px', border: 'none', borderRadius: '50%', background: 'rgba(15, 23, 42, 0.78)', color: 'white', display: 'grid', placeItems: 'center', cursor: 'pointer' }}
-                      >
-                        <TbTrash />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  gap: '10px',
-                  marginTop: '1rem',
-                }}
-              >
-                <button
-                  type="button"
-                  className="host-btn-client"
-                  onClick={() => setEditingListing(null)}
-                >
-                  Hủy
-                </button>
-                <button type="submit" className="host-btn-primary">
-                  Lưu thay đổi
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

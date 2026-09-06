@@ -279,6 +279,49 @@ export const BookingDetailModal = ({ booking, onClose, onUpdateStatus }) => {
               </div>
             </div>
           </div>
+
+          {/* Cancellation & Refund Details if Cancelled */}
+          {booking.status === 'cancelled' && (
+            <div
+              style={{
+                marginTop: '1rem',
+                padding: '0.85rem 1rem',
+                background: '#fef2f2',
+                borderRadius: '8px',
+                border: '1px solid #fecaca',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 800, color: '#991b1b', fontSize: '0.86rem', marginBottom: '0.5rem' }}>
+                <TbBan /> Thông Tin Hủy Đơn & Hoàn Tiền
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.82rem' }}>
+                <div>
+                  <span style={{ color: '#7f1d1d', fontWeight: 600 }}>Tỷ lệ hoàn tiền:</span>{' '}
+                  <strong style={{ color: '#dc2626' }}>
+                    {booking.refund_percentage ?? (booking.refund_amount > 0 ? 100 : 0)}%
+                  </strong>
+                </div>
+                <div>
+                  <span style={{ color: '#7f1d1d', fontWeight: 600 }}>Số tiền hoàn khách:</span>{' '}
+                  <strong style={{ color: '#dc2626' }}>
+                    {formatVND(booking.refund_amount || 0)}
+                  </strong>
+                </div>
+                {booking.cancelled_at && (
+                  <div>
+                    <span style={{ color: '#7f1d1d', fontWeight: 600 }}>Thời điểm hủy:</span>{' '}
+                    <span>{formatDateVN(booking.cancelled_at)}</span>
+                  </div>
+                )}
+                {booking.cancellation_reason && (
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <span style={{ color: '#7f1d1d', fontWeight: 600 }}>Lý do hủy:</span>{' '}
+                    <span style={{ fontStyle: 'italic', color: '#450a0a' }}>{booking.cancellation_reason}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 3. Footer Action Buttons */}

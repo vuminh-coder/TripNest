@@ -1,0 +1,115 @@
+{
+    "timestamp": "2026-09-06 05:02:34",
+    "suites": {
+        "Database Schema": [
+            {
+                "name": "Categories Table Presence & Count",
+                "status": "PASSED",
+                "details": "Bảng categories có 14 dòng dữ liệu (chuẩn 14 danh mục Airbnb)."
+            },
+            {
+                "name": "Accommodations -> Category Foreign Key",
+                "status": "PASSED",
+                "details": "100% chỗ ở (174\/174) gắn chặt với category_id hợp lệ."
+            },
+            {
+                "name": "Amenities & Pivot Tables Integrity",
+                "status": "PASSED",
+                "details": "Tiện nghi: 28 mục | Pivot acc: 974 dòng | Pivot room: 2478 dòng."
+            },
+            {
+                "name": "Reviews FK & 6-Dimension Radar JSON",
+                "status": "PASSED",
+                "details": "Reviews: 116 dòng | FK booking_id: 4 | JSON Radar 6 trục hợp lệ."
+            },
+            {
+                "name": "Experiences Host FK & Column Sanity",
+                "status": "PASSED",
+                "details": "Experiences: 18 dòng | 100% có host_id | Đã dọn sạch cột rác title_en: ĐÚNG"
+            }
+        ],
+        "Cancellation Engine": [
+            {
+                "name": "Tier 1 Policy (>= 48h: 100% Refund)",
+                "status": "PASSED",
+                "details": "Check-in sau 5 ngày: Hoàn 100% (4816000 ₫) | Policy: full_48h"
+            },
+            {
+                "name": "Tier 2 Policy (< 48h: 50% Refund)",
+                "status": "PASSED",
+                "details": "Check-in sau 24h: Hoàn 50% (2150000 ₫) | Policy: partial_48h"
+            },
+            {
+                "name": "Tier 3 Policy (Past Check-in: 0% Refund)",
+                "status": "PASSED",
+                "details": "Check-in đã qua: Hoàn 0% (0 ₫) | Host hưởng 100%"
+            },
+            {
+                "name": "Database Sync for Cancelled Bookings",
+                "status": "PASSED",
+                "details": "Đơn đã hủy trong DB: 5 | Bản ghi refunds: 4 | Lệnh Payout hủy: 1"
+            }
+        ],
+        "Category API": [
+            {
+                "name": "CategoryController@adminIndex with Count",
+                "status": "PASSED",
+                "details": "API trả về 14 danh mục kèm trường accommodations_count."
+            },
+            {
+                "name": "CategoryController@adminUpdate Persistence",
+                "status": "PASSED",
+                "details": "Cập nhật display_order danh mục #1 thành 2 thành công."
+            },
+            {
+                "name": "CategoryController@adminDestroy Safe Protection",
+                "status": "PASSED",
+                "details": "Chặn xóa an toàn danh mục 'Tất cả chỗ ở' (có 5 chỗ ở). Mã HTTP 400."
+            }
+        ],
+        "Amenity API": [
+            {
+                "name": "AmenityController@store",
+                "status": "PASSED",
+                "details": "Thêm tiện nghi mới thành công (ID: 54)."
+            },
+            {
+                "name": "AmenityController@destroy",
+                "status": "PASSED",
+                "details": "Xóa tiện nghi thử nghiệm (ID: 54) dọn dẹp sạch sẽ."
+            }
+        ],
+        "Experience API": [
+            {
+                "name": "ExperienceController@adminIndex Eager Loading Host.User",
+                "status": "PASSED",
+                "details": "Nạp thành công 18 tour trải nghiệm kèm Host ('Nguyễn Hải Đăng Stay') và Superhost badge."
+            }
+        ],
+        "Reviews API": [
+            {
+                "name": "ReviewController@updateStatus with Body Validation",
+                "status": "PASSED",
+                "details": "Duyệt chuyển trạng thái review #151 sang 'flagged' trực tiếp trên DB."
+            },
+            {
+                "name": "ReviewController@respond Host Reply",
+                "status": "PASSED",
+                "details": "Lưu phản hồi công khai của Chủ nhà \/ Admin vào database thành công."
+            }
+        ],
+        "Financials Engine": [
+            {
+                "name": "Financials Payouts & Refunds Math Totals",
+                "status": "PASSED",
+                "details": "Đã giải ngân: 96.322.000 ₫ | Đang chờ (Escrow): 26.776.000 ₫ | Tổng hoàn tiền đơn hủy: 6.966.000 ₫"
+            }
+        ]
+    },
+    "summary": {
+        "total": 18,
+        "passed": 18,
+        "failed": 0,
+        "warnings": 0
+    }
+}

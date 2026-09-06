@@ -346,6 +346,7 @@ class DatabaseSeeder extends Seeder
 
         // 5. Seed 50 Real Accommodations & 250 Images across Vietnam
         $this->call(HotelFullDatasetSeeder::class);
+        $this->call(UpdateDynamicRoomsSeeder::class);
 
         // 5.5 Seed Sample Vouchers
         $voucherVip = Voucher::create([

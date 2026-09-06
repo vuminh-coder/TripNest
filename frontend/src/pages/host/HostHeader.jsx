@@ -26,6 +26,8 @@ export const HostHeader = ({
         return 'Cơ Sở Lưu Trú';
       case 'new_listing':
         return 'Đăng Ký Chỗ Nghỉ';
+      case 'edit_listing':
+        return 'Chỉnh Sửa Chỗ Nghỉ';
       case 'bookings':
         return 'Đơn Đặt Phòng';
       case 'reviews':

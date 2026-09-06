@@ -296,7 +296,7 @@ export const MyBookingsModal = ({
       );
 
       // Propagate to parent
-      if (onCancelBooking) onCancelBooking(cancelTarget.id, reason);
+      if (onCancelBooking) onCancelBooking(cancelTarget.id, reason, result?.refund);
 
       toast.success(
         'Đã hủy đơn đặt phòng',

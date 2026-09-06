@@ -316,6 +316,9 @@ class BookingController extends Controller
                 'canCheckOut' => $b->can_check_out,
                 'canReview' => $b->can_review,
                 'hasReview' => $b->review !== null,
+                'refundAmount' => (float)($b->refund_amount ?? 0),
+                'refundPercentage' => (int)($b->refund_percentage ?? 0),
+                'refundSummary' => $b->refund_summary,
                 'review' => $b->review ? [
                     'id' => $b->review->id,
                     'rating' => (float)$b->review->rating,
@@ -415,11 +418,60 @@ class BookingController extends Controller
     }
 
     /**
-     * Hủy đơn đặt phòng & Xử lý Hoàn tiền (Chỉ cho phép khi status = confirmed/pending)
+     * Preview hoàn tiền TRƯỚC KHI hủy (không thay đổi dữ liệu)
+     * GET /api/bookings/{id}/cancel-preview
+     */
+    public function cancelPreview($bookingCode): JsonResponse
+    {
+        $booking = Booking::with(['room.accommodation', 'payments'])
+            ->where('booking_code', $bookingCode)
+            ->orWhere('id', $bookingCode)
+            ->first();
+
+        if (!$booking) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy đơn đặt phòng.'], 404);
+        }
+
+        if (!$booking->can_cancel) {
+            $statusMsg = Booking::STATUS_LABELS[$booking->status] ?? $booking->status;
+            return response()->json([
+                'success' => false,
+                'message' => "Đơn đặt phòng ở trạng thái \"{$statusMsg}\" — không thể hủy.",
+            ], 422);
+        }
+
+        $policyService = new \App\Services\CancellationPolicyService();
+        $calculation = $policyService->calculate($booking);
+
+        $paymentMethod = $booking->payments?->first()?->payment_method ?: 'bank_transfer';
+
+        return response()->json([
+            'success' => true,
+            'booking_code' => $booking->booking_code,
+            'original_total' => (float)$booking->total_price,
+            'refund' => [
+                'percentage' => $calculation['refund_percentage'],
+                'amount' => $calculation['refundable_amount'],
+                'service_fee_refundable' => $calculation['service_fee_refundable'],
+                'platform_fee_kept' => $calculation['platform_fee_kept'],
+                'policy_applied' => $calculation['policy_applied'],
+                'policy_description' => $calculation['policy_description_vi'],
+                'hours_until_checkin' => $calculation['hours_until_checkin'],
+                'refund_method' => $paymentMethod,
+                'estimated_days' => '5-10 ngày làm việc',
+                'breakdown' => $calculation['breakdown'],
+            ],
+        ]);
+    }
+
+    /**
+     * Hủy đơn đặt phòng & Xử lý Hoàn tiền chuyên sâu (DB Transaction)
+     * POST /api/bookings/{id}/cancel
      */
     public function cancel($bookingCode, Request $request): JsonResponse
     {
-        $booking = Booking::where('booking_code', $bookingCode)
+        $booking = Booking::with(['room.accommodation', 'room.images', 'payments'])
+            ->where('booking_code', $bookingCode)
             ->orWhere('id', $bookingCode)
             ->first();
 
@@ -437,35 +489,99 @@ class BookingController extends Controller
         }
 
         $reason = $request->input('reason', 'Khách hàng yêu cầu hủy qua ứng dụng.');
+        $isHostCancel = (bool)$request->input('host_cancel', false);
 
-        // 1. Cập nhật trạng thái Booking
-        $booking->update([
-            'status' => 'cancelled',
-            'cancelled_at' => now(),
-            'cancellation_reason' => $reason,
-        ]);
+        // Tính toán chính sách hoàn tiền
+        $policyService = new \App\Services\CancellationPolicyService();
+        $calculation = $isHostCancel
+            ? $policyService->calculateHostCancel($booking)
+            : $policyService->calculate($booking);
 
-        // 2. Cập nhật trạng thái Payment sang Refunded
-        $refundedPayments = \App\Models\Payment::where('booking_id', $booking->id)->get();
-        \App\Models\Payment::where('booking_id', $booking->id)->update([
-            'status' => 'refunded',
-        ]);
+        $refundPercentage = $calculation['refund_percentage'];
+        $refundAmount = $calculation['refundable_amount'];
+        $policyApplied = $calculation['policy_applied'];
 
-        // 3. Hủy Lệnh Payout của Host nếu đang pending
-        \App\Models\PayoutTransaction::where('booking_id', $booking->id)
-            ->whereIn('status', ['pending', 'processing'])
-            ->update(['status' => 'failed']);
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            // 1. Cập nhật trạng thái Booking
+            $booking->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+                'cancellation_reason' => $reason,
+                'refund_amount' => $refundAmount,
+                'refund_percentage' => $refundPercentage,
+            ]);
 
-        // Tính số tiền hoàn trả
-        $refundAmount = $refundedPayments->where('status', 'successful')->sum('amount');
+            // 2. Cập nhật trạng thái Payment
+            $payment = $booking->payments()->where('status', 'successful')->first();
+            if ($payment) {
+                $newPaymentStatus = match (true) {
+                    $refundPercentage >= 100 => 'refunded',
+                    $refundPercentage > 0 => 'partially_refunded',
+                    default => 'successful', // 0% refund → payment stays
+                };
+                $payment->update(['status' => $newPaymentStatus]);
 
-        // Reload booking với relationships
+                // 3. Tạo bản ghi Refund chi tiết
+                \App\Models\Refund::create([
+                    'refund_code' => 'RF-' . rand(100000, 999999),
+                    'booking_id' => $booking->id,
+                    'payment_id' => $payment->id,
+                    'original_amount' => (float)$booking->total_price,
+                    'refund_percentage' => $refundPercentage,
+                    'refund_amount' => $refundAmount,
+                    'platform_fee_deducted' => $calculation['platform_fee_kept'],
+                    'refund_method' => $payment->payment_method ?: 'bank_transfer',
+                    'status' => $refundAmount > 0 ? 'processing' : 'completed',
+                    'reason' => $reason,
+                    'policy_applied' => $policyApplied,
+                    'policy_description' => $calculation['policy_description_vi'],
+                    'processed_at' => $refundAmount > 0 ? null : now(),
+                ]);
+            }
+
+            // 4. Xử lý Payout cho Host tùy theo % hoàn tiền
+            $payoutQuery = \App\Models\PayoutTransaction::where('booking_id', $booking->id)
+                ->whereIn('status', ['pending', 'processing']);
+
+            if ($refundPercentage >= 100) {
+                // Hoàn 100% → hủy toàn bộ payout cho host
+                $payoutQuery->update(['status' => 'cancelled']);
+            } elseif ($refundPercentage > 0) {
+                // Hoàn 50% → giảm payout host 50%
+                $payouts = $payoutQuery->get();
+                foreach ($payouts as $payout) {
+                    $newGross = round((float)$payout->gross_amount * (1 - $refundPercentage / 100));
+                    $newCommission = round((float)$payout->platform_commission_fee * (1 - $refundPercentage / 100));
+                    $newNet = max(0, $newGross - $newCommission);
+                    $payout->update([
+                        'gross_amount' => $newGross,
+                        'platform_commission_fee' => $newCommission,
+                        'net_payout_amount' => $newNet,
+                    ]);
+                }
+            }
+            // 0% refund → host giữ nguyên payout
+
+            \Illuminate\Support\Facades\DB::commit();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi hệ thống khi xử lý hủy đơn: ' . $e->getMessage(),
+            ], 500);
+        }
+
+        // Reload booking
+        $booking->refresh();
         $booking->load(['room.accommodation', 'room.images']);
         $firstImage = $booking->room?->images?->first()?->image_url ?: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&auto=format&fit=crop&q=80';
 
         return response()->json([
             'success' => true,
-            'message' => 'Đã hủy đơn đặt phòng và xử lý hoàn tiền thành công.',
+            'message' => $refundAmount > 0
+                ? "Đã hủy đơn đặt phòng. Hoàn tiền {$refundPercentage}% = " . number_format($refundAmount) . ' ₫'
+                : 'Đã hủy đơn đặt phòng. Không hoàn tiền theo chính sách.',
             'booking' => [
                 'id' => $booking->booking_code,
                 'bookingId' => $booking->id,
@@ -481,10 +597,16 @@ class BookingController extends Controller
                 'canCheckOut' => false,
             ],
             'refund' => [
+                'percentage' => $refundPercentage,
                 'amount' => (float)$refundAmount,
                 'currency' => 'VND',
-                'method' => $refundedPayments->first()?->payment_method ?: 'credit_card',
-                'note' => 'Số tiền sẽ được hoàn lại trong 5-10 ngày làm việc.',
+                'method' => $payment?->payment_method ?: 'bank_transfer',
+                'policy_applied' => $policyApplied,
+                'policy_description' => $calculation['policy_description_vi'],
+                'breakdown' => $calculation['breakdown'],
+                'note' => $refundAmount > 0
+                    ? 'Số tiền sẽ được hoàn lại trong 5-10 ngày làm việc.'
+                    : 'Không hoàn tiền theo chính sách hủy phòng.',
             ],
         ]);
     }

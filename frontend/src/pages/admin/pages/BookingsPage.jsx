@@ -173,6 +173,36 @@ export const BookingsPage = ({ bookings, onOpenDetailModal, onUpdateStatus }) =>
                     <span className={`status-pill ${b.status}`} style={{ fontWeight: 700 }}>
                       {getStatusLabel(b.status)}
                     </span>
+                    {b.status === 'cancelled' && (
+                      <div style={{ marginTop: '4px', fontSize: '0.72rem' }}>
+                        {(Number(b.refund_amount) > 0 || Number(b.refund_percentage) > 0) ? (
+                          <div style={{ color: '#d97706', fontWeight: 700 }}>
+                            Hoàn {b.refund_percentage || 100}% ({formatVND(b.refund_amount)})
+                          </div>
+                        ) : (
+                          <div style={{ color: '#059669', fontWeight: 700 }}>
+                            Không hoàn tiền (0%)
+                          </div>
+                        )}
+                        {b.cancellation_reason && (
+                          <div
+                            style={{
+                              color: '#64748b',
+                              fontSize: '0.68rem',
+                              fontStyle: 'italic',
+                              maxWidth: '140px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              marginTop: '2px',
+                            }}
+                            title={b.cancellation_reason}
+                          >
+                            Lý do: {b.cancellation_reason}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </td>
 
                   {/* Actions */}

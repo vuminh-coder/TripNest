@@ -1803,7 +1803,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--dark);
+  background: linear-gradient(135deg, #ff385c 0%, #e00b41 50%, #be123c 100%);
   padding: 1rem 1.5rem;
   color: white;
 }
@@ -1962,8 +1962,9 @@
 }
 
 .secondary-outline-btn:hover {
-  background: #f8fafc;
-  border-color: var(--dark);
+  background: #fff1f2;
+  border-color: #ff385c;
+  color: #ff385c;
 }
 
 /* -------------------------------------------------------------------------
@@ -2097,7 +2098,7 @@
 .stepper-step.active .step-text {
   font-size: 0.84rem;
   font-weight: 800;
-  color: var(--dark);
+  color: #ff385c;
 }
 
 .stepper-step.pending .step-circle {

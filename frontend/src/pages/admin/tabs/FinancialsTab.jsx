@@ -37,7 +37,7 @@ export const FinancialsTab = ({ payouts, stats, onOpenPayoutModal }) => {
 
         <div className="stat-card-glass">
           <div>
-            <span className="stat-label">Hoa Hồng Nền Tảng (11%)</span>
+            <span className="stat-label">Hoa Hồng Nền Tảng</span>
             <div className="stat-value" style={{ color: '#059669' }}>
               {formatVND(stats.commissionRevenueVND)}
             </div>

@@ -62,7 +62,7 @@ export const DashboardPage = ({ stats, bookings, hosts, onNavigate, onOpenKycMod
 
         <div className="stat-card-glass">
           <div>
-            <span className="stat-label">Hoa Hồng Nền Tảng (12%)</span>
+            <span className="stat-label">Hoa Hồng Nền Tảng</span>
             <div className="stat-value adm-dash-stat-green">
               {formatVND(commission12 || stats.commissionRevenueVND)}
             </div>

@@ -11,6 +11,7 @@ import {
   TbReceipt2,
   TbArrowRight,
   TbUser,
+  TbCircleCheck,
 } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
 
@@ -158,55 +159,68 @@ export const PayoutConfirmModal = ({ payout, onClose, onConfirm }) => {
             </div>
           </div>
 
-          {/* Bank Transaction Ref Input */}
-          <div style={{ marginBottom: '0.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <label style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a' }}>
-                Mã Giao Dịch Ngân Hàng Đối Soát (Bank Reference ID) *
-              </label>
-              <button
-                type="button"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#6366f1',
-                  fontSize: '0.74rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '3px',
-                }}
-                onClick={() => setTransactionRef(generateRef())}
-                title="Tạo mã giao dịch ngẫu nhiên mới"
-              >
-                <TbRefresh /> Tạo mã mới
-              </button>
+          {payout.status === 'completed' ? (
+            <div style={{ padding: '12px 16px', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '8px', color: '#065f46', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+              <TbCircleCheck style={{ fontSize: '1.4rem', color: '#10b981', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: '0.9rem', color: '#065f46' }}>Lệnh chi trả này đã được giải ngân thành công!</div>
+                <div style={{ fontSize: '0.78rem', color: '#047857', marginTop: '3px' }}>
+                  Mã GD đối soát: <strong style={{ letterSpacing: '0.5px' }}>{payout.transaction_ref || transactionRef}</strong>
+                  {payout.transferred_at ? ` · Thời gian: ${payout.transferred_at}` : ''}
+                </div>
+              </div>
             </div>
+          ) : (
+            /* Bank Transaction Ref Input */
+            <div style={{ marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a' }}>
+                  Mã Giao Dịch Ngân Hàng Đối Soát (Bank Reference ID) *
+                </label>
+                <button
+                  type="button"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#6366f1',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '3px',
+                  }}
+                  onClick={() => setTransactionRef(generateRef())}
+                  title="Tạo mã giao dịch ngẫu nhiên mới"
+                >
+                  <TbRefresh /> Tạo mã mới
+                </button>
+              </div>
 
-            <div className="adm-paymod-ref-input-wrap">
-              <input
-                type="text"
-                required
-                value={transactionRef}
-                onChange={(e) => setTransactionRef(e.target.value)}
-                placeholder="VD: FT260826998822 hoặc mã giao dịch Internet Banking..."
-                className="adm-paymod-ref-input"
-              />
-              <button
-                type="button"
-                className="btn-action-icon"
-                onClick={handleCopyRef}
-                title="Sao chép mã giao dịch"
-                style={{ height: 'auto', padding: '0 0.85rem' }}
-              >
-                <TbCopy />
-              </button>
+              <div className="adm-paymod-ref-input-wrap">
+                <input
+                  type="text"
+                  required
+                  value={transactionRef}
+                  onChange={(e) => setTransactionRef(e.target.value)}
+                  placeholder="VD: FT260826998822 hoặc mã giao dịch Internet Banking..."
+                  className="adm-paymod-ref-input"
+                />
+                <button
+                  type="button"
+                  className="btn-action-icon"
+                  onClick={handleCopyRef}
+                  title="Sao chép mã giao dịch"
+                  style={{ height: 'auto', padding: '0 0.85rem' }}
+                >
+                  <TbCopy />
+                </button>
+              </div>
+              <p style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '4px', margin: 0 }}>
+                Mã giao dịch dùng để đối soát ngân hàng và gửi thông báo SMS/Email biên nhận cho chủ nhà.
+              </p>
             </div>
-            <p style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '4px', margin: 0 }}>
-              Mã giao dịch dùng để đối soát ngân hàng và gửi thông báo SMS/Email biên nhận cho chủ nhà.
-            </p>
-          </div>
+          )}
 
           {/* Footer Actions */}
           <div className="adm-paymod-footer">
@@ -216,16 +230,18 @@ export const PayoutConfirmModal = ({ payout, onClose, onConfirm }) => {
               onClick={onClose}
               disabled={isSubmitting}
             >
-              Hủy Bỏ
+              {payout.status === 'completed' ? 'Đóng' : 'Hủy Bỏ'}
             </button>
-            <button
-              type="submit"
-              className="btn-admin-success"
-              disabled={isSubmitting}
-            >
-              <TbCheck style={{ fontSize: '1.15rem' }} />
-              <span>{isSubmitting ? 'Đang Xử Lý...' : 'Xác Nhận & Hoàn Tất Giải Ngân'}</span>
-            </button>
+            {payout.status !== 'completed' && (
+              <button
+                type="submit"
+                className="btn-admin-success"
+                disabled={isSubmitting}
+              >
+                <TbCheck style={{ fontSize: '1.15rem' }} />
+                <span>{isSubmitting ? 'Đang Xử Lý...' : 'Xác Nhận & Hoàn Tất Giải Ngân'}</span>
+              </button>
+            )}
           </div>
         </form>
       </div>

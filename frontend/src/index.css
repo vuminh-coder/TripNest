@@ -50,6 +50,33 @@ input, select, textarea {
   outline: none;
 }
 
+/* Triệt tiêu hoàn toàn khối màu nền xanh/vàng autofill mặc định của trình duyệt (Chrome / Edge / Safari Autofill) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: currentColor !important;
+  transition: background-color 5000000s ease-in-out 0s !important;
+  background-color: transparent !important;
+}
+
+input:autofill,
+select:autofill,
+textarea:autofill {
+  background-color: transparent !important;
+  filter: none !important;
+}
+
+
 
 /* App Container */
 .app-container {

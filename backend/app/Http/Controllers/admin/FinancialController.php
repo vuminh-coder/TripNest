@@ -16,20 +16,31 @@ class FinancialController extends Controller
      */
     public function getStats(): JsonResponse
     {
-        // 1. Tổng GMV thu hộ từ các booking đã xác nhận / hoàn tất
-        $totalGMVVND = (float)Booking::whereIn('status', ['confirmed', 'checked_in', 'completed'])->sum('total_price');
+        // 1. Tổng GMV thu hộ từ các booking đã xác nhận / hoàn tất (loại trừ đơn hủy)
+        $validBookingsQuery = Booking::whereIn('status', ['confirmed', 'checked_in', 'completed']);
+        $totalGMVVND = (float)$validBookingsQuery->sum('total_price');
+        $validBookingsCount = $validBookingsQuery->count();
 
-        // 2. Hoa hồng nền tảng (12% phí dịch vụ)
-        $commissionRevenueVND = (float)Booking::whereIn('status', ['confirmed', 'checked_in', 'completed'])->sum('service_fee');
+        // 2. Hoa hồng nền tảng (phí dịch vụ 12%) từ các booking hợp lệ
+        $commissionRevenueVND = (float)$validBookingsQuery->sum('service_fee');
 
         // 3. Quỹ tạm giữ Escrow chờ giải ngân (status = 'pending')
         $escrowPendingVND = (float)PayoutTransaction::where('status', 'pending')->sum('net_payout_amount');
+        $pendingPayoutsCount = PayoutTransaction::where('status', 'pending')->count();
 
         // 4. Tổng tiền đã giải ngân cho Host (status = 'completed')
         $payoutsCompletedVND = (float)PayoutTransaction::where('status', 'completed')->sum('net_payout_amount');
+        $completedPayoutsCount = PayoutTransaction::where('status', 'completed')->count();
 
-        // 5. Số lượng lệnh chờ giải ngân
-        $pendingPayoutsCount = PayoutTransaction::where('status', 'pending')->count();
+        // 5. Số lượng lệnh hủy payout
+        $cancelledPayoutsCount = PayoutTransaction::where('status', 'cancelled')->count();
+
+        // 6. Tổng hoàn tiền (Refunds) & số lượng đơn hủy
+        $totalRefundedVND = (float)Booking::where('status', 'cancelled')
+            ->where('refund_amount', '>', 0)
+            ->sum('refund_amount');
+        $cancelledBookingsCount = Booking::where('status', 'cancelled')->count();
+        $totalBookingsCount = Booking::count();
 
         return response()->json([
             'totalRevenueVND' => $totalGMVVND,
@@ -37,6 +48,13 @@ class FinancialController extends Controller
             'escrowPendingVND' => $escrowPendingVND,
             'payoutsCompletedVND' => $payoutsCompletedVND,
             'pendingPayoutsCount' => $pendingPayoutsCount,
+            'completedPayoutsCount' => $completedPayoutsCount,
+            'cancelledPayoutsCount' => $cancelledPayoutsCount,
+            'totalRefundedVND' => $totalRefundedVND,
+            'cancelledBookingsCount' => $cancelledBookingsCount,
+            'validBookingsCount' => $validBookingsCount,
+            'totalBookings' => $totalBookingsCount,
+            'totalBookingsCount' => $totalBookingsCount,
         ]);
     }
 
@@ -153,6 +171,10 @@ class FinancialController extends Controller
                     'payment_method' => 'Chuyển khoản / Cổng thanh toán',
                     'payment_status' => 'paid',
                     'status' => $b->status,
+                    'cancellation_reason' => $b->cancellation_reason,
+                    'cancelled_at' => $b->cancelled_at ? $b->cancelled_at->format('d/m/Y H:i') : '',
+                    'refund_amount' => (float)($b->refund_amount ?? 0),
+                    'refund_percentage' => (int)($b->refund_percentage ?? 0),
                     'created_at' => $b->created_at ? $b->created_at->format('d/m/Y H:i') : '',
                 ];
             });

@@ -144,25 +144,54 @@ export const HostBookingsPage = ({
                     <span style={{ fontSize: '0.85rem' }}>{b.guests || 2} khách</span>
                   </td>
                   <td>
-                    <strong style={{ color: '#059669', fontSize: '0.92rem' }}>
-                      {formatPrice(
-                        b.hostEarnings ??
-                        b.hostPayoutAmount ??
-                        (b.grossAmount && b.commissionFee ? b.grossAmount - b.commissionFee : null) ??
-                        (b.basePrice && b.cleaningFee ? b.basePrice + b.cleaningFee - (b.serviceFee || Math.round(b.basePrice * 0.12)) : null) ??
-                        (b.totalPrice ? Math.round(b.totalPrice * 0.88) : null) ??
-                        (b.totalAmount ? Math.round(b.totalAmount * 0.88) : 0)
-                      )}
-                    </strong>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--host-text-muted)', whiteSpace: 'nowrap' }}>
-                      {b.commissionFee || b.serviceFee
-                        ? `Đã trừ 12% (-${formatPrice(b.commissionFee || b.serviceFee)})`
-                        : 'Đã trừ 12% phí sàn'}
-                    </div>
-                    {b.hasVoucher && (
-                      <div style={{ fontSize: '0.68rem', color: '#059669', fontWeight: 600, marginTop: 2 }}>
-                        🎟️ {b.voucherCode || 'Voucher VIP'}
-                      </div>
+                    {b.status === 'cancelled' ? (
+                      (b.refundPercentage ?? b.refund_percentage ?? 100) >= 100 ? (
+                        <div>
+                          <strong style={{ color: '#94a3b8', fontSize: '0.92rem', textDecoration: 'line-through' }}>
+                            0 ₫
+                          </strong>
+                          <div style={{ fontSize: '0.7rem', color: '#dc2626', fontWeight: 700 }}>
+                            Đã hủy (Hoàn khách 100%)
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <strong style={{ color: '#059669', fontSize: '0.92rem' }}>
+                            {formatPrice(
+                              Math.round(
+                                (b.hostEarnings ?? b.hostPayoutAmount ?? ((b.totalPrice || b.totalAmount || 0) * 0.88)) *
+                                  (1 - ((b.refundPercentage ?? b.refund_percentage ?? 0) / 100))
+                              )
+                            )}
+                          </strong>
+                          <div style={{ fontSize: '0.7rem', color: '#d97706', fontWeight: 600 }}>
+                            Giữ lại {100 - (b.refundPercentage ?? b.refund_percentage ?? 0)}% sau hoàn
+                          </div>
+                        </div>
+                      )
+                    ) : (
+                      <>
+                        <strong style={{ color: '#059669', fontSize: '0.92rem' }}>
+                          {formatPrice(
+                            b.hostEarnings ??
+                            b.hostPayoutAmount ??
+                            (b.grossAmount && b.commissionFee ? b.grossAmount - b.commissionFee : null) ??
+                            (b.basePrice && b.cleaningFee ? b.basePrice + b.cleaningFee - (b.serviceFee || Math.round(b.basePrice * 0.12)) : null) ??
+                            (b.totalPrice ? Math.round(b.totalPrice * 0.88) : null) ??
+                            (b.totalAmount ? Math.round(b.totalAmount * 0.88) : 0)
+                          )}
+                        </strong>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--host-text-muted)', whiteSpace: 'nowrap' }}>
+                          {b.commissionFee || b.serviceFee
+                            ? `Đã trừ 12% (-${formatPrice(b.commissionFee || b.serviceFee)})`
+                            : 'Đã trừ 12% phí sàn'}
+                        </div>
+                        {b.hasVoucher && (
+                          <div style={{ fontSize: '0.68rem', color: '#059669', fontWeight: 600, marginTop: 2 }}>
+                            🎟️ {b.voucherCode || 'Voucher VIP'}
+                          </div>
+                        )}
+                      </>
                     )}
                   </td>
                   <td>
@@ -196,6 +225,36 @@ export const HostBookingsPage = ({
                         ? 'Chờ duyệt'
                         : 'Đã hủy'}
                     </span>
+                    {b.status === 'cancelled' && (
+                      <div style={{ marginTop: '4px', fontSize: '0.72rem' }}>
+                        {(b.refundPercentage ?? b.refund_percentage ?? 0) > 0 ? (
+                          <div style={{ color: '#d97706', fontWeight: 700 }}>
+                            Hoàn khách {b.refundPercentage ?? b.refund_percentage}% ({formatPrice(b.refundAmount ?? b.refund_amount ?? 0)})
+                          </div>
+                        ) : (
+                          <div style={{ color: '#059669', fontWeight: 700 }}>
+                            Không hoàn tiền (0%)
+                          </div>
+                        )}
+                        {(b.cancellationReason || b.cancellation_reason) && (
+                          <div
+                            style={{
+                              color: '#64748b',
+                              fontSize: '0.68rem',
+                              fontStyle: 'italic',
+                              maxWidth: '160px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              marginTop: '2px',
+                            }}
+                            title={b.cancellationReason || b.cancellation_reason}
+                          >
+                            Lý do: {b.cancellationReason || b.cancellation_reason}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </td>
                   <td>
                     <div className="host-bk-actions-group">

@@ -46,8 +46,16 @@ export const BookingCheckoutPage = ({
   // Step Wizard State: 1 = Review Trip, 2 = Guest Info, 3 = Payment & Confirmation
   const [currentStep, setCurrentStep] = useState(1);
 
-  const checkIn = bookingParams.checkIn || bookingParams.checkInDate || bookingParams.check_in || '2026-09-05';
-  const checkOut = bookingParams.checkOut || bookingParams.checkOutDate || bookingParams.check_out || '2026-09-08';
+  const today = new Date();
+  const dTomorrow = new Date(today);
+  dTomorrow.setDate(today.getDate() + 1);
+  const dAfterTomorrow = new Date(today);
+  dAfterTomorrow.setDate(today.getDate() + 3);
+  const defaultInStr = dTomorrow.toISOString().split('T')[0];
+  const defaultOutStr = dAfterTomorrow.toISOString().split('T')[0];
+
+  const checkIn = bookingParams.checkIn || bookingParams.checkInDate || bookingParams.check_in || defaultInStr;
+  const checkOut = bookingParams.checkOut || bookingParams.checkOutDate || bookingParams.check_out || defaultOutStr;
   const guests = Number(bookingParams.guests) || Number(bookingParams.guestCount) || Number(bookingParams.guestsCount) || 2;
   const roomsCount = Math.max(1, Number(bookingParams.roomsCount) || Number(bookingParams.rooms_count) || 1);
 
@@ -55,7 +63,7 @@ export const BookingCheckoutPage = ({
   const d1 = new Date(checkIn);
   const d2 = new Date(checkOut);
   const diffDays = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
-  const nights = Number(bookingParams.nights) || Number(bookingParams.nightsCount) || (diffDays > 0 ? diffDays : 1);
+  const nights = Number(bookingParams.nights) || Number(bookingParams.nightsCount) || (diffDays > 0 ? diffDays : 2);
 
   // Helper date formatter: "25 thg 8, 2026"
   const formatDisplayDate = (dateStr) => {
@@ -95,11 +103,19 @@ export const BookingCheckoutPage = ({
 
   // Price calculations
   const pricePerNight = currency === 'USD' ? (room.priceUSD || 100) : (room.priceVND || room.pricePerNight || (room.priceUSD || 100) * 25000);
-  const baseTotal = bookingParams.totalPrice && roomsCount > 1 
-    ? bookingParams.totalPrice 
-    : pricePerNight * nights * roomsCount;
-  const cleaningFee = currency === 'USD' ? 30 : (room.cleaning_fee_vnd || room.cleaningFee || room.cleaning_fee || 350000);
-  const serviceFee = Math.round(baseTotal * 0.12);
+  const baseTotal = bookingParams.basePrice !== undefined
+    ? Number(bookingParams.basePrice)
+    : (bookingParams.totalPrice && roomsCount > 1 
+      ? Number(bookingParams.totalPrice) 
+      : pricePerNight * nights * roomsCount);
+  const cleaningFee = bookingParams.cleaningFee !== undefined
+    ? Number(bookingParams.cleaningFee)
+    : (currency === 'USD' 
+      ? (room.cleaningFeeUSD || room.cleaning_fee_usd || 30) 
+      : (room.cleaningFeeVND || room.cleaning_fee_vnd || room.cleaningFee || room.cleaning_fee || 350000));
+  const serviceFee = bookingParams.serviceFee !== undefined
+    ? Number(bookingParams.serviceFee)
+    : Math.round(baseTotal * 0.12);
 
   // Form states with auto-fill from logged-in user
   const [fullName, setFullName] = useState(() => user?.name || user?.full_name || '');

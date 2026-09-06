@@ -112,13 +112,62 @@ class CategoryController extends Controller
     }
 
     /**
-     * Admin: Xóa danh mục
+     * Admin: Cập nhật danh mục
      */
-    public function adminDestroy($id): JsonResponse
+    public function adminUpdate(Request $request, $id): JsonResponse
     {
         $category = is_numeric($id) ? Category::find($id) : Category::where('slug', $id)->first();
         if (!$category) {
             return response()->json(['success' => false, 'message' => 'Không tìm thấy danh mục.'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'label_vi' => 'nullable|string|max:100',
+            'label_en' => 'nullable|string|max:100',
+            'icon' => 'nullable|string|max:50',
+            'description' => 'nullable|string',
+            'display_order' => 'nullable|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        $updates = [];
+        if ($request->has('label_vi')) $updates['label_vi'] = $request->input('label_vi');
+        if ($request->has('label_en')) $updates['label_en'] = $request->input('label_en');
+        if ($request->has('icon')) $updates['icon'] = $request->input('icon');
+        if ($request->has('description')) $updates['description'] = $request->input('description');
+        if ($request->has('display_order')) $updates['display_order'] = (int)$request->input('display_order');
+        if ($request->has('is_active')) $updates['is_active'] = (bool)$request->input('is_active');
+
+        $category->update($updates);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã cập nhật danh mục thành công!',
+            'data' => $category,
+        ]);
+    }
+
+    /**
+     * Admin: Xóa danh mục (có kiểm tra ràng buộc chỗ nghỉ)
+     */
+    public function adminDestroy($id): JsonResponse
+    {
+        $category = is_numeric($id) 
+            ? Category::withCount('accommodations')->find($id) 
+            : Category::withCount('accommodations')->where('slug', $id)->first();
+
+        if (!$category) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy danh mục.'], 404);
+        }
+
+        if ($category->accommodations_count > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => "Không thể xóa danh mục này vì đang có {$category->accommodations_count} chỗ nghỉ liên kết. Hãy chọn Tạm ẩn thay vì xóa.",
+            ], 400);
         }
 
         $category->delete();

@@ -36,7 +36,12 @@ import {
   AdminReviewsSkeleton,
 } from '@/components/common/skeletons';
 
-export const AdminLayout = ({ onExitAdmin, onOpenBookings }) => {
+export const AdminLayout = ({
+  onExitAdmin,
+  onOpenBookings,
+  onLogout,
+  onSwitchToHost,
+}) => {
   const toast = useToast();
   const user = useSelector((state) => state.userInfo);
   const currentUser = user?.id ? user : (() => {
@@ -306,14 +311,59 @@ export const AdminLayout = ({ onExitAdmin, onOpenBookings }) => {
     setCategories(updated);
   };
 
+  const handleCreateCategory = async (catData) => {
+    const updated = await adminService.createCategory(catData);
+    setCategories(updated);
+  };
+
+  const handleUpdateCategory = async (catData, idOrSlug) => {
+    const updated = await adminService.updateCategory(idOrSlug, catData);
+    setCategories(updated);
+  };
+
+  const handleDeleteCategory = async (idOrSlug) => {
+    try {
+      const updated = await adminService.deleteCategory(idOrSlug);
+      setCategories(updated);
+      toast.success('Đã xóa danh mục thành công');
+    } catch (e) {
+      toast.error('Không thể xóa danh mục', e.message);
+    }
+  };
+
   const handleAddAmenity = async (amenity) => {
     const updated = await adminService.addAmenity(amenity);
     setAmenities(updated);
   };
 
+  const handleDeleteAmenity = async (idOrCode) => {
+    try {
+      const updated = await adminService.deleteAmenity(idOrCode);
+      setAmenities(updated);
+      toast.success('Đã xóa tiện nghi thành công');
+    } catch (e) {
+      toast.error('Không thể xóa tiện nghi', e.message);
+    }
+  };
+
   // Experiences Actions
   const handleToggleExpActive = async (id) => {
     const updated = await adminService.toggleExperienceActive(id);
+    setExperiences(updated);
+  };
+
+  const handleCreateExperience = async (payload) => {
+    const updated = await adminService.createExperience(payload);
+    setExperiences(updated);
+  };
+
+  const handleUpdateExperience = async (payload, id) => {
+    const updated = await adminService.updateExperience(id, payload);
+    setExperiences(updated);
+  };
+
+  const handleDeleteExperience = async (id) => {
+    const updated = await adminService.deleteExperience(id);
     setExperiences(updated);
   };
 
@@ -401,6 +451,9 @@ export const AdminLayout = ({ onExitAdmin, onOpenBookings }) => {
         collapsed={collapsed}
         setCollapsed={setCollapsed}
         onOpenBookings={onOpenBookings}
+        onExitAdmin={onExitAdmin}
+        onLogout={onLogout}
+        onSwitchToHost={onSwitchToHost}
         pendingKycCount={stats.pendingKycCount || 0}
         pendingRoleUpgradeCount={pendingRoleUpgradeCount}
       />
@@ -499,7 +552,11 @@ export const AdminLayout = ({ onExitAdmin, onOpenBookings }) => {
                   categories={categories}
                   amenities={amenities}
                   onToggleCategory={handleToggleCategory}
+                  onCreateCategory={handleCreateCategory}
+                  onUpdateCategory={handleUpdateCategory}
+                  onDeleteCategory={handleDeleteCategory}
                   onAddAmenity={handleAddAmenity}
+                  onDeleteAmenity={handleDeleteAmenity}
                 />
               )}
 
@@ -523,7 +580,11 @@ export const AdminLayout = ({ onExitAdmin, onOpenBookings }) => {
               {activeTab === 'experiences' && (
                 <ExperiencesPage
                   experiences={experiences}
+                  hosts={hosts}
                   onToggleActive={handleToggleExpActive}
+                  onCreateExperience={handleCreateExperience}
+                  onUpdateExperience={handleUpdateExperience}
+                  onDeleteExperience={handleDeleteExperience}
                 />
               )}
             </>

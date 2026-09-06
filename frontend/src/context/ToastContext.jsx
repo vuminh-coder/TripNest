@@ -7,15 +7,13 @@ let toastCount = 0;
 
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
+  const recentToastsRef = useRef(new Map());
 
   const removeToast = useCallback((id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   const addToast = useCallback((type, titleOrMsg, descOrOptions = '', maybeOptions = {}) => {
-    toastCount += 1;
-    const id = `toast_${Date.now()}_${toastCount}`;
-
     let title = '';
     let message = '';
     let options = {};
@@ -37,6 +35,25 @@ export const ToastProvider = ({ children }) => {
       options = maybeOptions || {};
     }
 
+    // Deduplication Key: Prevents double toasts in React StrictMode & rapid re-renders
+    const dedupKey = `${type || 'info'}_${title}_${message}`;
+    const now = Date.now();
+    const lastEmitted = recentToastsRef.current.get(dedupKey);
+
+    if (lastEmitted && now - lastEmitted < 800) {
+      return null;
+    }
+    recentToastsRef.current.set(dedupKey, now);
+
+    // Periodic cleanup of stale dedup entries
+    if (recentToastsRef.current.size > 40) {
+      for (const [k, ts] of recentToastsRef.current.entries()) {
+        if (now - ts > 3000) recentToastsRef.current.delete(k);
+      }
+    }
+
+    toastCount += 1;
+    const id = `toast_${Date.now()}_${toastCount}`;
     const duration = options.duration !== undefined ? options.duration : 4000;
 
     const newToast = {
@@ -49,6 +66,14 @@ export const ToastProvider = ({ children }) => {
     };
 
     setToasts((prev) => {
+      // Check if identical toast is already active in current visible list
+      const isAlreadyVisible = prev.some(
+        (t) => t.type === newToast.type && t.title === newToast.title && t.message === newToast.message
+      );
+      if (isAlreadyVisible) {
+        return prev;
+      }
+
       // Keep at most 4 toasts visible to avoid viewport clutter
       const filtered = prev.length >= 4 ? prev.slice(prev.length - 3) : prev;
       return [...filtered, newToast];

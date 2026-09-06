@@ -8,6 +8,7 @@ import {
   TbReceipt,
   TbCircleCheck,
   TbShieldCheck,
+  TbArrowBackUp,
 } from 'react-icons/tb';
 import AdminPageHeader from '../common/AdminPageHeader';
 import AdminTableWrapper from '../common/AdminTableWrapper';
@@ -58,15 +59,15 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
         subtitle="Quản lý dòng tiền GMV, phân bổ hoa hồng sàn 12% và kiểm duyệt lệnh chi trả Payout cho Host"
       />
 
-      {/* 4 Financial Summary KPI Cards */}
+      {/* 5 Financial Summary KPI Cards */}
       <div className="adm-fin-kpi-grid">
         {/* Card 1: Tổng GMV Thu Hộ */}
-        <div className="stat-card-glass">
-          <div>
+        <div className="stat-card-glass adm-fin-kpi-card">
+          <div className="adm-fin-kpi-info">
             <span className="stat-label">Tổng GMV Thu Hộ</span>
             <div className="stat-value">{formatVND(stats.totalRevenueVND)}</div>
-            <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '2px' }}>
-              Từ {stats.totalBookings || payouts.length} đơn đặt phòng
+            <div className="adm-fin-kpi-sub">
+              Từ {stats.validBookingsCount || (stats.totalBookings ? stats.totalBookings - (stats.cancelledBookingsCount || 0) : 18)} đơn hợp lệ
             </div>
           </div>
           <div className="stat-icon-wrap pink">
@@ -74,15 +75,15 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
           </div>
         </div>
 
-        {/* Card 2: Hoa Hồng Nền Tảng (12%) */}
-        <div className="stat-card-glass">
-          <div>
-            <span className="stat-label">Hoa Hồng Nền Tảng (12%)</span>
+        {/* Card 2: Hoa Hồng Nền Tảng */}
+        <div className="stat-card-glass adm-fin-kpi-card">
+          <div className="adm-fin-kpi-info">
+            <span className="stat-label">Hoa Hồng Nền Tảng</span>
             <div className="stat-value adm-fin-stat-green">
               {formatVND(stats.commissionRevenueVND)}
             </div>
-            <div className="adm-fin-stat-green-sub">
-              Doanh thu thực thu của sàn
+            <div className="adm-fin-stat-green-sub adm-fin-kpi-sub">
+              Doanh thu thực sàn
             </div>
           </div>
           <div className="stat-icon-wrap green">
@@ -90,15 +91,15 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
           </div>
         </div>
 
-        {/* Card 3: Quỹ Escrow Tạm Giữ Chờ Duyệt */}
-        <div className="stat-card-glass">
-          <div>
-            <span className="stat-label">Quỹ Tạm Giữ Chờ Chi (Escrow)</span>
+        {/* Card 3: Quỹ Tạm Giữ Chờ Chi */}
+        <div className="stat-card-glass adm-fin-kpi-card">
+          <div className="adm-fin-kpi-info">
+            <span className="stat-label">Quỹ Tạm Giữ Chờ Chi</span>
             <div className="stat-value adm-fin-stat-amber">
               {formatVND(dynamicEscrowVND)}
             </div>
-            <div className="adm-fin-stat-amber-sub">
-              {pendingPayouts.length} lệnh chờ giải ngân
+            <div className="adm-fin-stat-amber-sub adm-fin-kpi-sub">
+              {stats.pendingPayoutsCount ?? pendingPayouts.length} lệnh chờ giải ngân
             </div>
           </div>
           <div className="stat-icon-wrap amber">
@@ -106,19 +107,35 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
           </div>
         </div>
 
-        {/* Card 4: Đã Giải Ngân Cho Host */}
-        <div className="stat-card-glass">
-          <div>
-            <span className="stat-label">Đã Giải Ngân Cho Host</span>
+        {/* Card 4: Đã Giải Ngân Host */}
+        <div className="stat-card-glass adm-fin-kpi-card">
+          <div className="adm-fin-kpi-info">
+            <span className="stat-label">Đã Giải Ngân Host</span>
             <div className="stat-value adm-fin-stat-blue">
               {formatVND(dynamicCompletedVND)}
             </div>
-            <div className="adm-fin-stat-blue-sub">
-              {completedPayouts.length} lệnh đã quyết toán
+            <div className="adm-fin-stat-blue-sub adm-fin-kpi-sub">
+              {stats.completedPayoutsCount ?? completedPayouts.length} lệnh đã quyết toán
             </div>
           </div>
           <div className="stat-icon-wrap blue adm-fin-icon-blue">
             <TbCircleCheck />
+          </div>
+        </div>
+
+        {/* Card 5: Tổng Hoàn Tiền */}
+        <div className="stat-card-glass adm-fin-kpi-card">
+          <div className="adm-fin-kpi-info">
+            <span className="stat-label">Tổng Hoàn Tiền</span>
+            <div className="stat-value adm-fin-stat-red">
+              {formatVND(stats.totalRefundedVND || 0)}
+            </div>
+            <div className="adm-fin-stat-red-sub adm-fin-kpi-sub">
+              {stats.cancelledBookingsCount || 0} đơn hủy phòng
+            </div>
+          </div>
+          <div className="stat-icon-wrap red adm-fin-icon-red">
+            <TbArrowBackUp />
           </div>
         </div>
       </div>
@@ -153,6 +170,7 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
             <option value="all">Tất cả Trạng thái ({payouts.length})</option>
             <option value="pending">⏳ Chờ duyệt chuyển ({pendingPayouts.length})</option>
             <option value="completed">✅ Đã giải ngân ({completedPayouts.length})</option>
+            <option value="cancelled">🚫 Đã hủy hoàn tiền ({payouts.filter((p) => p.status === 'cancelled').length})</option>
             <option value="failed">❌ Thất bại</option>
           </select>
         </div>
@@ -172,9 +190,9 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
               <th style={{ width: '90px' }}>Mã Lệnh</th>
               <th>Chủ Nhà Thụ Hưởng</th>
               <th style={{ width: '110px' }}>Mã Đơn</th>
-              <th>Doanh Thu (Gross)</th>
-              <th>Hoa Hồng Sàn (12%)</th>
-              <th>Thực Chuyển (Net)</th>
+              <th>Doanh Thu Thu Hộ</th>
+              <th>Hoa Hồng Sàn</th>
+              <th>Thực Chuyển Host</th>
               <th>Tài Khoản Ngân Hàng</th>
               <th>Trạng Thái</th>
               <th style={{ textAlign: 'right', width: '130px' }}>Thao Tác</th>
@@ -252,7 +270,10 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
 
                     {/* Net Payout */}
                     <td className="td-nowrap">
-                      <strong className="adm-fin-net-val">
+                      <strong
+                        className="adm-fin-net-val"
+                        style={p.status === 'cancelled' ? { color: '#94a3b8', textDecoration: 'line-through' } : {}}
+                      >
                         {formatVND(net)}
                       </strong>
                     </td>
@@ -262,8 +283,11 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
                       <div className="adm-fin-bank-name">
                         {p.bank_name || 'Vietcombank'}
                       </div>
-                      <div className="adm-fin-bank-acc">
-                        STK: {p.account_number || '9988776655'}
+                      <div className="adm-fin-bank-acc-wrap">
+                        <span className="adm-fin-stk-tag">STK:</span>
+                        <span className="adm-fin-stk-num">
+                          {p.account_number || '0071001234567'}
+                        </span>
                       </div>
                     </td>
 
@@ -287,14 +311,25 @@ export const FinancialsPage = ({ payouts = [], stats = {}, onOpenPayoutModal }) 
 
                     {/* Actions */}
                     <td style={{ textAlign: 'right' }}>
-                      <div className="td-actions-group">
+                      <div className="adm-fin-actions-cell">
+                        {isPending && (
+                          <button
+                            type="button"
+                            className="adm-fin-approve-btn"
+                            title="Duyệt & Giải ngân chuyển tiền cho Host"
+                            onClick={() => onOpenPayoutModal && onOpenPayoutModal(p)}
+                          >
+                            <TbCircleCheck size={15} />
+                            <span>Duyệt chi</span>
+                          </button>
+                        )}
                         <button
                           type="button"
-                          className="btn-action-icon"
+                          className="adm-fin-receipt-btn"
                           title="Xem chi tiết hóa đơn quyết toán"
                           onClick={() => onOpenPayoutModal && onOpenPayoutModal(p)}
                         >
-                          <TbReceipt />
+                          <TbReceipt size={16} />
                         </button>
                       </div>
                     </td>

@@ -236,7 +236,15 @@ export const HostFinancialsPage = ({
                 </div>
 
                 <div style={{ textAlign: 'right', flexShrink: 0, whiteSpace: 'nowrap', marginLeft: '12px' }}>
-                  <strong style={{ color: po.status === 'completed' ? '#059669' : '#d97706', fontSize: '0.94rem', whiteSpace: 'nowrap', display: 'block' }}>
+                  <strong
+                    style={{
+                      color: po.status === 'completed' ? '#059669' : po.status === 'cancelled' ? '#94a3b8' : '#d97706',
+                      fontSize: '0.94rem',
+                      whiteSpace: 'nowrap',
+                      display: 'block',
+                      textDecoration: po.status === 'cancelled' ? 'line-through' : 'none',
+                    }}
+                  >
                     +{formatPrice(po.amount)}
                   </strong>
                   {po.status === 'completed' ? (

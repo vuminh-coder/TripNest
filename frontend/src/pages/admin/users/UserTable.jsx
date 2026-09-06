@@ -1,5 +1,15 @@
 import React from 'react';
-import { TbMapPin, TbEdit, TbLock, TbLockOpen, TbTrash, TbCheck, TbX, TbEye } from 'react-icons/tb';
+import {
+  TbMapPin,
+  TbEdit,
+  TbLock,
+  TbLockOpen,
+  TbTrash,
+  TbCheck,
+  TbX,
+  TbEye,
+  TbBuildingCottage,
+} from 'react-icons/tb';
 
 export const UserTable = ({
   users,
@@ -35,8 +45,13 @@ export const UserTable = ({
           <tr key={user.id}>
             {/* User Details */}
             <td>
-              <div 
-                style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: onOpenDetailModal ? 'pointer' : 'default' }}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  cursor: onOpenDetailModal ? 'pointer' : 'default',
+                }}
                 onClick={() => onOpenDetailModal && onOpenDetailModal(user)}
                 title="Bấm để xem chi tiết tài khoản"
               >
@@ -151,81 +166,127 @@ export const UserTable = ({
               {user.role_upgrade_request ? (
                 user.role_upgrade_request.status === 'pending' ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '240px' }}>
-                    <span
-                      style={{
-                        fontSize: '0.74rem',
-                        color: '#b45309',
-                        fontWeight: 700,
-                        background: '#fffbeb',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        border: '1px solid #fde68a',
-                        width: 'fit-content',
-                      }}
-                    >
-                      Xin lên Chủ Nhà (Host)
-                    </span>
-                    <div style={{ fontSize: '0.72rem', color: '#64748b', lineHeight: 1.2 }}>
-                      "{user.role_upgrade_request.reason}"
-                    </div>
-                    <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                    {/* Action Buttons */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <button
                         style={{
-                          padding: '2px 8px',
-                          borderRadius: '6px',
+                          padding: '2.5px 9px',
+                          borderRadius: '5px',
                           border: 'none',
                           background: '#10b981',
                           color: '#ffffff',
                           fontSize: '0.72rem',
                           fontWeight: 700,
                           cursor: 'pointer',
-                          display: 'flex',
+                          display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '2px',
+                          gap: '3px',
+                          lineHeight: 1.25,
+                          transition: 'all 0.15s ease',
                         }}
-                        onClick={() => onApproveUpgradePrompt(user, true)}
-                        title="Phê duyệt nâng cấp làm Host"
+                        onClick={() => onApproveUpgradePrompt && onApproveUpgradePrompt(user, true)}
+                        title="Phê duyệt tài khoản lên làm Chủ Nhà (Host)"
                       >
-                        <TbCheck /> Duyệt Host
+                        <TbCheck size={13} /> Duyệt
                       </button>
+
                       <button
                         style={{
-                          padding: '2px 8px',
-                          borderRadius: '6px',
-                          border: '1px solid #fee2e2',
-                          background: '#fee2e2',
+                          padding: '2.5px 8px',
+                          borderRadius: '5px',
+                          border: '1px solid #fecaca',
+                          background: '#fef2f2',
                           color: '#dc2626',
                           fontSize: '0.72rem',
                           fontWeight: 700,
                           cursor: 'pointer',
-                          display: 'flex',
+                          display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '2px',
+                          gap: '3px',
+                          lineHeight: 1.25,
+                          transition: 'all 0.15s ease',
                         }}
-                        onClick={() => onApproveUpgradePrompt(user, false)}
-                        title="Từ chối yêu cầu"
+                        onClick={() => onApproveUpgradePrompt && onApproveUpgradePrompt(user, false)}
+                        title="Từ chối yêu cầu lên Host"
                       >
-                        <TbX /> Từ chối
+                        <TbX size={13} /> Từ chối
                       </button>
                     </div>
+
+                    {/* Reason with Resort/Villa icon (TbBuildingCottage) */}
+                    {user.role_upgrade_request.reason && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '0.72rem',
+                          color: '#64748b',
+                          cursor: 'help',
+                        }}
+                        title={`Lý do đăng ký Host:\n"${user.role_upgrade_request.reason}"`}
+                      >
+                        <TbBuildingCottage size={14} style={{ color: '#ff385c', flexShrink: 0 }} />
+                        <span
+                          style={{
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            maxWidth: '220px',
+                          }}
+                        >
+                          "{user.role_upgrade_request.reason}"
+                        </span>
+                      </div>
+                    )}
                   </div>
                 ) : user.role_upgrade_request.status === 'approved' ? (
-                  <span style={{ fontSize: '0.74rem', color: '#059669', fontWeight: 700 }}>
-                    ✓ Đã duyệt làm Host
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '3px',
+                      fontSize: '0.72rem',
+                      color: '#059669',
+                      fontWeight: 700,
+                      background: '#ecfdf5',
+                      padding: '2px 7px',
+                      borderRadius: '999px',
+                      border: '1px solid #a7f3d0',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <TbCheck size={12} /> Đã là Host
                   </span>
                 ) : (
-                  <span style={{ fontSize: '0.74rem', color: '#dc2626', fontWeight: 600 }}>
-                    ✗ Bị từ chối
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '3px',
+                      fontSize: '0.72rem',
+                      color: '#dc2626',
+                      fontWeight: 700,
+                      background: '#fef2f2',
+                      padding: '2px 7px',
+                      borderRadius: '999px',
+                      border: '1px solid #fecaca',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <TbX size={12} /> Đã từ chối
                   </span>
                 )
               ) : (
-                <span style={{ fontSize: '0.76rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>—</span>
+                <span style={{ fontSize: '0.76rem', color: '#cbd5e1', whiteSpace: 'nowrap' }}>—</span>
               )}
             </td>
 
             {/* Joined Date */}
             <td className="td-nowrap">
-              <span style={{ fontSize: '0.82rem', color: '#64748b' }}>{user.joined_date}</span>
+              <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
+                {user.joined_date || user.created_at || 'Mới tham gia'}
+              </span>
             </td>
 
             {/* Status Pill */}

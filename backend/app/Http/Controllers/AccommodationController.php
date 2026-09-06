@@ -268,6 +268,9 @@ class AccommodationController extends Controller
             'longitude' => $accom->longitude ? (float)$accom->longitude : null,
             'distance' => $accom->distance_description ?? ('Vị trí tuyệt vời · Cách trung tâm ' . $accom->city . ' 1.5 km'),
             'description' => $accom->description,
+            'status' => $accom->status ?? 'published',
+            'accommodationType' => $accom->accommodation_type ?? 'villa',
+            'categoryId' => $accom->category_id,
             'category' => $accom->category?->slug ?? 'all',
             'categoryLabel' => $accom->category?->label_vi ?? 'Nổi bật',
             'specs' => [
@@ -292,15 +295,19 @@ class AccommodationController extends Controller
             'reviewScoresBreakdown' => $reviewScoresBreakdown,
             'checkInTime' => '14:00 - 23:30',
             'checkOutTime' => '06:00 - 12:00',
-            'houseRules' => [
-                'Nhận phòng từ 14:00 - Xuất trình CMND/CCCD hoặc Hộ chiếu khi làm thủ tục',
-                'Trả phòng trước 12:00 trưa',
-                'Phù hợp cho mọi độ tuổi · Trẻ em dưới 6 tuổi lưu trú miễn phí',
-                'Không hút thuốc trong phòng nghỉ (có khu vực hút thuốc riêng ngoài trời)',
-                'Không mang thú cưng (hoặc liên hệ lễ tân để được hỗ trợ phòng chuyên biệt)',
-                'Giữ yên tĩnh chung sau 22:00',
-            ],
-            'cancellationPolicy' => 'HỦY MIỄN PHÍ trước 48 giờ so với ngày nhận phòng. Đặt phòng hôm nay và thanh toán khi nhận phòng tại chỗ nghỉ.',
+            'houseRules' => !empty($accom->house_rules)
+                ? (is_array($accom->house_rules)
+                    ? $accom->house_rules
+                    : (json_decode($accom->house_rules, true) ?: [$accom->house_rules]))
+                : [
+                    'Nhận phòng từ 14:00 - Xuất trình CMND/CCCD hoặc Hộ chiếu khi làm thủ tục',
+                    'Trả phòng trước 12:00 trưa',
+                    'Phù hợp cho mọi độ tuổi · Trẻ em dưới 6 tuổi lưu trú miễn phí',
+                    'Không hút thuốc trong phòng nghỉ (có khu vực hút thuốc riêng ngoài trời)',
+                    'Không mang thú cưng (hoặc liên hệ lễ tân để được hỗ trợ phòng chuyên biệt)',
+                    'Giữ yên tĩnh chung sau 22:00',
+                ],
+            'cancellationPolicy' => $accom->cancellation_policy ?: 'HỦY MIỄN PHÍ trước 48 giờ so với ngày nhận phòng. Đặt phòng hôm nay và thanh toán khi nhận phòng tại chỗ nghỉ.',
             'surroundings' => $surroundings,
             'reviewsList' => $allReviews->toArray(),
             'priceFrom' => (float)$minPrice,

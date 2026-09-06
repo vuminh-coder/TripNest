@@ -152,11 +152,19 @@ export const ListingCard = ({
               ? 'Villa nghỉ dưỡng'
               : room.accommodationType === 'homestay'
               ? 'Homestay'
+              : room.accommodationType === 'cabin'
+              ? 'Cabin rừng'
+              : room.accommodationType === 'apartment'
+              ? 'Căn hộ cao cấp'
               : 'Lưu trú cao cấp'}
           </span>
-          {room.roomsCount > 1 && (
+          {room.roomsCount > 1 ? (
             <span className="listing-rooms-badge">
               {room.roomsCount} hạng phòng
+            </span>
+          ) : (
+            <span className="listing-rooms-badge entire">
+              Trọn căn
             </span>
           )}
         </div>

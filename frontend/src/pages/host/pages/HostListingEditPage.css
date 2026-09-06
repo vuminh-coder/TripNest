@@ -1,0 +1,911 @@
+/* ==========================================================================
+   HOST LISTING EDIT PAGE CSS (TripNest Host Portal - SaaS ProMax Edition)
+   ========================================================================== */
+
+.host-edit-container {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: var(--host-radius-lg, 12px);
+  border: 1px solid var(--host-border-subtle, #e2e8f0);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  min-height: calc(100vh - 120px);
+}
+
+/* 1. Header Toolbar */
+.host-edit-header {
+  padding: 1.15rem 1.75rem;
+  border-bottom: 1px solid var(--host-border-subtle, #e2e8f0);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.host-edit-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.host-edit-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.52rem 0.95rem;
+  border-radius: var(--host-radius-md, 8px);
+  border: 1.5px solid var(--host-border-strong, #cbd5e1);
+  background: #ffffff;
+  color: var(--host-text-main, #0f172a);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.host-edit-back-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  transform: translateX(-1px);
+}
+
+.host-edit-title-group h3 {
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--host-text-main, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.02em;
+}
+
+.host-edit-title-group p {
+  margin: 3px 0 0 0;
+  font-size: 0.82rem;
+  color: var(--host-text-muted, #64748b);
+}
+
+.host-edit-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 2. Navigation Tabs Bar (Clean, No Scrollbar Track) */
+.host-edit-tabs-nav {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 1.5px solid var(--host-border-subtle, #e2e8f0);
+  background: #f8fafc;
+  padding: 0 1.5rem;
+  gap: 0.25rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.host-edit-tabs-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.host-edit-tab-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.9rem 1.15rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--host-text-muted, #64748b);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.host-edit-tab-item:hover {
+  color: var(--host-text-main, #0f172a);
+  background: rgba(241, 245, 249, 0.6);
+}
+
+.host-edit-tab-item.active {
+  color: var(--host-primary, #059669);
+  border-bottom-color: var(--host-primary, #059669);
+  background: #ffffff;
+}
+
+.host-edit-tab-badge {
+  display: none !important;
+}
+
+/* 3. Form Body */
+.host-edit-body {
+  padding: 1.75rem;
+  flex: 1;
+}
+
+.host-edit-section-card {
+  background: #ffffff;
+  border: 1px solid var(--host-border-subtle, #e2e8f0);
+  border-radius: var(--host-radius-lg, 12px);
+  padding: 1.65rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+}
+
+.host-section-header-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  gap: 1rem;
+}
+
+.host-edit-section-card h4 {
+  margin: 0 0 0.4rem 0;
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--host-text-main, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  letter-spacing: -0.01em;
+}
+
+.host-edit-section-desc {
+  font-size: 0.84rem;
+  color: var(--host-text-muted, #64748b);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Form Controls & Inputs */
+.host-edit-field-group {
+  margin-bottom: 1.25rem;
+}
+
+.host-edit-label {
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.host-edit-input,
+.host-edit-select,
+.host-edit-textarea {
+  width: 100%;
+  padding: 0.62rem 0.9rem;
+  border-radius: var(--host-radius-md, 8px);
+  border: 1.5px solid var(--host-border-strong, #cbd5e1);
+  font-size: 0.88rem;
+  color: var(--host-text-main, #0f172a);
+  background: #ffffff;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.host-edit-input:focus,
+.host-edit-select:focus,
+.host-edit-textarea:focus {
+  outline: none;
+  border-color: var(--host-primary, #ff385c);
+  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.12);
+}
+
+/* Suffix inputs for specs (khách, phòng, giường...) */
+.host-input-with-suffix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.host-input-with-suffix input {
+  padding-right: 3.5rem;
+  font-weight: 700;
+}
+
+.host-input-suffix {
+  position: absolute;
+  right: 10px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #64748b;
+  pointer-events: none;
+  text-transform: lowercase;
+}
+
+/* Mode Selection Cards */
+.host-mode-select-card {
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 1.15rem;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.host-mode-select-card:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.host-mode-select-card.active {
+  border: 2px solid var(--host-primary, #ff385c);
+  background: var(--host-primary-soft, #fff1f2);
+}
+
+.host-mode-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.host-mode-select-card.active .host-mode-card-header {
+  color: var(--host-primary, #ff385c);
+}
+
+.host-mode-icon {
+  font-size: 1.25rem;
+  color: var(--host-primary, #ff385c);
+}
+
+.host-mode-select-card p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   AMENITIES COMPONENT (SaaS ProMax Overhaul)
+   ========================================================================== */
+
+.host-amenity-counter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--host-primary-soft, #fff1f2);
+  color: var(--host-primary, #ff385c);
+  border: 1px solid var(--host-primary-border, #fecdd3);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.host-amenities-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.host-amenities-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.host-amenity-cat-btn {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  padding: 0.45rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.host-amenity-cat-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.host-amenity-cat-btn.active {
+  background: var(--host-primary, #ff385c);
+  color: #ffffff;
+  border-color: var(--host-primary, #ff385c);
+}
+
+.host-amenities-search-input {
+  padding: 0.45rem 0.85rem;
+  border-radius: 20px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 0.82rem;
+  width: 200px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.host-amenities-search-input:focus {
+  border-color: var(--host-primary, #ff385c);
+  width: 240px;
+}
+
+.host-amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: 0.85rem;
+}
+
+.host-amenity-card {
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  position: relative;
+  user-select: none;
+}
+
+.host-amenity-card:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.04);
+}
+
+.host-amenity-card.selected {
+  border: 2px solid var(--host-primary, #ff385c);
+  background: var(--host-primary-soft, #fff1f2);
+  box-shadow: 0 2px 8px rgba(255, 56, 92, 0.12);
+}
+
+.host-amenity-icon-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.host-amenity-card.selected .host-amenity-icon-circle {
+  background: #ffffff;
+  color: var(--host-primary, #ff385c);
+}
+
+.host-amenity-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #1e293b;
+  flex: 1;
+  line-height: 1.35;
+}
+
+.host-amenity-card.selected .host-amenity-title {
+  color: #9f1239;
+}
+
+.host-amenity-check-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--host-primary, #ff385c);
+  font-weight: 900;
+}
+
+/* Room Cards in Multi-Room Mode */
+.host-edit-room-box {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--host-radius-lg, 12px);
+  padding: 1.35rem;
+  margin-bottom: 1.25rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.host-edit-room-box:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.05);
+}
+
+.host-edit-room-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.15rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* 4. Footer Sticky Action Bar */
+.host-edit-footer {
+  padding: 1rem 1.75rem;
+  border-top: 1px solid var(--host-border-subtle, #e2e8f0);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  bottom: 0;
+  z-index: 15;
+  box-shadow: 0 -4px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.host-edit-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.68rem 1.65rem;
+  border-radius: var(--host-radius-md, 8px);
+  background: var(--host-primary-gradient, linear-gradient(135deg, #ff385c 0%, #e11d48 100%));
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(255, 56, 92, 0.28);
+  transition: all 0.2s ease;
+}
+
+.host-edit-save-btn:hover:not(:disabled) {
+  opacity: 0.94;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(255, 56, 92, 0.35);
+}
+
+.host-edit-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .host-edit-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .host-edit-header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .host-edit-body {
+    padding: 1rem;
+  }
+  .host-amenities-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .host-amenities-search-input {
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   UNIFIED PHOTO UPLOAD TOOLBAR & ALBUM (Shared with Wizard)
+   ========================================================================== */
+
+.host-photo-section {
+  background: #fbfcfd;
+  border: 1px solid var(--host-border-subtle, #e2e8f0);
+  border-radius: var(--host-radius-lg, 12px);
+  padding: 1.25rem 1.35rem;
+  margin-top: 1.25rem;
+}
+
+.host-photo-header-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.host-photo-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--host-text-main, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+}
+
+.host-photo-compliance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: all 0.2s ease;
+}
+
+.host-photo-compliance-badge.valid {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.host-photo-compliance-badge.needed {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.host-photo-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 1.15rem;
+}
+
+.host-photo-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+}
+
+.host-photo-input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1.05rem;
+  pointer-events: none;
+}
+
+.host-photo-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px 0 36px;
+  border-radius: var(--host-radius-md, 8px);
+  border: 1.5px solid var(--host-border-strong, #cbd5e1);
+  background: #ffffff;
+  font-size: 0.84rem;
+  color: var(--host-text-main, #0f172a);
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.host-photo-input:focus {
+  outline: none;
+  border-color: var(--host-primary, #059669);
+  box-shadow: 0 0 0 3px var(--host-primary-soft, #ecfdf5);
+}
+
+.host-photo-btn {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: var(--host-radius-md, 8px);
+  font-size: 0.84rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
+  border: 1.5px solid transparent;
+}
+
+.host-photo-btn-primary {
+  background: var(--host-primary, #059669);
+  color: #ffffff;
+  border-color: var(--host-primary, #059669);
+}
+
+.host-photo-btn-primary:hover {
+  background: var(--host-primary-hover, #047857);
+}
+
+.host-photo-btn-outline {
+  background: #ffffff;
+  color: var(--host-text-main, #0f172a);
+  border-color: var(--host-border-strong, #cbd5e1);
+}
+
+.host-photo-btn-outline:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.host-photo-btn-sample {
+  background: #ffffff;
+  color: var(--host-primary, #059669);
+  border-color: var(--host-primary-border, #a7f3d0);
+}
+
+.host-photo-btn-sample:hover {
+  background: var(--host-primary-soft, #ecfdf5);
+  border-color: var(--host-primary, #059669);
+}
+
+.host-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.75rem;
+}
+
+.host-photo-card {
+  position: relative;
+  aspect-ratio: 16/10;
+  border-radius: var(--host-radius-md, 8px);
+  overflow: hidden;
+  border: 1.5px solid var(--host-border-subtle, #e2e8f0);
+  background: #0f172a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s ease;
+}
+
+.host-photo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.host-photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.host-photo-star-btn {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  color: #94a3b8;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  z-index: 2;
+  padding: 0;
+}
+
+.host-photo-star-btn:hover {
+  background: rgba(15, 23, 42, 0.9);
+  color: #fbbf24;
+  transform: scale(1.1);
+}
+
+.host-photo-star-btn.is-main {
+  background: rgba(15, 23, 42, 0.85);
+  color: #fbbf24;
+  box-shadow: 0 0 0 1.5px rgba(251, 191, 36, 0.6);
+  cursor: default;
+}
+
+.host-photo-delete-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  z-index: 2;
+  padding: 0;
+}
+
+.host-photo-delete-btn:hover {
+  background: #ef4444;
+  transform: scale(1.1);
+}
+
+.host-preview-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--host-text-main, #0f172a);
+  line-height: 1.4;
+  margin: 0.35rem 0 0.5rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Room Switcher Sub-Tabs Bar (Chuyển Hạng Phòng & Show 1 Hạng Phòng) */
+.host-room-switcher-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding: 0.5rem 0.65rem;
+  background: #f1f5f9;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.host-room-switcher-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 1;
+}
+
+.host-room-switcher-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.host-room-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.55rem 0.95rem;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.host-room-pill-btn:hover {
+  background: #ffffff;
+  color: var(--host-primary, #059669);
+  border-color: var(--host-primary-border, #a7f3d0);
+  transform: translateY(-1px);
+}
+
+.host-room-pill-btn.active {
+  background: var(--host-primary, #059669);
+  color: #ffffff;
+  border-color: var(--host-primary, #059669);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.28);
+}
+
+.host-room-pill-btn.active .host-room-pill-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.host-room-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  transition: all 0.18s ease;
+}
+
+.host-room-pill-badge.valid {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.host-room-pill-btn.active .host-room-pill-badge.valid {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.host-room-add-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.55rem 0.95rem;
+  border-radius: 8px;
+  border: 1.5px dashed var(--host-primary, #059669);
+  background: var(--host-primary-soft, #ecfdf5);
+  color: var(--host-primary, #059669);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+
+.host-room-add-pill-btn:hover {
+  background: var(--host-primary, #059669);
+  color: #ffffff;
+  border-style: solid;
+}
+
+/* Room Footer Navigation */
+.host-room-nav-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  margin-top: 1.25rem;
+  border-top: 1px solid #e2e8f0;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.host-room-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 0.95rem;
+  border-radius: 8px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.host-room-nav-btn:hover:not(:disabled) {
+  border-color: var(--host-primary, #059669);
+  color: var(--host-primary, #059669);
+  background: var(--host-primary-soft, #ecfdf5);
+}
+
+.host-room-nav-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.host-room-nav-summary {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+

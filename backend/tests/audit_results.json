@@ -1,0 +1,202 @@
+{
+    "suites": {
+        "1. Cấu Trúc Database & Dữ Liệu Nền Tảng": [
+            {
+                "test": "Bảng `accounts` có dữ liệu hợp lệ",
+                "status": "PASSED",
+                "details": "Số lượng bản ghi: 24"
+            },
+            {
+                "test": "Bảng `users` có dữ liệu hợp lệ",
+                "status": "PASSED",
+                "details": "Số lượng bản ghi: 24"
+            },
+            {
+                "test": "Bảng `hosts` có dữ liệu hợp lệ",
+                "status": "PASSED",
+                "details": "Số lượng bản ghi: 17"
+            },
+            {
+                "test": "Bảng `accommodations` có dữ liệu hợp lệ",
+                "status": "PASSED",
+                "details": "Số lượng bản ghi: 60"
+            },
+            {
+                "test": "Bảng `rooms` có dữ liệu hợp lệ",
+                "status": "PASSED",
+                "details": "Số lượng bản ghi: 170"
+            },
+            {
+                "test": "Bảng `categories` có dữ liệu hợp lệ",
+                "status": "PASSED",
+                "details": "Số lượng bản ghi: 14"
+            },
+            {
+                "test": "Bảng `amenities` có dữ liệu hợp lệ",
+                "status": "PASSED",
+                "details": "Số lượng bản ghi: 14"
+            },
+            {
+                "test": "Bảng `bookings` có dữ liệu hợp lệ",
+                "status": "PASSED",
+                "details": "Số lượng bản ghi: 15"
+            },
+            {
+                "test": "Bảng `payments` có dữ liệu hợp lệ",
+                "status": "PASSED",
+                "details": "Số lượng bản ghi: 13"
+            },
+            {
+                "test": "Bảng `payout_transactions` có dữ liệu hợp lệ",
+                "status": "PASSED",
+                "details": "Số lượng bản ghi: 13"
+            },
+            {
+                "test": "Bảng `vouchers` có dữ liệu hợp lệ",
+                "status": "PASSED",
+                "details": "Số lượng bản ghi: 2"
+            }
+        ],
+        "2. Kiểm Tra Tài Chính, Phí Hoa Hồng & Tiền Host": [
+            {
+                "test": "Công thức tổng tiền Booking (Base + Cleaning + Service - Discount == Total)",
+                "status": "PASSED",
+                "details": "Khớp 100% trên 14 đơn đặt phòng (Lỗi lệch: 0)"
+            },
+            {
+                "test": "Tỷ lệ hoa hồng dịch vụ sàn TripNest (chuẩn ~12%)",
+                "status": "PASSED",
+                "details": "Đơn mẫu TN-586827: Base 4,500,000đ, Phí sàn 540,000đ (Tỷ lệ: 12%)"
+            },
+            {
+                "test": "Công thức lệnh giải ngân Host (Gross - Commission == Net Payout)",
+                "status": "PASSED",
+                "details": "Khớp 100% trên 13 lệnh giải ngân Payout (Lỗi lệch: 0)"
+            },
+            {
+                "test": "Số tiền thực nhận của Host sau khi trừ phí hoa hồng",
+                "status": "PASSED",
+                "details": "Lệnh POT-916164: Gross 4,850,000đ - Phí sàn 540,000đ = Net Host nhận 4,310,000đ"
+            },
+            {
+                "test": "Chỉ số GMV thu hộ trong Admin Financials khớp chuẩn với Database",
+                "status": "PASSED",
+                "details": "GMV Admin: 126,018,000đ | DB Sum: 126,018,000đ"
+            },
+            {
+                "test": "Doanh thu hoa hồng sàn thu được khớp chuẩn với Database",
+                "status": "PASSED",
+                "details": "Doanh thu hoa hồng: 13,358,000đ"
+            },
+            {
+                "test": "Quỹ tạm giữ Escrow chờ giải ngân khớp chuẩn lệnh Pending",
+                "status": "PASSED",
+                "details": "Quỹ tạm giữ: 16,540,000đ (2 lệnh chờ)"
+            }
+        ],
+        "3. Xác Thực, Đăng Ký & Nâng Quyền Làm Host (KYC)": [
+            {
+                "test": "Tài khoản Quản trị viên tồn tại (admin@tripnest.vn)",
+                "status": "PASSED",
+                "details": "Role: admin | Status: active"
+            },
+            {
+                "test": "Mật khẩu Admin đã cập nhật chuẩn '123456' (Bcrypt Hash)",
+                "status": "PASSED",
+                "details": "Hash verify: Thành công"
+            },
+            {
+                "test": "Đồng bộ liên kết 1-1 giữa bảng `accounts` và `users`",
+                "status": "PASSED",
+                "details": "User ID: 35 <-> Account ID: 35"
+            },
+            {
+                "test": "Tạo đơn xin lên Host với trạng thái KYC `pending` trong Database",
+                "status": "PASSED",
+                "details": "Host ID: 24 | KYC Status: pending | Account Role: guest"
+            },
+            {
+                "test": "Admin phê duyệt: Chuyển role `guest` -> `host` & KYC `pending` -> `verified`",
+                "status": "PASSED",
+                "details": "Kết quả: Role=host, KYC=verified"
+            }
+        ],
+        "4. Cơ Sở Lưu Trú, Phòng Nghỉ & Tiện Nghi": [
+            {
+                "test": "Tất cả Cơ sở lưu trú đều thuộc về Chủ nhà (Host) hợp lệ",
+                "status": "PASSED",
+                "details": "Số cơ sở mồ côi: 0"
+            },
+            {
+                "test": "Tất cả Cơ sở lưu trú đều có Danh mục phân loại chuẩn",
+                "status": "PASSED",
+                "details": "Số cơ sở thiếu danh mục: 0"
+            },
+            {
+                "test": "Cơ sở lưu trú có đầy đủ cấu hình phòng nghỉ (Rooms)",
+                "status": "PASSED",
+                "details": "Cơ sở không có phòng: 0"
+            },
+            {
+                "test": "Giá phòng nghỉ hợp lệ (> 0 VND\/đêm)",
+                "status": "PASSED",
+                "details": "Số phòng có giá <= 0: 0"
+            },
+            {
+                "test": "Bảng liên kết Tiện ích - Chỗ ở (accommodation_amenity) toàn vẹn",
+                "status": "PASSED",
+                "details": "Tổng số tiện ích gán: 303 | Liên kết sai: 0"
+            }
+        ],
+        "5. Kiểm Tra Kết Nối Dữ Liệu API Các Trang Quản Lý": [
+            {
+                "test": "API Trang Quản Lý Tài Khoản (Admin Users)",
+                "status": "PASSED",
+                "details": "HTTP 200 OK | Trả về 24 người dùng từ Database"
+            },
+            {
+                "test": "API Trang Duyệt Yêu Cầu Làm Host (Role Upgrade Requests)",
+                "status": "PASSED",
+                "details": "HTTP 200 OK | Số đơn chờ duyệt: 0"
+            },
+            {
+                "test": "API Trang Quản Lý Cơ Sở Lưu Trú (Admin Accommodations)",
+                "status": "PASSED",
+                "details": "HTTP 200 OK | Trả về 60 cơ sở lưu trú từ Database"
+            },
+            {
+                "test": "API Trang Quản Lý Giải Ngân & Tài Chính (Admin Payouts)",
+                "status": "PASSED",
+                "details": "HTTP 200 OK | Trả về 13 lệnh giải ngân từ Database"
+            },
+            {
+                "test": "API Trang Khách Hàng Tìm Phòng & Chỗ Ở (Client Accommodations)",
+                "status": "PASSED",
+                "details": "HTTP 200 OK | Trả về 60 chỗ nghỉ hiển thị trên trang chủ & tìm kiếm"
+            }
+        ],
+        "6. Toàn Vẹn Khóa Ngoại & Quét Dữ Liệu Mồ Côi": [
+            {
+                "test": "Không có bản ghi người dùng mồ côi (Users without Account)",
+                "status": "PASSED",
+                "details": "Số bản ghi: 0"
+            },
+            {
+                "test": "Không có đơn đặt phòng mồ côi (Bookings without Room\/User)",
+                "status": "PASSED",
+                "details": "Số bản ghi: 0"
+            },
+            {
+                "test": "Không có lệnh giải ngân mồ côi (Payouts without Booking\/Host)",
+                "status": "PASSED",
+                "details": "Số bản ghi: 0"
+            }
+        ]
+    },
+    "summary": {
+        "total_tests": 36,
+        "passed": 36,
+        "failed": 0,
+        "warnings": 0
+    }
+}

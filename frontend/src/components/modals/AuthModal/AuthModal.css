@@ -235,9 +235,32 @@
   font-weight: 500;
 }
 
+/* Triệt tiêu dứt điểm khối màu xanh autofill của Chrome / Edge / Safari */
+.auth-input-box input:-webkit-autofill,
+.auth-input-box input:-webkit-autofill:hover,
+.auth-input-box input:-webkit-autofill:focus,
+.auth-input-box input:-webkit-autofill:active,
+.auth-input-field:-webkit-autofill,
+.auth-input-field:-webkit-autofill:hover,
+.auth-input-field:-webkit-autofill:focus,
+.auth-input-field:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: #ff385c !important;
+  transition: background-color 5000000s ease-in-out 0s !important;
+  background-color: transparent !important;
+}
+
+.auth-input-field:autofill {
+  background-color: transparent !important;
+  filter: none !important;
+}
+
 .auth-input-field::placeholder {
   color: #94a3b8;
 }
+
 
 .auth-password-toggle {
   background: none;

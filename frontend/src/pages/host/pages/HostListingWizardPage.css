@@ -1,5 +1,5 @@
 /* ==========================================================================
-   HOST LISTING WIZARD PAGE CSS (Host Portal)
+   HOST LISTING WIZARD PAGE CSS (TripNest Host Portal - Luxury Edition)
    ========================================================================== */
 
 .host-wiz-container {
@@ -7,72 +7,559 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 580px;
+  min-height: 600px;
+  background: #ffffff;
+  border-radius: var(--host-radius-lg, 12px);
+  border: 1px solid var(--host-border-subtle, #e2e8f0);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
 }
 
+/* 1. Header Toolbar */
 .host-wiz-header {
   padding: 1.15rem 1.65rem;
-  border-bottom: 1px solid var(--host-border-subtle);
+  border-bottom: 1px solid var(--host-border-subtle, #e2e8f0);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fbfcfd;
+  background: #ffffff;
 }
 
-.host-wiz-progress-track {
+.host-wiz-header-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--host-text-main, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.host-wiz-header-subtitle {
+  font-size: 0.82rem;
+  color: var(--host-text-muted, #64748b);
+  margin: 3px 0 0 0;
+  font-weight: 500;
+}
+
+/* 2. Modern 6-Step Visual Stepper */
+.host-wiz-stepper-container {
+  background: #f8fafc;
+  border-bottom: 1px solid var(--host-border-subtle, #e2e8f0);
+  padding: 0.85rem 1.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.host-wiz-stepper-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
-  height: 3.5px;
-  background: #f1f5f9;
+  position: relative;
+  gap: 0.5rem;
 }
 
-.host-wiz-progress-bar {
-  height: 100%;
-  background: var(--host-primary-gradient);
-  transition: width 0.3s ease;
+.host-wiz-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.18s ease;
 }
 
+.host-wiz-step-item:hover .host-wiz-step-circle {
+  border-color: var(--host-primary, #059669);
+  color: var(--host-primary, #059669);
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px var(--host-primary-soft, #ecfdf5);
+}
+
+.host-wiz-step-item:hover .host-wiz-step-label {
+  color: var(--host-primary, #059669);
+}
+
+.host-wiz-step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: all 0.25s ease;
+  background: #ffffff;
+  border: 2px solid var(--host-border-strong, #cbd5e1);
+  color: var(--host-text-muted, #64748b);
+}
+
+.host-wiz-step-item.active .host-wiz-step-circle {
+  background: var(--host-primary, #059669);
+  border-color: var(--host-primary, #059669);
+  color: #ffffff;
+  box-shadow: 0 0 0 4px var(--host-primary-soft, #ecfdf5);
+}
+
+.host-wiz-step-item.completed .host-wiz-step-circle {
+  background: #ffffff;
+  border-color: var(--host-primary, #059669);
+  color: var(--host-primary, #059669);
+}
+
+.host-wiz-step-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--host-text-muted, #64748b);
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.host-wiz-step-item.active .host-wiz-step-label {
+  color: var(--host-primary, #059669);
+  font-weight: 700;
+}
+
+.host-wiz-step-item.completed .host-wiz-step-label {
+  color: var(--host-text-main, #0f172a);
+}
+
+/* 3. Wizard Body Content */
 .host-wiz-body {
-  padding: 1.5rem 1.65rem;
+  padding: 1.65rem;
   flex: 1;
   overflow-y: auto;
 }
 
+.host-wiz-section-title {
+  font-size: 1.02rem;
+  font-weight: 800;
+  margin: 1.25rem 0 0.85rem 0;
+  color: var(--host-text-main, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.host-wiz-section-title:first-child {
+  margin-top: 0;
+}
+
+/* 4. Type Cards Grid (Chống gãy dòng vụn) */
 .host-wiz-types-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 0.75rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .host-wiz-type-card {
   padding: 1rem 0.75rem;
-  border-radius: var(--host-radius-md);
-  border: 1.5px solid var(--host-border-strong);
+  border-radius: var(--host-radius-md, 8px);
+  border: 1.5px solid var(--host-border-subtle, #e2e8f0);
   background: #ffffff;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  text-align: center;
   transition: all 0.15s ease;
+  word-break: keep-all;
+}
+
+.host-wiz-type-card:hover {
+  border-color: var(--host-primary-border, #a7f3d0);
+  background: #fbfdfc;
+  transform: translateY(-1px);
 }
 
 .host-wiz-type-card.selected {
-  border-color: var(--host-primary);
-  background: var(--host-primary-soft);
-  color: var(--host-primary);
+  border: 2px solid var(--host-primary, #059669);
+  background: var(--host-primary-soft, #ecfdf5);
+  color: var(--host-primary, #059669);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.12);
 }
 
-.host-wiz-amenities-grid {
+.host-wiz-type-card-icon {
+  font-size: 1.65rem;
+  color: #64748b;
+  transition: color 0.15s ease;
+}
+
+.host-wiz-type-card.selected .host-wiz-type-card-icon {
+  color: var(--host-primary, #059669);
+}
+
+.host-wiz-type-card-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* 5. Categories Grid (13 Items - Bố cục mượt, không rớt chữ) */
+.host-wiz-categories-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1.5rem;
 }
 
-.host-wiz-amenity-card {
-  padding: 0.85rem 1rem;
-  border-radius: var(--host-radius-md);
-  border: 1.5px solid var(--host-border-strong);
+.host-wiz-cat-card {
+  padding: 0.8rem 0.65rem;
+  border-radius: var(--host-radius-md, 8px);
+  border: 1.5px solid var(--host-border-subtle, #e2e8f0);
+  background: #ffffff;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 72px;
+}
+
+.host-wiz-cat-card:hover {
+  border-color: var(--host-border-strong, #cbd5e1);
+  background: #f8fafc;
+}
+
+.host-wiz-cat-card.selected {
+  border: 2px solid var(--host-primary, #059669);
+  background: var(--host-primary-soft, #ecfdf5);
+  color: var(--host-primary, #059669);
+}
+
+.host-wiz-cat-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.3;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* 6. Rental Mode Cards */
+.host-rental-mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.host-rental-mode-card {
+  padding: 1.15rem;
+  border-radius: var(--host-radius-lg, 12px);
+  border: 1.5px solid var(--host-border-subtle, #e2e8f0);
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.host-rental-mode-card:hover {
+  border-color: var(--host-border-strong, #cbd5e1);
+  transform: translateY(-1px);
+}
+
+.host-rental-mode-card.selected {
+  border: 2px solid var(--host-primary, #059669);
+  background: var(--host-primary-soft, #ecfdf5);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.08);
+}
+
+/* 7. Unified Photo Upload Toolbar & Album Grid */
+.host-photo-section {
+  background: #fbfcfd;
+  border: 1px solid var(--host-border-subtle, #e2e8f0);
+  border-radius: var(--host-radius-lg, 12px);
+  padding: 1.25rem 1.35rem;
+  margin-top: 1.25rem;
+}
+
+.host-photo-header-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.host-photo-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--host-text-main, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+}
+
+.host-photo-compliance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: all 0.2s ease;
+}
+
+.host-photo-compliance-badge.valid {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.host-photo-compliance-badge.needed {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.host-photo-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 1.15rem;
+}
+
+.host-photo-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+}
+
+.host-photo-input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1.05rem;
+  pointer-events: none;
+}
+
+.host-photo-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px 0 36px;
+  border-radius: var(--host-radius-md, 8px);
+  border: 1.5px solid var(--host-border-strong, #cbd5e1);
+  background: #ffffff;
+  font-size: 0.84rem;
+  color: var(--host-text-main, #0f172a);
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.host-photo-input:focus {
+  outline: none;
+  border-color: var(--host-primary, #059669);
+  box-shadow: 0 0 0 3px var(--host-primary-soft, #ecfdf5);
+}
+
+.host-photo-btn {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: var(--host-radius-md, 8px);
+  font-size: 0.84rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
+  border: 1.5px solid transparent;
+}
+
+.host-photo-btn-primary {
+  background: var(--host-primary, #059669);
+  color: #ffffff;
+  border-color: var(--host-primary, #059669);
+}
+
+.host-photo-btn-primary:hover {
+  background: var(--host-primary-hover, #047857);
+}
+
+.host-photo-btn-outline {
+  background: #ffffff;
+  color: var(--host-text-main, #0f172a);
+  border-color: var(--host-border-strong, #cbd5e1);
+}
+
+.host-photo-btn-outline:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.host-photo-btn-sample {
+  background: #ffffff;
+  color: var(--host-primary, #059669);
+  border-color: var(--host-primary-border, #a7f3d0);
+}
+
+.host-photo-btn-sample:hover {
+  background: var(--host-primary-soft, #ecfdf5);
+  border-color: var(--host-primary, #059669);
+}
+
+/* 8. Photo Thumbnail Grid */
+.host-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.75rem;
+}
+
+.host-photo-card {
+  position: relative;
+  aspect-ratio: 16/10;
+  border-radius: var(--host-radius-md, 8px);
+  overflow: hidden;
+  border: 1.5px solid var(--host-border-subtle, #e2e8f0);
+  background: #0f172a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s ease;
+}
+
+.host-photo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.host-photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.host-photo-star-btn {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  color: #94a3b8;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  z-index: 2;
+  padding: 0;
+}
+
+.host-photo-star-btn:hover {
+  background: rgba(15, 23, 42, 0.9);
+  color: #fbbf24;
+  transform: scale(1.1);
+}
+
+.host-photo-star-btn.is-main {
+  background: rgba(15, 23, 42, 0.85);
+  color: #fbbf24;
+  box-shadow: 0 0 0 1.5px rgba(251, 191, 36, 0.6);
+  cursor: default;
+}
+
+.host-photo-delete-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  z-index: 2;
+  padding: 0;
+}
+
+.host-photo-delete-btn:hover {
+  background: #ef4444;
+  transform: scale(1.1);
+}
+
+/* 9. Amenities Toolbar & Search */
+.host-amenities-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.host-search-input-group {
+  position: relative;
+  width: 280px;
+}
+
+.host-search-input-group svg {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1.05rem;
+}
+
+.host-search-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px 0 34px;
+  border-radius: var(--host-radius-md, 8px);
+  border: 1.5px solid var(--host-border-strong, #cbd5e1);
+  font-size: 0.84rem;
+  box-sizing: border-box;
+}
+
+.host-search-input:focus {
+  outline: none;
+  border-color: var(--host-primary, #059669);
+}
+
+.host-amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.host-amenity-card {
+  padding: 0.75rem 0.95rem;
+  border-radius: var(--host-radius-md, 8px);
+  border: 1.5px solid var(--host-border-subtle, #e2e8f0);
   background: #ffffff;
   cursor: pointer;
   display: flex;
@@ -81,49 +568,200 @@
   transition: all 0.15s ease;
 }
 
-.host-wiz-amenity-card.selected {
-  border-color: var(--host-primary);
-  background: var(--host-primary-soft);
-  color: var(--host-primary);
+.host-amenity-card:hover {
+  border-color: var(--host-border-strong, #cbd5e1);
+  background: #fbfcfd;
 }
 
-.host-wiz-images-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 0.85rem;
-  margin-bottom: 1.25rem;
+.host-amenity-card.selected {
+  border-color: var(--host-primary, #059669);
+  background: var(--host-primary-soft, #ecfdf5);
+  color: var(--host-primary, #059669);
 }
 
-.host-wiz-img-item {
-  position: relative;
-  border-radius: var(--host-radius-md);
+.host-amenity-name {
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+/* 10. Preview Card 2-line title */
+.host-preview-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--host-text-main, #0f172a);
+  line-height: 1.4;
+  margin: 0.35rem 0 0.5rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  height: 110px;
-  border: 1px solid var(--host-border-strong);
+  text-overflow: ellipsis;
 }
 
-.host-wiz-img-thumb {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.host-wiz-img-delete-btn {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background: rgba(0, 0, 0, 0.65);
-  color: #ffffff;
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
+/* 11. Footer Actions */
+.host-wiz-footer {
+  padding: 1.15rem 1.65rem;
+  border-top: 1px solid var(--host-border-subtle, #e2e8f0);
+  background: #ffffff;
   display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
+  justify-content: space-between;
 }
 
-.host-wiz-footer {
-  padding: 1rem 1.65rem;
+/* 12. Room Switcher Sub-Tabs Bar (Chuyển Hạng Phòng & Show 1 Hạng Phòng) */
+.host-room-switcher-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding: 0.5rem 0.65rem;
+  background: #f1f5f9;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  flex-wrap: wrap;
 }
+
+.host-room-switcher-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 1;
+}
+
+.host-room-switcher-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.host-room-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.55rem 0.95rem;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.host-room-pill-btn:hover {
+  background: #ffffff;
+  color: var(--host-primary, #059669);
+  border-color: var(--host-primary-border, #a7f3d0);
+  transform: translateY(-1px);
+}
+
+.host-room-pill-btn.active {
+  background: var(--host-primary, #059669);
+  color: #ffffff;
+  border-color: var(--host-primary, #059669);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.28);
+}
+
+.host-room-pill-btn.active .host-room-pill-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.host-room-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  transition: all 0.18s ease;
+}
+
+.host-room-pill-badge.valid {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.host-room-pill-btn.active .host-room-pill-badge.valid {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.host-room-add-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.55rem 0.95rem;
+  border-radius: 8px;
+  border: 1.5px dashed var(--host-primary, #059669);
+  background: var(--host-primary-soft, #ecfdf5);
+  color: var(--host-primary, #059669);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+
+.host-room-add-pill-btn:hover {
+  background: var(--host-primary, #059669);
+  color: #ffffff;
+  border-style: solid;
+}
+
+/* Room Footer Navigation */
+.host-room-nav-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  margin-top: 1.25rem;
+  border-top: 1px solid #e2e8f0;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.host-room-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 0.95rem;
+  border-radius: 8px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.host-room-nav-btn:hover:not(:disabled) {
+  border-color: var(--host-primary, #059669);
+  color: var(--host-primary, #059669);
+  background: var(--host-primary-soft, #ecfdf5);
+}
+
+.host-room-nav-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.host-room-nav-summary {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+

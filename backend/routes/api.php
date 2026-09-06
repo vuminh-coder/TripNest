@@ -31,9 +31,10 @@ Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
-    Route::post('/refresh', [AuthController::class, 'refresh']);
-    Route::post('/update-profile', [AuthController::class, 'updateProfile']);
-    Route::post('/change-password', [AuthController::class, 'changePassword']);
+    Route::match(['post', 'put'], '/update-profile', [AuthController::class, 'updateProfile']);
+    Route::match(['post', 'put'], '/profile', [AuthController::class, 'updateProfile']);
+    Route::match(['post', 'put'], '/change-password', [AuthController::class, 'changePassword']);
+    Route::match(['post', 'put'], '/password', [AuthController::class, 'updatePassword']);
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/forgot-password/send-otp', [AuthController::class, 'sendOtp']);
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -66,9 +67,10 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/bookings', [BookingController::class, 'store']);
     Route::get('/my-bookings', [BookingController::class, 'myBookings']);
     Route::get('/bookings/{id}', [BookingController::class, 'show']);
-    Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
-    Route::post('/bookings/{id}/check-in', [BookingController::class, 'checkIn']);
-    Route::post('/bookings/{id}/check-out', [BookingController::class, 'checkOut']);
+    Route::match(['post', 'patch'], '/bookings/{id}/cancel', [BookingController::class, 'cancel']);
+    Route::get('/bookings/{id}/cancel-preview', [BookingController::class, 'cancelPreview']);
+    Route::match(['post', 'patch'], '/bookings/{id}/check-in', [BookingController::class, 'checkIn']);
+    Route::match(['post', 'patch'], '/bookings/{id}/check-out', [BookingController::class, 'checkOut']);
 
     // Đánh giá Radar 6 tiêu chí (Reviews)
     Route::post('/reviews', [ReviewController::class, 'store']);
@@ -152,6 +154,7 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
     // Quản lý Danh mục & Tiện nghi
     Route::get('/admin/categories', [CategoryController::class, 'adminIndex']);
     Route::post('/admin/categories', [CategoryController::class, 'adminStore']);
+    Route::put('/admin/categories/{id}', [CategoryController::class, 'adminUpdate']);
     Route::patch('/admin/categories/{id}/toggle', [CategoryController::class, 'adminToggleActive']);
     Route::delete('/admin/categories/{id}', [CategoryController::class, 'adminDestroy']);
     Route::get('/admin/amenities', [AmenityController::class, 'index']);
@@ -161,6 +164,7 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
     // Quản lý Trải nghiệm (Experiences)
     Route::get('/admin/experiences', [ExperienceController::class, 'adminIndex']);
     Route::post('/admin/experiences', [ExperienceController::class, 'adminStore']);
+    Route::put('/admin/experiences/{id}', [ExperienceController::class, 'adminUpdate']);
     Route::patch('/admin/experiences/{id}/toggle', [ExperienceController::class, 'adminToggleActive']);
     Route::delete('/admin/experiences/{id}', [ExperienceController::class, 'adminDestroy']);
 });
