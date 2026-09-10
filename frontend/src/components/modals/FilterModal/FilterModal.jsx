@@ -1,5 +1,5 @@
 import './FilterModal.css';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   TbX,
   TbHomeCheck,
@@ -20,12 +20,25 @@ import {
   TbFilter,
 } from 'react-icons/tb';
 
+const removeVietnameseTones = (str) => {
+  if (!str) return '';
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase();
+};
+
 export const FilterModal = ({
   isOpen,
   onClose,
   onApplyFilters,
   initialFilters = {},
   currency = 'VND',
+  allRooms = [],
+  searchParams = {},
+  activeCategory = 'all',
 }) => {
   const [minPrice, setMinPrice] = useState(initialFilters.minPrice || '');
   const [maxPrice, setMaxPrice] = useState(initialFilters.maxPrice || '');
@@ -33,8 +46,6 @@ export const FilterModal = ({
   const [bedrooms, setBedrooms] = useState(initialFilters.bedrooms || 'any');
   const [bathrooms, setBathrooms] = useState(initialFilters.bathrooms || 'any');
   const [selectedAmenities, setSelectedAmenities] = useState(initialFilters.amenities || []);
-
-  if (!isOpen) return null;
 
   const currencySign = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '₫';
 
@@ -98,6 +109,123 @@ export const FilterModal = ({
     onClose();
   };
 
+  // Real-time Match Counter calculation (Airbnb Standard)
+  const liveMatchingCount = useMemo(() => {
+    if (!allRooms || allRooms.length === 0) return 0;
+    return allRooms.filter((room) => {
+      // Category filter
+      if (activeCategory && activeCategory !== 'all' && room.category !== activeCategory) {
+        return false;
+      }
+
+      // Search destination keyword (Fuzzy accent-insensitive Vietnamese matching)
+      if (searchParams?.destination && searchParams.destination.trim()) {
+        const q = removeVietnameseTones(searchParams.destination);
+        const city = removeVietnameseTones(room.city || '');
+        const loc = removeVietnameseTones(room.location || '');
+        const title = removeVietnameseTones(room.title || '');
+        const country = removeVietnameseTones(room.country || '');
+        const category = removeVietnameseTones(room.category || '');
+
+        const isMatch =
+          city.includes(q) ||
+          loc.includes(q) ||
+          title.includes(q) ||
+          country.includes(q) ||
+          category.includes(q) ||
+          q.includes(city);
+
+        if (!isMatch) return false;
+      }
+
+      // Guests search filter
+      if (searchParams?.guests && Number(searchParams.guests) > 1) {
+        if (room.specs?.guests && room.specs.guests < Number(searchParams.guests)) {
+          return false;
+        }
+      }
+
+      // Price range filter
+      if (minPrice || maxPrice) {
+        const roomPrice =
+          currency === 'VND'
+            ? (room.priceVND || room.priceUSD * 25000)
+            : currency === 'EUR'
+            ? (room.priceEUR || room.priceUSD * 0.92)
+            : room.priceUSD;
+
+        if (minPrice && roomPrice < Number(minPrice)) {
+          return false;
+        }
+        if (maxPrice && roomPrice > Number(maxPrice)) {
+          return false;
+        }
+      }
+
+      // Place Type filter
+      if (placeType && placeType !== 'all') {
+        const roomType = (room.type || '').toLowerCase();
+        const title = (room.title || '').toLowerCase();
+        const category = (room.category || '').toLowerCase();
+
+        if (placeType === 'entire') {
+          const isEntire =
+            roomType === 'entire' ||
+            title.includes('villa') ||
+            title.includes('nhà') ||
+            title.includes('biệt thự') ||
+            category.includes('villa') ||
+            category.includes('mansion');
+          if (!isEntire) return false;
+        } else if (placeType === 'room') {
+          const isRoom =
+            roomType === 'room' ||
+            title.includes('phòng') ||
+            title.includes('căn hộ') ||
+            title.includes('studio') ||
+            category.includes('room');
+          if (!isRoom) return false;
+        }
+      }
+
+      // Bedrooms filter
+      if (bedrooms && bedrooms !== 'any') {
+        const minBedrooms = parseInt(bedrooms);
+        if (room.specs?.bedrooms && room.specs.bedrooms < minBedrooms) return false;
+      }
+
+      // Bathrooms filter
+      if (bathrooms && bathrooms !== 'any') {
+        const minBathrooms = parseInt(bathrooms);
+        if (room.specs?.bathrooms && room.specs.bathrooms < minBathrooms) return false;
+      }
+
+      // Amenities filter
+      if (selectedAmenities && selectedAmenities.length > 0) {
+        const roomAmenities = (room.amenities || []).join(' ').toLowerCase();
+        const hasAll = selectedAmenities.every((a) =>
+          roomAmenities.includes(a.toLowerCase())
+        );
+        if (!hasAll) return false;
+      }
+
+      return true;
+    }).length;
+  }, [
+    allRooms,
+    activeCategory,
+    searchParams,
+    minPrice,
+    maxPrice,
+    placeType,
+    bedrooms,
+    bathrooms,
+    selectedAmenities,
+    currency,
+  ]);
+
+  if (!isOpen) return null;
+
   return (
     <div className="filter-modal-overlay" onClick={onClose}>
       <div className="filter-modal-card" onClick={(e) => e.stopPropagation()}>
@@ -151,19 +279,23 @@ export const FilterModal = ({
 
             {/* Quick Presets */}
             <div className="filter-price-presets-row">
-              {pricePresets.map((p, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className={`filter-preset-chip ${minPrice == p.min && maxPrice == p.max ? 'is-active' : ''}`}
-                  onClick={() => {
-                    setMinPrice(p.min);
-                    setMaxPrice(p.max);
-                  }}
-                >
-                  {p.label}
-                </button>
-              ))}
+              {pricePresets.map((p, idx) => {
+                const isPresetActive =
+                  String(minPrice) === String(p.min) && String(maxPrice) === String(p.max);
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    className={`filter-preset-chip ${isPresetActive ? 'is-active' : ''}`}
+                    onClick={() => {
+                      setMinPrice(p.min);
+                      setMaxPrice(p.max);
+                    }}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -259,18 +391,28 @@ export const FilterModal = ({
           </div>
         </div>
 
-        {/* Sticky Footer */}
+        {/* Sticky Footer with Live Result Count */}
         <div className="filter-modal-footer">
           <button type="button" className="filter-clear-all-link" onClick={handleClearAll}>
-            Xóa tất cả bộ lọc
+            Xóa tất cả
           </button>
-          <button type="button" className="filter-apply-btn" onClick={handleApply}>
+          <button
+            type="button"
+            className="filter-apply-btn"
+            onClick={handleApply}
+            disabled={liveMatchingCount === 0}
+          >
             <TbFilter />
-            <span>Áp dụng bộ lọc</span>
+            <span>
+              {liveMatchingCount > 0
+                ? `Hiển thị ${liveMatchingCount} chỗ ở`
+                : 'Không có chỗ ở phù hợp'}
+            </span>
           </button>
         </div>
       </div>
     </div>
   );
 };
+
 export default FilterModal;

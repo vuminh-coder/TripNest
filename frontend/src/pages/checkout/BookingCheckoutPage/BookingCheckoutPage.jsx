@@ -139,6 +139,113 @@ export const BookingCheckoutPage = ({
   const [cardCvv, setCardCvv] = useState('');
   const [cardHolder, setCardHolder] = useState('');
 
+  // Room Hold Lock & Collision Prevention states
+  const [lockToken, setLockToken] = useState(null);
+  const [lockSecondsLeft, setLockSecondsLeft] = useState(900);
+  const [lockExpired, setLockExpired] = useState(false);
+  const [conflictError, setConflictError] = useState(null);
+  const [isExtending, setIsExtending] = useState(false);
+
+  // Tự động tạm khóa giữ phòng (Hold Lock) trong 15 phút khi vào checkout (hỗ trợ cả multi-room)
+  React.useEffect(() => {
+    let timer = null;
+    let isMounted = true;
+
+    const acquireHold = async () => {
+      try {
+        const selectedEntries = bookingParams?.selectedRoomsDetail
+          ? Object.entries(bookingParams.selectedRoomsDetail)
+          : [];
+        let res;
+        if (selectedEntries.length > 0) {
+          const roomsPayload = selectedEntries.map(([rId, qty]) => ({
+            roomId: Number(rId),
+            quantity: Number(qty),
+          }));
+          res = await apiService.holdRoom({ rooms: roomsPayload, checkIn, checkOut });
+        } else {
+          res = await apiService.holdRoom({ roomId: room.id, checkIn, checkOut, roomsCount });
+        }
+
+        if (isMounted && res.data?.lock_token) {
+          setLockToken(res.data.lock_token);
+          setLockSecondsLeft(res.data.seconds_left || 900);
+          setLockExpired(false);
+          setConflictError(null);
+        }
+      } catch (err) {
+        if (isMounted) {
+          if (err.status === 409 || err.code === 'ROOM_ALREADY_BOOKED') {
+            setConflictError(err.message || 'Phòng này vừa có khách khác đặt hoặc đang giữ chỗ trong khoảng ngày này.');
+          }
+        }
+      }
+    };
+
+    acquireHold();
+
+    timer = setInterval(() => {
+      setLockSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setLockExpired(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(timer);
+    };
+  }, [room.id, checkIn, checkOut, roomsCount, bookingParams?.selectedRoomsDetail]);
+
+  const handleExtendHoldLock = async () => {
+    setIsExtending(true);
+    try {
+      const selectedEntries = bookingParams?.selectedRoomsDetail
+        ? Object.entries(bookingParams.selectedRoomsDetail)
+        : [];
+      let res;
+      if (selectedEntries.length > 0) {
+        const roomsPayload = selectedEntries.map(([rId, qty]) => ({
+          roomId: Number(rId),
+          quantity: Number(qty),
+        }));
+        res = await apiService.holdRoom({ rooms: roomsPayload, checkIn, checkOut });
+      } else {
+        res = await apiService.holdRoom({ roomId: room.id, checkIn, checkOut, roomsCount });
+      }
+
+      if (res.data?.lock_token) {
+        setLockToken(res.data.lock_token);
+        setLockSecondsLeft(res.data.seconds_left || 900);
+        setLockExpired(false);
+        setConflictError(null);
+      }
+    } catch (err) {
+      if (err.status === 409 || err.code === 'ROOM_ALREADY_BOOKED') {
+        setConflictError(err.message || 'Phòng này vừa có khách khác đặt hoặc đang giữ chỗ trong khoảng ngày này.');
+      }
+    } finally {
+      setIsExtending(false);
+    }
+  };
+
+  const formatCountdown = (secs) => {
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  const handleExitCheckout = () => {
+    if (lockToken && !isConfirmed) {
+      apiService.releaseRoomHold(lockToken);
+    }
+    onBack();
+  };
+
   // Sync profile data when user logs in during checkout
   React.useEffect(() => {
     if (user) {
@@ -313,6 +420,8 @@ export const BookingCheckoutPage = ({
       special_requests: guestNote,
       isVATRequested,
       isBookingForOther,
+      lockToken,
+      lock_token: lockToken,
     };
 
     try {
@@ -328,6 +437,11 @@ export const BookingCheckoutPage = ({
     } catch (err) {
       console.error('Lỗi khi gửi đặt phòng lên Backend:', err);
       setIsProcessing(false);
+      if (err.status === 409 || err.code === 'ROOM_ALREADY_BOOKED') {
+        setConflictError(err.message || 'Phòng này vừa có khách khác đặt hoặc đang giữ chỗ trong khoảng ngày này.');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
       setIsConfirmed(true);
       setBookingId(generatedId);
       if (onBookingComplete) {
@@ -405,7 +519,29 @@ export const BookingCheckoutPage = ({
           </div>
 
           <div className="success-actions-row">
-            <button className="primary-gradient-btn" onClick={onBack}>
+            <button
+              className="primary-gradient-btn"
+              onClick={() => {
+                if (onBack) {
+                  onBack({
+                    id: bookingId,
+                    bookingCode: bookingId,
+                    code: bookingId,
+                    roomId: room.id,
+                    roomTitle: room.roomNameVi || room.title,
+                    accommodationId: accommodation?.id,
+                    accommodationTitle: accommodation?.nameVi || accommodation?.title,
+                    checkIn,
+                    checkOut,
+                    nights,
+                    guests,
+                    totalPrice: grandTotal,
+                    status: 'confirmed',
+                    createdAt: new Date().toISOString(),
+                  });
+                }
+              }}
+            >
               <TbArrowLeft /> Quay lại chỗ ở
             </button>
             <button className="secondary-outline-btn" onClick={() => window.print()}>
@@ -425,7 +561,7 @@ export const BookingCheckoutPage = ({
       <div className="checkout-inner-container">
         {/* Top Header Navigation */}
         <div className="checkout-nav-bar">
-          <button className="checkout-back-btn" onClick={onBack} title="Quay lại chỗ ở">
+          <button className="checkout-back-btn" onClick={handleExitCheckout} title="Quay lại chỗ ở">
             <TbArrowLeft /> Quay lại
           </button>
           <div className="checkout-header-center">
@@ -436,6 +572,54 @@ export const BookingCheckoutPage = ({
             <TbShieldLock /> Bảo mật SSL 256-bit
           </div>
         </div>
+
+        {/* 15-Minute Room Hold Countdown Banner */}
+        <div className={`checkout-hold-banner ${lockExpired ? 'is-expired' : ''}`}>
+          <div className="hold-banner-left">
+            <span className="hold-pulse-dot" />
+            <TbClock className="hold-clock-icon" />
+            <span className="hold-banner-text">
+              {lockExpired ? (
+                <>Thời gian giữ phòng đã hết hạn: <strong className="hold-timer-text">00:00</strong> (Vui lòng gia hạn)</>
+              ) : (
+                <>Phòng đang được tạm giữ độc quyền cho bạn: <strong className="hold-timer-text">{formatCountdown(lockSecondsLeft)}</strong></>
+              )}
+            </span>
+          </div>
+          {lockExpired ? (
+            <button
+              type="button"
+              className="conflict-action-btn"
+              style={{ background: '#ff385c', padding: '0.4rem 0.95rem', fontSize: '0.82rem' }}
+              onClick={handleExtendHoldLock}
+              disabled={isExtending}
+            >
+              {isExtending ? 'Đang gia hạn...' : 'Gia hạn thêm 15 phút'}
+            </button>
+          ) : (
+            <span className="hold-guarantee-chip">
+              <TbShieldCheck /> Giữ mức giá & phòng 100%
+            </span>
+          )}
+        </div>
+
+        {/* Conflict Error Alert if double booking detected */}
+        {conflictError && (
+          <div className="checkout-conflict-alert-banner">
+            <TbAlertCircle className="conflict-alert-icon" />
+            <div className="conflict-alert-content">
+              <strong>Không thể hoàn tất đặt phòng:</strong>
+              <p>{conflictError}</p>
+            </div>
+            <button
+              type="button"
+              className="conflict-action-btn"
+              onClick={handleExitCheckout}
+            >
+              Chọn ngày khác hoặc phòng khác
+            </button>
+          </div>
+        )}
 
         {/* Dynamic Interactive Stepper Bar */}
         <div className="checkout-stepper-wrap">
@@ -932,12 +1116,16 @@ export const BookingCheckoutPage = ({
                     <button
                       type="button"
                       className="checkout-submit-luxury-btn"
-                      disabled={isProcessing}
+                      disabled={isProcessing || lockExpired}
                       onClick={handleFinalConfirmBooking}
                     >
                       {isProcessing ? (
                         <>
                           <span className="submit-spinner" /> Đang xử lý...
+                        </>
+                      ) : lockExpired ? (
+                        <>
+                          <TbClock style={{ fontSize: '1.25rem' }} /> HẾT HẠN GIỮ CHỖ - VUI LÒNG GIA HẠN
                         </>
                       ) : (
                         <>
@@ -1089,6 +1277,38 @@ export const BookingCheckoutPage = ({
           </div>
         </div>
       </div>
+
+      {/* 15-Minute Expiration Warning Modal Dialog */}
+      {lockExpired && (
+        <div className="checkout-expiry-modal-overlay">
+          <div className="checkout-expiry-modal-card">
+            <div className="expiry-modal-icon-wrap">
+              <TbClock className="expiry-clock-pulse" />
+            </div>
+            <h3 className="expiry-modal-title">Hết thời gian tạm giữ phòng (15:00)</h3>
+            <p className="expiry-modal-desc">
+              Thời gian tạm giữ phòng độc quyền cho bạn đã hết hạn. Để đảm bảo không bị khách khác đặt trùng phòng, bạn có thể gia hạn thêm 15 phút ngay bây giờ.
+            </p>
+            <div className="expiry-modal-actions">
+              <button
+                type="button"
+                className="expiry-extend-btn"
+                disabled={isExtending}
+                onClick={handleExtendHoldLock}
+              >
+                {isExtending ? 'Đang gia hạn...' : 'Gia hạn thêm 15 phút'}
+              </button>
+              <button
+                type="button"
+                className="expiry-exit-btn"
+                onClick={handleExitCheckout}
+              >
+                Quay lại chọn phòng khác
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

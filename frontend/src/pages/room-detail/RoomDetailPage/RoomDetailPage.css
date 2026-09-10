@@ -851,7 +851,7 @@
 
 .instant-booking-controls-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.25fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.85rem;
   background: #f8fafc;
   padding: 0.85rem 1rem;
@@ -872,10 +872,12 @@
   display: flex;
   align-items: center;
   gap: 5px;
+  white-space: nowrap;
 }
 
 .instant-date-input {
-  padding: 7px 10px;
+  height: 40px;
+  padding: 0 10px;
   border: 1px solid #cbd5e1;
   border-radius: 7px;
   font-size: 0.86rem;
@@ -899,9 +901,10 @@
   justify-content: space-between;
   border: 1px solid #cbd5e1;
   border-radius: 7px;
-  padding: 6px 10px;
+  padding: 0 8px 0 10px;
   background: white;
-  min-height: 38px;
+  height: 40px;
+  min-height: 40px;
   box-sizing: border-box;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -911,19 +914,20 @@
 }
 
 .instant-guest-text {
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   color: var(--dark);
+  white-space: nowrap;
 }
 
 .instant-counter-btns {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .instant-mini-btn {
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: 1.5px solid #cbd5e1;
   background: #f8fafc;
@@ -931,11 +935,13 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--dark);
   transition: all 0.15s ease;
   line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
 }
 
 .instant-mini-btn:hover:not(:disabled) {
@@ -2722,4 +2728,464 @@
   font-size: 0.92rem;
   color: var(--dark);
 }
+
+/* Local Experiences & Activities Grid - Luxury UI/UX ProMax */
+.rec-experiences-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.rec-experience-card {
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #ffffff;
+  border: 1px solid #ebebeb;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.rec-experience-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+.rec-exp-img-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.rec-exp-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.rec-experience-card:hover .rec-exp-img {
+  transform: scale(1.06);
+}
+
+.rec-exp-city-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+
+.rec-exp-info {
+  padding: 0.95rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  background: #ffffff;
+}
+
+.rec-exp-caption {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.45;
+  margin: 0 0 0.65rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.7em;
+}
+
+.rec-exp-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.rec-exp-price {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ff385c;
+  white-space: nowrap;
+}
+
+@media (max-width: 1024px) {
+  .rec-experiences-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .rec-experiences-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .rec-experiences-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   5. ROOM DETAIL CELEBRATION, COLLISION ALERT & HOLD LOCK STYLES (UI/UX PROMAX)
+   ========================================================================== */
+
+/* Celebration Banner at top */
+.room-booking-celebration-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1.5px solid #10b981;
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15), 0 8px 10px -6px rgba(16, 185, 129, 0.1);
+  animation: roomBannerSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes roomBannerSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.room-celebration-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.room-celebration-badge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #10b981;
+  color: #ffffff;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  flex-shrink: 0;
+}
+
+.room-celebration-text-box h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #065f46;
+}
+
+.room-celebration-text-box p {
+  margin: 3px 0 0 0;
+  font-size: 0.88rem;
+  color: #047857;
+  font-weight: 500;
+}
+
+.room-celebration-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.room-celebration-view-btn {
+  background: #065f46;
+  color: #ffffff;
+  border: none;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(6, 95, 70, 0.2);
+}
+
+.room-celebration-view-btn:hover {
+  background: #044e39;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(6, 95, 70, 0.3);
+}
+
+.room-celebration-close-btn {
+  background: transparent;
+  border: none;
+  color: #047857;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.room-celebration-close-btn:hover {
+  background: rgba(6, 95, 70, 0.1);
+}
+
+/* Alert callouts inside Instant Booking Bar */
+.room-collision-alert-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-top: 1rem;
+}
+
+.room-collision-alert-box .room-alert-icon {
+  color: #e11d48;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.room-alert-title {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #9f1239;
+  margin-bottom: 4px;
+}
+
+.room-alert-text p {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #881337;
+  line-height: 1.5;
+}
+
+.room-alert-text p strong {
+  display: inline !important;
+  font-weight: 800;
+  color: #9f1239;
+}
+
+.room-holding-alert-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-top: 1rem;
+}
+
+.room-holding-alert-box .room-alert-icon {
+  color: #d97706;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.room-holding-alert-box .room-alert-title {
+  color: #92400e;
+}
+
+.room-holding-alert-box .room-alert-text p {
+  color: #78350f;
+}
+
+.room-holding-alert-box .room-alert-text p strong {
+  color: #92400e;
+}
+
+.room-booked-alert-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-top: 1rem;
+}
+
+.room-booked-alert-box .room-alert-icon {
+  color: #059669;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.room-booked-alert-box .room-alert-title {
+  color: #065f46;
+}
+
+.room-booked-alert-box .room-alert-text p {
+  color: #047857;
+}
+
+.room-booked-alert-box .room-alert-text p strong {
+  color: #065f46;
+}
+
+/* Conflict state footer & non-dead-end actions */
+.instant-total-val.is-conflict {
+  color: #64748b !important;
+  font-weight: 800;
+}
+
+.instant-collision-btn-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.instant-collision-status-tag {
+  display: inline-flex;
+  align-items: center;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.instant-change-date-action-btn {
+  display: inline-flex;
+  align-items: center;
+  background: #0f172a;
+  color: #ffffff;
+  border: 1px solid #0f172a;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+  white-space: nowrap;
+}
+
+.instant-change-date-action-btn:hover {
+  background: #1e293b;
+  border-color: #1e293b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+}
+
+.instant-other-rooms-action-link {
+  display: inline-flex;
+  align-items: center;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.instant-other-rooms-action-link:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+/* Button variants in instant booking bar */
+.instant-reserve-disabled-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  color: #94a3b8;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: not-allowed;
+  box-shadow: none;
+  width: auto;
+}
+
+.instant-reserve-holding-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fef3c7;
+  color: #b45309;
+  border: 1.5px solid #fde68a;
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: wait;
+  width: auto;
+}
+
+.instant-reserve-booked-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+  transition: all 0.25s ease;
+  width: auto;
+}
+
+.instant-reserve-booked-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(16, 185, 129, 0.45);
+}
+
 

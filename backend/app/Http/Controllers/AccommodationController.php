@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Accommodation;
+use App\Models\Booking;
+use App\Services\RoomAvailabilityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -42,6 +44,15 @@ class AccommodationController extends Controller
             });
         }
 
+        // 2b. Lọc theo thành phố (City Filter)
+        if ($request->filled('city') && $request->input('city') !== 'all') {
+            $city = mb_strtolower($request->input('city'));
+            $query->where(function ($q) use ($city) {
+                $q->where('city', 'like', "%{$city}%")
+                  ->orWhere('address', 'like', "%{$city}%");
+            });
+        }
+
         // 3. Lọc theo loại hình (hotel, resort, villa, homestay...)
         if ($request->filled('type') && $request->input('type') !== 'all') {
             $query->where('accommodation_type', $request->input('type'));
@@ -69,8 +80,41 @@ class AccommodationController extends Controller
             });
         }
 
-        $accommodations = $query->get()->map(function ($accom) {
-            return $this->formatAccommodationData($accom, false);
+        // 6. Lọc theo tình trạng phòng trống trong khoảng ngày tìm kiếm (Search Availability Filter)
+        $checkIn = $request->input('checkIn') ?: $request->input('check_in');
+        $checkOut = $request->input('checkOut') ?: $request->input('check_out');
+        if ($checkIn && $checkOut) {
+            $cIn = \Carbon\Carbon::parse($checkIn)->format('Y-m-d');
+            $cOut = \Carbon\Carbon::parse($checkOut)->format('Y-m-d');
+            $nowStr = now()->format('Y-m-d H:i:s');
+
+            $query->whereHas('rooms', function ($roomQuery) use ($cIn, $cOut, $nowStr, $request) {
+                if ($request->filled('guests')) {
+                    $guests = (int)$request->input('guests');
+                    $roomQuery->where('max_guests', '>=', $guests);
+                }
+
+                $roomQuery->whereRaw("
+                    COALESCE(total_inventory, 1) > (
+                        (SELECT COUNT(*) FROM bookings 
+                         WHERE bookings.room_id = rooms.id 
+                           AND bookings.status IN ('confirmed', 'checked_in', 'pending')
+                           AND bookings.check_in_date < '{$cOut}' 
+                           AND bookings.check_out_date > '{$cIn}')
+                        +
+                        (SELECT COALESCE(SUM(rooms_count), 0) FROM room_locks 
+                         WHERE room_locks.room_id = rooms.id 
+                           AND room_locks.status = 'active'
+                           AND room_locks.expires_at > '{$nowStr}'
+                           AND room_locks.check_in_date < '{$cOut}' 
+                           AND room_locks.check_out_date > '{$cIn}')
+                    )
+                ");
+            });
+        }
+
+        $accommodations = $query->get()->map(function ($accom) use ($request) {
+            return $this->formatAccommodationData($accom, false, $request);
         });
 
         return response()->json($accommodations);
@@ -79,7 +123,7 @@ class AccommodationController extends Controller
     /**
      * Chi tiết 1 Cơ sở lưu trú KÈM toàn bộ danh sách các hạng phòng con
      */
-    public function show($id): JsonResponse
+    public function show($id, Request $request): JsonResponse
     {
         $accommodation = Accommodation::with([
             'host.user',
@@ -96,13 +140,13 @@ class AccommodationController extends Controller
             return response()->json(['message' => 'Không tìm thấy cơ sở lưu trú.'], 404);
         }
 
-        return response()->json($this->formatAccommodationData($accommodation, true));
+        return response()->json($this->formatAccommodationData($accommodation, true, $request));
     }
 
     /**
      * Format dữ liệu chuẩn hóa cho Frontend
      */
-    private function formatAccommodationData(Accommodation $accom, bool $detailed = false): array
+    private function formatAccommodationData(Accommodation $accom, bool $detailed = false, ?Request $request = null): array
     {
         $host = $accom->host;
         $hostUser = $host?->user;
@@ -120,7 +164,51 @@ class AccommodationController extends Controller
         $avgRating = $rooms->avg('rating') ?? 4.95;
         $totalReviews = $rooms->sum('reviews_count');
 
-        $formattedRooms = $rooms->map(function ($r) {
+        $availService = new RoomAvailabilityService();
+        $queryCheckIn = $request?->query('check_in') ?: $request?->query('checkIn') ?: $request?->query('check_in_date');
+        $queryCheckOut = $request?->query('check_out') ?: $request?->query('checkOut') ?: $request?->query('check_out_date');
+
+        if ($queryCheckIn && $queryCheckOut) {
+            $availableRooms = $rooms->filter(function ($r) use ($availService, $queryCheckIn, $queryCheckOut) {
+                $calc = $availService->checkRoomAvailability($r->id, $queryCheckIn, $queryCheckOut);
+                return $calc['is_available'];
+            });
+            if ($availableRooms->isNotEmpty()) {
+                $minPrice = $availableRooms->min('price_per_night');
+                $maxPrice = $availableRooms->max('price_per_night');
+            }
+        }
+
+        // Lấy danh sách booking đang hoạt động của User hiện tại đối với Cơ sở lưu trú này
+        $account = \Illuminate\Support\Facades\Auth::guard('api')->user();
+        $user = $account?->user;
+        $userActiveBookings = [];
+        if ($user) {
+            $roomIds = $accom->rooms->pluck('id')->toArray();
+            $userBookings = Booking::with('room')
+                ->where('user_id', $user->id)
+                ->whereIn('room_id', $roomIds)
+                ->whereIn('status', [Booking::STATUS_CONFIRMED, Booking::STATUS_CHECKED_IN, Booking::STATUS_PENDING])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $userActiveBookings = $userBookings->map(fn($ub) => [
+                'id' => $ub->booking_code,
+                'bookingId' => $ub->id,
+                'roomId' => $ub->room_id,
+                'roomTitle' => $ub->room?->room_name_vi,
+                'checkIn' => $ub->check_in_date?->format('Y-m-d'),
+                'checkOut' => $ub->check_out_date?->format('Y-m-d'),
+                'nights' => (int)$ub->nights_count,
+                'guests' => (int)$ub->guests_count,
+                'status' => $ub->status,
+                'statusLabel' => $ub->status_label,
+                'totalPrice' => (float)$ub->total_price,
+                'createdAt' => $ub->created_at?->toISOString(),
+            ])->toArray();
+        }
+
+        $formattedRooms = $rooms->map(function ($r) use ($availService, $queryCheckIn, $queryCheckOut) {
             $rImages = $r->images->pluck('image_url')->toArray();
             if (empty($rImages)) {
                 $rImages = ['https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&auto=format&fit=crop&q=80'];
@@ -139,6 +227,28 @@ class AccommodationController extends Controller
                     'hostResponse' => $rev->host_response ?: null,
                 ];
             })->values()->toArray();
+
+            $bookedRanges = $availService->getBookedRangesForRoom($r->id);
+            $availability = [
+                'isAvailable' => true,
+                'status' => 'available',
+                'remainingInventory' => (int)($r->total_inventory ?: 1),
+                'heldSecondsLeft' => 0,
+            ];
+
+            if ($queryCheckIn && $queryCheckOut) {
+                $calc = $availService->checkRoomAvailability($r->id, $queryCheckIn, $queryCheckOut);
+                $availability = [
+                    'isAvailable' => $calc['is_available'],
+                    'status' => $calc['status'],
+                    'remainingInventory' => $calc['remaining_inventory'],
+                    'totalInventory' => $calc['total_inventory'],
+                    'bookedCount' => $calc['booked_count'],
+                    'heldCount' => $calc['held_count'],
+                    'heldUntil' => $calc['held_until'],
+                    'heldSecondsLeft' => $calc['held_seconds_left'],
+                ];
+            }
 
             return [
                 'id' => $r->id,
@@ -166,6 +276,8 @@ class AccommodationController extends Controller
                 'images' => $rImages,
                 'amenities' => $r->amenities->pluck('name_vi')->toArray(),
                 'reviewsList' => $rReviews,
+                'availability' => $availability,
+                'bookedRanges' => $bookedRanges,
             ];
         })->values()->toArray();
 
@@ -329,6 +441,7 @@ class AccommodationController extends Controller
                 'responseRate' => (int)($host?->response_rate_percent ?? 100),
                 'bio' => $host?->host_introduction ?? 'Chào mừng quý khách đến với không gian nghỉ dưỡng tuyệt vời của chúng tôi!',
             ],
+            'userActiveBookings' => $userActiveBookings ?? [],
         ];
 
         return $data;

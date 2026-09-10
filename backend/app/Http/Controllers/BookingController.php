@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Room;
 use App\Models\User;
+use App\Services\RoomAvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -76,6 +77,27 @@ class BookingController extends Controller
         $d2 = Carbon::parse($checkOut);
         $nights = (int)($request->input('nights') ?: $request->input('nights_count') ?: max(1, $d1->diffInDays($d2)));
         if ($nights < 1) $nights = 1;
+
+        // 2b. KIỂM TRA CHỐNG TRÙNG LỊCH & TỒN KHO PHÒNG NGHIÊM NGẶT (Strict Overlap Validation)
+        $lockToken = $request->input('lockToken') ?: $request->input('lock_token');
+        $availService = new RoomAvailabilityService();
+        $avail = $availService->checkRoomAvailability($room->id, $checkIn, $checkOut, null, $lockToken, $roomsCount);
+
+        if (!$avail['is_available']) {
+            $formattedIn = Carbon::parse($checkIn)->format('d/m/Y');
+            $formattedOut = Carbon::parse($checkOut)->format('d/m/Y');
+            $statusMsg = $avail['status'] === 'held'
+                ? 'Phòng này đang có khách khác giữ chỗ thanh toán. Vui lòng thử lại sau ít phút hoặc chọn ngày khác.'
+                : "Phòng \"{$room->room_name_vi}\" đã có khách đặt trong khoảng thời gian từ {$formattedIn} đến {$formattedOut}. Vui lòng chọn khoảng ngày khác hoặc hạng phòng khác.";
+
+            return response()->json([
+                'success' => false,
+                'code' => 'ROOM_ALREADY_BOOKED',
+                'status' => $avail['status'],
+                'message' => $statusMsg,
+                'availability' => $avail,
+            ], 409);
+        }
 
         // 3. Tính toán tài chính chuẩn xác đồng bộ với Frontend
         $pricePerNight = (float)($request->input('price_per_night') ?: $request->input('pricePerNight') ?: $room->price_vnd_per_night ?: $room->price_per_night ?: 2500000);
@@ -153,6 +175,11 @@ class BookingController extends Controller
             'status' => 'confirmed',
             'special_requests' => $request->input('specialRequests') ?: $request->input('special_requests') ?: $request->input('guestNote'),
         ]);
+
+        // Chuyển đổi trạng thái Lock sang converted (nếu có giữ chỗ trước đó)
+        if ($lockToken) {
+            $availService->convertLock($lockToken);
+        }
 
         // 7. Tạo bản ghi thanh toán tức thì trong bảng payments
         $rawPm = strtolower($request->input('paymentMethod') ?: $request->input('payment_method') ?: 'credit_card');
@@ -718,4 +745,103 @@ class BookingController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Tạm khóa giữ phòng 15 phút khi khách bước vào bước Checkout (Room Hold Lock)
+     * POST /api/bookings/hold
+     */
+    public function holdRoom(Request $request): JsonResponse
+    {
+        $checkIn = $request->input('checkIn') ?: $request->input('checkInDate') ?: $request->input('check_in') ?: $request->input('check_in_date') ?: now()->format('Y-m-d');
+        $checkOut = $request->input('checkOut') ?: $request->input('checkOutDate') ?: $request->input('check_out') ?: $request->input('check_out_date') ?: now()->addDays(2)->format('Y-m-d');
+
+        $account = \Illuminate\Support\Facades\Auth::guard('api')->user();
+        $userId = $account?->user?->id;
+
+        $availService = new RoomAvailabilityService();
+
+        $roomsInput = $request->input('rooms');
+        if (is_array($roomsInput) && count($roomsInput) > 0) {
+            $result = $availService->createHoldLockMulti($roomsInput, $checkIn, $checkOut, $userId, 15);
+        } else {
+            $roomId = (int)($request->input('roomId') ?: $request->input('room_id') ?: 1);
+            $roomsCount = (int)($request->input('roomsCount') ?: $request->input('rooms_count') ?: 1);
+            $result = $availService->createHoldLock($roomId, $checkIn, $checkOut, $userId, $roomsCount, 15);
+        }
+
+        if (!$result['success']) {
+            return response()->json([
+                'success' => false,
+                'code' => $result['code'] ?? 'HOLD_FAILED',
+                'status' => $result['status'] ?? 'unavailable',
+                'conflicted_room_id' => $result['conflicted_room_id'] ?? null,
+                'message' => $result['message'],
+                'availability' => $result['availability'] ?? null,
+            ], 409);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã khóa giữ chỗ phòng thành công trong 15 phút!',
+            'data' => $result,
+        ]);
+    }
+
+    /**
+     * Giải phóng khóa giữ chỗ (khi khách hủy hoặc quay lại trang trước)
+     * POST /api/bookings/release-hold
+     */
+    public function releaseHold(Request $request): JsonResponse
+    {
+        $lockToken = $request->input('lockToken') ?: $request->input('lock_token');
+        if (!$lockToken) {
+            return response()->json(['success' => false, 'message' => 'Thiếu lockToken.'], 400);
+        }
+
+        $availService = new RoomAvailabilityService();
+        $released = $availService->releaseLock($lockToken);
+
+        return response()->json([
+            'success' => true,
+            'message' => $released ? 'Đã giải phóng giữ phòng thành công.' : 'Khóa giữ phòng không tồn tại hoặc đã hết hạn.',
+        ]);
+    }
+
+    /**
+     * Kiểm tra tính khả dụng của phòng theo ngày (Check Availability)
+     * POST /api/bookings/check-availability
+     */
+    public function checkAvailability(Request $request): JsonResponse
+    {
+        $roomId = (int)($request->input('roomId') ?: $request->input('room_id') ?: 1);
+        $checkIn = $request->input('checkIn') ?: $request->input('checkInDate') ?: $request->input('check_in') ?: $request->input('check_in_date') ?: now()->format('Y-m-d');
+        $checkOut = $request->input('checkOut') ?: $request->input('checkOutDate') ?: $request->input('check_out') ?: $request->input('check_out_date') ?: now()->addDays(2)->format('Y-m-d');
+        $lockToken = $request->input('lockToken') ?: $request->input('lock_token');
+        $roomsCount = (int)($request->input('roomsCount') ?: $request->input('rooms_count') ?: 1);
+
+        $availService = new RoomAvailabilityService();
+        $avail = $availService->checkRoomAvailability($roomId, $checkIn, $checkOut, null, $lockToken, $roomsCount);
+
+        return response()->json([
+            'success' => true,
+            'availability' => $avail,
+        ]);
+    }
+
+    /**
+     * Lấy danh sách các khoảng ngày đã kín lịch của 1 phòng (cho Date Picker & Lịch hiển thị)
+     * GET /api/rooms/{id}/booked-dates
+     */
+    public function getBookedDates($roomId): JsonResponse
+    {
+        $availService = new RoomAvailabilityService();
+        $ranges = $availService->getBookedRangesForRoom((int)$roomId);
+
+        return response()->json([
+            'success' => true,
+            'roomId' => (int)$roomId,
+            'bookedRanges' => $ranges,
+        ]);
+    }
 }
+

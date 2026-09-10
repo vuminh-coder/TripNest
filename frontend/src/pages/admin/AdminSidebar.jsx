@@ -19,6 +19,8 @@ import {
   TbLogout,
   TbChevronUp,
   TbUser,
+  TbChartLine,
+  TbTrophy,
 } from 'react-icons/tb';
 import apiService from '@/services/api';
 import { useToast } from '@/context/ToastContext';
@@ -144,20 +146,25 @@ export const AdminSidebar = ({
     {
       group: 'Tổng Quan',
       items: [
-        { id: 'dashboard', label: 'Bảng Điều Khiển', icon: TbLayoutDashboard },
+        { id: 'dashboard', label: 'Tổng Quan & Dòng Tiền', icon: TbLayoutDashboard },
       ],
     },
     {
       group: 'Vận Hành & Chỗ Ở',
       items: [
         { id: 'accommodations', label: 'Cơ Sở Lưu Trú', icon: TbBuildingCastle },
-        { id: 'bookings', label: 'Đơn Đặt Phòng (Tất cả)', icon: TbCalendarEvent },
+        { id: 'bookings', label: 'Đơn Đặt Phòng', icon: TbCalendarEvent },
         {
           id: 'hosts_kyc',
           label: 'Thẩm Định KYC Chủ Nhà',
           icon: TbIdBadge2,
           badge: pendingKycCount > 0 ? pendingKycCount : null,
           badgeType: 'alert',
+        },
+        {
+          id: 'hosts_revenue',
+          label: 'Doanh Thu & Xếp Hạng',
+          icon: TbTrophy,
         },
         { id: 'experiences', label: 'Trải Nghiệm & Tour', icon: TbSparkles },
       ],

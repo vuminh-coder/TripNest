@@ -40,6 +40,11 @@ export const AccommodationsPage = ({
     );
   };
 
+  const distinctCities = React.useMemo(() => {
+    const set = new Set(accommodations.map((a) => a.city).filter(Boolean));
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'vi'));
+  }, [accommodations]);
+
   const filtered = accommodations.filter((acc) => {
     if (cityFilter !== "all" && acc.city !== cityFilter) return false;
     if (statusFilter !== "all" && acc.status !== statusFilter) return false;
@@ -91,14 +96,12 @@ export const AccommodationsPage = ({
               setPage(1);
             }}
           >
-            <option value="all">Tất cả Địa điểm</option>
-            <option value="Đà Lạt">Đà Lạt</option>
-            <option value="Phú Quốc">Phú Quốc</option>
-            <option value="Hạ Long">Hạ Long</option>
-            <option value="Hà Nội">Hà Nội</option>
-            <option value="Sapa">Sapa</option>
-            <option value="Đà Nẵng">Đà Nẵng</option>
-            <option value="Nha Trang">Nha Trang</option>
+            <option value="all">Tất cả Địa điểm ({distinctCities.length})</option>
+            {distinctCities.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
 
           <select

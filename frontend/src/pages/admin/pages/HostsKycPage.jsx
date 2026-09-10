@@ -16,9 +16,12 @@ export const HostsKycPage = ({ hosts, onOpenKycModal, onToggleSuperhost }) => {
     if (kycFilter !== 'all' && h.kyc_status !== kycFilter) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
-      const matchName = h.name.toLowerCase().includes(q) || h.display_name.toLowerCase().includes(q);
-      const matchPhone = h.phone && h.phone.includes(q);
-      const matchCard = h.id_card_number && h.id_card_number.includes(q);
+      const matchName =
+        (h.name && h.name.toLowerCase().includes(q)) ||
+        (h.display_name && h.display_name.toLowerCase().includes(q)) ||
+        (h.host_display_name && h.host_display_name.toLowerCase().includes(q));
+      const matchPhone = h.phone && String(h.phone).includes(q);
+      const matchCard = h.id_card_number && String(h.id_card_number).includes(q);
       if (!matchName && !matchPhone && !matchCard) return false;
     }
     return true;

@@ -306,12 +306,20 @@
   transition: all 0.2s ease;
 }
 
-.filter-apply-btn:hover {
+.filter-apply-btn:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(255, 56, 92, 0.45);
 }
 
-.filter-apply-btn:active {
+.filter-apply-btn:active:not(:disabled) {
   transform: translateY(0);
+}
+
+.filter-apply-btn:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 

@@ -84,4 +84,9 @@ class Room extends Model
     {
         return $this->hasMany(Wishlist::class, 'room_id');
     }
+
+    public function roomLocks(): HasMany
+    {
+        return $this->hasMany(RoomLock::class, 'room_id');
+    }
 }

@@ -5,7 +5,6 @@ import { adminService } from '../../services/adminApi';
 import { useToast } from '@/context/ToastContext';
 
 import AdminSidebar from './AdminSidebar';
-import AdminHeader from './AdminHeader';
 
 // 10 Distinct Pages
 import DashboardPage from './pages/DashboardPage';
@@ -18,6 +17,7 @@ import FinancialsPage from './pages/FinancialsPage';
 import ReviewsPage from './pages/ReviewsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import ExperiencesPage from './pages/ExperiencesPage';
+import HostsRevenuePage from './pages/HostsRevenuePage';
 
 // Modals
 import KycDetailModal from './modals/KycDetailModal';
@@ -61,8 +61,10 @@ export const AdminLayout = ({
       'accommodations',
       'bookings',
       'hosts_kyc',
+      'hosts_revenue',
       'users',
       'role_requests',
+      'cashflow',
       'financials',
       'reviews',
       'categories',
@@ -475,19 +477,10 @@ export const AdminLayout = ({
 
       {/* Main Container */}
       <div className="admin-main-container">
-        <AdminHeader
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          onExitAdmin={onExitAdmin}
-          onOpenBookings={onOpenBookings}
-          onResetData={handleResetData}
-          pendingKycCount={stats.pendingKycCount || 0}
-        />
-
         {/* Distinct Page View */}
         <main className="admin-content-view">
           {loading ? (
-            activeTab === 'dashboard' ? (
+            activeTab === 'dashboard' || activeTab === 'cashflow' ? (
               <AdminDashboardSkeleton />
             ) : activeTab === 'financials' ? (
               <AdminFinancialsSkeleton />
@@ -498,7 +491,7 @@ export const AdminLayout = ({
             )
           ) : (
             <>
-              {activeTab === 'dashboard' && (
+              {(activeTab === 'dashboard' || activeTab === 'cashflow') && (
                 <DashboardPage
                   stats={stats}
                   bookings={bookings}
@@ -535,6 +528,14 @@ export const AdminLayout = ({
                   hosts={hosts}
                   onOpenKycModal={(h) => setSelectedKycHost(h)}
                   onToggleSuperhost={handleToggleSuperhost}
+                />
+              )}
+
+              {activeTab === 'hosts_revenue' && (
+                <HostsRevenuePage
+                  hosts={hosts}
+                  stats={stats}
+                  onNavigate={handleNavigate}
                 />
               )}
 

@@ -7,7 +7,32 @@ import {
   TbChevronLeft,
   TbChevronRight,
   TbMapPin,
+  TbCalendar,
 } from 'react-icons/tb';
+
+// Helper format ngày tìm kiếm thân thiện chuẩn du lịch
+const formatSearchDates = (inStr, outStr) => {
+  if (!inStr || !outStr) return '';
+  try {
+    const parts1 = inStr.split('-');
+    const parts2 = outStr.split('-');
+    if (parts1.length === 3 && parts2.length === 3) {
+      const d1 = parts1[2].padStart(2, '0');
+      const m1 = parts1[1].padStart(2, '0');
+      const y1 = parts1[0];
+      const d2 = parts2[2].padStart(2, '0');
+      const m2 = parts2[1].padStart(2, '0');
+      const y2 = parts2[0];
+      if (y1 === y2) {
+        return `${d1}/${m1} – ${d2}/${m2}/${y1}`;
+      }
+      return `${d1}/${m1}/${y1} – ${d2}/${m2}/${y2}`;
+    }
+    return `${inStr} – ${outStr}`;
+  } catch {
+    return `${inStr} – ${outStr}`;
+  }
+};
 
 export const ListingCard = ({
   room,
@@ -24,15 +49,6 @@ export const ListingCard = ({
     ? room.images 
     : ['https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800'];
 
-  // Calculate nights from search dates if present
-  let searchNights = 0;
-  if (searchParams.checkInDate && searchParams.checkOutDate) {
-    const d1 = new Date(searchParams.checkInDate);
-    const d2 = new Date(searchParams.checkOutDate);
-    const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
-    if (diff > 0) searchNights = diff;
-  }
-
   const handlePrevImg = (e) => {
     e.stopPropagation();
     setActiveImgIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -48,19 +64,30 @@ export const ListingCard = ({
     if (onToggleFavorite) onToggleFavorite(room.id);
   };
 
-  // Format price
-  const formatPrice = (priceUSD, priceVND, nights = 1) => {
-    if (currency === 'USD') {
-      const val = (priceUSD || (priceVND / 25450)) * nights;
-      return `$${Math.round(val).toLocaleString()}`;
+  const formatPrice = (usdPrice, vndPrice, nights = 1) => {
+    const safeUsd = typeof usdPrice === 'number' ? usdPrice : parseFloat(usdPrice) || 0;
+    const safeVnd = typeof vndPrice === 'number' ? vndPrice : parseFloat(vndPrice) || 0;
+
+    let baseAmount = safeVnd;
+    if (currency === 'USD') baseAmount = safeUsd;
+    else if (currency === 'EUR') baseAmount = safeUsd * 0.92;
+
+    const total = baseAmount * nights;
+
+    if (currency === 'VND') {
+      return `${Math.round(total).toLocaleString('vi-VN')} ₫`;
+    } else if (currency === 'EUR') {
+      return `€${total.toFixed(0)}`;
     }
-    if (currency === 'EUR') {
-      const val = ((priceUSD || (priceVND / 25450)) * 0.92) * nights;
-      return `€${Math.round(val).toLocaleString()}`;
-    }
-    const val = (priceVND || priceUSD * 25450) * nights;
-    return `${val.toLocaleString()} đ`;
+    return `$${total.toFixed(0)}`;
   };
+
+  // Calculate search nights safely
+  let searchNights = 0;
+  if (searchParams.checkInDate && searchParams.checkOutDate) {
+    const diff = new Date(searchParams.checkOutDate) - new Date(searchParams.checkInDate);
+    searchNights = Math.max(0, Math.round(diff / (1000 * 60 * 60 * 24)));
+  }
 
   return (
     <div className="listing-card" onClick={() => onOpenDetail(room)}>
@@ -112,7 +139,7 @@ export const ListingCard = ({
               <TbChevronRight />
             </button>
             <div className="card-dots-indicator">
-              {images.map((_, idx) => (
+              {images.slice(0, 5).map((_, idx) => (
                 <div
                   key={idx}
                   className={`dot-indicator ${idx === activeImgIndex ? 'active' : ''}`}
@@ -158,6 +185,7 @@ export const ListingCard = ({
               ? 'Căn hộ cao cấp'
               : 'Lưu trú cao cấp'}
           </span>
+
           {room.roomsCount > 1 ? (
             <span className="listing-rooms-badge">
               {room.roomsCount} hạng phòng
@@ -183,27 +211,37 @@ export const ListingCard = ({
 
         {((searchParams.checkInDate && searchParams.checkOutDate) || (room.dates && room.dates !== 'Khả dụng cho mọi ngày nghỉ')) && (
           <span className="listing-date-text">
-            {searchParams.checkInDate && searchParams.checkOutDate
-              ? `${searchParams.checkInDate} - ${searchParams.checkOutDate}`
-              : room.dates}
+            {searchParams.checkInDate && searchParams.checkOutDate ? (
+              <>
+                <TbCalendar className="listing-date-icon" />
+                <span>{formatSearchDates(searchParams.checkInDate, searchParams.checkOutDate)}</span>
+                {searchNights > 0 && <span className="listing-nights-chip">· {searchNights} đêm</span>}
+              </>
+            ) : (
+              room.dates
+            )}
           </span>
         )}
 
         <div className="listing-price-row">
           {searchNights > 0 ? (
-            <div>
-              <span className="listing-price-from-label">Từ </span>
-              <span className="listing-price-bold">{formatPrice(room.priceUSD, room.priceFrom || room.priceVND, 1)}</span>
-              <span className="listing-price-period"> / đêm</span>
+            <div className="listing-price-container">
+              <div className="listing-nightly-price">
+                <span className="listing-price-from-label">Từ </span>
+                <span className="listing-price-bold">{formatPrice(room.priceUSD, room.priceFrom || room.priceVND, 1)}</span>
+                <span className="listing-price-period"> / đêm</span>
+              </div>
               <div className="listing-total-search-price">
-                Tổng ~{formatPrice(room.priceUSD, room.priceFrom || room.priceVND, searchNights)} cho {searchNights} đêm
+                <span className="total-search-label">Tổng ~ </span>
+                <strong className="total-search-amount">{formatPrice(room.priceUSD, room.priceFrom || room.priceVND, searchNights)}</strong>
+                <span className="total-search-nights"> {showTotalBeforeTaxes ? `cho ${searchNights} đêm (trước thuế)` : `cho ${searchNights} đêm`}</span>
               </div>
             </div>
           ) : showTotalBeforeTaxes ? (
             <div>
               <span className="listing-price-from-label">Từ </span>
-              <span className="listing-price-bold">{formatPrice(room.priceUSD, room.priceFrom || room.priceVND, 5)}</span>
-              <span className="listing-price-period"> / 5 đêm trước thuế</span>
+              <span className="listing-price-bold">{formatPrice(room.priceUSD, room.priceFrom || room.priceVND, 1)}</span>
+              <span className="listing-price-period"> / đêm (tổng trước thuế)</span>
             </div>
           ) : (
             <div>
@@ -217,4 +255,5 @@ export const ListingCard = ({
     </div>
   );
 };
+
 export default ListingCard;

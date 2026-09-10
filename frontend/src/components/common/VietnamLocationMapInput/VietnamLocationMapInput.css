@@ -1,0 +1,304 @@
+/* ==========================================================================
+   Vietnam Location Input - Autocomplete Component Styling
+   Luxury UI/UX ProMax Specification
+   ========================================================================== */
+
+.vietnam-location-input-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.vietnam-location-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 6px;
+  user-select: none;
+}
+
+.vietnam-location-label .required-star {
+  color: #ef4444;
+}
+
+.vietnam-location-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 44px;
+  padding: 0 12px 0 14px;
+  background-color: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  box-sizing: border-box;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: text;
+}
+
+.vietnam-location-input-wrapper:hover {
+  border-color: #94a3b8;
+}
+
+.vietnam-location-input-wrapper.is-focused {
+  border-color: #0f172a;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+.vietnam-location-input-container.has-error .vietnam-location-input-wrapper {
+  border-color: #ef4444;
+}
+
+.vietnam-location-input-container.has-error .vietnam-location-input-wrapper.is-focused {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.vietnam-location-input-container.disabled .vietnam-location-input-wrapper {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.vietnam-location-input {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 400;
+  color: #0f172a;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.vietnam-location-input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.vietnam-location-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+}
+
+.vietnam-location-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.vietnam-location-clear-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.vietnam-location-chevron-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
+  pointer-events: none;
+}
+
+.vietnam-location-chevron-icon.open {
+  transform: rotate(180deg);
+  color: #0f172a;
+}
+
+/* ==========================================================================
+   Dropdown Menu List
+   ========================================================================== */
+
+.vietnam-location-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  z-index: 1050;
+  overflow: hidden;
+  animation: vnLocationDropdownFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes vnLocationDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vietnam-location-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* Webkit Custom Scrollbar */
+.vietnam-location-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.vietnam-location-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.vietnam-location-list::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 4px;
+}
+
+.vietnam-location-list::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+.vietnam-location-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  font-size: 15px;
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.12s ease, color 0.12s ease;
+  line-height: 1.4;
+}
+
+.vietnam-location-item.highlighted {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.vietnam-location-item.selected {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.vietnam-location-item-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vietnam-location-item-name {
+  font-size: 15px;
+}
+
+.vietnam-location-region-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.vietnam-location-count-badge {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 400;
+}
+
+.vietnam-location-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.vietnam-location-error-text {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: #ef4444;
+}
+
+.vietnam-location-helper-text {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* ==========================================================================
+   Variant: Header Search Bar Inline Integration
+   ========================================================================== */
+
+.vietnam-location-input-container.variant-header-search {
+  width: 100%;
+}
+
+.vietnam-location-input-container.variant-header-search .vietnam-location-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #334155;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.vietnam-location-input-container.variant-header-search .vietnam-location-input-wrapper {
+  height: auto;
+  min-height: 22px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none !important;
+}
+
+.vietnam-location-input-container.variant-header-search .vietnam-location-input {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.vietnam-location-input-container.variant-header-search .vietnam-location-input::placeholder {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+.vietnam-location-input-container.variant-header-search .vietnam-location-dropdown {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: -20px;
+  width: 320px;
+  border-radius: 16px;
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.16), 0 6px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+}
+

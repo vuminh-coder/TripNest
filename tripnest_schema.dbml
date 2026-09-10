@@ -1,7 +1,7 @@
 // =============================================================================
 // DATABASE MARKUP LANGUAGE (DBML) - TRIPNEST BOOKING SYSTEM (CHUẨN 100% MỚI NHẤT)
-// Kiểm tra & Đối soát trực tiếp từ toàn bộ 23 file Laravel Migration trong backend
-// Sử dụng tại: https://dbdiagram.io hoặc https://dbdocs.io
+// Kiểm tra & Đối soát trực tiếp từ toàn bộ 28 file Laravel Migration trong backend
+// Cập nhật: 09/2026 - Tương thích hoàn toàn với MySQL 9.x và dbdiagram.io / dbdocs.io
 // =============================================================================
 
 Project TripNest {
@@ -10,7 +10,7 @@ Project TripNest {
 }
 
 // =============================================================================
-// 1. NHÓM TÀI KHOẢN, HỒ SƠ NGƯỜI DÙNG & ĐỐI TÁC CHỦ NHÀ KYC
+// 1. NHÓM TÀI KHOẢN, HỒ SƠ NGƯỜI DÙNG, BẢO MẬT OTP & ĐỐI TÁC CHỦ NHÀ KYC
 // =============================================================================
 
 // -----------------------------------------------------------------------------
@@ -60,6 +60,36 @@ Table accounts {
 
   // Xóa mềm (Soft Delete) - giúp giữ lại toàn vẹn lịch sử giao dịch và kế toán khi tài khoản bị hủy
   deleted_at timestamp [null]
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: password_otps
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Quản lý mã xác thực OTP (One-Time Password) phục vụ tính năng quên mật khẩu / đặt lại mật khẩu.
+// - Khóa ngoại liên kết trực tiếp với accounts.id. Tự động xóa (cascade) khi tài khoản bị xóa.
+// - Lưu trữ thời gian hết hạn (expire_at) để kiểm tra tính hợp lệ của mã OTP.
+// -----------------------------------------------------------------------------
+Table password_otps {
+  // [PK] Khóa chính tự tăng của bản ghi OTP
+  id bigint [pk, increment]
+
+  // [FK] Khóa ngoại liên kết với tài khoản cần đặt lại mật khẩu (accounts.id)
+  account_id bigint [not null, ref: > accounts.id]
+
+  // Email của tài khoản nhận mã OTP để đối soát xác thực hai chiều
+  email varchar(255) [not null]
+
+  // Mã OTP 6 chữ số ngẫu nhiên gửi qua email cho người dùng
+  otp varchar(255) [not null]
+
+  // Mốc thời gian mã OTP hết hiệu lực (thường sau 5 - 15 phút kể từ lúc tạo)
+  expire_at datetime [not null]
+
+  // Thời điểm tạo mã OTP
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật
+  updated_at timestamp [null]
 }
 
 // -----------------------------------------------------------------------------
@@ -333,8 +363,8 @@ Table amenities {
 // BẢNG: accommodations
 // MỤC ĐÍCH NGHIỆP VỤ:
 // - Thực thể Cha (Parent Entity) đại diện cho toàn bộ khuôn viên khu nghỉ dưỡng/tòa nhà.
-// - Giải quyết bài toán đa hình: Vừa quản lý căn Villa nguyên căn, vừa quản lý Khách sạn
-//   nhiều phòng ngủ bên trong. Lưu trữ vị trí GPS, giờ nhận/trả phòng và nội quy chung.
+// - Vừa quản lý Villa nguyên căn, vừa quản lý Khách sạn nhiều phòng ngủ bên trong.
+// - Lưu trữ vị trí GPS, giờ nhận/trả phòng và nội quy chung.
 // -----------------------------------------------------------------------------
 Table accommodations {
   // [PK] Khóa chính cơ sở lưu trú
@@ -415,7 +445,7 @@ Table accommodations {
 // MỤC ĐÍCH NGHIỆP VỤ:
 // - Thực thể Con (Child Entity) đại diện cho từng đơn vị phòng ngủ cụ thể có thể bán.
 // - Villa nguyên căn có 1 phòng ('entire_place'); Khách sạn có nhiều hạng phòng ('Deluxe', 'Suite').
-// - Đã tối ưu hóa bỏ các cột USD thừa, lưu trữ giá gốc niêm yết theo VNĐ.
+// - Lưu trữ giá gốc niêm yết theo VNĐ và tỷ lệ phí sàn.
 // -----------------------------------------------------------------------------
 Table rooms {
   // [PK] Khóa chính của hạng phòng bán
@@ -445,8 +475,8 @@ Table rooms {
   // Giá niêm yết gốc cho 1 đêm nghỉ tính theo VNĐ (Snapshot đơn giá)
   price_per_night decimal(14,2) [not null]
 
-  // Phí dọn dẹp vệ sinh phòng một lần tính trên cả chuyến đi
-  cleaning_fee decimal(14,2) [default: 500000.00, not null]
+  // Phí dọn dẹp vệ sinh phòng một lần tính trên cả chuyến đi (VNĐ)
+  cleaning_fee decimal(12,2) [default: 500000.00, not null]
 
   // Tỷ lệ phần trăm phí dịch vụ công nghệ sàn TripNest thu (mặc định 12%)
   service_fee_percent decimal(4,2) [default: 12.00, not null]
@@ -492,6 +522,7 @@ Table rooms {
 // BẢNG: accommodation_images
 // MỤC ĐÍCH NGHIỆP VỤ:
 // - Quản lý album ảnh tổng thể của khu nghỉ dưỡng: flycam khuôn viên, sảnh, hồ bơi ngoài trời.
+// - Cột image_url kiểu TEXT cho phép lưu trữ URL dài từ CDN, Google, Bing, Presigned S3.
 // -----------------------------------------------------------------------------
 Table accommodation_images {
   // [PK] Khóa chính ảnh
@@ -500,8 +531,8 @@ Table accommodation_images {
   // [FK] Khóa ngoại trỏ đến cơ sở lưu trú accommodations.id
   accommodation_id bigint [not null, ref: > accommodations.id]
 
-  // Đường dẫn ảnh CDN Cloudinary/S3 chất lượng cao
-  image_url varchar(500) [not null]
+  // Đường dẫn ảnh CDN Cloudinary/S3/Web chất lượng cao (hỗ trợ URL dài không giới hạn 500 ký tự)
+  image_url text [not null]
 
   // Góc chụp: 'exterior' (ngoại cảnh), 'room', 'pool' (hồ bơi), 'view', 'amenity'
   image_type varchar(50) [default: 'exterior', null]
@@ -529,6 +560,7 @@ Table accommodation_images {
 // BẢNG: room_images
 // MỤC ĐÍCH NGHIỆP VỤ:
 // - Quản lý album ảnh nội thất chi tiết của từng phòng: góc giường ngủ, bồn tắm khép kín, ban công.
+// - Cột image_url kiểu TEXT hỗ trợ URL dài từ mọi dịch vụ lưu trữ ảnh.
 // -----------------------------------------------------------------------------
 Table room_images {
   // [PK] Khóa chính ảnh
@@ -537,8 +569,8 @@ Table room_images {
   // [FK] Khóa ngoại trỏ đến hạng phòng chi tiết rooms.id
   room_id bigint [not null, ref: > rooms.id]
 
-  // Đường dẫn ảnh chi tiết phòng trên CDN
-  image_url varchar(500) [not null]
+  // Đường dẫn ảnh chi tiết phòng trên CDN (hỗ trợ URL dài)
+  image_url text [not null]
 
   // Góc chụp nội thất: 'room' (phòng ngủ), 'bathroom' (phòng tắm), 'balcony' (ban công)
   image_type varchar(50) [default: 'room', null]
@@ -655,8 +687,9 @@ Table vouchers {
 // BẢNG: bookings
 // MỤC ĐÍCH NGHIỆP VỤ:
 // - Trái tim nghiệp vụ của hệ thống: Lưu trữ hợp đồng giao dịch thuê phòng giữa Khách và Host.
-// - Đã bổ sung checked_in_at, checked_out_at, voucher_id, price_per_night và bỏ currency thừa.
-// - Máy trạng thái quản lý: 'pending', 'confirmed', 'checked_in', 'completed', 'cancelled', 'refunded'.
+// - Đầy đủ các trường nghiệp vụ nâng cao: check-in/check-out thực tế, voucher áp dụng,
+//   snapshot đơn giá và thông tin hoàn tiền khi hủy (refund_amount, refund_percentage).
+// - Vòng đời trạng thái: 'pending', 'confirmed', 'checked_in', 'completed', 'cancelled', 'refunded'.
 // -----------------------------------------------------------------------------
 Table bookings {
   // [PK] Khóa chính đơn đặt phòng
@@ -671,9 +704,6 @@ Table bookings {
   // [FK] Khóa ngoại trỏ đến hạng phòng được đặt (rooms.id)
   room_id bigint [not null, ref: > rooms.id]
 
-  // [FK] Khóa ngoại trỏ đến mã giảm giá đã áp dụng nếu có (vouchers.id)
-  voucher_id bigint [null, ref: > vouchers.id]
-
   // Ngày nhận phòng dự kiến theo lịch đặt
   check_in_date date [not null]
 
@@ -686,7 +716,7 @@ Table bookings {
   // Tổng số lượng khách người lớn và trẻ em đăng ký lưu trú
   guests_count int [not null]
 
-  // Ảnh chụp (Snapshot) đơn giá phòng tại thời điểm khách bấm đặt phòng
+  // Ảnh chụp (Snapshot) đơn giá phòng tại thời điểm khách bấm đặt phòng (VNĐ/đêm)
   price_per_night decimal(14,2) [not null]
 
   // Tiền phòng cơ sở = price_per_night * nights_count
@@ -701,8 +731,17 @@ Table bookings {
   // Số tiền được khấu trừ từ voucher
   discount_amount decimal(14,2) [default: 0.00, not null]
 
+  // [FK] Khóa ngoại trỏ đến mã giảm giá đã áp dụng nếu có (vouchers.id)
+  voucher_id bigint [null, ref: > vouchers.id]
+
   // Tổng số tiền thanh toán thực tế = base_price + cleaning_fee + service_fee - discount_amount
   total_price decimal(14,2) [not null]
+
+  // Số tiền hoàn trả cho khách nếu đơn bị hủy (tính toán tự động theo chính sách hủy)
+  refund_amount decimal(14,2) [null]
+
+  // Tỷ lệ phần trăm hoàn tiền thực tế được áp dụng (100, 50, 0)
+  refund_percentage tinyint [null]
 
   // Vòng đời đơn phòng: 'pending', 'confirmed', 'checked_in', 'completed', 'cancelled', 'refunded'
   status varchar(30) [default: 'confirmed', not null]
@@ -795,14 +834,14 @@ Table wishlists {
 }
 
 // =============================================================================
-// 5. TRẢI NGHIỆM, DÒNG TIỀN ESCROW & TỶ GIÁ NGOẠI TỆ
+// 5. TRẢI NGHIỆM, DÒNG TIỀN ESCROW, HOÀN TIỀN & TỶ GIÁ NGOẠI TỆ
 // =============================================================================
 
 // -----------------------------------------------------------------------------
 // BẢNG: experiences
 // MỤC ĐÍCH NGHIỆP VỤ:
 // - Tour du lịch & Trải nghiệm địa phương (TripNest Experiences) ngoài dịch vụ phòng.
-// - Đã tối ưu hóa đổi price_vnd_per_person thành price_per_person và bỏ các cột thừa.
+// - Giá vé tính theo đầu người (VNĐ/khách), cột image_url kiểu TEXT hỗ trợ URL dài.
 // -----------------------------------------------------------------------------
 Table experiences {
   // [PK] Khóa chính tour trải nghiệm
@@ -832,8 +871,8 @@ Table experiences {
   // Tổng số lượt nhận xét từ du khách
   reviews_count int [default: 0, not null]
 
-  // Ảnh đại diện của tour trải nghiệm
-  image_url varchar(500) [not null]
+  // Ảnh đại diện của tour trải nghiệm (hỗ trợ URL dài)
+  image_url text [not null]
 
   // Thời lượng hoạt động tính theo giờ (VD: 3.5 giờ)
   duration_hours decimal(3,1) [null]
@@ -853,6 +892,7 @@ Table experiences {
 // MỤC ĐÍCH NGHIỆP VỤ:
 // - Quản lý dòng tiền thu hộ từ khách du lịch (Pay-In).
 // - Lưu vết phản hồi Webhook IPN từ cổng thanh toán để làm bằng chứng đối soát tài chính.
+// - Trạng thái thanh toán hỗ trợ cả trường hợp hoàn tiền một phần (partially_refunded).
 // -----------------------------------------------------------------------------
 Table payments {
   // [PK] Khóa chính bản ghi thanh toán
@@ -870,7 +910,7 @@ Table payments {
   // Số tiền thực tế khách đã quẹt thẻ hoặc chuyển khoản (VNĐ)
   amount decimal(14,2) [not null]
 
-  // Trạng thái giao dịch: 'pending' (chờ), 'successful' (thành công), 'failed' (thất bại), 'refunded' (hoàn tiền)
+  // Trạng thái giao dịch: 'pending', 'successful', 'failed', 'refunded' (toàn phần), 'partially_refunded' (một phần)
   status varchar(30) [default: 'successful', not null]
 
   // Cột JSON lưu toàn bộ gói tin Callback Webhook từ ngân hàng để đối soát tranh chấp
@@ -917,8 +957,8 @@ Table payout_transactions {
   // Số tiền ròng thực nhận của Chủ nhà = gross_amount - platform_commission_fee
   net_payout_amount decimal(14,2) [not null]
 
-  // Vòng đời Quỹ Escrow: 'pending' (tạm giữ chờ khách trả phòng), 'processing' (đang chuyển), 'completed' (đã chi), 'failed' (hủy do khiếu nại)
-  status enum('pending', 'processing', 'completed', 'failed') [default: 'completed', not null]
+  // Vòng đời Quỹ Escrow: 'pending' (chờ khách trả phòng), 'processing' (đang chuyển), 'completed' (đã chi), 'failed' (thất bại), 'cancelled' (hủy khiếu nại)
+  status enum('pending', 'processing', 'completed', 'failed', 'cancelled') [default: 'pending', null]
 
   // Mã số ủy nhiệm chi / biên lai chuyển tiền của ngân hàng do kế toán Admin nhập vào
   transaction_reference varchar(100) [null]
@@ -930,6 +970,64 @@ Table payout_transactions {
   created_at timestamp [null]
 
   // Thời điểm cập nhật lệnh Payout
+  updated_at timestamp [null]
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: refunds
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Quản lý quy trình hoàn tiền (Refund Management) chi tiết khi đơn đặt phòng bị hủy.
+// - Áp dụng chính sách hủy tự động 3 mốc: hoàn 100% (full_48h - trước 48h),
+//   hoàn 50% (partial_48h - trong 48h), không hoàn (non_refundable - sau check-in).
+// - Liên kết chặt chẽ với bảng bookings và payments làm cơ sở cho kế toán đối soát hoàn tiền.
+// -----------------------------------------------------------------------------
+Table refunds {
+  // [PK] Khóa chính bản ghi hoàn tiền
+  id bigint [pk, increment]
+
+  // Mã giao dịch hoàn tiền độc nhất (VD: 'REF-849201-XYZ') phục vụ đối soát ngân hàng
+  refund_code varchar(30) [unique, not null]
+
+  // [FK] Khóa ngoại liên kết với đơn phòng bị hủy (bookings.id). Cascade xóa khi booking bị xóa
+  booking_id bigint [not null, ref: > bookings.id]
+
+  // [FK] Khóa ngoại liên kết với giao dịch thanh toán gốc ban đầu của khách (payments.id)
+  payment_id bigint [not null, ref: > payments.id]
+
+  // Số tiền khách đã thanh toán ban đầu (VNĐ)
+  original_amount decimal(14,2) [not null]
+
+  // Tỷ lệ phần trăm hoàn lại cho du khách theo chính sách (100%, 50%, 0%)
+  refund_percentage tinyint [not null]
+
+  // Số tiền thực tế hoàn trả lại vào tài khoản của khách (VNĐ)
+  refund_amount decimal(14,2) [not null]
+
+  // Phí dịch vụ hoặc chi phí giao dịch bị khấu trừ giữ lại sàn (mặc định 0.00)
+  platform_fee_deducted decimal(14,2) [default: 0.00, not null]
+
+  // Phương thức chuyển tiền hoàn lại: 'bank_transfer', 'momo', 'vnpay', 'credit_card'
+  refund_method varchar(30) [default: 'bank_transfer', not null]
+
+  // Trạng thái xử lý hoàn tiền: 'pending' (chờ xử lý), 'processing' (đang chuyển khoản), 'completed' (đã hoàn tất), 'failed' (thất bại)
+  status varchar(30) [default: 'pending', not null]
+
+  // Lý do hoàn tiền từ khách hàng hoặc ghi chú của ban quản trị
+  reason varchar(500) [null]
+
+  // Mã chính sách hủy được áp dụng: 'full_48h', 'partial_48h', 'non_refundable'
+  policy_applied varchar(50) [not null]
+
+  // Mô tả văn bản chi tiết về điều khoản hủy đã áp dụng
+  policy_description varchar(255) [null]
+
+  // Thời điểm hoàn tiền được ngân hàng/kế toán xác nhận chuyển tiền thành công
+  processed_at timestamp [null]
+
+  // Thời điểm khởi tạo yêu cầu hoàn tiền
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật thông tin hoàn tiền
   updated_at timestamp [null]
 }
 
@@ -966,4 +1064,135 @@ Table exchange_rates {
 
   // Thời điểm cập nhật tỷ giá
   updated_at timestamp [null]
+}
+
+// =============================================================================
+// 6. NHÓM HẠ TẦNG PHIÊN ĐĂNG NHẬP & BẢO MẬT HỆ THỐNG (LARAVEL CORE)
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// BẢNG: personal_access_tokens
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Quản lý chuỗi Bearer Token của Laravel Sanctum cấp cho ứng dụng Frontend (SPA/React).
+// - Hỗ trợ phân quyền phạm vi truy cập (abilities) và cơ chế tự động thu hồi/hết hạn.
+// -----------------------------------------------------------------------------
+Table personal_access_tokens {
+  // [PK] Khóa chính của token
+  id bigint [pk, increment]
+
+  // Loại thực thể sở hữu token (thường là 'App\\Models\\Account')
+  tokenable_type varchar(255) [not null]
+
+  // Khóa ngoại ID của thực thể sở hữu token (accounts.id)
+  tokenable_id bigint [not null]
+
+  // Tên định danh của phiên cấp token (VD: 'auth_token', 'mobile_app')
+  name text [not null]
+
+  // Chuỗi băm SHA-256 duy nhất của token (độ dài 64 ký tự)
+  token varchar(64) [unique, not null]
+
+  // Quyền hạn chi tiết của token dưới dạng JSON/Text (VD: '["*"]', '["read:bookings"]')
+  abilities text [null]
+
+  // Mốc thời gian lần cuối token này được gửi lên trong HTTP Authorization Header
+  last_used_at timestamp [null]
+
+  // Mốc thời gian token chính thức hết hiệu lực
+  expires_at timestamp [null]
+
+  // Thời điểm cấp token
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật token
+  updated_at timestamp [null]
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: sessions
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Lưu trữ phiên làm việc của người dùng khi sử dụng State / Cookie session trên trình duyệt.
+// - Bổ sung liên kết khóa ngoại với users.id và accounts.id để Admin quản lý thiết bị đăng nhập.
+// -----------------------------------------------------------------------------
+Table sessions {
+  // [PK] Mã định danh duy nhất của phiên duyệt web (Session ID chuỗi ngẫu nhiên 40 ký tự)
+  id varchar(255) [pk]
+
+  // [FK] Khóa ngoại trỏ đến hồ sơ người dùng đang hoạt động (users.id)
+  user_id bigint [null, ref: > users.id]
+
+  // [FK] Khóa ngoại trỏ đến tài khoản đăng nhập (accounts.id)
+  account_id bigint [null, ref: > accounts.id]
+
+  // Địa chỉ IP của thiết bị truy cập (hỗ trợ cả IPv4 và IPv6)
+  ip_address varchar(45) [null]
+
+  // Chuỗi định danh User Agent của trình duyệt/hệ điều hành người dùng
+  user_agent text [null]
+
+  // Dữ liệu payload của session được tuần tự hóa và mã hóa an toàn
+  payload longtext [not null]
+
+  // Dấu thời gian UNIX (timestamp) của hoạt động gần nhất phục vụ dọn rác session hết hạn
+  last_activity int [not null]
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: password_reset_tokens
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Bảng chuẩn hóa của Laravel lưu trữ token gửi qua email khi người dùng yêu cầu đặt lại mật khẩu.
+// -----------------------------------------------------------------------------
+Table password_reset_tokens {
+  // [PK] Email tài khoản yêu cầu cấp lại mật khẩu
+  email varchar(191) [pk]
+
+  // Chuỗi mã băm bảo mật xác nhận yêu cầu đặt lại mật khẩu
+  token varchar(255) [not null]
+
+  // Thời điểm gửi yêu cầu đặt lại mật khẩu
+  created_at timestamp [null]
+}
+
+// =============================================================================
+// 7. NHÓM BẢNG ĐỒ HỌA TRÊN DBDATABASE / DBDOCS (TABLEGROUPS)
+// =============================================================================
+
+TableGroup Authentication_And_Users {
+  accounts
+  password_otps
+  users
+  hosts
+  host_payout_accounts
+}
+
+TableGroup Accommodation_And_Listings {
+  categories
+  amenities
+  accommodations
+  rooms
+  accommodation_images
+  room_images
+  accommodation_amenity
+  room_amenity
+}
+
+TableGroup Booking_And_Reviews {
+  bookings
+  vouchers
+  reviews
+  wishlists
+}
+
+TableGroup Financial_And_Escrow {
+  payments
+  payout_transactions
+  refunds
+  exchange_rates
+  experiences
+}
+
+TableGroup System_Security {
+  personal_access_tokens
+  sessions
+  password_reset_tokens
 }

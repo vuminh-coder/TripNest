@@ -17,6 +17,8 @@ import {
 } from 'react-icons/tb';
 import { useDispatch, useSelector } from 'react-redux';
 import { useToast } from '@/context/ToastContext';
+import VietnamLocationMapInput from '@/components/common/VietnamLocationMapInput';
+import LuxuryDateRangePicker from '@/components/common/LuxuryDateRangePicker';
 
 export const Header = ({
   onSearch,
@@ -70,6 +72,16 @@ export const Header = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const formatDisplayDate = (dateStr) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const [y, m, d] = parts;
+      return `${d}/${m}/${y}`;
+    }
+    return dateStr;
+  };
+
   // Handle click outside to close menus
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -78,6 +90,7 @@ export const Header = ({
       }
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setIsSearchExpanded(false);
+        setActiveField(null);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -166,45 +179,27 @@ export const Header = ({
                 className={`search-inline-field where ${activeField === 'where' ? 'is-active' : ''}`}
                 onClick={() => {
                   setActiveField('where');
-                  whereInputRef.current?.focus();
                 }}
               >
-                <span className="search-inline-label">Địa điểm</span>
-                <input
-                  ref={whereInputRef}
-                  type="text"
-                  placeholder="Bạn muốn đi đâu? (Đà Lạt, Phú Quốc...)"
-                  className="search-inline-input"
+                <VietnamLocationMapInput
+                  id="header-search-destination"
+                  label="Địa điểm"
                   value={destination}
-                  onFocus={() => setActiveField('where')}
-                  onChange={(e) => setDestination(e.target.value)}
-                  autoFocus
-                  onKeyDown={(e) => e.key === 'Enter' && handleExecuteSearch(e)}
+                  placeholder="Tìm điểm đến, biệt thự..."
+                  variant="header-search"
+                  showChevron={false}
+                  showRegionBadge={true}
+                  onChange={(val) => setDestination(val)}
+                  onSelect={(province) => {
+                    setDestination(province.name);
+                    setActiveField('checkIn');
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleExecuteSearch(e);
+                    }
+                  }}
                 />
-
-                {/* Quick Cities Dropdown */}
-                {activeField === 'where' && (
-                  <div className="header-dest-dropdown" onClick={(e) => e.stopPropagation()}>
-                    <div className="header-dest-title">Điểm đến nổi bật tại Việt Nam (50 chỗ ở)</div>
-                    <div className="header-dest-grid">
-                      {['Đà Lạt', 'Phú Quốc', 'Hội An', 'Nha Trang', 'Sa Pa', 'Đà Nẵng', 'Hạ Long', 'Hà Nội', 'Quy Nhơn', 'Vũng Tàu'].map((c) => (
-                        <button
-                          key={c}
-                          type="button"
-                          className="header-dest-item"
-                          onClick={() => {
-                            setDestination(c);
-                            setActiveField('checkIn');
-                            checkInInputRef.current?.showPicker?.();
-                          }}
-                        >
-                          <span className="header-dest-pin">📍</span>
-                          <span className="header-dest-name">{c}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div className={`search-inline-divider ${activeField === 'where' || activeField === 'checkIn' ? 'hidden' : ''}`} />
@@ -213,19 +208,15 @@ export const Header = ({
               <div
                 className={`search-inline-field date ${activeField === 'checkIn' ? 'is-active' : ''}`}
                 onClick={() => {
-                  setActiveField('checkIn');
-                  checkInInputRef.current?.showPicker?.();
+                  setActiveField(activeField === 'checkIn' ? null : 'checkIn');
                 }}
               >
                 <span className="search-inline-label">Nhận phòng</span>
-                <input
-                  ref={checkInInputRef}
-                  type="date"
-                  className="search-inline-input date-input"
-                  value={checkInDate}
-                  onFocus={() => setActiveField('checkIn')}
-                  onChange={(e) => setCheckInDate(e.target.value)}
-                />
+                <div className="search-inline-date-display">
+                  <span className={`search-date-value ${!checkInDate ? 'is-placeholder' : ''}`}>
+                    {checkInDate ? formatDisplayDate(checkInDate) : 'Thêm ngày'}
+                  </span>
+                </div>
               </div>
 
               <div className={`search-inline-divider ${activeField === 'checkIn' || activeField === 'checkOut' ? 'hidden' : ''}`} />
@@ -234,20 +225,32 @@ export const Header = ({
               <div
                 className={`search-inline-field date ${activeField === 'checkOut' ? 'is-active' : ''}`}
                 onClick={() => {
-                  setActiveField('checkOut');
-                  checkOutInputRef.current?.showPicker?.();
+                  setActiveField(activeField === 'checkOut' ? null : 'checkOut');
                 }}
               >
                 <span className="search-inline-label">Trả phòng</span>
-                <input
-                  ref={checkOutInputRef}
-                  type="date"
-                  className="search-inline-input date-input"
-                  value={checkOutDate}
-                  onFocus={() => setActiveField('checkOut')}
-                  onChange={(e) => setCheckOutDate(e.target.value)}
-                />
+                <div className="search-inline-date-display">
+                  <span className={`search-date-value ${!checkOutDate ? 'is-placeholder' : ''}`}>
+                    {checkOutDate ? formatDisplayDate(checkOutDate) : 'Thêm ngày'}
+                  </span>
+                </div>
               </div>
+
+              {/* Luxury Custom Date Range Picker Popover */}
+              {(activeField === 'checkIn' || activeField === 'checkOut') && (
+                <LuxuryDateRangePicker
+                  checkInDate={checkInDate}
+                  checkOutDate={checkOutDate}
+                  onChange={(inDate, outDate) => {
+                    setCheckInDate(inDate);
+                    setCheckOutDate(outDate);
+                    if (inDate && outDate) {
+                      setActiveField('guests');
+                    }
+                  }}
+                  onClose={() => setActiveField(null)}
+                />
+              )}
 
               <div className={`search-inline-divider ${activeField === 'checkOut' || activeField === 'guests' ? 'hidden' : ''}`} />
 

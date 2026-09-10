@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ExchangeRate;
 use App\Models\Room;
+use App\Services\RoomAvailabilityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -71,8 +72,8 @@ class RoomController extends Controller
             }
         }
 
-        $rooms = $query->get()->map(function ($room) {
-            return $this->formatRoomData($room);
+        $rooms = $query->get()->map(function ($room) use ($request) {
+            return $this->formatRoomData($room, false, $request);
         });
 
         return response()->json($rooms);
@@ -81,7 +82,7 @@ class RoomController extends Controller
     /**
      * Chi tiết 1 phòng
      */
-    public function show($id): JsonResponse
+    public function show($id, Request $request): JsonResponse
     {
         $room = Room::with([
             'accommodation.host.user',
@@ -95,13 +96,13 @@ class RoomController extends Controller
             return response()->json(['message' => 'Không tìm thấy phòng.'], 404);
         }
 
-        return response()->json($this->formatRoomData($room, true));
+        return response()->json($this->formatRoomData($room, true, $request));
     }
 
     /**
      * Format dữ liệu phòng chuẩn hóa cho Frontend
      */
-    private function formatRoomData(Room $room, bool $detailed = false): array
+    private function formatRoomData(Room $room, bool $detailed = false, ?Request $request = null): array
     {
         $accommodation = $room->accommodation;
         $host = $accommodation?->host;
@@ -207,6 +208,35 @@ class RoomController extends Controller
                 'images' => $accommodation?->images->pluck('image_url')->toArray() ?: [],
             ],
         ];
+
+        // Tính toán bookedRanges & availability
+        $availService = new RoomAvailabilityService();
+        $bookedRanges = $availService->getBookedRangesForRoom($room->id);
+        $queryCheckIn = $request?->query('check_in') ?: $request?->query('checkIn');
+        $queryCheckOut = $request?->query('check_out') ?: $request?->query('checkOut');
+
+        $availability = [
+            'isAvailable' => true,
+            'status' => 'available',
+            'remainingInventory' => (int)($room->total_inventory ?: 1),
+            'heldSecondsLeft' => 0,
+        ];
+        if ($queryCheckIn && $queryCheckOut) {
+            $calc = $availService->checkRoomAvailability($room->id, $queryCheckIn, $queryCheckOut);
+            $availability = [
+                'isAvailable' => $calc['is_available'],
+                'status' => $calc['status'],
+                'remainingInventory' => $calc['remaining_inventory'],
+                'totalInventory' => $calc['total_inventory'],
+                'bookedCount' => $calc['booked_count'],
+                'heldCount' => $calc['held_count'],
+                'heldUntil' => $calc['held_until'],
+                'heldSecondsLeft' => $calc['held_seconds_left'],
+            ];
+        }
+
+        $data['bookedRanges'] = $bookedRanges;
+        $data['availability'] = $availability;
 
         if ($detailed) {
             $data['reviewsList'] = $reviews->map(function ($rev) {

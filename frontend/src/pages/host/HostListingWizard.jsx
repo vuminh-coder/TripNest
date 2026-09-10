@@ -3,6 +3,7 @@ import './host.css';
 import { TbX, TbArrowLeft, TbArrowRight, TbHome, TbBuildingCastle, TbBuildingCommunity, TbSailboat, TbTrees, TbBuilding, TbMapPin, TbUsers, TbBed, TbBath, TbSparkles, TbWifi, TbSwimming, TbToolsKitchen2, TbAirConditioning, TbCar, TbFlame, TbDeviceTv, TbPhoto, TbPlus, TbTrash, TbCheck, TbEye, TbLockCheck, TbCoin } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/services/api';
+import VietnamLocationMapInput from '@/components/common/VietnamLocationMapInput';
 
 export const HostListingWizard = ({ isOpen, onClose, onListingCreated, currency = 'VND' }) => {
   const toast = useToast();
@@ -220,18 +221,14 @@ export const HostListingWizard = ({ isOpen, onClose, onListingCreated, currency 
               </h4>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                 <div>
-                  <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
-                    Tỉnh / Thành phố *
-                  </label>
-                  <select
+                  <VietnamLocationMapInput
+                    id="host-wizard-city"
+                    label="Tỉnh / Thành phố"
+                    required
                     value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    style={{ width: '100%', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1.5px solid #e2e8f0', fontSize: '0.9rem', outline: 'none' }}
-                  >
-                    {['Đà Lạt', 'Phú Quốc', 'Đà Nẵng', 'Hạ Long', 'Hội An', 'Vũng Tàu', 'Hà Nội', 'TP. Hồ Chí Minh', 'Sa Pa', 'Nha Trang'].map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setCity(val)}
+                    placeholder="Chọn Tỉnh/Thành phố"
+                  />
                 </div>
 
                 <div>

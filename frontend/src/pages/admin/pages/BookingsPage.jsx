@@ -41,10 +41,10 @@ export const BookingsPage = ({ bookings, onOpenDetailModal, onUpdateStatus }) =>
     if (statusFilter !== 'all' && b.status !== statusFilter) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
-      const matchId = b.id.toLowerCase().includes(q);
-      const matchGuest = b.guest_name.toLowerCase().includes(q);
-      const matchPhone = b.guest_phone && b.guest_phone.includes(q);
-      const matchRoom = b.room_name.toLowerCase().includes(q);
+      const matchId = String(b.booking_code || b.id || '').toLowerCase().includes(q);
+      const matchGuest = String(b.guest_name || '').toLowerCase().includes(q);
+      const matchPhone = b.guest_phone && String(b.guest_phone).includes(q);
+      const matchRoom = String(b.room_name || b.room_title || '').toLowerCase().includes(q);
       if (!matchId && !matchGuest && !matchPhone && !matchRoom) return false;
     }
     return true;
@@ -121,7 +121,7 @@ export const BookingsPage = ({ bookings, onOpenDetailModal, onUpdateStatus }) =>
                 <tr key={b.id}>
                   {/* ID */}
                   <td className="td-nowrap">
-                    <strong className="adm-book-id">#{b.id}</strong>
+                    <strong className="adm-book-id">#{b.booking_code || b.id}</strong>
                   </td>
 
                   {/* Guest */}
@@ -134,9 +134,9 @@ export const BookingsPage = ({ bookings, onOpenDetailModal, onUpdateStatus }) =>
                   <td>
                     <div
                       className="adm-book-room-title"
-                      title={b.room_name}
+                      title={b.room_name || b.room_title}
                     >
-                      {b.room_name}
+                      {b.room_name || b.room_title}
                     </div>
                     <div className="adm-book-host-sub">
                       Host: {b.host_name}
@@ -150,7 +150,7 @@ export const BookingsPage = ({ bookings, onOpenDetailModal, onUpdateStatus }) =>
                       <span>{formatDateVN(b.check_in)} ➔ {formatDateVN(b.check_out)}</span>
                     </div>
                     <div className="adm-book-nights-sub">
-                      {b.nights} đêm • {b.guests_count || b.guests || 2} khách
+                      {b.nights || b.nights_count || 1} đêm • {b.guests_count || b.guests || 2} khách
                     </div>
                   </td>
 
@@ -189,7 +189,6 @@ export const BookingsPage = ({ bookings, onOpenDetailModal, onUpdateStatus }) =>
                             style={{
                               color: '#64748b',
                               fontSize: '0.68rem',
-                              fontStyle: 'italic',
                               maxWidth: '140px',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',

@@ -1,116 +1,227 @@
-/* Category Slider Bar */
+/* ==========================================================================
+   CategoryBar Component Styling - Luxury UI/UX ProMax Specification
+   ========================================================================== */
+
 .category-section {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  padding: 1.25rem 0 1rem 0;
-  border-bottom: 1px solid var(--gray-border);
+  padding: 1.15rem 0 0.85rem 0;
+  border-bottom: 1px solid #f1f5f9;
   margin-bottom: 2rem;
+  position: relative;
+  background: #ffffff;
+  width: 100%;
 }
 
+.category-scroll-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Horizontal Scroll wrapper */
 .categories-scroll-wrapper {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 2.25rem;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
   scroll-behavior: smooth;
   flex: 1;
+  padding: 4px 10px;
+  cursor: grab;
+  user-select: none;
+}
+
+.categories-scroll-wrapper.is-dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
 }
 
 .categories-scroll-wrapper::-webkit-scrollbar {
   display: none;
 }
 
+/* Category Tab Pill */
 .category-tab {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.4rem 0.2rem 0.75rem 0.2rem;
+  gap: 0.5rem;
+  padding: 0.35rem 0.2rem 0.75rem 0.2rem;
   cursor: pointer;
-  color: var(--gray-text);
+  color: #64748b;
   border-bottom: 2px solid transparent;
-  transition: all var(--transition-fast);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
   user-select: none;
+  flex-shrink: 0;
+  position: relative;
 }
 
 .category-tab:hover {
-  color: var(--dark);
-  border-bottom-color: var(--gray-border);
+  color: #0f172a;
+  border-bottom-color: #cbd5e1;
+  transform: translateY(-1px);
 }
 
 .category-tab.active {
-  color: var(--dark);
+  color: #0f172a;
   font-weight: 700;
-  border-bottom-color: var(--dark);
+  border-bottom-color: #0f172a;
 }
 
 .category-icon {
-  font-size: 1.5rem;
+  font-size: 1.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.category-tab:hover .category-icon {
+  transform: scale(1.08);
+}
+
+.category-tab.active .category-icon {
+  transform: scale(1.04);
 }
 
 .category-label {
   font-size: 0.78rem;
   letter-spacing: 0.1px;
+  line-height: 1;
 }
 
+/* Nav Arrows with Gradient Fade Masks */
+.category-nav-arrow-wrapper {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  z-index: 10;
+  pointer-events: none;
+}
 
-/* Filters & Taxes bar */
+.category-nav-arrow-wrapper.left {
+  left: 0;
+  background: linear-gradient(to right, #ffffff 65%, rgba(255, 255, 255, 0) 100%);
+  padding-right: 28px;
+  padding-left: 2px;
+}
+
+.category-nav-arrow-wrapper.right {
+  right: 0;
+  background: linear-gradient(to left, #ffffff 65%, rgba(255, 255, 255, 0) 100%);
+  padding-left: 28px;
+  padding-right: 2px;
+}
+
+.nav-arrow-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+}
+
+.nav-arrow-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+  border-color: #cbd5e1;
+}
+
+.nav-arrow-btn:active {
+  transform: scale(0.96);
+}
+
+/* Filters & Taxes Controls Group */
 .filter-controls-group {
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  flex-shrink: 0;
 }
 
 .filter-btn-outline {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  border: 1px solid var(--gray-border);
-  border-radius: var(--radius-md);
+  gap: 0.55rem;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 12px;
   padding: 0.65rem 1rem;
   font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--dark);
-  transition: all var(--transition-fast);
+  font-weight: 700;
+  color: #0f172a;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .filter-btn-outline:hover {
-  border-color: var(--dark);
+  border-color: #0f172a;
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+.filter-btn-outline:active {
+  transform: translateY(0);
 }
 
 .filter-badge-count {
-  background: var(--dark);
-  color: white;
-  border-radius: var(--radius-full);
-  padding: 0.1rem 0.45rem;
-  font-size: 0.75rem;
+  background: #0f172a;
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .tax-toggle-box {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  border: 1px solid var(--gray-border);
-  border-radius: var(--radius-md);
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 12px;
   padding: 0.55rem 0.95rem;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: #334155;
   white-space: nowrap;
   user-select: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
 }
 
+.tax-toggle-box:hover {
+  border-color: #cbd5e1;
+}
 
 /* Switch UI */
 .switch-control {
   position: relative;
   display: inline-block;
-  width: 44px;
+  width: 42px;
   height: 24px;
 }
 
@@ -123,9 +234,12 @@
 .switch-slider {
   position: absolute;
   cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #b0b0b0;
-  transition: .3s;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   border-radius: 34px;
 }
 
@@ -136,16 +250,29 @@
   width: 18px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
-  transition: .3s;
+  background-color: #ffffff;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 input:checked + .switch-slider {
-  background-color: var(--dark);
+  background-color: #0f172a;
 }
 
 input:checked + .switch-slider:before {
-  transform: translateX(20px);
+  transform: translateX(18px);
 }
 
+@media (max-width: 900px) {
+  .category-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .filter-controls-group {
+    justify-content: space-between;
+    width: 100%;
+  }
+}

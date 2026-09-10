@@ -316,7 +316,7 @@ export const BookingDetailModal = ({ booking, onClose, onUpdateStatus }) => {
                 {booking.cancellation_reason && (
                   <div style={{ gridColumn: 'span 2' }}>
                     <span style={{ color: '#7f1d1d', fontWeight: 600 }}>Lý do hủy:</span>{' '}
-                    <span style={{ fontStyle: 'italic', color: '#450a0a' }}>{booking.cancellation_reason}</span>
+                    <span style={{ color: '#450a0a' }}>{booking.cancellation_reason}</span>
                   </div>
                 )}
               </div>

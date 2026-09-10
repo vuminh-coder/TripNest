@@ -1,0 +1,444 @@
+/* Cashflow Timeline Chart ProMax Styles - 4 Dedicated Stream Tabs */
+
+.adm-timeline-card {
+  background: var(--adm-card-bg, #ffffff);
+  border: 1px solid var(--adm-border, #edf2f7);
+  border-radius: var(--adm-radius-md, 8px);
+  padding: 0.85rem 1rem;
+  box-shadow: var(--adm-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.02));
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  height: 100%;
+}
+
+.adm-timeline-card:hover {
+  box-shadow: var(--adm-shadow-card, 0 2px 10px -2px rgba(15, 23, 42, 0.03));
+}
+
+/* 4 Dedicated Stream Tabs Navigation */
+.adm-stream-tabs-nav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  background: var(--adm-border-subtle, #f8fafc);
+  padding: 2.5px;
+  border-radius: var(--adm-radius-md, 8px);
+  border: 1px solid var(--adm-border, #edf2f7);
+  margin-bottom: 0px;
+  width: 100%;
+}
+
+.adm-stream-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 5px 6px;
+  border-radius: var(--adm-radius-sm, 6px);
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--adm-text-muted, #64748b);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 0;
+}
+
+.adm-stream-tab .tab-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.adm-stream-tab .tab-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.adm-stream-tab .tab-pill-val {
+  font-family: var(--adm-font-display, 'Outfit', monospace);
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: rgba(15, 23, 42, 0.06);
+  padding: 1px 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .adm-stream-tabs-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.adm-stream-tab:hover {
+  background: #ffffff;
+  color: var(--adm-text-main, #0f172a);
+}
+
+.adm-stream-tab.active {
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  font-weight: 800;
+}
+
+.adm-stream-tab.active.tab-all {
+  color: var(--adm-primary, #ff385c);
+  border-left: 3px solid #ff385c;
+}
+.adm-stream-tab.active.tab-all .tab-pill-val {
+  background: var(--adm-primary-soft, #fff1f2);
+  color: #e11d48;
+}
+
+.adm-stream-tab.active.tab-commission {
+  color: #059669;
+  border-left: 3px solid #10b981;
+}
+.adm-stream-tab.active.tab-commission .tab-pill-val {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.adm-stream-tab.active.tab-payouts {
+  color: #0284c7;
+  border-left: 3px solid #0ea5e9;
+}
+.adm-stream-tab.active.tab-payouts .tab-pill-val {
+  background: rgba(14, 165, 233, 0.1);
+  color: #0284c7;
+}
+
+.adm-stream-tab.active.tab-escrow {
+  color: #d97706;
+  border-left: 3px solid #f59e0b;
+}
+.adm-stream-tab.active.tab-escrow .tab-pill-val {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+/* Sub-toolbar: Left Legend & Right Snapshot */
+.adm-timeline-subbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.adm-timeline-subbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.adm-timeline-subbar-right {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+/* Mini Legend inside Chart Header */
+.adm-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--adm-border-subtle, #f8fafc);
+  border: 1px solid var(--adm-border, #edf2f7);
+  padding: 3.5px 8px;
+  border-radius: var(--adm-radius-sm, 6px);
+  font-size: 0.72rem;
+  color: var(--adm-text-muted, #64748b);
+  white-space: nowrap;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.legend-line {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.legend-line.gmv {
+  background: #ff385c;
+}
+
+.legend-line.commission {
+  background: #10b981;
+}
+
+.legend-line.payouts {
+  background: #0ea5e9;
+}
+
+.legend-line.payouts-dash {
+  background: #0ea5e9;
+  border-top: 2px dashed #0ea5e9;
+  height: 0;
+}
+
+.legend-line.escrow {
+  background: #f59e0b;
+}
+
+.legend-line.refunds-dash {
+  background: #ef4444;
+  border-top: 2px dashed #ef4444;
+  height: 0;
+}
+
+.snapshot-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--adm-border-subtle, #f8fafc);
+  border: 1px solid var(--adm-border, #edf2f7);
+  padding: 5px 12px;
+  border-radius: var(--adm-radius-sm, 6px);
+  white-space: nowrap;
+}
+
+.snapshot-lbl {
+  font-size: 0.72rem;
+  color: var(--adm-text-muted, #64748b);
+}
+
+.snapshot-val {
+  font-family: var(--adm-font-display, 'Outfit', monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+/* Chart SVG Container */
+.adm-timeline-chart-container {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  height: 200px;
+  flex: 1;
+  display: block;
+  overflow: hidden;
+}
+
+/* Loader Overlay */
+.adm-chart-loader-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 25;
+  border-radius: var(--adm-radius-md, 8px);
+  color: var(--adm-text-muted, #64748b);
+  font-size: 0.76rem;
+  font-weight: 600;
+  animation: fadeInLoader 0.15s ease-out;
+}
+
+@keyframes fadeInLoader {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.adm-chart-spinner {
+  width: 26px;
+  height: 26px;
+  border: 2.5px solid rgba(255, 56, 92, 0.2);
+  border-top-color: var(--adm-primary, #ff385c);
+  border-radius: 50%;
+  animation: spinTimeline 0.7s linear infinite;
+}
+
+@keyframes spinTimeline {
+  to { transform: rotate(360deg); }
+}
+
+.adm-timeline-svg {
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  display: block;
+  overflow: visible;
+}
+
+.adm-grid-line {
+  stroke: var(--adm-border-subtle, #f1f5f9);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.adm-axis-label-y {
+  font-family: var(--adm-font-display, 'Outfit', monospace);
+  font-size: 11px;
+  fill: var(--adm-text-light, #94a3b8);
+  font-weight: 600;
+}
+
+.adm-axis-label-x {
+  font-family: var(--adm-font-base, sans-serif);
+  font-size: 11px;
+  fill: var(--adm-text-main, #334155);
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.adm-axis-label-x.active {
+  fill: var(--adm-primary, #ff385c);
+  font-weight: 800;
+}
+
+.adm-axis-sublabel-x {
+  font-family: var(--adm-font-base, sans-serif);
+  font-size: 9.5px;
+  fill: var(--adm-text-light, #94a3b8);
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.adm-axis-sublabel-x.active {
+  fill: var(--adm-text-main, #0f172a);
+  font-weight: 700;
+}
+
+.adm-chart-dot {
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.adm-pulse-ring {
+  animation: radarPulse 1.8s infinite ease-out;
+}
+
+@keyframes radarPulse {
+  0% { r: 6; opacity: 0.8; }
+  100% { r: 16; opacity: 0; }
+}
+
+/* Tooltip */
+.adm-timeline-tooltip {
+  position: absolute;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--adm-radius-lg, 10px);
+  padding: 10px 14px;
+  color: #ffffff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  z-index: 30;
+  min-width: 250px;
+  white-space: nowrap;
+  animation: fadeInTooltip 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInTooltip {
+  from { opacity: 0; transform: translate(-50%, -6px) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+.adm-tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f8fafc;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+
+.tooltip-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.adm-tooltip-header .tooltip-icon {
+  font-size: 14px;
+}
+
+.adm-tooltip-header .tooltip-badge {
+  margin-left: auto;
+  font-size: 0.68rem;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #e2e8f0;
+}
+
+.adm-tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.adm-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.73rem;
+  white-space: nowrap;
+}
+
+.adm-tooltip-row .tooltip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.adm-tooltip-row .tooltip-dot.gmv { background: #ff385c; }
+.adm-tooltip-row .tooltip-dot.commission { background: #34d399; }
+.adm-tooltip-row .tooltip-dot.payouts { background: #38bdf8; }
+.adm-tooltip-row .tooltip-dot.escrow { background: #fbbf24; }
+.adm-tooltip-row .tooltip-dot.refunds { background: #f87171; }
+
+.adm-tooltip-row .tooltip-name {
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.adm-tooltip-row .tooltip-val {
+  font-family: var(--adm-font-display, 'Outfit', monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  margin-left: auto;
+  padding-left: 12px;
+  white-space: nowrap;
+}
+
+.text-coral { color: #fecdd3; font-weight: 800; }
+.text-emerald { color: #6ee7b7; font-weight: 700; }
+.text-sky { color: #7dd3fc; font-weight: 700; }
+.text-amber { color: #fde68a; font-weight: 700; }
+.text-rose { color: #fca5a5; font-weight: 700; }
+.text-muted-sub { color: #cbd5e1; }
+
+@media (max-width: 900px) {
+  .adm-stream-tabs-nav {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

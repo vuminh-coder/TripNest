@@ -725,7 +725,7 @@ class UserController extends Controller
                 return response()->json(['success' => false, 'message' => 'Không tìm thấy hồ sơ chủ nhà.'], 404);
             }
 
-            $status = $request->input('status', 'verified');
+            $status = $request->input('status') ?: $request->input('kyc_status', 'verified');
             $reason = $request->input('rejection_reason', '');
 
             $host->update([

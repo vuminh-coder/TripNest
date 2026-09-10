@@ -665,11 +665,12 @@
 
 /* ================== CONTENT VIEW & BREADCRUMBS ================== */
 .admin-content-view {
-  padding: 1.5rem 1.75rem;
+  padding: 1rem 1.5rem;
   flex: 1;
   max-width: 1440px;
   width: 100%;
   margin: 0 auto;
+  min-width: 0;
 }
 
 .page-header-row {

@@ -217,16 +217,34 @@
 }
 
 .listing-date-text {
-  color: #64748b;
-  font-size: 0.85rem;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 600;
   line-height: 1.35;
+  margin-top: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.listing-date-icon {
+  font-size: 0.88rem;
+  color: #ff385c;
+  flex-shrink: 0;
+}
+
+.listing-nights-chip {
+  color: #0284c7;
+  font-weight: 700;
+}
+
 .listing-price-row {
-  margin-top: 0.25rem;
+  margin-top: 0.45rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid #f1f5f9;
   font-size: 0.95rem;
   color: #0f172a;
   display: flex;
@@ -251,9 +269,23 @@
 
 .listing-total-search-price {
   font-size: 0.82rem;
-  color: #059669;
-  font-weight: 700;
+  color: #64748b;
   margin-top: 2px;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.listing-total-search-price .total-search-amount {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.listing-total-search-price .total-search-label,
+.listing-total-search-price .total-search-nights {
+  color: #64748b;
+  font-weight: 500;
 }
 
 

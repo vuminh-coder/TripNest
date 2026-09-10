@@ -18,9 +18,9 @@ export const RoleUpgradeRequestsPage = ({ users, onApproveUpgrade, onNavigate })
   const filtered = pendingUsers.filter((u) => {
     if (search.trim()) {
       const q = search.toLowerCase();
-      const matchName = u.name.toLowerCase().includes(q);
-      const matchEmail = u.email.toLowerCase().includes(q);
-      const matchPhone = u.phone && u.phone.includes(q);
+      const matchName = (u.name || u.full_name || '').toLowerCase().includes(q);
+      const matchEmail = (u.email || '').toLowerCase().includes(q);
+      const matchPhone = u.phone && String(u.phone).includes(q);
       if (!matchName && !matchEmail && !matchPhone) return false;
     }
     return true;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
 // Layout Components
 import { Header } from '@/components/layout/Header/Header';
@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/Footer/Footer';
 
 // Common Components
 import { ListingCard } from '@/components/common/ListingCard/ListingCard';
+import { AiChatBubble } from '@/components/common/AiChatBubble/AiChatBubble';
 
 // Modal Components
 import { AuthModal } from '@/components/modals/AuthModal/AuthModal';
@@ -169,12 +170,49 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Filter & Search states (Initialized from URL if present)
-  const [activeCategory, setActiveCategory] = useState('all');
+  // Filter & Search states (Initialized from URL & LocalStorage)
+  const [activeCategory, setActiveCategory] = useState(() => {
+    return new URLSearchParams(window.location.search).get('category') || 'all';
+  });
   const [searchParams, setSearchParams] = useState(getInitialSearchParams);
   const [filters, setFilters] = useState({});
-  const [showTotalBeforeTaxes, setShowTotalBeforeTaxes] = useState(false);
+  const [showTotalBeforeTaxes, setShowTotalBeforeTaxes] = useState(() => {
+    try {
+      return localStorage.getItem('tripnest_show_taxes_total') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [currency, setCurrency] = useState('VND');
+
+  const handleSetShowTotalBeforeTaxes = (val) => {
+    setShowTotalBeforeTaxes(val);
+    try {
+      localStorage.setItem('tripnest_show_taxes_total', String(val));
+    } catch (e) {}
+  };
+
+  const handleSelectCategory = (catId) => {
+    setActiveCategory(catId);
+    const query = new URLSearchParams(window.location.search);
+    if (catId && catId !== 'all') {
+      query.set('category', catId);
+    } else {
+      query.delete('category');
+    }
+    const queryString = query.toString();
+    window.history.pushState({}, '', queryString ? `/?${queryString}` : '/');
+  };
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.minPrice || filters.maxPrice) count += 1;
+    if (filters.placeType && filters.placeType !== 'all') count += 1;
+    if (filters.bedrooms && filters.bedrooms !== 'any') count += 1;
+    if (filters.bathrooms && filters.bathrooms !== 'any') count += 1;
+    if (filters.amenities && filters.amenities.length > 0) count += filters.amenities.length;
+    return count;
+  }, [filters]);
 
   // Modals state
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -401,6 +439,8 @@ function App() {
           }
         } else if (!isAdm && !isHost && !isTrips) {
           if (window.location.pathname === '/' || window.location.pathname === '') {
+            const catInUrl = new URLSearchParams(window.location.search).get('category') || 'all';
+            setActiveCategory(catInUrl);
             const hasDetailOpen = selectedAccommodation || selectedRoom || checkoutData || mapTargetAccommodation;
             if (hasDetailOpen) {
               setSelectedAccommodation(null);
@@ -539,8 +579,13 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Checkout navigation with Instant Auth Guard & Recent Booking Feedback
+  const [checkoutData, setCheckoutData] = useState(null);
+  const [pendingCheckout, setPendingCheckout] = useState(null);
+  const [recentBooking, setRecentBooking] = useState(null);
+
   // Back from Room Detail to Parent Accommodation
-  const handleBackToAccommodation = async (accomId) => {
+  const handleBackToAccommodation = async (accomId, bookingContext = null) => {
     setSelectedRoom(null);
     setCheckoutData(null);
     const targetId = accomId || (selectedRoom?.accommodationId || selectedRoom?.accommodation?.id || 1);
@@ -548,7 +593,9 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     try {
-      const detailed = await apiService.getAccommodationById(targetId);
+      const qIn = searchParams.checkIn || searchParams.checkInDate;
+      const qOut = searchParams.checkOut || searchParams.checkOutDate;
+      const detailed = await apiService.getAccommodationById(targetId, qIn, qOut);
       if (detailed) {
         setSelectedAccommodation(detailed);
       }
@@ -567,10 +614,6 @@ function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
-
-  // Checkout navigation with Instant Auth Guard
-  const [checkoutData, setCheckoutData] = useState(null);
-  const [pendingCheckout, setPendingCheckout] = useState(null);
 
   const handleStartCheckout = (roomToBook, bookingParams) => {
     const token = localStorage.getItem('token');
@@ -605,12 +648,16 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleBackFromCheckout = () => {
+  const handleBackFromCheckout = (completedBooking = null) => {
+    if (completedBooking) {
+      setRecentBooking(completedBooking);
+    }
     const prevRoom = checkoutData?.room;
     setCheckoutData(null);
     setPendingCheckout(null);
-    if (prevRoom && prevRoom.accommodationId) {
-      handleBackToAccommodation(prevRoom.accommodationId);
+    const targetAccomId = prevRoom?.accommodationId || prevRoom?.accommodation?.id || selectedAccommodation?.id;
+    if (targetAccomId) {
+      handleBackToAccommodation(targetAccomId, completedBooking || recentBooking);
     } else if (selectedRoom) {
       window.history.pushState({}, '', `/room/${selectedRoom.id}`);
     } else if (selectedAccommodation) {
@@ -636,9 +683,16 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      const initSearch = getInitialSearchParams();
+      const accomParams = {};
+      if (initSearch.checkInDate) accomParams.check_in = initSearch.checkInDate;
+      if (initSearch.checkOutDate) accomParams.check_out = initSearch.checkOutDate;
+      if (initSearch.destination) accomParams.destination = initSearch.destination;
+      if (initSearch.guests > 1) accomParams.guests = initSearch.guests;
+
       const [cats, rms, exps] = await Promise.all([
         apiService.getCategories(),
-        apiService.getAccommodations(),
+        apiService.getAccommodations(accomParams),
         apiService.getExperiences(),
       ]);
       setCategories(cats);
@@ -992,7 +1046,7 @@ function App() {
   };
 
   // Handle Search Execution from Header & synchronize URL
-  const handleSearchExecute = (params) => {
+  const handleSearchExecute = async (params) => {
     setSearchParams(params);
     if (selectedRoom) {
       setSelectedRoom(null);
@@ -1013,6 +1067,21 @@ function App() {
     const queryString = query.toString();
     window.history.pushState({}, '', queryString ? `/?${queryString}` : '/');
 
+    // Fetch accommodations with real-time date availability & dynamic minPrice
+    try {
+      const searchAccomParams = {};
+      if (params.checkInDate) searchAccomParams.check_in = params.checkInDate;
+      if (params.checkOutDate) searchAccomParams.check_out = params.checkOutDate;
+      if (params.destination) searchAccomParams.destination = params.destination;
+      if (params.guests > 1) searchAccomParams.guests = params.guests;
+      const updatedRms = await apiService.getAccommodations(searchAccomParams);
+      if (Array.isArray(updatedRms)) {
+        setRooms(updatedRms);
+      }
+    } catch (err) {
+      console.error('Error fetching accommodations with search dates:', err);
+    }
+
     // Smooth scroll to listing grid
     setTimeout(() => {
       const el = document.getElementById('rooms-listing-section');
@@ -1021,9 +1090,13 @@ function App() {
   };
 
   // Clear search parameters
-  const handleClearSearch = () => {
+  const handleClearSearch = async () => {
     setSearchParams({});
     window.history.pushState({}, '', '/');
+    try {
+      const allRms = await apiService.getAccommodations({});
+      if (Array.isArray(allRms)) setRooms(allRms);
+    } catch (e) {}
   };
 
   // Filtered rooms logic with robust Vietnamese fuzzy matching
@@ -1126,15 +1199,6 @@ function App() {
 
     return true;
   });
-
-  // Calculate active filter count
-  const activeFilterCount = Object.keys(filters).filter(
-    (k) =>
-      filters[k] &&
-      filters[k] !== 'all' &&
-      filters[k] !== 'any' &&
-      (!Array.isArray(filters[k]) || filters[k].length > 0)
-  ).length;
 
   const wishlistRooms = rooms.filter((r) => wishlistIds.includes(r.id));
 
@@ -1295,7 +1359,7 @@ function App() {
               toast.info('Yêu cầu đăng nhập', 'Vui lòng đăng nhập hoặc đăng ký tài khoản để hoàn tất đặt phòng.');
               setAuthModal({ isOpen: true, tab: 'login' });
             }}
-            onBack={handleBackFromCheckout}
+            onBack={(completedBooking) => handleBackFromCheckout(completedBooking)}
             onBookingComplete={(order) => {
               handleBookRoom(order);
             }}
@@ -1316,6 +1380,8 @@ function App() {
             onToggleFavorite={handleToggleFavorite}
             onBookRoom={handleBookRoom}
             onStartCheckout={handleStartCheckout}
+            recentBooking={recentBooking}
+            onClearRecentBooking={() => setRecentBooking(null)}
           />
         ) : selectedAccommodation ? (
           /* Dedicated Standalone Accommodation Detail Page (Level 2 Parent Accommodation) */
@@ -1331,6 +1397,8 @@ function App() {
             isFavorite={wishlistIds.includes(selectedAccommodation.id)}
             onToggleFavorite={handleToggleFavorite}
             onStartCheckout={({ room, bookingParams }) => handleStartCheckout(room, bookingParams)}
+            recentBooking={recentBooking}
+            onClearRecentBooking={() => setRecentBooking(null)}
           />
         ) : (
           /* Standard Home Explore & Listing View (Level 1 Accommodations List) */
@@ -1339,11 +1407,11 @@ function App() {
             <CategoryBar
               categories={categories}
               activeCategory={activeCategory}
-              onSelectCategory={(catId) => setActiveCategory(catId)}
+              onSelectCategory={handleSelectCategory}
               onOpenFilters={() => setIsFilterOpen(true)}
               activeFilterCount={activeFilterCount}
               showTotalBeforeTaxes={showTotalBeforeTaxes}
-              setShowTotalBeforeTaxes={setShowTotalBeforeTaxes}
+              setShowTotalBeforeTaxes={handleSetShowTotalBeforeTaxes}
             />
 
             {/* Active Search Results Feedback Banner */}
@@ -1490,6 +1558,9 @@ function App() {
         onApplyFilters={(f) => setFilters(f)}
         initialFilters={filters}
         currency={currency}
+        allRooms={rooms}
+        searchParams={searchParams}
+        activeCategory={activeCategory}
       />
 
       <AuthModal
@@ -1550,6 +1621,9 @@ function App() {
           setIsBecomeHostModalOpen(false);
         }}
       />
+
+      {/* Floating AI Travel Assistant Chat Bubble */}
+      <AiChatBubble />
     </div>
   );
 }

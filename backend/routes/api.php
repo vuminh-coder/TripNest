@@ -135,7 +135,10 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
 
     // Quản lý Đơn đặt phòng & Tài chính
     Route::get('/admin/bookings', [FinancialController::class, 'getBookings']);
+    Route::match(['patch', 'post'], '/admin/bookings/{id}/status', [FinancialController::class, 'updateBookingStatus']);
     Route::get('/admin/financials/stats', [FinancialController::class, 'getStats']);
+    Route::get('/admin/financials/timeline', [FinancialController::class, 'getCashflowTimeline']);
+    Route::get('/admin/financials/hosts-revenue', [FinancialController::class, 'getHostRevenues']);
     Route::get('/admin/payouts', [FinancialController::class, 'getPayouts']);
     Route::post('/admin/payouts/{id}/approve', [FinancialController::class, 'approvePayout']);
 
@@ -167,4 +170,12 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
     Route::put('/admin/experiences/{id}', [ExperienceController::class, 'adminUpdate']);
     Route::patch('/admin/experiences/{id}/toggle', [ExperienceController::class, 'adminToggleActive']);
     Route::delete('/admin/experiences/{id}', [ExperienceController::class, 'adminDestroy']);
+});
+
+// ==========================================
+// 5. API Trợ lý ảo AI Du Lịch (TripNest AI Assistant - Public API)
+// ==========================================
+Route::prefix('ai')->group(function () {
+    Route::post('/chat', [\App\Http\Controllers\AiChatController::class, 'chat']);
+    Route::get('/prompts', [\App\Http\Controllers\AiChatController::class, 'getSuggestedPrompts']);
 });

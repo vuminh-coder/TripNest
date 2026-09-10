@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './AccommodationDetailPage.css';
+import { apiService } from '../../services/api';
 import {
   TbStarFilled,
   TbHeart,
@@ -7,6 +8,7 @@ import {
   TbShare,
   TbMapPin,
   TbShieldCheck,
+  TbAlertCircle,
   TbCalendar,
   TbUsers,
   TbCheck,
@@ -85,6 +87,8 @@ export const AccommodationDetailPage = ({
   onToggleFavorite,
   onStartCheckout,
   onOpenMapPage,
+  recentBooking = null,
+  onClearRecentBooking = null,
 }) => {
   // Today and default dates
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
@@ -156,6 +160,52 @@ export const AccommodationDetailPage = ({
   const [activeLightboxIndex, setActiveLightboxIndex] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
+  // Dynamic room availability cache fetched according to checkIn/checkOut
+  const [dynamicAvailability, setDynamicAvailability] = useState({});
+
+  useEffect(() => {
+    let isSubscribed = true;
+    if (!checkIn || !checkOut || !accommodation?.id) return;
+
+    const fetchAvail = async () => {
+      try {
+        const detailed = await apiService.getAccommodationById(accommodation.id, checkIn, checkOut);
+        if (isSubscribed && detailed?.rooms) {
+          const map = {};
+          detailed.rooms.forEach((r) => {
+            if (r.id) {
+              map[r.id] = {
+                availability: r.availability,
+                bookedRanges: r.bookedRanges,
+              };
+            }
+          });
+          setDynamicAvailability(map);
+        }
+      } catch (e) {
+        console.warn('Error fetching dynamic availability:', e);
+      }
+    };
+
+    fetchAvail();
+    return () => { isSubscribed = false; };
+  }, [accommodation?.id, checkIn, checkOut]);
+
+  // Nhận diện đơn đặt gần đây của chính người dùng tại cơ sở lưu trú này
+  const activeBookingForThisAccom = useMemo(() => {
+    if (recentBooking) {
+      const matchAccom = String(recentBooking.accommodationId) === String(accommodation.id) ||
+        (Array.isArray(accommodation.rooms) && accommodation.rooms.some((r) => String(r.id) === String(recentBooking.roomId)));
+      if (matchAccom) return recentBooking;
+    }
+
+    if (Array.isArray(accommodation.userActiveBookings) && accommodation.userActiveBookings.length > 0) {
+      return accommodation.userActiveBookings[0];
+    }
+
+    return null;
+  }, [recentBooking, accommodation]);
+
   // Accurate target coordinates for map display and directions
   const targetCoords = useMemo(() => getTargetCoordinates(accommodation), [accommodation]);
 
@@ -208,7 +258,7 @@ export const AccommodationDetailPage = ({
     if (currency === 'EUR') {
       return `€${Math.round((total / 25450) * 0.92).toLocaleString()}`;
     }
-    return `${total.toLocaleString()} ₫`;
+    return `${total.toLocaleString()}\u00A0₫`;
   };
 
   const images = Array.isArray(accommodation?.images) && accommodation.images.length > 0
@@ -501,6 +551,50 @@ export const AccommodationDetailPage = ({
 
   return (
     <div className="tn-accommodation-page">
+      {/* RECENT OR ACTIVE BOOKING CELEBRATION BANNER */}
+      {activeBookingForThisAccom && (
+        <div className="tn-booking-celebration-banner">
+          <div className="tn-celebration-left">
+            <div className="tn-celebration-icon-box">
+              <TbCircleCheck />
+            </div>
+            <div className="tn-celebration-text">
+              <div className="tn-celebration-title">
+                🎉 Bạn đã đặt thành công phòng tại cơ sở lưu trú này!
+              </div>
+              <div className="tn-celebration-subtitle">
+                Hạng phòng: <strong>{activeBookingForThisAccom.roomTitle || 'Phòng nghỉ dưỡng'}</strong> · 
+                Thời gian: <strong>{formatVNDate(activeBookingForThisAccom.checkIn)} – {formatVNDate(activeBookingForThisAccom.checkOut)}</strong> ({activeBookingForThisAccom.nights || 1} đêm) · 
+                Mã đơn: <strong className="tn-code-highlight">{activeBookingForThisAccom.id || activeBookingForThisAccom.bookingCode}</strong>
+              </div>
+            </div>
+          </div>
+          <div className="tn-celebration-actions">
+            <button
+              type="button"
+              className="tn-celebration-action-btn"
+              onClick={() => {
+                const myTripsNav = document.getElementById('my-trips-nav-link');
+                if (myTripsNav) myTripsNav.click();
+                else window.location.href = '/my-trips';
+              }}
+            >
+              Xem vé & Quản lý chuyến đi →
+            </button>
+            {onClearRecentBooking && (
+              <button
+                type="button"
+                className="tn-celebration-close-btn"
+                onClick={onClearRecentBooking}
+                title="Đóng thông báo"
+              >
+                <TbX />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* 1. TOP BREADCRUMBS & ACTIONS BAR */}
       <div className="tn-breadcrumbs-bar">
         <div className="tn-breadcrumbs-nav">
@@ -935,8 +1029,65 @@ export const AccommodationDetailPage = ({
             const roomGrandTotal = roomBase + roomCleaning + roomService;
             const selectedQty = selectedRoomsCount[roomItem.id] || 0;
 
+            // AVAILABILITY & COLLISION LOGIC
+            const dyn = dynamicAvailability[roomItem.id];
+            const bookedRanges = dyn?.bookedRanges || roomItem.bookedRanges || [];
+
+            // 0. Số lượng tồn kho phòng trống khả dụng thực tế
+            const maxAvailable = dyn?.availability?.remainingInventory !== undefined
+              ? Math.max(0, dyn.availability.remainingInventory)
+              : (roomItem.totalInventory || roomItem.quantity || 1);
+
+            // 1. Kiểm tra xem phòng này có vừa được người dùng hiện tại đặt hay không
+            const isBookedByMe = Boolean(
+              activeBookingForThisAccom &&
+              (String(activeBookingForThisAccom.roomId) === String(roomItem.id) ||
+                (!activeBookingForThisAccom.roomId && isEntirePlace))
+            );
+
+            // 2. Kiểm tra trùng lặp ngày với đơn đặt của khách khác (Overlap Collision)
+            const hasConfirmedCollision = (() => {
+              if (dyn?.availability && dyn.availability.isAvailable === false && dyn.availability.status === 'booked') {
+                return true;
+              }
+              if (checkIn && checkOut && Array.isArray(bookedRanges)) {
+                return bookedRanges.some((r) => {
+                  if (r.status === 'cancelled') return false;
+                  const bIn = r.checkIn || r.check_in_date || r.check_in;
+                  const bOut = r.checkOut || r.check_out_date || r.check_out;
+                  if (!bIn || !bOut) return false;
+                  const isHold = r.type === 'hold' || r.type === 'hold_lock' || r.status === 'held' || r.status === 'holding';
+                  return checkIn < bOut && checkOut > bIn && !isHold;
+                });
+              }
+              return false;
+            })();
+
+            // 3. Kiểm tra xem có khách đang tạm giữ chỗ thanh toán (Hold Lock 15 phút)
+            const isHeldByOther = (() => {
+              if (hasConfirmedCollision) return false;
+              if (dyn?.availability?.status === 'held' || (dyn?.availability?.heldCount > 0 && dyn?.availability?.remainingInventory <= 0)) {
+                return true;
+              }
+              if (checkIn && checkOut && Array.isArray(bookedRanges)) {
+                return bookedRanges.some((r) => {
+                  const isHold = r.type === 'hold' || r.type === 'hold_lock' || r.status === 'held' || r.status === 'holding';
+                  if (isHold) {
+                    const bIn = r.checkIn || r.check_in_date || r.check_in;
+                    const bOut = r.checkOut || r.check_out_date || r.check_out;
+                    return checkIn < bOut && checkOut > bIn;
+                  }
+                  return false;
+                });
+              }
+              return false;
+            })();
+
             return (
-              <div key={roomItem.id || rIdx} className="tn-luxury-room-card">
+              <div
+                key={roomItem.id || rIdx}
+                className={`tn-luxury-room-card ${isBookedByMe ? 'tn-card-booked-by-me' : ''} ${hasConfirmedCollision ? 'tn-card-conflict' : ''} ${isHeldByOther ? 'tn-card-holding' : ''}`}
+              >
                 {/* Left: Thumbnail & Badges */}
                 <div className="tn-room-media-box">
                   <div
@@ -944,6 +1095,24 @@ export const AccommodationDetailPage = ({
                     onClick={() => onOpenRoomDetail && onOpenRoomDetail(roomItem, { checkIn, checkInDate: checkIn, checkOut, checkOutDate: checkOut, guests: guestCount, nights: nightsCount })}
                   >
                     <img src={rImages[0]} alt={roomItem.title} className="tn-room-img" />
+                    
+                    {/* Status Badges Overlay */}
+                    {isBookedByMe && (
+                      <span className="tn-room-booked-status-chip">
+                        <TbCircleCheck /> Bạn đã đặt phòng này
+                      </span>
+                    )}
+                    {!isBookedByMe && hasConfirmedCollision && (
+                      <span className="tn-room-conflict-status-chip">
+                        <TbAlertCircle /> Đã có khách đặt ngày này
+                      </span>
+                    )}
+                    {!isBookedByMe && !hasConfirmedCollision && isHeldByOther && (
+                      <span className="tn-room-holding-status-chip">
+                        <TbClock /> Đang giữ chỗ thanh toán
+                      </span>
+                    )}
+
                     <span className="tn-room-view-chip">
                       <TbEye /> {rImages.length} ảnh
                     </span>
@@ -968,6 +1137,46 @@ export const AccommodationDetailPage = ({
                       <span>{roomItem.rating ? Number(roomItem.rating).toFixed(2) : '4.98'}</span>
                     </div>
                   </div>
+
+                  {/* Highlight Callouts */}
+                  {isBookedByMe && (
+                    <div className="tn-booked-by-me-callout">
+                      <div className="tn-callout-icon-wrap">
+                        <TbCircleCheck />
+                      </div>
+                      <div className="tn-callout-content">
+                        <div className="tn-suggest-title">Bạn đã đặt thành công phòng này</div>
+                        <p className="tn-suggest-desc">
+                          Thời gian lưu trú: <strong>{formatVNDate(activeBookingForThisAccom?.checkIn || checkIn)}</strong> đến <strong>{formatVNDate(activeBookingForThisAccom?.checkOut || checkOut)}</strong>
+                          {activeBookingForThisAccom?.bookingCode && ` · Mã đặt phòng: ${activeBookingForThisAccom.bookingCode}`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isBookedByMe && hasConfirmedCollision && (
+                    <div className="tn-smart-alternative-box">
+                      <TbAlertCircle className="tn-suggest-icon" />
+                      <div className="tn-suggest-content">
+                        <div className="tn-suggest-title">Không còn phòng trống trong ngày đã chọn</div>
+                        <p className="tn-suggest-desc">
+                          Đã có khách đặt phòng từ <span className="tn-date-text">{formatVNDate(checkIn)}</span> đến <span className="tn-date-text">{formatVNDate(checkOut)}</span>.
+                          <br />
+                          Vui lòng chọn ngày lưu trú khác hoặc xem các phòng còn trống dưới đây.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isBookedByMe && !hasConfirmedCollision && isHeldByOther && (
+                    <div className="tn-holding-note-box">
+                      <TbClock className="tn-suggest-icon" />
+                      <div className="tn-suggest-content">
+                        <div className="tn-suggest-title">Có khách đang tiến hành thanh toán</div>
+                        <p className="tn-suggest-desc">Phòng này đang được tạm giữ trong 15 phút. Sẽ tự động mở lại cho bạn nếu khách chưa thanh toán.</p>
+                      </div>
+                    </div>
+                  )}
 
                   <p className="tn-room-short-desc">
                     {roomItem.description || 'Không gian tinh tế đầy đủ tiện nghi cao cấp tiêu chuẩn 5 sao.'}
@@ -1029,50 +1238,178 @@ export const AccommodationDetailPage = ({
                 </div>
 
                 {/* Right: Pricing Box & Action Buttons */}
-                <div className="tn-room-pricing-box">
-                  <div className="tn-price-display-wrapper">
-                    <div className="tn-price-total-text">
-                      <span className="tn-price-val">{formatPrice(roomGrandTotal, 1)}</span>
-                      <span className="tn-price-sub">/ {nightsCount} đêm</span>
-                    </div>
-                    <div className="tn-price-avg">
-                      ~ {formatPrice(priceNight, 1)} / đêm (gốc: {formatPrice(roomBase, 1)})
-                    </div>
-                    <div className="tn-tax-note">
-                      Đã bao gồm thuế GTGT & phí dịch vụ
-                    </div>
-                  </div>
-
-                  <div className="tn-room-actions-group">
-                    {!isEntirePlace && (
-                      <div className="tn-qty-select-wrapper">
-                        <label>Số lượng phòng:</label>
-                        <select
-                          value={selectedQty}
-                          onChange={(e) => handleRoomCountChange(roomItem.id, Number(e.target.value))}
-                          className="tn-qty-dropdown"
-                        >
-                          <option value={0}>0 phòng (0 ₫)</option>
-                          <option value={1}>1 phòng ({formatPrice(roomGrandTotal, 1)})</option>
-                          <option value={2}>2 phòng ({formatPrice(roomBase * 2 + roomCleaning + Math.round(roomBase * 2 * 0.12), 1)})</option>
-                          <option value={3}>3 phòng ({formatPrice(roomBase * 3 + roomCleaning + Math.round(roomBase * 3 * 0.12), 1)})</option>
-                        </select>
+                <div className={`tn-room-pricing-box ${hasConfirmedCollision ? 'is-conflict' : ''} ${isBookedByMe ? 'is-booked' : ''} ${isHeldByOther ? 'is-held' : ''}`}>
+                  {hasConfirmedCollision ? (
+                    <div className="tn-pricing-conflict-card">
+                      <div className="tn-conflict-status-badge">
+                        <TbAlertCircle /> HẾT PHÒNG NGÀY ĐÃ CHỌN
                       </div>
-                    )}
 
-                    <button
-                      type="button"
-                      className="primary-gradient-btn tn-book-this-room-btn"
-                      onClick={() => handleInstantBook(roomItem)}
-                    >
-                      {isEntirePlace ? 'Đặt trọn căn ngay' : 'Tôi sẽ đặt phòng này'}
-                    </button>
+                      <div className="tn-conflict-price-block">
+                        <span className="tn-conflict-price-label">Giá niêm yết tham khảo</span>
+                        <div className="tn-conflict-price-row">
+                          <strong className="tn-conflict-price-num">{formatPrice(priceNight, 1)}</strong>
+                          <span className="tn-conflict-price-unit">/ đêm</span>
+                        </div>
+                        <div className="tn-conflict-estimate-pill">
+                          <span>Ước tính {nightsCount} đêm:</span>
+                          <strong className="tn-conflict-nowrap-val">~{formatPrice(roomGrandTotal, 1)}</strong>
+                        </div>
+                        <span className="tn-conflict-tax-hint">Đã bao gồm thuế & phí dịch vụ</span>
+                      </div>
 
-                    <div className="tn-urgency-note">
-                      <TbBolt className="tn-urgency-icon" />
-                      <span>Đặt ngay để giữ mức giá ưu đãi hôm nay</span>
+                      <div className="tn-conflict-action-buttons">
+                        <button
+                          type="button"
+                          className="tn-conflict-change-dates-btn"
+                          onClick={() => scrollToSection('tn-overview-section', 'overview')}
+                        >
+                          <TbCalendar />
+                          <span>Đổi ngày lưu trú khác</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="tn-conflict-see-details-btn"
+                          onClick={() => onOpenRoomDetail && onOpenRoomDetail(roomItem, { checkIn, checkInDate: checkIn, checkOut, checkOutDate: checkOut, guests: guestCount, nights: nightsCount })}
+                        >
+                          <span>Xem lịch trống & chi tiết</span>
+                          <TbChevronRight className="tn-btn-chevron" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  ) : isBookedByMe ? (
+                    <div className="tn-pricing-booked-card">
+                      <div className="tn-booked-status-badge">
+                        <TbCircleCheck /> BẠN ĐÃ ĐẶT THÀNH CÔNG
+                      </div>
+
+                      <div className="tn-booked-price-block">
+                        <div className="tn-booked-total-val">{formatPrice(roomGrandTotal, 1)}</div>
+                        <span className="tn-booked-sub">Tổng tiền đã đặt cho {nightsCount} đêm</span>
+                        {activeBookingForThisAccom?.bookingCode && (
+                          <div className="tn-booked-code-tag">Mã: {activeBookingForThisAccom.bookingCode}</div>
+                        )}
+                      </div>
+
+                      <div className="tn-booked-action-buttons">
+                        <button
+                          type="button"
+                          className="tn-booked-by-you-btn"
+                          onClick={() => {
+                            window.location.href = '/profile/bookings';
+                          }}
+                        >
+                          <TbCircleCheck />
+                          <span>Xem đơn đặt phòng</span>
+                          <TbChevronRight className="tn-btn-chevron" />
+                        </button>
+                        <button
+                          type="button"
+                          className="tn-book-additional-btn"
+                          onClick={() => handleInstantBook(roomItem)}
+                        >
+                          <span>Đặt thêm 1 phòng nữa</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : isHeldByOther ? (
+                    <div className="tn-pricing-holding-card">
+                      <div className="tn-holding-status-badge">
+                        <TbClock /> ĐANG GIỮ CHỖ THANH TOÁN
+                      </div>
+
+                      <div className="tn-holding-price-block">
+                        <div className="tn-holding-total-val">{formatPrice(roomGrandTotal, 1)}</div>
+                        <span className="tn-holding-sub">/ {nightsCount} đêm (đã gồm thuế & phí)</span>
+                      </div>
+
+                      <div className="tn-holding-action-buttons">
+                        <button
+                          type="button"
+                          className="tn-room-holding-btn"
+                          disabled
+                        >
+                          <TbClock style={{ fontSize: '1.15rem' }} /> Đang giữ chỗ...
+                        </button>
+                        <span className="tn-holding-subtext">Khách khác đang thanh toán (tạm giữ 15 phút)</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="tn-pricing-available-card">
+                      <div className="tn-price-display-wrapper">
+                        <div className="tn-price-total-text">
+                          <span className="tn-price-val">{formatPrice(roomGrandTotal, 1)}</span>
+                          <span className="tn-price-sub">/ {nightsCount} đêm</span>
+                        </div>
+                        <div className="tn-price-avg">
+                          ~ {formatPrice(Math.round(roomGrandTotal / nightsCount), 1)} / đêm
+                        </div>
+                        <div className="tn-tax-note">
+                          Đã bao gồm thuế GTGT & phí dịch vụ
+                        </div>
+                      </div>
+
+                      <div className="tn-room-actions-group">
+                        {!isEntirePlace && maxAvailable > 0 && (
+                          <div className={`tn-scarcity-pill ${maxAvailable === 1 ? 'critical' : maxAvailable <= 3 ? 'warning' : 'plenty'}`}>
+                            {maxAvailable === 1 ? (
+                              <>
+                                <TbFlame className="tn-scarcity-icon-flame" />
+                                <span>Chỉ còn duy nhất 1 phòng trống!</span>
+                              </>
+                            ) : maxAvailable <= 3 ? (
+                              <>
+                                <TbBolt className="tn-scarcity-icon-bolt" />
+                                <span>Chỉ còn {maxAvailable} phòng trống cho ngày này</span>
+                              </>
+                            ) : (
+                              <>
+                                <TbCheck className="tn-scarcity-icon-check" />
+                                <span>Còn {maxAvailable} phòng trống sẵn sàng</span>
+                              </>
+                            )}
+                          </div>
+                        )}
+
+                        {!isEntirePlace && (
+                          <div className="tn-qty-select-wrapper">
+                            <div className="tn-qty-label-row">
+                              <label>Số lượng phòng:</label>
+                              {maxAvailable > 1 && <span className="tn-qty-max-hint">(Tối đa {Math.min(maxAvailable, 4)} phòng)</span>}
+                            </div>
+                            <select
+                              value={Math.min(selectedQty, maxAvailable)}
+                              onChange={(e) => handleRoomCountChange(roomItem.id, Number(e.target.value))}
+                              className="tn-qty-dropdown"
+                            >
+                              <option value={0}>0 phòng (0 ₫)</option>
+                              {Array.from({ length: Math.min(maxAvailable, 4) }, (_, idx) => idx + 1).map((q) => {
+                                const totalQ = roomBase * q + roomCleaning + Math.round(roomBase * q * 0.12);
+                                return (
+                                  <option key={q} value={q}>
+                                    {q} phòng ({formatPrice(totalQ, 1)})
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          className="primary-gradient-btn tn-book-this-room-btn"
+                          onClick={() => handleInstantBook(roomItem)}
+                        >
+                          {isEntirePlace ? 'Đặt trọn căn ngay' : 'Tôi sẽ đặt phòng này'}
+                        </button>
+
+                        <div className="tn-urgency-note">
+                          <TbBolt className="tn-urgency-icon" />
+                          <span>Đặt ngay để giữ mức giá ưu đãi hôm nay</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             );

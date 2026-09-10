@@ -1,0 +1,895 @@
+/* =============================================================================
+   TRIPNEST AI TRAVEL ASSISTANT - LUXURY CHAT BUBBLE & MODAL STYLES (AIRBNB LEVEL)
+   ============================================================================= */
+
+.adm-ai-bubble-root {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  user-select: none;
+}
+
+/* =============================================================================
+   1. WELCOME CALLOUT BADGE (Auto-dismisses in 10s with progress bar)
+   ============================================================================= */
+.adm-ai-welcome-badge {
+  position: absolute;
+  bottom: 64px;
+  right: 0;
+  width: 300px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 18px;
+  padding: 13px 14px 15px 14px;
+  box-shadow: 0 14px 34px -6px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  cursor: pointer;
+  animation: floatInWelcomeBadge 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.adm-ai-welcome-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px -6px rgba(255, 56, 92, 0.18), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Mũi tên nhọn chĩa đúng tâm nút tròn phía dưới */
+.adm-ai-welcome-badge::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  right: 18px;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border-right: 1px solid rgba(226, 232, 240, 0.95);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.95);
+  transform: rotate(45deg);
+  z-index: 1;
+}
+
+@keyframes floatInWelcomeBadge {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.adm-ai-welcome-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #ff385c 0%, #e00b41 60%, #bd1e59 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(225, 29, 72, 0.28);
+}
+
+.adm-ai-welcome-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.adm-ai-welcome-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.adm-ai-welcome-title-row strong {
+  font-size: 0.813rem;
+  font-weight: 750;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.adm-ai-welcome-tag {
+  font-size: 0.625rem;
+  font-weight: 700;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  padding: 1px 5px;
+  border-radius: 10px;
+}
+
+.adm-ai-welcome-text span {
+  font-size: 0.74rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.adm-ai-badge-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  margin-top: -2px;
+  margin-right: -2px;
+}
+
+.adm-ai-badge-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+/* Thanh đếm ngược 10 giây ở đáy badge */
+.adm-ai-badge-timer-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, #ff385c, #f43f5e);
+  width: 100%;
+  animation: shrinkBadgeTimer 10s linear forwards;
+  border-radius: 0 0 18px 18px;
+}
+
+@keyframes shrinkBadgeTimer {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+/* =============================================================================
+   2. LUXURY FLOATING ACTION BUTTON TRIGGER
+   ============================================================================= */
+.adm-ai-trigger-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 48px;
+  background: linear-gradient(135deg, #ff385c 0%, #e00b41 55%, #bd1e59 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  box-shadow: 0 10px 24px -4px rgba(225, 29, 72, 0.45), 0 2px 6px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  transition: all 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  overflow: hidden;
+}
+
+/* Khi mở rộng: Hiện chữ "Trợ Lý AI" trong 15s */
+.adm-ai-trigger-btn.expanded {
+  padding: 0 16px 0 6px;
+  border-radius: 999px;
+  gap: 7px;
+}
+
+/* Khi thu gọn: Ẩn chữ trong 1 phút (60s) thành nút tròn tinh tế */
+.adm-ai-trigger-btn.collapsed {
+  width: 48px;
+  min-width: 48px;
+  padding: 0;
+  border-radius: 50%;
+  justify-content: center;
+  gap: 0;
+}
+
+.adm-ai-trigger-btn:hover {
+  transform: translateY(-2.5px) scale(1.03);
+  box-shadow: 0 16px 32px -4px rgba(225, 29, 72, 0.58), 0 3px 8px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.adm-ai-trigger-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.adm-ai-trigger-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #ff385c, #f43f5e);
+  opacity: 0.35;
+  z-index: -1;
+  filter: blur(8px);
+  animation: pulseAiGlow 3s infinite ease-in-out;
+}
+
+@keyframes pulseAiGlow {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.06); opacity: 0.55; }
+}
+
+.adm-ai-trigger-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.45);
+}
+
+.adm-ai-spark-icon {
+  animation: rotateSparkle 8s linear infinite;
+}
+
+@keyframes rotateSparkle {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg) scale(1.06); }
+  100% { transform: rotate(360deg); }
+}
+
+.adm-ai-trigger-pill {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  transition: max-width 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease, transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.adm-ai-trigger-btn.expanded .adm-ai-trigger-pill {
+  max-width: 120px;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.adm-ai-trigger-btn.collapsed .adm-ai-trigger-pill {
+  max-width: 0;
+  opacity: 0;
+  transform: translateX(8px);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.adm-ai-btn-text {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+}
+
+/* =============================================================================
+   3. LUXURY CHAT WINDOW MODAL
+   ============================================================================= */
+.adm-ai-chat-window {
+  width: 395px;
+  height: 590px;
+  max-height: calc(100vh - 100px);
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 22px;
+  box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.24), 0 4px 16px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUpChatModal 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpChatModal {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Header */
+.adm-ai-chat-header {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  padding: 13px 18px;
+  background: linear-gradient(135deg, #ff385c 0%, #e00b41 55%, #bd1e59 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.16);
+}
+
+.adm-ai-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adm-ai-avatar-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.adm-ai-brand-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-ai-title-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.adm-ai-title {
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.94rem;
+  font-weight: 750;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.adm-ai-online-badge {
+  font-size: 0.625rem;
+  background: rgba(16, 185, 129, 0.25);
+  color: #ecfdf5;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+.adm-ai-subtitle {
+  margin: 2px 0 0 0;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.adm-ai-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.adm-ai-hdr-btn {
+  background: rgba(255, 255, 255, 0.16);
+  border: none;
+  color: #ffffff;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.adm-ai-hdr-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+  transform: scale(1.05);
+}
+
+/* Chat Messages Body */
+.adm-ai-chat-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  background: #f8fafc;
+  scroll-behavior: smooth;
+  position: relative;
+}
+
+.adm-ai-chat-body-inner {
+  padding: 18px 16px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.adm-ai-chat-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.adm-ai-chat-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* Message Groups */
+.adm-ai-msg-group {
+  display: flex;
+  gap: 9px;
+  max-width: 93%;
+}
+
+.adm-ai-msg-group.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.adm-ai-msg-group.ai {
+  align-self: flex-start;
+}
+
+.adm-ai-msg-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff385c, #e11d48);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 3px;
+  box-shadow: 0 2px 6px rgba(255, 56, 92, 0.22);
+}
+
+.adm-ai-msg-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Chat Bubbles */
+.adm-ai-bubble {
+  padding: 11px 15px;
+  border-radius: 18px;
+  font-size: 0.835rem;
+  line-height: 1.5;
+  position: relative;
+  word-break: break-word;
+}
+
+.adm-ai-bubble.user {
+  background: linear-gradient(135deg, #ff385c, #e00b41);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 12px rgba(255, 56, 92, 0.22);
+}
+
+.adm-ai-bubble.ai {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.adm-ai-text-render {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.adm-ai-text-paragraph {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.adm-ai-text-space {
+  height: 6px;
+}
+
+.adm-ai-bold-text {
+  font-weight: 750;
+  color: #0f172a;
+}
+
+.adm-ai-bubble.user .adm-ai-bold-text {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.adm-ai-italic-text {
+  font-style: italic;
+  opacity: 0.92;
+}
+
+.adm-ai-inline-code {
+  background: #fff1f3;
+  color: #e00b41;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 0.82em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  border: 1px solid #fecdd3;
+  font-weight: 700;
+}
+
+.adm-ai-bullet-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 2px 0;
+  line-height: 1.5;
+}
+
+.adm-ai-bullet-dot {
+  color: #ff385c;
+  font-weight: bold;
+  font-size: 1.1em;
+  line-height: 1.2;
+}
+
+.adm-ai-bullet-content {
+  flex: 1;
+}
+
+.adm-ai-msg-time {
+  display: block;
+  font-size: 0.65rem;
+  margin-top: 5px;
+  opacity: 0.7;
+  text-align: right;
+}
+
+/* Typing Indicator */
+.adm-ai-bubble.typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 14px;
+  background: #ffffff;
+  width: fit-content;
+}
+
+.adm-ai-typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  animation: bounceTyping 1.4s infinite ease-in-out both;
+}
+
+.adm-ai-typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.adm-ai-typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounceTyping {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; background: #ff385c; }
+}
+
+/* =============================================================================
+   4. PRODUCT CARDS CAROUSEL (Trau chuốt pixel-perfect)
+   ============================================================================= */
+.adm-ai-cards-container {
+  width: 100%;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.adm-ai-cards-carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 2px 10px 2px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  /* Ẩn scrollbar xấu xí */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.adm-ai-cards-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.adm-ai-product-card {
+  width: 228px;
+  min-width: 228px;
+  max-width: 228px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-ai-product-card:hover {
+  transform: translateY(-3px);
+  border-color: #ffb8c6;
+  box-shadow: 0 10px 22px -4px rgba(255, 56, 92, 0.16);
+}
+
+.adm-ai-card-media {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+.adm-ai-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.adm-ai-product-card:hover .adm-ai-card-img {
+  transform: scale(1.04);
+}
+
+.adm-ai-card-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 0.65rem;
+  font-weight: 750;
+  padding: 3px 8px;
+  border-radius: 7px;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+}
+
+.adm-ai-card-badge.hotel {
+  background: rgba(15, 23, 42, 0.76);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.adm-ai-card-badge.tour {
+  background: #0284c7;
+}
+.adm-ai-card-badge.voucher {
+  background: #d97706;
+}
+
+.adm-ai-card-info {
+  padding: 10px 12px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.adm-ai-card-title {
+  margin: 0 0 3px 0;
+  font-size: 0.813rem;
+  font-weight: 750;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.adm-ai-card-sub {
+  margin: 0 0 9px 0;
+  font-size: 0.71rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-ai-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 9px;
+}
+
+.adm-ai-card-price {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: #e00b41;
+}
+
+.adm-ai-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.74rem;
+  font-weight: 750;
+  color: #1e293b;
+}
+
+.adm-ai-card-rating .star-icon {
+  color: #f59e0b;
+  font-size: 13px;
+}
+
+.adm-ai-card-action-btn {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid #fecdd3;
+  background: #fff1f3;
+  color: #e00b41;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.18s ease;
+}
+
+.adm-ai-product-card:hover .adm-ai-card-action-btn {
+  background: linear-gradient(135deg, #ff385c, #e00b41);
+  color: #ffffff;
+  border-color: #ff385c;
+  box-shadow: 0 3px 10px rgba(255, 56, 92, 0.28);
+}
+
+/* =============================================================================
+   5. QUICK REPLIES PILLS (Gợi ý câu hỏi tinh xảo)
+   ============================================================================= */
+.adm-ai-quick-pills-wrap {
+  margin-top: 3px;
+}
+
+.adm-ai-quick-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.adm-ai-pill-btn {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 6px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.adm-ai-pill-icon {
+  color: #ff385c;
+  flex-shrink: 0;
+}
+
+.adm-ai-pill-btn:hover {
+  background: #fff1f3;
+  border-color: #fecdd3;
+  color: #e00b41;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(255, 56, 92, 0.12);
+}
+
+/* =============================================================================
+   6. FOOTER INPUT & PRIVACY SHIELD
+   ============================================================================= */
+.adm-ai-chat-footer {
+  padding: 12px 16px 13px 16px;
+  background: #ffffff;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.adm-ai-input-wrap {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 26px;
+  padding: 4px 5px 4px 15px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.adm-ai-input-wrap:focus-within {
+  border-color: #ff385c;
+  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.12);
+  background: #ffffff;
+}
+
+.adm-ai-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.825rem;
+  color: #0f172a;
+  min-width: 0;
+  line-height: 1.45;
+}
+
+.adm-ai-input::placeholder {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.adm-ai-send-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: #e2e8f0;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.18s ease;
+}
+
+.adm-ai-send-btn.active {
+  background: linear-gradient(135deg, #ff385c 0%, #e00b41 100%);
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(255, 56, 92, 0.35);
+}
+
+.adm-ai-send-btn.active:hover {
+  transform: scale(1.06);
+}
+
+.adm-ai-send-btn:disabled {
+  cursor: not-allowed;
+}
+
+.adm-ai-footer-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 0.67rem;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.adm-ai-shield-icon {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+/* =============================================================================
+   7. RESPONSIVE MOBILE OPTIMIZATIONS
+   ============================================================================= */
+@media (max-width: 480px) {
+  .adm-ai-bubble-root {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .adm-ai-chat-window {
+    width: calc(100vw - 32px);
+    height: 520px;
+    right: 0;
+    border-radius: 18px;
+  }
+
+  .adm-ai-welcome-badge {
+    width: 270px;
+    right: 0;
+  }
+}

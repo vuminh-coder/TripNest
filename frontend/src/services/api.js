@@ -1,5 +1,6 @@
 import { roomsData, experiencesData } from '../data/roomsData';
 import { categories } from '../data/categoriesData';
+import { VIETNAM_PROVINCES, searchProvincesLocal } from '../data/vietnamProvincesData';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
@@ -295,9 +296,15 @@ export const apiService = {
     }
   },
 
-  async getAccommodationById(id) {
+  async getAccommodationById(id, checkIn = null, checkOut = null) {
     try {
-      const res = await fetch(`${API_BASE_URL}/accommodations/${id}`);
+      const params = new URLSearchParams();
+      if (checkIn) params.append('check_in', checkIn);
+      if (checkOut) params.append('check_out', checkOut);
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const res = await fetch(`${API_BASE_URL}/accommodations/${id}${qs}`, {
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) {
         if (res.status === 404) return null;
         throw new Error('Accommodation detail error');
@@ -346,9 +353,15 @@ export const apiService = {
     }
   },
 
-  async getRoomDetail(id) {
+  async getRoomDetail(id, checkIn = null, checkOut = null) {
     try {
-      const res = await fetch(`${API_BASE_URL}/rooms/${id}`);
+      const params = new URLSearchParams();
+      if (checkIn) params.append('check_in', checkIn);
+      if (checkOut) params.append('check_out', checkOut);
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const res = await fetch(`${API_BASE_URL}/rooms/${id}${qs}`, {
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) {
         if (res.status === 404) return null;
         throw new Error('Room detail error');
@@ -362,8 +375,8 @@ export const apiService = {
     }
   },
 
-  async getRoomById(id) {
-    return this.getRoomDetail(id);
+  async getRoomById(id, checkIn = null, checkOut = null) {
+    return this.getRoomDetail(id, checkIn, checkOut);
   },
 
   async getExperiences() {
@@ -387,12 +400,28 @@ export const apiService = {
         body: JSON.stringify(bookingPayload),
       });
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || 'Lỗi đặt phòng');
+        let errData = {};
+        try {
+          errData = await res.json();
+        } catch {}
+        const err = new Error(errData.message || 'Lỗi khi xử lý đặt phòng.');
+        err.status = res.status;
+        err.code = errData.code || (res.status === 409 ? 'ROOM_ALREADY_BOOKED' : 'BOOKING_ERROR');
+        err.data = errData;
+        throw err;
       }
-      return await res.json();
+      const data = await res.json();
+      try {
+        const savedBookings = JSON.parse(localStorage.getItem('tripnest_bookings') || '[]');
+        savedBookings.unshift(data.booking || data);
+        localStorage.setItem('tripnest_bookings', JSON.stringify(savedBookings));
+      } catch {}
+      return data;
     } catch (e) {
-      // Local storage fallback for seamless offline testing
+      if (e.status === 409 || e.code === 'ROOM_ALREADY_BOOKED') {
+        throw e;
+      }
+      // Local storage fallback for offline demo testing
       const savedBookings = JSON.parse(localStorage.getItem('tripnest_bookings') || '[]');
       const newBooking = {
         id: 'TN-' + Math.floor(100000 + Math.random() * 900000),
@@ -403,6 +432,91 @@ export const apiService = {
       savedBookings.unshift(newBooking);
       localStorage.setItem('tripnest_bookings', JSON.stringify(savedBookings));
       return { success: true, booking: newBooking, message: e.message || 'Đặt phòng thành công!' };
+    }
+  },
+
+  // Kiểm tra tính khả dụng của phòng theo ngày
+  async checkRoomAvailability(roomId, checkIn, checkOut, lockToken = null, roomsCount = 1) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/bookings/check-availability`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ roomId, checkIn, checkOut, lockToken, roomsCount }),
+      });
+      if (!res.ok) throw new Error('Lỗi kiểm tra tình trạng phòng');
+      return await res.json();
+    } catch (e) {
+      return { success: true, availability: { is_available: true, status: 'available' } };
+    }
+  },
+
+  // Tạm khóa giữ phòng 15 phút (hỗ trợ cả 1 phòng và nhiều phòng đồng thời)
+  async holdRoom(roomIdOrOptions, checkIn, checkOut, roomsCount = 1) {
+    try {
+      let payload = {};
+      if (typeof roomIdOrOptions === 'object' && roomIdOrOptions !== null) {
+        payload = { ...roomIdOrOptions };
+      } else {
+        payload = {
+          roomId: roomIdOrOptions,
+          checkIn,
+          checkOut,
+          roomsCount,
+        };
+      }
+
+      const res = await fetch(`${API_BASE_URL}/bookings/hold`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        const err = new Error(data.message || 'Không thể khóa giữ phòng.');
+        err.status = res.status;
+        err.code = data.code || 'HOLD_ERROR';
+        err.data = data;
+        throw err;
+      }
+      return data;
+    } catch (e) {
+      if (e.status === 409) throw e;
+      // Fallback local lock if offline
+      return {
+        success: true,
+        data: {
+          lock_token: 'LOCAL_LOCK_' + Date.now(),
+          expires_at: new Date(Date.now() + 15 * 60000).toISOString(),
+          seconds_left: 900,
+        },
+      };
+    }
+  },
+
+  // Giải phóng khóa giữ phòng
+  async releaseRoomHold(lockToken) {
+    if (!lockToken) return;
+    try {
+      await fetch(`${API_BASE_URL}/bookings/release-hold`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ lockToken }),
+      });
+    } catch (e) {
+      console.warn('Error releasing room hold:', e);
+    }
+  },
+
+  // Lấy các khoảng ngày đã kín lịch của 1 phòng
+  async getBookedDates(roomId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/rooms/${roomId}/booked-dates`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Error fetching booked dates');
+      return await res.json();
+    } catch (e) {
+      return { success: true, roomId, bookedRanges: [] };
     }
   },
 
@@ -1169,6 +1283,90 @@ export const apiService = {
       throw err;
     }
     return data;
+  },
+
+  // ==========================================
+  // 8. Tỉnh / Thành phố Việt Nam (Locations API)
+  // ==========================================
+  async getProvinces() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/locations/provinces`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.data?.length) return json.data;
+      }
+    } catch (e) {
+      console.warn('API getProvinces offline, using fallback local data:', e);
+    }
+    return VIETNAM_PROVINCES;
+  },
+
+  async searchLocations(keyword = '') {
+    const q = (keyword || '').trim();
+    if (!q) return this.getProvinces();
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/locations/search?q=${encodeURIComponent(q)}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.data) return json.data;
+      }
+    } catch (e) {
+      console.warn('API searchLocations offline, using local fuzzy search:', e);
+    }
+    return searchProvincesLocal(q, VIETNAM_PROVINCES);
+  },
+
+  // ==========================================
+  // 12. Trợ Lý Ảo AI Du Lịch (AI Travel Assistant)
+  // ==========================================
+  async sendAiChatMessage(message, history = []) {
+    const urls = [
+      `${API_BASE_URL}/ai/chat`,
+      'http://127.0.0.1:8000/api/ai/chat',
+      'http://localhost:8000/api/ai/chat'
+    ];
+    let lastError = null;
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ message, history }),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          return json.data || json;
+        }
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    throw lastError || new Error('Không thể kết nối với Trợ lý AI');
+  },
+
+  async getAiSuggestedPrompts() {
+    const urls = [
+      `${API_BASE_URL}/ai/prompts`,
+      'http://127.0.0.1:8000/api/ai/prompts',
+      'http://localhost:8000/api/ai/prompts'
+    ];
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, { headers: getAuthHeaders() });
+        if (res.ok) {
+          const json = await res.json();
+          return json.data || json;
+        }
+      } catch {}
+    }
+    return [
+      'Tìm villa Đà Lạt săn mây cho gia đình 4-6 người',
+      'Homestay Phú Quốc gần biển có bếp nấu ăn',
+      'Có chỗ nghỉ nào ở Sa Pa có bồn tắm ngâm thảo mộc?',
+      'Gợi ý tour chèo SUP hoặc trải nghiệm thú vị',
+      'Hiện tại có mã giảm giá voucher nào áp dụng được?'
+    ];
   },
 };
 
