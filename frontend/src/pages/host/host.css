@@ -8,6 +8,19 @@
 :root {
   --host-font-base: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --host-font-display: 'Outfit', 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  --host-font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+
+  /* Aliasing Admin Design Tokens for seamless component inheritance */
+  --adm-font-base: var(--host-font-base);
+  --adm-font-display: var(--host-font-display);
+  --adm-font-mono: var(--host-font-mono);
+  --adm-primary: var(--host-primary);
+  --adm-primary-soft: var(--host-primary-soft);
+  --adm-primary-gradient: var(--host-primary-gradient);
+  --adm-text-main: var(--host-text-main);
+  --adm-text-muted: var(--host-text-muted);
+  --adm-border: var(--host-border);
+  --adm-border-strong: var(--host-border-strong);
 
   --host-bg: #f8fafc;
   --host-sidebar-bg: #ffffff;
@@ -75,6 +88,40 @@
     radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.015) 0px, transparent 50%);
 }
 
+/* Strict Typography Inheritance across all Host Portal Components */
+.host-portal-wrapper,
+.host-portal-wrapper button,
+.host-portal-wrapper input,
+.host-portal-wrapper select,
+.host-portal-wrapper textarea,
+.host-portal-wrapper table,
+.host-portal-wrapper th,
+.host-portal-wrapper td {
+  font-family: var(--host-font-base);
+}
+
+.host-portal-wrapper h1,
+.host-portal-wrapper h2,
+.host-portal-wrapper h3,
+.host-portal-wrapper h4,
+.host-portal-wrapper .host-dash-title,
+.host-portal-wrapper .host-panel-title,
+.host-portal-wrapper .page-title-group h1,
+.host-portal-wrapper .adm-hr-kpi-value,
+.host-portal-wrapper .adm-hr-gmv-val,
+.host-portal-wrapper .adm-hr-net-val,
+.host-portal-wrapper .adm-hr-fee-val,
+.host-portal-wrapper .stat-value,
+.host-portal-wrapper .adm-hr-podium-gmv {
+  font-family: var(--host-font-display) !important;
+}
+
+.host-portal-wrapper .host-dash-code-tag,
+.host-portal-wrapper .host-stmt-code,
+.host-portal-wrapper .host-book-booking-code {
+  font-family: var(--host-font-mono) !important;
+}
+
 /* =========================================================================
    1. COLLAPSIBLE HOST SIDEBAR (270px ⇄ 82px)
    ========================================================================= */
@@ -108,8 +155,11 @@
 
 .host-sidebar.collapsed .host-sidebar-header {
   padding: 1.15rem 0.5rem;
-  flex-direction: column;
-  gap: 0.75rem;
+  justify-content: center;
+}
+
+.host-sidebar.collapsed .host-brand {
+  justify-content: center;
 }
 
 .host-brand {
@@ -161,23 +211,33 @@
 }
 
 .host-sidebar-collapse-btn {
-  background: #ffffff;
-  border: 1px solid var(--host-border-strong);
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  color: var(--host-text-muted);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--host-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--host-text-muted);
+  border: 1px solid var(--host-border);
+  background: #ffffff;
   cursor: pointer;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .host-sidebar-collapse-btn:hover {
-  background: #f8fafc;
-  color: var(--host-text-main);
-  border-color: #cbd5e1;
+  background: var(--host-primary-soft);
+  color: var(--host-primary);
+  border-color: var(--host-primary-border);
+}
+
+.host-sidebar.collapsed .host-nav-list {
+  padding: 0.75rem 0.4rem;
+}
+
+.host-sidebar.collapsed .host-nav-item {
+  padding: 0.6rem 0;
+  justify-content: center;
 }
 
 /* Sidebar Navigation Items */
@@ -547,12 +607,13 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  overflow-x: hidden;
 }
 
 .host-header {
-  height: 68px;
+  height: 62px;
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--host-border);
   position: sticky;
   top: 0;
@@ -601,6 +662,7 @@
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  flex-shrink: 0;
 }
 
 .host-search-box {
@@ -635,8 +697,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 0.48rem 0.95rem;
-  border-radius: var(--host-radius-md);
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--host-radius-sm);
   border: 1px solid var(--host-border-strong);
   background: #ffffff;
   color: var(--host-text-main);
@@ -655,32 +717,33 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 0.5rem 1.15rem;
+  padding: 0.46rem 1rem;
   border-radius: var(--host-radius-md);
   border: none;
   background: var(--host-primary-gradient);
   color: #ffffff;
-  font-size: 0.86rem;
+  font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 56, 92, 0.25);
+  box-shadow: 0 2px 8px rgba(255, 56, 92, 0.25);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .host-btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(255, 56, 92, 0.35);
+  box-shadow: 0 4px 14px rgba(255, 56, 92, 0.35);
 }
 
 /* =========================================================================
    3. CONTENT CONTAINER & STAT CARDS
    ========================================================================= */
 .host-content-body {
-  padding: 1.75rem;
+  padding: 1rem 1.5rem;
   flex: 1;
-  max-width: 1360px;
+  max-width: 1440px;
   width: 100%;
   margin: 0 auto;
+  min-width: 0;
 }
 
 .host-stats-grid {

@@ -240,6 +240,18 @@ class UserController extends Controller
             if ($request->has('phone') && !$request->filled('phone_number')) {
                 $request->merge(['phone_number' => $request->input('phone')]);
             }
+            if (!$request->filled('full_name') && $user->full_name) {
+                $request->merge(['full_name' => $user->full_name]);
+            }
+            if (!$request->filled('email') && $account?->email) {
+                $request->merge(['email' => $account->email]);
+            }
+            if (!$request->filled('role') && $account?->role) {
+                $request->merge(['role' => $account->role]);
+            }
+            if (!$request->filled('status') && $account?->status) {
+                $request->merge(['status' => $account->status]);
+            }
 
             // Validate dữ liệu
             $request->validate([
@@ -354,6 +366,78 @@ class UserController extends Controller
                 'success' => false,
                 'error' => $ex->getMessage(),
                 'message' => 'Có lỗi xảy ra khi cập nhật: ' . $ex->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Bật/Tắt khóa tài khoản người dùng (Khóa hoặc Mở khóa)
+     */
+    public function toggleStatus(Request $request, $id)
+    {
+        try {
+            $user = null;
+            $account = null;
+
+            if (is_numeric($id)) {
+                $user = User::with('account')->find($id);
+                if (!$user) {
+                    $user = User::with('account')->where('account_id', $id)->first();
+                }
+                if (!$user) {
+                    $account = Account::find($id);
+                }
+            } else {
+                $user = User::whereHas('account', fn ($q) => $q->where('email', $id))->with('account')->first();
+                if (!$user) {
+                    $account = Account::where('email', $id)->first();
+                }
+            }
+
+            if ($user && !$account) {
+                $account = $user->account ?: Account::find($user->account_id);
+            }
+
+            if (!$account) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy tài khoản người dùng với ID: ' . $id,
+                ], 404);
+            }
+
+            // Chặn admin tự khóa tài khoản của chính mình
+            $currentAdmin = Auth::guard('api')->user();
+            if ($currentAdmin && $account->id === $currentAdmin->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn không thể tự khóa tài khoản quản trị viên của chính mình.',
+                ], 422);
+            }
+
+            $newStatus = $request->input('status');
+            if (!$newStatus) {
+                $newStatus = ($account->status === 'active') ? 'banned' : 'active';
+            }
+
+            $account->update(['status' => $newStatus]);
+            $account->refresh();
+
+            $targetId = $user ? $user->id : $account->id;
+
+            return response()->json([
+                'success' => true,
+                'message' => $newStatus === 'active' ? 'Đã mở khóa tài khoản thành công!' : 'Đã khóa tài khoản thành công!',
+                'status' => $newStatus,
+                'data' => [
+                    'id' => $targetId,
+                    'account_id' => $account->id,
+                    'status' => $newStatus,
+                ]
+            ]);
+        } catch (Throwable $ex) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi cập nhật trạng thái: ' . $ex->getMessage(),
             ], 500);
         }
     }

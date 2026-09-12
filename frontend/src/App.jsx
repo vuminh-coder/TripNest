@@ -655,16 +655,34 @@ function App() {
     const prevRoom = checkoutData?.room;
     setCheckoutData(null);
     setPendingCheckout(null);
-    const targetAccomId = prevRoom?.accommodationId || prevRoom?.accommodation?.id || selectedAccommodation?.id;
+    const targetAccomId =
+      prevRoom?.accommodationId ||
+      prevRoom?.accommodation?.id ||
+      completedBooking?.accommodationId ||
+      selectedAccommodation?.id;
     if (targetAccomId) {
       handleBackToAccommodation(targetAccomId, completedBooking || recentBooking);
-    } else if (selectedRoom) {
+    } else if (prevRoom?.id) {
+      setSelectedRoom(prevRoom);
+      window.history.pushState({}, '', `/room/${prevRoom.id}`);
+    } else if (selectedRoom?.id) {
       window.history.pushState({}, '', `/room/${selectedRoom.id}`);
-    } else if (selectedAccommodation) {
+    } else if (selectedAccommodation?.id) {
       window.history.pushState({}, '', `/accommodation/${selectedAccommodation.id}`);
     } else {
       window.history.pushState({}, '', '/');
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleGoHome = () => {
+    setSelectedRoom(null);
+    setSelectedAccommodation(null);
+    setCheckoutData(null);
+    setPendingCheckout(null);
+    setIsMyTripsOpen(false);
+    setMapTargetAccommodation(null);
+    window.history.pushState({}, '', '/');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -714,6 +732,24 @@ function App() {
         } catch (e) {
           const found = rms.find((r) => String(r.id) === String(urlMapId));
           if (found) setMapTargetAccommodation(found);
+        }
+        return;
+      }
+
+      // Check if URL has book roomId (/book/:id)
+      const urlBookId = getBookingRoomIdFromUrl();
+      if (urlBookId) {
+        try {
+          const single = await apiService.getRoomById(urlBookId);
+          if (single && (single.id || single.title)) {
+            handleStartCheckout(single, {});
+          } else {
+            const found = rms.find((r) => String(r.id) === String(urlBookId));
+            if (found) handleStartCheckout(found, {});
+          }
+        } catch (e) {
+          const found = rms.find((r) => String(r.id) === String(urlBookId));
+          if (found) handleStartCheckout(found, {});
         }
         return;
       }
@@ -1360,6 +1396,15 @@ function App() {
               setAuthModal({ isOpen: true, tab: 'login' });
             }}
             onBack={(completedBooking) => handleBackFromCheckout(completedBooking)}
+            onOpenMyTrips={(completedBooking) => {
+              if (completedBooking) {
+                setRecentBooking(completedBooking);
+              }
+              setCheckoutData(null);
+              setPendingCheckout(null);
+              handleOpenMyTrips();
+            }}
+            onGoHome={handleGoHome}
             onBookingComplete={(order) => {
               handleBookRoom(order);
             }}

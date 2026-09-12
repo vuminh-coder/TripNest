@@ -11,6 +11,7 @@ export { BookingsListSkeleton, WishlistGridSkeleton } from './client/ModalSkelet
 
 // Host Skeletons
 export { HostDashboardSkeleton } from './host/HostDashboardSkeleton';
+export { HostRankingsSkeleton } from './host/HostRankingsSkeleton';
 export { HostAccommodationsSkeleton } from './host/HostAccommodationsSkeleton';
 export { HostBookingsSkeleton } from './host/HostBookingsSkeleton';
 export { HostFinancialsSkeleton } from './host/HostFinancialsSkeleton';

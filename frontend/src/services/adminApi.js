@@ -540,36 +540,41 @@ export const adminService = {
 
   async toggleUserStatus(user) {
     const userId = typeof user === 'object' ? user.id : user;
-    const targetUser = typeof user === 'object' ? user : getStoredData().users.find((u) => u.id === userId);
-    const newStatus = targetUser?.status === 'active' ? 'banned' : 'active';
+    const currentStatus = typeof user === 'object' ? user.status : null;
+    const storedUsers = getStoredData().users || [];
+    const targetUser =
+      typeof user === 'object'
+        ? user
+        : storedUsers.find((u) => u.id === userId || u.account_id === userId);
+    const newStatus = (currentStatus || targetUser?.status) === 'active' ? 'banned' : 'active';
 
-    if (targetUser) {
-      const formData = new FormData();
-      formData.append('full_name', targetUser.name);
-      formData.append('email', targetUser.email);
-      formData.append('role', targetUser.role || 'guest');
-      formData.append('status', newStatus);
-
-      const response = await adminFetch(`${API_BASE_URL}/admin/users/${userId}/update`, {
-        method: 'POST',
-        body: formData,
+    try {
+      const response = await adminFetch(`${API_BASE_URL}/admin/users/${userId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) {
-        const err = await response.json();
+        const err = await response.json().catch(() => ({}));
         throw new Error(err.message || 'Không thể cập nhật trạng thái người dùng.');
       }
-    }
 
-    const data = getStoredData();
-    data.users = data.users.map((u) => {
-      if (u.id === userId) {
-        return { ...u, status: newStatus };
-      }
-      return u;
-    });
-    saveStoredData(data);
-    return data.users;
+      const resJson = await response.json().catch(() => ({}));
+      const updatedStatus = resJson?.status || resJson?.data?.status || newStatus;
+
+      const data = getStoredData();
+      data.users = (data.users || []).map((u) => {
+        if (u.id === userId || u.account_id === userId) {
+          return { ...u, status: updatedStatus };
+        }
+        return u;
+      });
+      saveStoredData(data);
+      return data.users;
+    } catch (err) {
+      console.error('Lỗi khi gọi API toggleUserStatus:', err);
+      throw err;
+    }
   },
 
   async updateUserRole(userId, newRole) {

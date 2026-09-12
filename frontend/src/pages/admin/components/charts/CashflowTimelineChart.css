@@ -332,17 +332,15 @@
   100% { r: 16; opacity: 0; }
 }
 
-/* Tooltip */
+/* Tooltip - Elegant Light SaaS Theme */
 .adm-timeline-tooltip {
   position: absolute;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #ffffff;
+  border: 1px solid var(--adm-border, #e2e8f0);
   border-radius: var(--adm-radius-lg, 10px);
   padding: 10px 14px;
-  color: #ffffff;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  color: var(--adm-text-main, #0f172a);
+  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
   pointer-events: none;
   z-index: 30;
   min-width: 250px;
@@ -362,10 +360,10 @@
   gap: 10px;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--adm-text-main, #0f172a);
   padding-bottom: 6px;
   margin-bottom: 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #f1f5f9;
   white-space: nowrap;
 }
 
@@ -383,10 +381,12 @@
 .adm-tooltip-header .tooltip-badge {
   margin-left: auto;
   font-size: 0.68rem;
-  background: rgba(255, 255, 255, 0.15);
-  padding: 1px 6px;
+  font-weight: 700;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 1px 7px;
   border-radius: 4px;
-  color: #e2e8f0;
+  color: #475569;
 }
 
 .adm-tooltip-body {
@@ -399,25 +399,26 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.73rem;
+  font-size: 0.74rem;
   white-space: nowrap;
 }
 
 .adm-tooltip-row .tooltip-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .adm-tooltip-row .tooltip-dot.gmv { background: #ff385c; }
-.adm-tooltip-row .tooltip-dot.commission { background: #34d399; }
-.adm-tooltip-row .tooltip-dot.payouts { background: #38bdf8; }
-.adm-tooltip-row .tooltip-dot.escrow { background: #fbbf24; }
-.adm-tooltip-row .tooltip-dot.refunds { background: #f87171; }
+.adm-tooltip-row .tooltip-dot.commission { background: #10b981; }
+.adm-tooltip-row .tooltip-dot.payouts { background: #0ea5e9; }
+.adm-tooltip-row .tooltip-dot.escrow { background: #f59e0b; }
+.adm-tooltip-row .tooltip-dot.refunds { background: #ef4444; }
 
 .adm-tooltip-row .tooltip-name {
-  color: #94a3b8;
+  color: #64748b;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -430,12 +431,12 @@
   white-space: nowrap;
 }
 
-.text-coral { color: #fecdd3; font-weight: 800; }
-.text-emerald { color: #6ee7b7; font-weight: 700; }
-.text-sky { color: #7dd3fc; font-weight: 700; }
-.text-amber { color: #fde68a; font-weight: 700; }
-.text-rose { color: #fca5a5; font-weight: 700; }
-.text-muted-sub { color: #cbd5e1; }
+.text-coral { color: #e11d48 !important; font-weight: 800; }
+.text-emerald { color: #059669 !important; font-weight: 700; }
+.text-sky { color: #0284c7 !important; font-weight: 700; }
+.text-amber { color: #d97706 !important; font-weight: 700; }
+.text-rose { color: #e11d48 !important; font-weight: 700; }
+.text-muted-sub { color: #64748b !important; font-weight: 600; }
 
 @media (max-width: 900px) {
   .adm-stream-tabs-nav {

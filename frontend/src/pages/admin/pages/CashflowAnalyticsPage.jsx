@@ -51,8 +51,8 @@ const formatDate = (dateString) => {
 export const CashflowAnalyticsPage = () => {
   const toast = useToast();
 
-  // Filter States
-  const [period, setPeriod] = useState('month'); // 'week' | 'month' | 'quarter' | 'year'
+  // Filter States (Default: 7 ngày)
+  const [period, setPeriod] = useState('week'); // 'week' | 'month' | 'quarter' | 'year'
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedQuarter, setSelectedQuarter] = useState(3);
 

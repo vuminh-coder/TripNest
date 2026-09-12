@@ -32,6 +32,8 @@ import {
   TbFileInvoice,
   TbLockCheck,
   TbHeartHandshake,
+  TbHome,
+  TbTicket,
 } from 'react-icons/tb';
 
 export const BookingCheckoutPage = ({
@@ -42,6 +44,8 @@ export const BookingCheckoutPage = ({
   onRequireLogin,
   onBack,
   onBookingComplete,
+  onOpenMyTrips,
+  onGoHome,
 }) => {
   // Step Wizard State: 1 = Review Trip, 2 = Guest Info, 3 = Payment & Confirmation
   const [currentStep, setCurrentStep] = useState(1);
@@ -244,6 +248,83 @@ export const BookingCheckoutPage = ({
       apiService.releaseRoomHold(lockToken);
     }
     onBack();
+  };
+
+  // Safe accommodation resolution for navigation back to parent/room
+  const targetAccomId =
+    room?.accommodationId ||
+    room?.accommodation?.id ||
+    bookingParams?.accommodationId ||
+    bookingParams?.room?.accommodationId ||
+    room?.id;
+
+  const targetAccomTitle =
+    room?.accommodation?.nameVi ||
+    room?.accommodation?.title ||
+    bookingParams?.accommodationTitle ||
+    room?.accommodationTitle ||
+    room?.roomNameVi ||
+    room?.title;
+
+  const handleNavigateToTrips = () => {
+    const completedOrder = {
+      id: bookingId,
+      bookingCode: bookingId,
+      code: bookingId,
+      roomId: room.id,
+      roomTitle: room.roomNameVi || room.title,
+      accommodationId: targetAccomId,
+      accommodationTitle: targetAccomTitle,
+      checkIn,
+      checkOut,
+      nights,
+      guests,
+      totalPrice: grandTotal,
+      status: 'confirmed',
+      createdAt: new Date().toISOString(),
+    };
+    if (onOpenMyTrips) {
+      onOpenMyTrips(completedOrder);
+    } else if (onBack) {
+      onBack(completedOrder);
+    } else {
+      window.history.pushState({}, '', '/trips');
+      window.location.href = '/trips';
+    }
+  };
+
+  const handleReturnToAccommodation = () => {
+    const completedOrder = {
+      id: bookingId,
+      bookingCode: bookingId,
+      code: bookingId,
+      roomId: room.id,
+      roomTitle: room.roomNameVi || room.title,
+      accommodationId: targetAccomId,
+      accommodationTitle: targetAccomTitle,
+      checkIn,
+      checkOut,
+      nights,
+      guests,
+      totalPrice: grandTotal,
+      status: 'confirmed',
+      createdAt: new Date().toISOString(),
+    };
+    if (onBack) {
+      onBack(completedOrder);
+    } else {
+      window.history.pushState({}, '', '/');
+      window.location.href = '/';
+    }
+  };
+
+  const handleNavigateHome = () => {
+    if (onGoHome) {
+      onGoHome();
+    } else {
+      window.history.pushState({}, '', '/');
+      window.location.href = '/';
+    }
   };
 
   // Sync profile data when user logs in during checkout
@@ -520,31 +601,38 @@ export const BookingCheckoutPage = ({
 
           <div className="success-actions-row">
             <button
+              type="button"
               className="primary-gradient-btn"
-              onClick={() => {
-                if (onBack) {
-                  onBack({
-                    id: bookingId,
-                    bookingCode: bookingId,
-                    code: bookingId,
-                    roomId: room.id,
-                    roomTitle: room.roomNameVi || room.title,
-                    accommodationId: accommodation?.id,
-                    accommodationTitle: accommodation?.nameVi || accommodation?.title,
-                    checkIn,
-                    checkOut,
-                    nights,
-                    guests,
-                    totalPrice: grandTotal,
-                    status: 'confirmed',
-                    createdAt: new Date().toISOString(),
-                  });
-                }
-              }}
+              onClick={handleNavigateToTrips}
+              title="Xem danh sách đặt phòng và vé điện tử của bạn"
+            >
+              <TbTicket style={{ fontSize: '1.2rem' }} /> Xem chuyến đi của tôi
+            </button>
+
+            <button
+              type="button"
+              className="secondary-outline-btn"
+              onClick={handleReturnToAccommodation}
+              title="Quay lại xem chỗ nghỉ này"
             >
               <TbArrowLeft /> Quay lại chỗ ở
             </button>
-            <button className="secondary-outline-btn" onClick={() => window.print()}>
+
+            <button
+              type="button"
+              className="secondary-outline-btn"
+              onClick={handleNavigateHome}
+              title="Khám phá các điểm đến khác trên TripNest"
+            >
+              <TbHome /> Về trang chủ
+            </button>
+
+            <button
+              type="button"
+              className="secondary-outline-btn"
+              onClick={() => window.print()}
+              title="In hoặc lưu file PDF vé xác nhận"
+            >
               <TbPrinter /> In vé xác nhận
             </button>
           </div>
@@ -561,8 +649,20 @@ export const BookingCheckoutPage = ({
       <div className="checkout-inner-container">
         {/* Top Header Navigation */}
         <div className="checkout-nav-bar">
-          <button className="checkout-back-btn" onClick={handleExitCheckout} title="Quay lại chỗ ở">
-            <TbArrowLeft /> Quay lại
+          <button
+            type="button"
+            className="checkout-back-btn"
+            onClick={() => {
+              if (currentStep > 1) {
+                setCurrentStep((prev) => prev - 1);
+                window.scrollTo({ top: 140, behavior: 'smooth' });
+              } else {
+                handleExitCheckout();
+              }
+            }}
+            title={currentStep > 1 ? `Quay lại Bước ${currentStep - 1}` : 'Quay lại chỗ ở'}
+          >
+            <TbArrowLeft /> {currentStep > 1 ? `Quay lại Bước ${currentStep - 1}` : 'Quay lại chỗ ở'}
           </button>
           <div className="checkout-header-center">
             <h1 className="checkout-page-title">Xác nhận & Thanh toán</h1>
@@ -625,9 +725,12 @@ export const BookingCheckoutPage = ({
         <div className="checkout-stepper-wrap">
           {/* Step 1 Pill */}
           <div
-            className={`stepper-step ${currentStep === 1 ? 'active' : 'completed'} ${currentStep > 1 ? 'clickable' : ''}`}
-            onClick={() => { if (currentStep > 1) setCurrentStep(1); }}
-            title={currentStep > 1 ? 'Nhấn để quay lại Bước 1' : ''}
+            className={`stepper-step ${currentStep === 1 ? 'active' : 'completed'} clickable`}
+            onClick={() => {
+              setCurrentStep(1);
+              window.scrollTo({ top: 140, behavior: 'smooth' });
+            }}
+            title="Nhấn để xem lại chi tiết chuyến đi"
           >
             <div className="step-circle">
               {currentStep > 1 ? <TbCheck /> : '1'}
@@ -639,9 +742,12 @@ export const BookingCheckoutPage = ({
 
           {/* Step 2 Pill */}
           <div
-            className={`stepper-step ${currentStep === 2 ? 'active' : currentStep > 2 ? 'completed' : 'pending'} ${currentStep > 2 ? 'clickable' : ''}`}
-            onClick={() => { if (currentStep > 2) setCurrentStep(2); }}
-            title={currentStep > 2 ? 'Nhấn để quay lại Bước 2' : ''}
+            className={`stepper-step ${currentStep === 2 ? 'active' : currentStep > 2 ? 'completed' : 'pending'} clickable`}
+            onClick={() => {
+              setCurrentStep(2);
+              window.scrollTo({ top: 140, behavior: 'smooth' });
+            }}
+            title="Nhấn để xem/sửa thông tin khách"
           >
             <div className="step-circle">
               {currentStep > 2 ? <TbCheck /> : '2'}
@@ -652,7 +758,17 @@ export const BookingCheckoutPage = ({
           <div className={`stepper-line ${currentStep >= 3 ? 'completed' : ''}`} />
 
           {/* Step 3 Pill */}
-          <div className={`stepper-step ${currentStep === 3 ? 'active' : 'pending'}`}>
+          <div
+            className={`stepper-step ${currentStep === 3 ? 'active' : 'pending'} ${currentStep >= 2 ? 'clickable' : ''}`}
+            onClick={(e) => {
+              if (currentStep === 2) {
+                handleProceedToStep3(e);
+              } else if (currentStep === 1) {
+                handleProceedToStep2();
+              }
+            }}
+            title="Nhấn để đến bước thanh toán"
+          >
             <div className="step-circle">3</div>
             <span className="step-text">Thanh toán</span>
           </div>
@@ -745,6 +861,13 @@ export const BookingCheckoutPage = ({
 
                 {/* Step 1 Action Button */}
                 <div className="wizard-action-buttons-row">
+                  <button
+                    type="button"
+                    className="wizard-prev-step-btn"
+                    onClick={handleExitCheckout}
+                  >
+                    <TbArrowLeft /> Quay lại chỗ ở
+                  </button>
                   <button
                     type="button"
                     className="wizard-next-step-btn"
@@ -1153,10 +1276,20 @@ export const BookingCheckoutPage = ({
                   src={room.images?.[0] || room.images}
                   alt={room.title}
                   className="summary-luxury-thumb"
+                  onClick={handleExitCheckout}
+                  title="Nhấp để xem lại phòng này"
+                  style={{ cursor: 'pointer' }}
                 />
                 <div className="summary-luxury-info">
                   <span className="summary-type-tag">{room.type || 'Biệt thự nghỉ dưỡng'} · {room.city}</span>
-                  <h4 className="summary-room-name">{room.title}</h4>
+                  <h4
+                    className="summary-room-name"
+                    onClick={handleExitCheckout}
+                    title="Nhấp để xem lại phòng này"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {room.title}
+                  </h4>
                   <div className="summary-rating-row">
                     <TbStarFilled style={{ color: '#ff385c', fontSize: '0.95rem' }} />
                     <strong className="summary-score">{room.rating?.toFixed(2) || '4.96'}</strong>

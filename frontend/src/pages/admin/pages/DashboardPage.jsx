@@ -37,8 +37,8 @@ export const DashboardPage = ({
 }) => {
   const toast = useToast();
 
-  // Period filter states
-  const [period, setPeriod] = useState('month'); // 'week' | 'month' | 'quarter' | 'year'
+  // Period filter states (Default: 7 ngày)
+  const [period, setPeriod] = useState('week'); // 'week' | 'month' | 'quarter' | 'year'
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedQuarter, setSelectedQuarter] = useState(3);
 

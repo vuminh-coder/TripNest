@@ -18,6 +18,14 @@ import {
   TbBuilding,
   TbCompass,
   TbCrown,
+  TbSwimming,
+  TbSunset,
+  TbTent,
+  TbShip,
+  TbBed,
+  TbBuildingCommunity,
+  TbStar,
+  TbGlassFull,
 } from 'react-icons/tb';
 import { useToast } from '@/context/ToastContext';
 import './CategoryModal.css';
@@ -30,11 +38,15 @@ const ICON_PRESETS = [
   { name: 'TbMountain', icon: TbMountain, label: 'Núi non' },
   { name: 'TbCampfire', icon: TbCampfire, label: 'Cắm trại' },
   { name: 'TbSailboat', icon: TbSailboat, label: 'Thuyền / Hồ' },
+  { name: 'TbSwimming', icon: TbSwimming, label: 'Hồ bơi' },
   { name: 'TbTree', icon: TbTree, label: 'Nhiệt đới' },
   { name: 'TbFlame', icon: TbFlame, label: 'Thịnh hành' },
+  { name: 'TbSunset', icon: TbSunset, label: 'Hoàng hôn' },
   { name: 'TbCoffee', icon: TbCoffee, label: 'Nghỉ dưỡng' },
+  { name: 'TbBuildingCommunity', icon: TbBuildingCommunity, label: 'Resort' },
   { name: 'TbSun', icon: TbSun, label: 'Mùa hè' },
-  { name: 'TbCrown', icon: TbCrown, label: 'Cao cấp' },
+  { name: 'TbCrown', icon: TbCrown, label: 'VIP / Luxe' },
+  { name: 'TbStar', icon: TbStar, label: 'Yêu thích' },
 ];
 
 export const CategoryModal = ({

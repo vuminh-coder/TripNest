@@ -17,7 +17,7 @@ export const CashflowTimelineChart = ({
   data = [],
   timeline = [],
   loading = false,
-  period = 'month',
+  period = 'week',
 }) => {
   // 4 Dedicated Stream Tabs: 'all' | 'commission' | 'payouts' | 'escrow'
   const [activeTab, setActiveTab] = useState('all');

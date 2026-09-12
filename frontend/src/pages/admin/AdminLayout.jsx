@@ -225,9 +225,28 @@ export const AdminLayout = ({
   };
 
   // Users Actions
-  const handleToggleUserStatus = async (userId) => {
-    const updated = await adminService.toggleUserStatus(userId);
-    setUsers(updated);
+  const handleToggleUserStatus = async (userOrId) => {
+    try {
+      const isObj = typeof userOrId === 'object';
+      const currentStatus = isObj ? userOrId.status : users.find((u) => u.id === userOrId)?.status;
+      const willBeActive = currentStatus !== 'active';
+
+      const updated = await adminService.toggleUserStatus(userOrId);
+      setUsers(updated);
+
+      toast.success(
+        willBeActive ? 'Đã mở khóa tài khoản!' : 'Đã khóa tài khoản!',
+        willBeActive
+          ? 'Tài khoản người dùng đã được mở khóa và có thể đăng nhập bình thường.'
+          : 'Tài khoản người dùng đã bị khóa khỏi hệ thống.'
+      );
+    } catch (err) {
+      console.error('Lỗi khi đổi trạng thái tài khoản:', err);
+      toast.error(
+        'Không thể thay đổi trạng thái',
+        err.message || 'Đã có lỗi xảy ra từ máy chủ khi thao tác.'
+      );
+    }
   };
 
   const handleSaveUser = async (userData) => {

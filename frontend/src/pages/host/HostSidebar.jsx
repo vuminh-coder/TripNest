@@ -20,6 +20,7 @@ import {
   TbShieldCheck,
   TbLogin,
   TbExternalLink,
+  TbTrophy,
 } from 'react-icons/tb';
 import { apiService } from '@/services/api';
 import { useToast } from '@/context/ToastContext';
@@ -156,10 +157,11 @@ export const HostSidebar = ({
       group: 'Vận Hành Đón Khách',
       items: [
         { id: 'accommodations', label: 'Cơ Sở Lưu Trú', icon: TbBuildingCastle },
+        { id: 'rankings', label: 'Bảng Xếp Hạng Chỗ Nghỉ', icon: TbTrophy },
         { id: 'new_listing', label: 'Đăng Ký Chỗ Nghỉ', icon: TbPlus },
         {
           id: 'bookings',
-          label: 'Đơn Đặt Phòng (Host)',
+          label: 'Đơn Đặt Phòng',
           icon: TbCalendarEvent,
           badge: pendingBookingsCount > 0 ? pendingBookingsCount : null,
         },
@@ -196,7 +198,7 @@ export const HostSidebar = ({
           )}
         </div>
 
-        {!collapsed ? (
+        {!collapsed && (
           <button
             type="button"
             className="host-sidebar-collapse-btn"
@@ -204,15 +206,6 @@ export const HostSidebar = ({
             title="Thu gọn thanh bên"
           >
             <TbChevronLeft />
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="host-sidebar-collapse-btn collapsed"
-            onClick={() => setCollapsed(false)}
-            title="Mở rộng thanh bên"
-          >
-            <TbChevronRight />
           </button>
         )}
       </div>
@@ -272,7 +265,7 @@ export const HostSidebar = ({
           </div>
         ))}
 
-        {/* Nút mở rộng khi Sidebar đang thu gọn */}
+        {/* Nút mở rộng khi Sidebar đang thu gọn (đồng bộ 100% Admin) */}
         {collapsed && (
           <div
             style={{
@@ -285,14 +278,18 @@ export const HostSidebar = ({
               type="button"
               className="host-nav-item"
               onClick={() => setCollapsed(false)}
-              title="Mở rộng thanh bên"
+              title="Mở rộng thanh bên (Click để mở rộng)"
               style={{
                 color: 'var(--host-primary)',
                 background: 'var(--host-primary-soft)',
+                border: '1px solid var(--host-primary-border)',
+                borderRadius: '7px',
+                fontWeight: 700,
                 justifyContent: 'center',
+                padding: '0.6rem 0',
               }}
             >
-              <TbSparkles />
+              <TbChevronRight style={{ fontSize: '1.35rem' }} />
             </button>
           </div>
         )}
@@ -325,7 +322,7 @@ export const HostSidebar = ({
                   </span>
                 )}
                 <span className="host-user-popover-status">
-                  <span className="host-status-dot-inline" /> Trực tuyến · Kênh Host
+                  <span className="host-status-dot-inline" /> Trực tuyến · Kênh Chủ Nhà
                 </span>
               </div>
             </div>
@@ -348,7 +345,7 @@ export const HostSidebar = ({
                 onClick={handleSwitchAccount}
               >
                 <TbSwitchHorizontal />
-                <span>Đổi tài khoản Host</span>
+                <span>Đổi tài khoản khác</span>
               </button>
 
               <div className="host-user-popover-divider" />
@@ -411,7 +408,7 @@ export const HostSidebar = ({
           <div
             className="host-user-card guest-mode"
             onClick={handleSwitchAccount}
-            title="Chưa đăng nhập. Nhấp để đăng nhập Host"
+            title="Chưa đăng nhập. Nhấp để đăng nhập"
           >
             <div className="host-user-avatar-wrap">
               <div className="host-user-initials guest">
@@ -423,7 +420,7 @@ export const HostSidebar = ({
               <>
                 <div className="host-user-info">
                   <span className="host-user-name">Chưa đăng nhập</span>
-                  <span className="host-user-role text-muted">Bấm để đăng nhập Host</span>
+                  <span className="host-user-role text-muted">Bấm để đăng nhập</span>
                 </div>
                 <button
                   type="button"

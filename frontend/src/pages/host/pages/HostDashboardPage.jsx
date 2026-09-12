@@ -11,14 +11,20 @@ import {
   TbPlus,
   TbSparkles,
   TbInbox,
+  TbTrendingUp,
+  TbClock,
+  TbCoins,
+  TbFilter,
 } from 'react-icons/tb';
 import { apiService } from '@/services/api';
 import { HostDashboardSkeleton } from '@/components/common/skeletons';
+import HostCashflowTimelineChart from '../components/charts/HostCashflowTimelineChart';
+import HostAccommodationDonut from '../components/charts/HostAccommodationDonut';
 
 export const HostDashboardPage = ({
   listings = [],
   bookings = [],
-  bankInfo = { bankName: 'Vietcombank (VCB)', accountNumber: '9988776655', accountHolder: 'MINH VŨ' },
+  bankInfo = null,
   availableBalance = 0,
   pendingEscrowBalance = 0,
   onNavigate,
@@ -31,23 +37,33 @@ export const HostDashboardPage = ({
   const [statsData, setStatsData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Period filters (Default: 7 ngày): 'week' | 'month' | 'quarter' | 'year'
+  const [period, setPeriod] = useState('week');
+  const [selectedQuarter, setSelectedQuarter] = useState(Math.ceil((new Date().getMonth() + 1) / 3));
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
   useEffect(() => {
     const loadStats = async () => {
+      setLoading(true);
       try {
-        const res = await apiService.getHostDashboardStats();
+        const res = await apiService.getHostDashboardStats({
+          period,
+          quarter: selectedQuarter,
+          year: selectedYear,
+        });
         if (res && res.success) {
           setStatsData(res);
         }
       } catch (e) {
-        // Fallback to computed props
+        console.warn('Lỗi khi tải thống kê Host:', e);
       } finally {
         setLoading(false);
       }
     };
     loadStats();
-  }, []);
+  }, [period, selectedQuarter, selectedYear]);
 
-  if (loading && !statsData && listings.length === 0 && bookings.length === 0) {
+  if (loading && !statsData) {
     return <HostDashboardSkeleton />;
   }
 
@@ -56,7 +72,6 @@ export const HostDashboardPage = ({
     return `${Number(val || 0).toLocaleString('vi-VN')} ₫`;
   };
 
-  // Helper chuyển đổi định dạng ngày sang DD/MM/YYYY chuẩn tiếng Việt
   const formatDateVN = (dateStr) => {
     if (!dateStr) return '';
     if (dateStr.includes('/')) return dateStr;
@@ -67,104 +82,215 @@ export const HostDashboardPage = ({
     return dateStr;
   };
 
-  const validBookings = bookings.filter(
-    (b) => b.status === 'confirmed' || b.status === 'checked_in' || b.status === 'completed'
-  );
   const activeStayCount = bookings.filter((b) => b.status === 'checked_in').length;
   const pendingCount = bookings.filter((b) => b.status === 'pending').length;
 
+  const netBal = statsData?.kpis?.netEarningsVND ?? availableBalance;
+  const escrowBal = statsData?.kpis?.escrowPendingVND ?? pendingEscrowBalance;
+  const totalGmv = statsData?.kpis?.totalRevenueVND ?? (netBal + escrowBal);
+
   return (
-    <div className="host-dash-container">
-      {/* 1. Header Tinh Gọn: Tiêu đề & Nút Tạo chỗ ở mới */}
-      <div className="host-dash-header">
-        <div>
-          <h2 className="host-dash-title">
-            Tổng Quan Hoạt Động
-          </h2>
+    <div className={`host-dash-container ${loading ? 'sk-refresh-overlay' : ''}`}>
+      {/* 1. Header Toolbar với Bộ Chọn Chu Kỳ Thời Gian (Period Selector) - Luxury SaaS Style */}
+      <div className="host-dash-header-toolbar">
+        <div className="host-dash-header-left">
+          <h1 className="host-dash-title">
+            Tổng Quan Kinh Doanh
+          </h1>
           <p className="host-dash-subtitle">
-            Hiệu suất kinh doanh và quản lý lưu trú thời gian thực của bạn
+            Hiệu suất doanh thu, cơ cấu cơ sở lưu trú và lịch trình dòng tiền
           </p>
         </div>
 
-        <button
-          type="button"
-          className="host-btn-primary"
-          onClick={onOpenWizard}
-          style={{ padding: '0.55rem 1.15rem', fontSize: '0.84rem', gap: '6px' }}
-        >
-          <TbPlus style={{ fontSize: '1.1rem' }} /> Đăng Ký Chỗ Ở Mới
-        </button>
+        <div className="host-dash-toolbar-controls">
+          {/* Period Selector Pills */}
+          <div className="host-dash-period-pills">
+            <button
+              type="button"
+              className={`host-dash-pill ${period === 'week' ? 'active' : ''}`}
+              onClick={() => setPeriod('week')}
+            >
+              7 Ngày
+            </button>
+            <button
+              type="button"
+              className={`host-dash-pill ${period === 'month' ? 'active' : ''}`}
+              onClick={() => setPeriod('month')}
+            >
+              Tháng Này
+            </button>
+            <button
+              type="button"
+              className={`host-dash-pill ${period === 'quarter' ? 'active' : ''}`}
+              onClick={() => setPeriod('quarter')}
+            >
+              Quý {selectedQuarter}
+            </button>
+            <button
+              type="button"
+              className={`host-dash-pill ${period === 'year' ? 'active' : ''}`}
+              onClick={() => setPeriod('year')}
+            >
+              Cả Năm
+            </button>
+          </div>
+
+          {/* Sub-selects for Quarter/Year */}
+          {period === 'quarter' && (
+            <select
+              className="host-dash-sub-select"
+              value={selectedQuarter}
+              onChange={(e) => setSelectedQuarter(Number(e.target.value))}
+            >
+              <option value={1}>Quý 1 (T1-T3)</option>
+              <option value={2}>Quý 2 (T4-T6)</option>
+              <option value={3}>Quý 3 (T7-T9)</option>
+              <option value={4}>Quý 4 (T10-T12)</option>
+            </select>
+          )}
+
+          {period === 'year' && (
+            <select
+              className="host-dash-sub-select"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+            >
+              <option value={2026}>Năm 2026</option>
+              <option value={2025}>Năm 2025</option>
+            </select>
+          )}
+
+          {/* Action CTA Button */}
+          <button
+            type="button"
+            className="host-dash-btn-add"
+            onClick={onOpenWizard}
+          >
+            <TbPlus /> <span>Đăng Ký Chỗ Nghỉ</span>
+          </button>
+        </div>
       </div>
 
-      {/* 2. Lưới 3 Thẻ Chỉ Số Cốt Lõi (Minimalist KPI Cards) */}
+      {/* 2. Lưới 4 Thẻ Chỉ Số Cốt Lõi (Executive Glassmorphism KPI Cards) */}
       <div className="host-dash-kpi-grid">
-        {/* Thẻ 1: Số dư khả dụng & Tạm giữ Escrow */}
-        <div className="host-stat-card" style={{ margin: 0 }}>
-          <div>
-            <div className="host-stat-label">Số dư khả dụng (Đã về ví)</div>
-            <div className="host-stat-value" style={{ color: '#059669', whiteSpace: 'nowrap' }}>
-              {formatPrice(statsData?.kpis?.netEarningsVND ?? availableBalance)}
+        {/* Thẻ 1: Số dư khả dụng (Đã về ví - 88%) */}
+        <div className="stat-card-glass card-border-emerald">
+          <div className="stat-card-content">
+            <span className="stat-label">Số Dư Ví Khả Dụng</span>
+            <div className="stat-value text-emerald">
+              {formatPrice(netBal)}
             </div>
-            <span className={`host-dash-balance-sub ${(statsData?.kpis?.escrowPendingVND ?? pendingEscrowBalance) > 0 ? 'pending' : 'cleared'}`}>
-              {(statsData?.kpis?.escrowPendingVND ?? pendingEscrowBalance) > 0
-                ? `⏳ ${formatPrice(statsData?.kpis?.escrowPendingVND ?? pendingEscrowBalance)} chờ Admin giải ngân`
-                : 'Đã giải ngân toàn bộ'}
-            </span>
+            <div className="stat-trend trend-emerald">
+              <TbSparkles />
+              <span>Sẵn sàng rút về ví</span>
+            </div>
           </div>
-          <div className="host-stat-icon-wrap earnings">
+          <div className="stat-icon-wrap green">
             <TbCoin />
           </div>
         </div>
 
-        {/* Thẻ 2: Lượt khách & Tình trạng lưu trú */}
-        <div className="host-stat-card" style={{ margin: 0 }}>
-          <div>
-            <div className="host-stat-label">Đơn đặt & Lưu trú</div>
-            <div className="host-stat-value" style={{ whiteSpace: 'nowrap' }}>
-              {statsData?.kpis?.totalBookings ?? bookings.length} đơn
+        {/* Thẻ 2: Quỹ Escrow Tạm Giữ */}
+        <div className="stat-card-glass card-border-amber">
+          <div className="stat-card-content">
+            <span className="stat-label">Quỹ Escrow Tạm Giữ</span>
+            <div className="stat-value text-amber">
+              {formatPrice(escrowBal)}
             </div>
-            <span
-              style={{
-                fontSize: '0.76rem',
-                color: activeStayCount > 0 ? '#0284c7' : pendingCount > 0 ? '#d97706' : '#64748b',
-                fontWeight: activeStayCount > 0 || pendingCount > 0 ? 700 : 500,
-                marginTop: '3px',
-                display: 'block',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {activeStayCount > 0
-                ? `● ${activeStayCount} phòng đang lưu trú`
-                : pendingCount > 0
-                ? `● ${pendingCount} đơn chờ duyệt`
-                : bookings.length > 0
-                ? 'Tất cả đã xác nhận'
-                : 'Sẵn sàng đón khách mới'}
-            </span>
+            <div className="stat-trend trend-amber">
+              <TbClock />
+              <span>{escrowBal > 0 ? 'Chờ khách check-out' : 'Đã giải ngân hết'}</span>
+            </div>
           </div>
-          <div className="host-stat-icon-wrap bookings">
-            <TbCalendarEvent />
+          <div className="stat-icon-wrap amber">
+            <TbClock />
           </div>
         </div>
 
-        {/* Thẻ 3: Chỗ ở & Đánh giá uy tín */}
-        <div className="host-stat-card" style={{ margin: 0 }}>
-          <div>
-            <div className="host-stat-label">Chỗ ở & Đánh giá</div>
-            <div className="host-stat-value" style={{ whiteSpace: 'nowrap' }}>
-              {statsData?.kpis?.totalAccommodations ?? listings.length} chỗ {listings.length > 0 && <span style={{ color: '#d97706', fontSize: '1.25rem' }}>· {statsData?.host?.rating || '4.96'} ★</span>}
+        {/* Thẻ 3: Tổng Doanh Thu GMV Các Cơ Sở */}
+        <div className="stat-card-glass card-border-coral">
+          <div className="stat-card-content">
+            <span className="stat-label">Tổng Doanh Thu GMV</span>
+            <div className="stat-value text-coral">
+              {formatPrice(totalGmv)}
             </div>
-            <span className="host-dash-superhost-tag">
-              <TbSparkles /> {statsData?.host?.isSuperhost !== false ? 'Danh hiệu Superhost 5 sao' : 'Chủ nhà TripNest uy tín'}
-            </span>
+            <div className="stat-trend trend-up">
+              <TbTrendingUp />
+              <span>{statsData?.kpis?.totalAccommodations ?? listings.length} cơ sở hoạt động</span>
+            </div>
           </div>
-          <div className="host-stat-icon-wrap rating">
-            <TbBuildingCastle />
+          <div className="stat-icon-wrap pink">
+            <TbCoins />
+          </div>
+        </div>
+
+        {/* Thẻ 4: Lượt Khách & Tình Trạng Lưu Trú */}
+        <div className="stat-card-glass card-border-indigo">
+          <div className="stat-card-content">
+            <span className="stat-label">Đơn Đặt & Lấp Phòng</span>
+            <div className="stat-value text-indigo">
+              {statsData?.kpis?.totalBookings ?? bookings.length} đơn
+            </div>
+            <div className="host-dash-progress-wrap">
+              <div className="host-dash-progress-meta">
+                <span>Tỷ lệ lấp đầy</span>
+                <strong>
+                  {statsData?.kpis?.occupancyRate !== undefined
+                    ? `${statsData.kpis.occupancyRate}%`
+                    : `${listings.length > 0 ? Math.round((activeStayCount / listings.length) * 100) : 0}%`}
+                  {activeStayCount > 0 ? ` (${activeStayCount} phòng đang ở)` : ''}
+                </strong>
+              </div>
+              <div className="host-dash-progress-track">
+                <div
+                  className="host-dash-progress-bar"
+                  style={{
+                    width: `${Math.min(
+                      Math.max(
+                        statsData?.kpis?.occupancyRate !== undefined
+                          ? statsData.kpis.occupancyRate
+                          : (listings.length > 0 ? Math.round((activeStayCount / listings.length) * 100) : 0),
+                        0
+                      ),
+                      100
+                    )}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="stat-icon-wrap indigo">
+            <TbCalendarEvent />
           </div>
         </div>
       </div>
 
-      {/* 3. Bảng Quản Lý Đơn Đặt Phòng Cốt Lõi (Anti-Wrapping Protected) */}
+      {/* 3. Khối 2 Biểu Đồ Chủ Lực (Dòng Tiền Đa Chu Kỳ + Cơ Cấu Chỗ Nghỉ) */}
+      <div className="host-dash-charts-grid">
+        {/* Biểu đồ 1: Dòng tiền đa chu kỳ (Left / Main) */}
+        <div className="host-dash-chart-col-main">
+          <HostCashflowTimelineChart
+            timeline={statsData?.timeline || []}
+            period={period}
+            loading={loading}
+          />
+        </div>
+
+        {/* Biểu đồ 2: Cơ cấu doanh thu các cơ sở lưu trú (Right) */}
+        <div className="host-dash-chart-col-side">
+          <HostAccommodationDonut
+            accommodations={statsData?.accommodationBreakdown || []}
+            financialBreakdown={statsData?.financialBreakdown || {}}
+            totalGmv={totalGmv}
+            currency={currency}
+            onSelectAccommodation={() => {
+              if (onNavigate) onNavigate('accommodations');
+            }}
+          />
+        </div>
+      </div>
+
+      {/* 4. Bảng Quản Lý Đơn Đặt Phòng Cần Xử Lý */}
       <div className="host-panel-card" style={{ margin: 0 }}>
         <div className="host-panel-header">
           <div>
@@ -186,7 +312,7 @@ export const HostDashboardPage = ({
 
         <div className="host-table-wrap">
           {bookings.length === 0 ? (
-            /* Luxury Empty State Khi Chưa Có Đơn */
+            /* Empty State Khi Chưa Có Đơn */
             <div className="host-dash-empty-state">
               <div className="host-dash-empty-icon-wrap">
                 <TbInbox />
@@ -222,7 +348,7 @@ export const HostDashboardPage = ({
               <tbody>
                 {bookings.slice(0, 5).map((b) => (
                   <tr key={b.id || b.code}>
-                    {/* Mã đặt phòng: Luôn liền mạch 1 dòng */}
+                    {/* Mã đặt phòng */}
                     <td style={{ whiteSpace: 'nowrap' }}>
                       <strong className="host-dash-code-tag">
                         {b.code || b.bookingCode || ('TN-' + b.id)}
@@ -252,7 +378,7 @@ export const HostDashboardPage = ({
                       </div>
                     </td>
 
-                    {/* Lịch trình lưu trú: Chuẩn DD/MM/YYYY không xuống dòng */}
+                    {/* Lịch trình lưu trú */}
                     <td style={{ whiteSpace: 'nowrap' }}>
                       <div style={{ fontWeight: 700, color: 'var(--host-text-main)', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
                         {formatDateVN(b.checkIn || b.check_in)} ➔ {formatDateVN(b.checkOut || b.check_out)}
@@ -275,9 +401,7 @@ export const HostDashboardPage = ({
                         )}
                       </div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--host-text-muted)', whiteSpace: 'nowrap' }}>
-                        {b.commissionFee || b.serviceFee
-                          ? `Đã trừ 12% phí sàn (-${formatPrice(b.commissionFee || b.serviceFee)})`
-                          : 'Đã trừ 12% phí sàn'}
+                        (Đã trừ phí dịch vụ)
                       </div>
                       {b.hasVoucher && (
                         <div style={{ fontSize: '0.68rem', color: '#059669', fontWeight: 600, marginTop: 2 }}>
@@ -334,7 +458,7 @@ export const HostDashboardPage = ({
                         </button>
                       )}
                       {(b.status === 'completed' || b.status === 'cancelled') && (
-                        <span style={{ fontSize: '0.76rem', color: 'var(--host-text-muted)', fontStyle: 'italic' }}>
+                        <span style={{ fontSize: '0.76rem', color: 'var(--host-text-muted)', fontStyle: 'normal', fontWeight: 600 }}>
                           Đã lưu trữ
                         </span>
                       )}

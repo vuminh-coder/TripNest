@@ -551,49 +551,6 @@ export const AccommodationDetailPage = ({
 
   return (
     <div className="tn-accommodation-page">
-      {/* RECENT OR ACTIVE BOOKING CELEBRATION BANNER */}
-      {activeBookingForThisAccom && (
-        <div className="tn-booking-celebration-banner">
-          <div className="tn-celebration-left">
-            <div className="tn-celebration-icon-box">
-              <TbCircleCheck />
-            </div>
-            <div className="tn-celebration-text">
-              <div className="tn-celebration-title">
-                🎉 Bạn đã đặt thành công phòng tại cơ sở lưu trú này!
-              </div>
-              <div className="tn-celebration-subtitle">
-                Hạng phòng: <strong>{activeBookingForThisAccom.roomTitle || 'Phòng nghỉ dưỡng'}</strong> · 
-                Thời gian: <strong>{formatVNDate(activeBookingForThisAccom.checkIn)} – {formatVNDate(activeBookingForThisAccom.checkOut)}</strong> ({activeBookingForThisAccom.nights || 1} đêm) · 
-                Mã đơn: <strong className="tn-code-highlight">{activeBookingForThisAccom.id || activeBookingForThisAccom.bookingCode}</strong>
-              </div>
-            </div>
-          </div>
-          <div className="tn-celebration-actions">
-            <button
-              type="button"
-              className="tn-celebration-action-btn"
-              onClick={() => {
-                const myTripsNav = document.getElementById('my-trips-nav-link');
-                if (myTripsNav) myTripsNav.click();
-                else window.location.href = '/my-trips';
-              }}
-            >
-              Xem vé & Quản lý chuyến đi →
-            </button>
-            {onClearRecentBooking && (
-              <button
-                type="button"
-                className="tn-celebration-close-btn"
-                onClick={onClearRecentBooking}
-                title="Đóng thông báo"
-              >
-                <TbX />
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* 1. TOP BREADCRUMBS & ACTIONS BAR */}
       <div className="tn-breadcrumbs-bar">

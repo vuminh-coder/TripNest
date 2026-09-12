@@ -24,8 +24,21 @@ export const HostFinancialsPage = ({
 }) => {
   const toast = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [tempBank, setTempBank] = useState({ ...bankInfo });
+  const [tempBank, setTempBank] = useState({
+    bankName: bankInfo?.bankName || 'Vietcombank',
+    accountNumber: bankInfo?.accountNumber || '',
+    accountHolder: bankInfo?.accountHolder || '',
+  });
   const [isSaving, setIsSaving] = useState(false);
+
+  const startEdit = () => {
+    setTempBank({
+      bankName: bankInfo?.bankName || 'Vietcombank',
+      accountNumber: bankInfo?.accountNumber || '',
+      accountHolder: bankInfo?.accountHolder || '',
+    });
+    setIsEditing(true);
+  };
 
   const formatPrice = (val) => {
     if (currency === 'USD') return `$${Math.round((val || 0) / 25000).toLocaleString()}`;
@@ -41,7 +54,7 @@ export const HostFinancialsPage = ({
         accountNumber: tempBank.accountNumber,
         accountHolderName: tempBank.accountHolder,
       });
-      setBankInfo(tempBank);
+      setBankInfo({ ...tempBank, isVerified: true });
       setIsEditing(false);
       toast.success('Thành công', res?.message || 'Đã lưu thông tin tài khoản ngân hàng nhận tiền.');
     } catch (err) {
@@ -69,35 +82,63 @@ export const HostFinancialsPage = ({
               fontSize: '0.84rem',
               cursor: 'pointer',
             }}
-            onClick={() => setIsEditing(!isEditing)}
+            onClick={() => (isEditing ? setIsEditing(false) : startEdit())}
           >
-            {isEditing ? 'Hủy' : 'Chỉnh sửa'}
+            {isEditing ? 'Hủy' : bankInfo?.accountNumber ? 'Chỉnh sửa' : 'Thêm tài khoản'}
           </button>
         </div>
 
         <div className="host-fin-body">
           {!isEditing ? (
-            <div className="host-fin-bank-info-box">
-              <div className="host-fin-info-row">
-                <span style={{ color: 'var(--host-text-muted)', fontSize: '0.85rem' }}>Ngân hàng:</span>
-                <strong style={{ color: 'var(--host-text-main)' }}>{bankInfo.bankName}</strong>
+            !bankInfo?.accountNumber ? (
+              <div
+                style={{
+                  padding: '1.5rem',
+                  textAlign: 'center',
+                  background: '#f8fafc',
+                  borderRadius: '12px',
+                  border: '1px dashed #cbd5e1',
+                }}
+              >
+                <TbBuildingBank style={{ fontSize: '2.4rem', color: '#94a3b8', marginBottom: '8px' }} />
+                <div style={{ fontWeight: 700, color: 'var(--host-text-main)', fontSize: '0.92rem', marginBottom: '4px' }}>
+                  Chưa thiết lập tài khoản nhận tiền
+                </div>
+                <p style={{ fontSize: '0.8rem', color: 'var(--host-text-muted)', margin: '0 0 12px 0', lineHeight: 1.5 }}>
+                  Vui lòng thêm số tài khoản ngân hàng chính chủ để hệ thống tự động giải ngân doanh thu Payout sau khi khách hoàn tất lưu trú.
+                </p>
+                <button
+                  type="button"
+                  className="host-btn-primary"
+                  style={{ margin: '0 auto', fontSize: '0.82rem', padding: '6px 16px' }}
+                  onClick={startEdit}
+                >
+                  Thiết Lập Tài Khoản Ngay
+                </button>
               </div>
-              <div className="host-fin-info-row">
-                <span style={{ color: 'var(--host-text-muted)', fontSize: '0.85rem' }}>Số tài khoản:</span>
-                <strong style={{ color: 'var(--host-text-main)', letterSpacing: '1px' }}>
-                  {bankInfo.accountNumber}
-                </strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--host-text-muted)', fontSize: '0.85rem' }}>Chủ tài khoản:</span>
-                <strong style={{ color: 'var(--host-text-main)' }}>{bankInfo.accountHolder}</strong>
-              </div>
+            ) : (
+              <div className="host-fin-bank-info-box">
+                <div className="host-fin-info-row">
+                  <span style={{ color: 'var(--host-text-muted)', fontSize: '0.85rem' }}>Ngân hàng:</span>
+                  <strong style={{ color: 'var(--host-text-main)' }}>{bankInfo.bankName}</strong>
+                </div>
+                <div className="host-fin-info-row">
+                  <span style={{ color: 'var(--host-text-muted)', fontSize: '0.85rem' }}>Số tài khoản:</span>
+                  <strong style={{ color: 'var(--host-text-main)', letterSpacing: '1px' }}>
+                    {bankInfo.accountNumber}
+                  </strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--host-text-muted)', fontSize: '0.85rem' }}>Chủ tài khoản:</span>
+                  <strong style={{ color: 'var(--host-text-main)' }}>{bankInfo.accountHolder}</strong>
+                </div>
 
-              <div className="host-fin-kyc-verified-box">
-                <TbShieldCheck style={{ fontSize: '1.25rem', flexShrink: 0 }} />
-                <span>Đã xác thực KYC & sẵn sàng nhận tiền tự động</span>
+                <div className="host-fin-kyc-verified-box">
+                  <TbShieldCheck style={{ fontSize: '1.25rem', flexShrink: 0 }} />
+                  <span>{bankInfo.isVerified ? 'Đã xác thực KYC & sẵn sàng nhận tiền tự động' : 'Tài khoản đang chờ xác thực'}</span>
+                </div>
               </div>
-            </div>
+            )
           ) : (
             <form onSubmit={handleSaveBank} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>

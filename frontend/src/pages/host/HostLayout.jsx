@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import './host.css';
 
 import HostSidebar from './HostSidebar';
-import HostHeader from './HostHeader';
 
 // 6 Dedicated Admin-Style Pages
 import HostDashboardPage from './pages/HostDashboardPage';
 import HostAccommodationsPage from './pages/HostAccommodationsPage';
+import HostRankingsPage from './pages/HostRankingsPage';
 import HostListingWizardPage from './pages/HostListingWizardPage';
 import HostListingEditPage from './pages/HostListingEditPage';
 import HostBookingsPage from './pages/HostBookingsPage';
@@ -32,7 +32,8 @@ export const HostLayout = ({
   const getInitialTabFromUrl = () => {
     const path = window.location.pathname.replace('/host', '').replace('/', '');
     if (path.startsWith('edit_listing')) return 'edit_listing';
-    const validTabs = ['dashboard', 'accommodations', 'new_listing', 'edit_listing', 'bookings', 'reviews', 'financials'];
+    if (path === 'ranking' || path === 'rankings') return 'rankings';
+    const validTabs = ['dashboard', 'accommodations', 'rankings', 'new_listing', 'edit_listing', 'bookings', 'reviews', 'financials'];
     return validTabs.includes(path) ? path : 'dashboard';
   };
 
@@ -52,6 +53,7 @@ export const HostLayout = ({
   const [isRequestingPayout, setIsRequestingPayout] = useState(false);
   const [availableBalance, setAvailableBalance] = useState(0);
   const [loadingListings, setLoadingListings] = useState(false);
+  const [statsData, setStatsData] = useState(null);
 
   // Listings State với LocalStorage cache đồng bộ (Sửa lỗi async ở useState)
   const [listings, setListings] = useState(() => {
@@ -77,21 +79,9 @@ export const HostLayout = ({
   const [bankInfo, setBankInfo] = useState(() => {
     try {
       const saved = localStorage.getItem('tripnest_host_bank');
-      const currentUser = JSON.parse(localStorage.getItem('tripnest_user') || '{}');
-      const defaultName = (currentUser?.name || currentUser?.full_name || 'MINH VŨ').toUpperCase();
-      return saved
-        ? JSON.parse(saved)
-        : {
-            bankName: 'Vietcombank (VCB)',
-            accountNumber: '9988776655',
-            accountHolder: defaultName,
-          };
+      return saved ? JSON.parse(saved) : { bankName: '', accountNumber: '', accountHolder: '' };
     } catch {
-      return {
-        bankName: 'Vietcombank (VCB)',
-        accountNumber: '9988776655',
-        accountHolder: 'MINH VŨ',
-      };
+      return { bankName: '', accountNumber: '', accountHolder: '' };
     }
   });
 
@@ -137,11 +127,16 @@ export const HostLayout = ({
       const data = await apiService.getHostPayouts();
       if (data) {
         if (data.payoutAccount) {
-          setBankInfo({
-            bankName: data.payoutAccount.bank_name || 'Vietcombank (VCB)',
-            accountNumber: data.payoutAccount.account_number || '9988776655',
-            accountHolder: data.payoutAccount.account_holder_name || 'NGUYEN VAN AN',
-          });
+          const accInfo = {
+            bankName: data.payoutAccount.bank_name || '',
+            accountNumber: data.payoutAccount.account_number || '',
+            accountHolder: data.payoutAccount.account_holder_name || '',
+            isVerified: Boolean(data.payoutAccount.is_verified),
+          };
+          setBankInfo(accInfo);
+          localStorage.setItem('tripnest_host_bank', JSON.stringify(accInfo));
+        } else {
+          setBankInfo({ bankName: '', accountNumber: '', accountHolder: '', isVerified: false });
         }
         const txList = Array.isArray(data.transactions) ? data.transactions : (data.payoutHistory || []);
         if (Array.isArray(txList)) {
@@ -217,6 +212,7 @@ export const HostLayout = ({
       try {
         const statsRes = await apiService.getHostDashboardStats();
         if (isMounted && statsRes?.success) {
+          setStatsData(statsRes.data || statsRes);
           const bList = statsRes.recentBookings || statsRes.data?.recentBookings;
           if (Array.isArray(bList) && bList.length > 0) {
             setBookings(bList);
@@ -347,109 +343,47 @@ export const HostLayout = ({
   };
 
   // Booking Handlers
-  const handleApproveBooking = (id) => {
-    setBookings(
-      bookings.map((b) => (b.id === id ? { ...b, status: 'confirmed' } : b))
-    );
-    toast.success('Duyệt đơn thành công', 'Đã xác nhận đơn đặt phòng cho khách.');
+  const handleApproveBooking = async (id) => {
+    try {
+      const res = await apiService.approveHostBooking(id);
+      setBookings((prev) =>
+        prev.map((b) => (b.id === id || b.code === id ? { ...b, status: 'confirmed' } : b))
+      );
+      toast.success('Duyệt đơn thành công', res?.message || 'Đã xác nhận đơn đặt phòng cho khách.');
+      await refreshBookings();
+    } catch (err) {
+      toast.error('Lỗi duyệt đơn', err.message || 'Không thể phê duyệt đơn đặt phòng.');
+    }
   };
 
   const handleCheckInBooking = async (id) => {
-    setBookings((prev) =>
-      prev.map((b) => (b.id === id || b.code === id ? { ...b, status: 'checked_in' } : b))
-    );
-
     try {
-      apiService.checkIn(id).catch(() => {});
-    } catch {
-      // ignore
+      const res = await apiService.checkIn(id);
+      setBookings((prev) =>
+        prev.map((b) => (b.id === id || b.code === id ? { ...b, status: 'checked_in' } : b))
+      );
+      toast.success('Khách đã nhận phòng!', res?.message || 'Đã cập nhật trạng thái đơn thành Đang lưu trú.');
+      await refreshBookings();
+    } catch (err) {
+      toast.error('Lỗi Check-in', err.message || 'Không thể xác nhận nhận phòng.');
     }
-
-    try {
-      const STORAGE_KEY = 'tripnest_admin_data_v1';
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const adminData = JSON.parse(raw);
-        if (adminData.bookings) {
-          adminData.bookings = adminData.bookings.map((b) =>
-            b.id === id || b.code === id ? { ...b, status: 'checked_in' } : b
-          );
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(adminData));
-        }
-      }
-    } catch {
-      // ignore
-    }
-
-    toast.success('Khách đã nhận phòng!', 'Đã cập nhật trạng thái đơn thành Đang lưu trú.');
   };
 
   const handleCheckOutBooking = async (id) => {
-    const target = bookings.find((b) => b.id === id || b.code === id);
-    const updatedBookings = bookings.map((b) =>
-      b.id === id || b.code === id ? { ...b, status: 'completed' } : b
-    );
-    setBookings(updatedBookings);
-
-    const grossAmount = target?.grossAmount || (target?.basePrice && target?.cleaningFee ? target.basePrice + target.cleaningFee : (target?.totalAmount || 7500000));
-    const commissionFee = target?.commissionFee || target?.serviceFee || Math.round(grossAmount * 0.12);
-    const netPayoutAmount = target?.hostEarnings || target?.hostPayoutAmount || Math.max(0, grossAmount - commissionFee);
-
     try {
-      apiService.checkOut(id).catch(() => {});
-    } catch {
-      // ignore
+      const res = await apiService.checkOut(id);
+      setBookings((prev) =>
+        prev.map((b) => (b.id === id || b.code === id ? { ...b, status: 'completed' } : b))
+      );
+      toast.success(
+        'Check-out thành công!',
+        res?.message || 'Đã hoàn tất kỳ nghỉ và kích hoạt giải ngân doanh thu cho bạn.'
+      );
+      await refreshBookings();
+      await refreshPayouts();
+    } catch (err) {
+      toast.error('Lỗi Check-out', err.message || 'Không thể xác nhận trả phòng.');
     }
-
-    const hostPayoutId = 'POT-' + Math.floor(100000 + Math.random() * 900000);
-    const newPayout = {
-      id: hostPayoutId,
-      date: new Date().toLocaleDateString('vi-VN'),
-      amount: netPayoutAmount,
-      note: `Doanh thu đơn ${target?.code || target?.id || id}`,
-      status: 'pending',
-    };
-    setPayoutHistory((prev) => [newPayout, ...prev]);
-
-    try {
-      const STORAGE_KEY = 'tripnest_admin_data_v1';
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const adminData = JSON.parse(raw);
-        if (adminData.bookings) {
-          adminData.bookings = adminData.bookings.map((b) =>
-            b.id === id || b.code === id ? { ...b, status: 'completed' } : b
-          );
-        }
-        if (adminData.payouts) {
-          const adminPayoutId = 'PO-' + Math.floor(10000 + Math.random() * 90000);
-          const newAdminPayout = {
-            id: adminPayoutId,
-            host_name: bankInfo.accountHolder || 'Minh Vũ',
-            booking_code: target?.code || target?.id || id,
-            gross_amount: grossAmount,
-            commission_fee: commissionFee,
-            net_payout: netPayoutAmount,
-            currency: 'VND',
-            bank_name: bankInfo.bankName || 'Vietcombank',
-            account_number: bankInfo.accountNumber || '9988776655',
-            account_holder: bankInfo.accountHolder || 'MINH VŨ',
-            status: 'pending',
-            transaction_ref: '',
-            created_at: new Date().toISOString().replace('T', ' ').slice(0, 16),
-          };
-          adminData.payouts = [newAdminPayout, ...adminData.payouts];
-        }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(adminData));
-      }
-    } catch {
-      // ignore
-    }
-
-    toast.success(
-      'Check-out thành công & Đã tạo Lệnh Payout!',
-      `Đã hoàn tất kỳ nghỉ và tạo lệnh giải ngân ${netPayoutAmount.toLocaleString('vi-VN')} ₫ cho bạn.`
-    );
   };
 
   const handleCancelBooking = async (id) => {
@@ -522,16 +456,6 @@ export const HostLayout = ({
 
       {/* 2. Main Content Container */}
       <div className="host-main-container">
-        {/* Sticky SaaS Topbar */}
-        <HostHeader
-          activeTab={activeTab}
-          onNavigate={handleNavigate}
-          onExitHost={onSwitchToClient}
-          onOpenBookings={onOpenBookings}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          currency={currency}
-        />
 
         {/* Dynamic Page Views */}
         <main className="host-content-body">
@@ -554,6 +478,7 @@ export const HostLayout = ({
           {activeTab === 'accommodations' && (
             <HostAccommodationsPage
               listings={listings}
+              onNavigate={handleNavigate}
               onOpenWizard={() => handleNavigate('new_listing')}
               onEditListing={(item) => {
                 setEditingAccommodationId(item.id);
@@ -563,6 +488,22 @@ export const HostLayout = ({
               onDeleteListing={handleDeleteListing}
               onOpenRoomDetail={onOpenRoomDetail}
               currency={currency}
+            />
+          )}
+
+          {activeTab === 'rankings' && (
+            <HostRankingsPage
+              listings={listings}
+              bookings={bookings}
+              statsData={statsData}
+              currency={currency}
+              onNavigate={handleNavigate}
+              onEditListing={(item) => {
+                setEditingAccommodationId(item.id);
+                handleNavigate('edit_listing', item.id);
+              }}
+              onOpenRoomDetail={onOpenRoomDetail}
+              onOpenWizard={() => handleNavigate('new_listing')}
             />
           )}
 

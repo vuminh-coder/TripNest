@@ -317,7 +317,7 @@ export const UserTable = ({
                 </button>
                 <button
                   className={`btn-action-icon ${user.status === 'active' ? 'danger' : 'success'}`}
-                  onClick={() => onToggleStatus(user.id)}
+                  onClick={() => onToggleStatus(user)}
                   title={user.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}
                 >
                   {user.status === 'active' ? <TbLock /> : <TbLockOpen />}

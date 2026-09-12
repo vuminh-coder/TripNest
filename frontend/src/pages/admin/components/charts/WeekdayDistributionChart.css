@@ -215,19 +215,17 @@
   color: #0284c7;
 }
 
-/* Floating Tooltip */
+/* Floating Tooltip - Light Theme */
 .adm-weekday-tooltip {
   position: absolute;
   top: 6px;
   right: 10px;
-  background: rgba(15, 23, 42, 0.94);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #ffffff;
+  border: 1px solid var(--adm-border, #e2e8f0);
   border-radius: var(--adm-radius-lg, 10px);
   padding: 10px 14px;
-  color: #ffffff;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  color: var(--adm-text-main, #0f172a);
+  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
   z-index: 10;
   animation: fadeInTooltip 0.15s ease-out;
   pointer-events: none;
@@ -237,9 +235,9 @@
 .adm-weekday-tooltip-title {
   font-size: 0.813rem;
   font-weight: 800;
-  color: #f8fafc;
+  color: var(--adm-text-main, #0f172a);
   margin-bottom: 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #f1f5f9;
   padding-bottom: 4px;
 }
 
@@ -257,22 +255,23 @@
 }
 
 .tt-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
 }
 .tt-dot.coral { background: #ff385c; }
-.tt-dot.sky { background: #38bdf8; }
-.tt-dot.amber { background: #fbbf24; }
+.tt-dot.sky { background: #0ea5e9; }
+.tt-dot.amber { background: #f59e0b; }
 
 .tt-lbl {
-  color: #94a3b8;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .tt-val {
   font-family: var(--adm-font-display, 'Outfit', monospace);
   font-variant-numeric: tabular-nums;
-  color: #f1f5f9;
+  color: var(--adm-text-main, #0f172a);
   font-weight: 700;
   margin-left: auto;
 }

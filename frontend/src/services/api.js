@@ -995,10 +995,17 @@ export const apiService = {
     }
   },
 
-  // 23. Lấy báo cáo thống kê Host Dashboard
-  async getHostDashboardStats() {
+  // 23. Lấy báo cáo thống kê Host Dashboard (kèm dòng tiền & cơ cấu cơ sở)
+  async getHostDashboardStats(params = {}) {
     try {
-      const res = await fetch(`${API_BASE_URL}/host/dashboard-stats`, {
+      const queryParams = new URLSearchParams();
+      if (params.period) queryParams.append('period', params.period);
+      if (params.year) queryParams.append('year', params.year);
+      if (params.quarter) queryParams.append('quarter', params.quarter);
+      if (params.month) queryParams.append('month', params.month);
+
+      const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
+      const res = await fetch(`${API_BASE_URL}/host/dashboard-stats${qs}`, {
         headers: getAuthHeaders(),
       });
       if (!res.ok) throw new Error('Network error');
@@ -1009,13 +1016,38 @@ export const apiService = {
         kpis: {
           totalRevenueVND: 0,
           netEarningsVND: 0,
+          escrowPendingVND: 0,
           totalBookings: 0,
           activeBookings: 0,
           completedBookings: 0,
           occupancyRate: 0,
         },
+        timeline: [],
+        accommodationBreakdown: [],
+        financialBreakdown: { totalGmv: 0, netEarnings: 0, platformFee: 0, escrowPending: 0 },
         recentBookings: [],
       };
+    }
+  },
+
+  // 23.1 Lấy bảng xếp hạng doanh thu & hiệu suất từng cơ sở lưu trú của Host
+  async getHostRankings(params = {}) {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params.period) queryParams.append('period', params.period);
+      if (params.year) queryParams.append('year', params.year);
+      if (params.quarter) queryParams.append('quarter', params.quarter);
+      if (params.month) queryParams.append('month', params.month);
+
+      const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
+      const res = await fetch(`${API_BASE_URL}/host/rankings${qs}`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Network error');
+      return await res.json();
+    } catch (e) {
+      console.warn('Lỗi getHostRankings:', e);
+      return { success: false, data: [] };
     }
   },
 
@@ -1034,6 +1066,19 @@ export const apiService = {
       return saved ? JSON.parse(saved) : [];
     }
   },
+
+  // Phê duyệt đơn đặt phòng
+  async approveHostBooking(id) {
+    const res = await fetch(`${API_BASE_URL}/host/bookings/${id}/approve`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Không thể phê duyệt đơn đặt phòng');
+    return data;
+  },
+
+
 
   // 25. Lấy thông tin tài khoản Payout & lịch sử giao dịch
   async getHostPayouts() {

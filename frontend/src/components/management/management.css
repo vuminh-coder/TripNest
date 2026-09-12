@@ -1,0 +1,873 @@
+/* =========================================================================
+   TRIPNEST MANAGEMENT UI KIT - SHARED DESIGN SYSTEM (ADMIN & HOST)
+   Luxury Light SaaS Glassmorphism Architecture
+   ========================================================================= */
+
+:root {
+  --mgmt-font-base: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mgmt-font-display: 'Outfit', 'Be Vietnam Pro', sans-serif;
+
+  --mgmt-primary: #ff385c;
+  --mgmt-primary-soft: #fff1f2;
+  --mgmt-primary-border: #fecdd3;
+  --mgmt-primary-gradient: linear-gradient(135deg, #ff385c 0%, #e11d48 100%);
+
+  --mgmt-indigo: #6366f1;
+  --mgmt-indigo-soft: #eef2ff;
+  --mgmt-indigo-border: #c7d2fe;
+
+  --mgmt-emerald: #10b981;
+  --mgmt-emerald-soft: #ecfdf5;
+  --mgmt-emerald-border: #a7f3d0;
+
+  --mgmt-sky: #0ea5e9;
+  --mgmt-sky-soft: #f0f9ff;
+  --mgmt-sky-border: #bae6fd;
+
+  --mgmt-amber: #f59e0b;
+  --mgmt-amber-soft: #fffbeb;
+  --mgmt-amber-border: #fde68a;
+
+  --mgmt-text-main: #0f172a;
+  --mgmt-text-muted: #64748b;
+  --mgmt-text-light: #94a3b8;
+
+  --mgmt-border: #edf2f7;
+  --mgmt-border-strong: #e2e8f0;
+  --mgmt-card-bg: #ffffff;
+
+  --mgmt-shadow-card: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
+  --mgmt-shadow-hover: 0 8px 24px -4px rgba(15, 23, 42, 0.08);
+  --mgmt-radius-sm: 6px;
+  --mgmt-radius-md: 8px;
+  --mgmt-radius-lg: 10px;
+  --mgmt-radius-xl: 12px;
+}
+
+/* =========================================================================
+   1. MANAGEMENT HEADER TOOLBAR
+   ========================================================================= */
+.mgmt-header-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.mgmt-header-left {
+  flex: 1;
+  min-width: 280px;
+}
+
+.mgmt-header-title {
+  font-family: var(--mgmt-font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--mgmt-text-main);
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mgmt-header-subtitle {
+  font-size: 0.88rem;
+  color: var(--mgmt-text-muted);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.mgmt-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Period Pills */
+.mgmt-period-pills {
+  display: inline-flex;
+  align-items: center;
+  background: #ffffff;
+  padding: 3px;
+  border-radius: var(--mgmt-radius-md);
+  border: 1px solid var(--mgmt-border-strong);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.mgmt-period-pill {
+  border: none;
+  background: transparent;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--mgmt-text-muted);
+  border-radius: var(--mgmt-radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.mgmt-period-pill:hover {
+  color: var(--mgmt-text-main);
+}
+
+.mgmt-period-pill.active {
+  background: var(--mgmt-text-main);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+}
+
+.mgmt-sub-select {
+  padding: 0.42rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--mgmt-text-main);
+  background: #ffffff;
+  border: 1px solid var(--mgmt-border-strong);
+  border-radius: var(--mgmt-radius-md);
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+/* Button variants */
+.mgmt-btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.48rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: var(--mgmt-radius-md);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  outline: none;
+}
+
+.mgmt-btn-primary {
+  background: var(--mgmt-primary-gradient);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(255, 56, 92, 0.25);
+}
+
+.mgmt-btn-primary:hover {
+  box-shadow: 0 4px 14px rgba(255, 56, 92, 0.35);
+  transform: translateY(-1px);
+}
+
+.mgmt-btn-secondary {
+  background: #ffffff;
+  color: var(--mgmt-text-main);
+  border: 1px solid var(--mgmt-border-strong);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.mgmt-btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+/* =========================================================================
+   2. MANAGEMENT EXECUTIVE KPI GRID & GLASS CARDS
+   ========================================================================= */
+.mgmt-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.mgmt-kpi-card {
+  background: #ffffff;
+  border-radius: var(--mgmt-radius-lg);
+  padding: 1.15rem 1.25rem;
+  border: 1px solid var(--mgmt-border);
+  box-shadow: var(--mgmt-shadow-card);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mgmt-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mgmt-shadow-hover);
+}
+
+/* Accent Borders */
+.mgmt-kpi-card.border-coral {
+  border-left: 4px solid var(--mgmt-primary);
+}
+.mgmt-kpi-card.border-indigo {
+  border-left: 4px solid var(--mgmt-indigo);
+}
+.mgmt-kpi-card.border-emerald {
+  border-left: 4px solid var(--mgmt-emerald);
+}
+.mgmt-kpi-card.border-amber {
+  border-left: 4px solid var(--mgmt-amber);
+}
+.mgmt-kpi-card.border-sky {
+  border-left: 4px solid var(--mgmt-sky);
+}
+
+.mgmt-kpi-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.mgmt-kpi-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mgmt-text-muted);
+}
+
+.mgmt-kpi-value {
+  font-family: var(--mgmt-font-display);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--mgmt-text-main);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mgmt-kpi-value.text-coral { color: var(--mgmt-primary); }
+.mgmt-kpi-value.text-indigo { color: var(--mgmt-indigo); }
+.mgmt-kpi-value.text-emerald { color: #059669; }
+.mgmt-kpi-value.text-amber { color: #d97706; }
+.mgmt-kpi-value.text-sky { color: #0284c7; }
+
+.mgmt-kpi-sub {
+  font-size: 0.76rem;
+  color: var(--mgmt-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.15rem;
+  white-space: nowrap;
+}
+
+.mgmt-kpi-trend {
+  font-weight: 700;
+}
+.mgmt-kpi-trend.up { color: #059669; }
+.mgmt-kpi-trend.down { color: #dc2626; }
+
+.mgmt-kpi-icon-wrap {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.mgmt-kpi-icon-wrap.pink {
+  background: var(--mgmt-primary-soft);
+  color: var(--mgmt-primary);
+}
+.mgmt-kpi-icon-wrap.indigo {
+  background: var(--mgmt-indigo-soft);
+  color: var(--mgmt-indigo);
+}
+.mgmt-kpi-icon-wrap.emerald {
+  background: var(--mgmt-emerald-soft);
+  color: var(--mgmt-emerald);
+}
+.mgmt-kpi-icon-wrap.amber {
+  background: var(--mgmt-amber-soft);
+  color: var(--mgmt-amber);
+}
+.mgmt-kpi-icon-wrap.sky {
+  background: var(--mgmt-sky-soft);
+  color: var(--mgmt-sky);
+}
+
+/* =========================================================================
+   3. MANAGEMENT PODIUM SECTION (TOP 3 PERFORMERS)
+   ========================================================================= */
+.mgmt-podium-section {
+  background: #ffffff;
+  border: 1px solid var(--mgmt-border);
+  border-radius: var(--mgmt-radius-xl);
+  padding: 1.4rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--mgmt-shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.mgmt-podium-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #f59e0b 0%, #ff385c 50%, #6366f1 100%);
+}
+
+.mgmt-podium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mgmt-podium-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--mgmt-font-display);
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--mgmt-text-main);
+}
+
+.mgmt-podium-title-icon {
+  color: #f59e0b;
+  font-size: 1.25rem;
+}
+
+.mgmt-podium-sub {
+  font-size: 0.8rem;
+  color: var(--mgmt-text-muted);
+}
+
+.mgmt-podium-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.1rem;
+  align-items: flex-end;
+}
+
+@media (max-width: 900px) {
+  .mgmt-podium-grid {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+}
+
+.mgmt-podium-card {
+  background: #f8fafc;
+  border-radius: var(--mgmt-radius-lg);
+  padding: 1.25rem 1rem;
+  border: 1px solid var(--mgmt-border-strong);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.mgmt-podium-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--mgmt-shadow-hover);
+  background: #ffffff;
+}
+
+/* Rank 1 (Gold) */
+.mgmt-podium-card.rank-1 {
+  background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);
+  border-color: #fde68a;
+  box-shadow: 0 6px 20px -4px rgba(245, 158, 11, 0.12);
+  padding-top: 1.75rem;
+}
+
+.mgmt-podium-crown {
+  position: absolute;
+  top: -12px;
+  font-size: 1.5rem;
+  color: #f59e0b;
+  filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.4));
+  animation: floatCrown 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes floatCrown {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-4px); }
+}
+
+.mgmt-podium-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.02em;
+}
+
+.mgmt-podium-rank-badge.gold {
+  background: #fef3c7;
+  color: #b45309;
+}
+.mgmt-podium-rank-badge.silver {
+  background: #f1f5f9;
+  color: #475569;
+}
+.mgmt-podium-rank-badge.bronze {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+/* Property thumbnail or avatar */
+.mgmt-podium-media-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--mgmt-radius-md);
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #ffffff;
+}
+
+.mgmt-podium-card.rank-1 .mgmt-podium-media-wrap {
+  width: 88px;
+  height: 88px;
+  border-color: #f59e0b;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+}
+
+.mgmt-podium-media-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mgmt-podium-name {
+  font-family: var(--mgmt-font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--mgmt-text-main);
+  margin: 0 0 0.25rem 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mgmt-podium-card.rank-1 .mgmt-podium-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.mgmt-podium-meta {
+  font-size: 0.76rem;
+  color: var(--mgmt-text-muted);
+  margin-bottom: 0.6rem;
+}
+
+.mgmt-podium-gmv {
+  font-family: var(--mgmt-font-display);
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: #059669;
+  margin-bottom: 0.2rem;
+}
+
+.mgmt-podium-card.rank-1 .mgmt-podium-gmv {
+  font-size: 1.25rem;
+}
+
+.mgmt-podium-submetric {
+  font-size: 0.75rem;
+  color: var(--mgmt-text-muted);
+  margin-bottom: 0.85rem;
+}
+
+.mgmt-podium-btn {
+  border: 1px solid var(--mgmt-border-strong);
+  background: #ffffff;
+  color: var(--mgmt-text-main);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--mgmt-radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+  width: 100%;
+  justify-content: center;
+}
+
+.mgmt-podium-btn:hover {
+  background: var(--mgmt-text-main);
+  color: #ffffff;
+  border-color: var(--mgmt-text-main);
+}
+
+.mgmt-podium-card.rank-1 .mgmt-podium-btn {
+  background: #f59e0b;
+  color: #ffffff;
+  border-color: #f59e0b;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+}
+
+.mgmt-podium-card.rank-1 .mgmt-podium-btn:hover {
+  background: #d97706;
+}
+
+/* =========================================================================
+   4. MANAGEMENT TOOLBAR (TABS + SEARCH + SORT + ACTIONS)
+   ========================================================================= */
+.mgmt-toolbar-card {
+  background: #ffffff;
+  border-radius: var(--mgmt-radius-xl);
+  padding: 0.95rem 1.15rem;
+  border: 1px solid var(--mgmt-border);
+  box-shadow: var(--mgmt-shadow-card);
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.mgmt-toolbar-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.mgmt-filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.mgmt-tab-btn {
+  border: none;
+  background: #f8fafc;
+  color: var(--mgmt-text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.42rem 0.85rem;
+  border-radius: var(--mgmt-radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+}
+
+.mgmt-tab-btn:hover {
+  background: #f1f5f9;
+  color: var(--mgmt-text-main);
+}
+
+.mgmt-tab-btn.active {
+  background: var(--mgmt-text-main);
+  color: #ffffff;
+}
+
+.mgmt-tab-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+  font-size: 0.72rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.mgmt-tab-btn:not(.active) .mgmt-tab-badge {
+  background: #e2e8f0;
+  color: var(--mgmt-text-muted);
+}
+
+.mgmt-toolbar-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Bottom Row */
+.mgmt-toolbar-row-bottom {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.mgmt-search-wrap {
+  flex: 1;
+  min-width: 240px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.mgmt-search-icon {
+  position: absolute;
+  left: 0.85rem;
+  color: var(--mgmt-text-light);
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+.mgmt-search-input {
+  width: 100%;
+  padding: 0.52rem 2.2rem 0.52rem 2.4rem;
+  border-radius: var(--mgmt-radius-md);
+  border: 1px solid var(--mgmt-border-strong);
+  font-size: 0.85rem;
+  background: #ffffff;
+  color: var(--mgmt-text-main);
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.mgmt-search-input:focus {
+  border-color: var(--mgmt-primary);
+  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.08);
+}
+
+.mgmt-search-clear {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: var(--mgmt-text-light);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+
+.mgmt-search-clear:hover {
+  color: var(--mgmt-text-main);
+}
+
+.mgmt-sort-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mgmt-sort-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--mgmt-text-light);
+  font-size: 1.05rem;
+  pointer-events: none;
+}
+
+.mgmt-sort-select {
+  padding: 0.52rem 2rem 0.52rem 2.2rem;
+  border-radius: var(--mgmt-radius-md);
+  border: 1px solid var(--mgmt-border-strong);
+  font-size: 0.83rem;
+  font-weight: 600;
+  background: #ffffff;
+  color: var(--mgmt-text-main);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+.mgmt-sort-chevron {
+  position: absolute;
+  right: 0.75rem;
+  color: var(--mgmt-text-light);
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+
+/* View Mode Switcher (Table ⇄ Grid) */
+.mgmt-view-switcher {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: var(--mgmt-radius-md);
+  border: 1px solid var(--mgmt-border-strong);
+}
+
+.mgmt-view-btn {
+  border: none;
+  background: transparent;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--mgmt-radius-sm);
+  color: var(--mgmt-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: all 0.15s ease;
+}
+
+.mgmt-view-btn.active {
+  background: #ffffff;
+  color: var(--mgmt-text-main);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* =========================================================================
+   5. MANAGEMENT STATUS BADGE
+   ========================================================================= */
+.mgmt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.mgmt-badge.published,
+.mgmt-badge.active,
+.mgmt-badge.completed {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.mgmt-badge.paused,
+.mgmt-badge.pending {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.mgmt-badge.draft,
+.mgmt-badge.hidden {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.mgmt-badge.superhost {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+/* =========================================================================
+   6. TABLE WRAPPER & SAAS STYLES
+   ========================================================================= */
+.mgmt-table-card {
+  background: #ffffff;
+  border-radius: var(--mgmt-radius-xl);
+  border: 1px solid var(--mgmt-border);
+  box-shadow: var(--mgmt-shadow-card);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.mgmt-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mgmt-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.mgmt-table th {
+  background: #f8fafc;
+  color: var(--mgmt-text-muted);
+  font-weight: 700;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--mgmt-border);
+  white-space: nowrap;
+}
+
+.mgmt-table td {
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid var(--mgmt-border-subtle);
+  color: var(--mgmt-text-main);
+  vertical-align: middle;
+}
+
+.mgmt-table tbody tr:hover {
+  background: #fbfcfe;
+}
+
+.mgmt-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* =========================================================================
+   7. EMPTY STATE
+   ========================================================================= */
+.mgmt-empty-state {
+  background: #ffffff;
+  border-radius: var(--mgmt-radius-xl);
+  border: 1px dashed var(--mgmt-border-strong);
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.mgmt-empty-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: #f8fafc;
+  color: var(--mgmt-text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--mgmt-border);
+}
+
+.mgmt-empty-title {
+  font-family: var(--mgmt-font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--mgmt-text-main);
+  margin: 0 0 0.4rem 0;
+}
+
+.mgmt-empty-desc {
+  font-size: 0.86rem;
+  color: var(--mgmt-text-muted);
+  max-width: 440px;
+  line-height: 1.5;
+  margin: 0 0 1.25rem 0;
+}

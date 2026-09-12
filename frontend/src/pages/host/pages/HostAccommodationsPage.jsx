@@ -10,12 +10,14 @@ import {
   TbEdit,
   TbTrash,
   TbX,
+  TbTrophy,
 } from 'react-icons/tb';
 
 export const HostAccommodationsPage = ({
   listings = [],
   isLoading = false,
   onRefresh,
+  onNavigate,
   onOpenWizard,
   onEditListing,
   onToggleStatus,
@@ -89,6 +91,16 @@ export const HostAccommodationsPage = ({
             <option value="homestay">Homestay</option>
             <option value="apartment">Căn hộ</option>
           </select>
+
+          {/* View Rankings CTA */}
+          <button
+            type="button"
+            className="host-btn-ranking-cta"
+            onClick={() => onNavigate && onNavigate('rankings')}
+            title="Xem bảng xếp hạng doanh thu và hiệu suất các cơ sở lưu trú"
+          >
+            <TbTrophy /> Bảng Xếp Hạng
+          </button>
 
           {/* Create Listing CTA */}
           <button
@@ -195,6 +207,14 @@ export const HostAccommodationsPage = ({
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     <div className="host-acc-actions">
+                      <button
+                        type="button"
+                        className="host-btn-action default"
+                        title="Xem thứ hạng & hiệu suất"
+                        onClick={() => onNavigate && onNavigate('rankings')}
+                      >
+                        <TbTrophy />
+                      </button>
                       <button
                         type="button"
                         className="host-btn-action default"

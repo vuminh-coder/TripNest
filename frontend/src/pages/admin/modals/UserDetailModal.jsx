@@ -243,7 +243,7 @@ export const UserDetailModal = ({
                 type="button"
                 className={user.status === 'active' ? 'btn-admin-danger' : 'btn-admin-success'}
                 onClick={() => {
-                  if (onToggleStatus) onToggleStatus(user.id);
+                  if (onToggleStatus) onToggleStatus(user);
                   onClose();
                 }}
               >

@@ -1,0 +1,294 @@
+/* ==========================================================================
+   HOST CASHFLOW BREAKDOWN DONUT CSS - Parity with Admin CashflowBreakdownDonut
+   ========================================================================== */
+
+.adm-donut-card {
+  background: var(--host-card-bg, #ffffff);
+  border: 1px solid var(--host-border, #edf2f7);
+  border-radius: var(--host-radius-md, 8px);
+  padding: 0.85rem 1rem;
+  box-shadow: var(--host-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.02));
+  display: flex;
+  flex-direction: column;
+  height: 420px;
+  min-height: 420px;
+  max-height: 420px;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.adm-donut-card:hover {
+  box-shadow: var(--host-shadow-card, 0 2px 10px -2px rgba(15, 23, 42, 0.03));
+}
+
+/* Header */
+.adm-donut-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.adm-donut-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adm-donut-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--host-radius-md, 8px);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.06) 100%);
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.adm-donut-title {
+  margin: 0 0 1px 0;
+  font-family: var(--host-font-display, 'Outfit', sans-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--host-text-main, #0f172a);
+  letter-spacing: -0.015em;
+}
+
+.adm-donut-subtitle {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--host-text-muted, #64748b);
+  line-height: 1.2;
+}
+
+/* Mode toggle switcher */
+.host-donut-mode-toggle {
+  display: flex;
+  align-items: center;
+  background: var(--host-border-subtle, #f8fafc);
+  padding: 2px;
+  border-radius: var(--host-radius-sm, 6px);
+  border: 1px solid var(--host-border, #edf2f7);
+  gap: 2px;
+}
+
+.host-donut-toggle-btn {
+  background: none;
+  border: none;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--host-text-muted, #64748b);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.host-donut-toggle-btn:hover {
+  color: var(--host-text-main, #0f172a);
+}
+
+.host-donut-toggle-btn.active {
+  background: #ffffff;
+  color: var(--host-text-main, #0f172a);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+}
+
+/* Body */
+.adm-donut-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  justify-content: space-between;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Donut Visual - Căn giữa khoảng trên */
+.adm-donut-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto 0;
+  flex-shrink: 0;
+}
+
+.adm-donut-svg {
+  overflow: visible;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.03));
+}
+
+.adm-donut-arc {
+  cursor: pointer;
+}
+
+.adm-donut-arc.hovered {
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.adm-donut-center-info {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 110px;
+  pointer-events: none;
+}
+
+.adm-donut-center-lbl {
+  font-size: 0.6rem;
+  color: var(--host-text-light, #94a3b8);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 1px;
+}
+
+.adm-donut-center-val {
+  font-family: var(--host-font-display, 'Outfit', monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--host-text-main, #0f172a);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.adm-donut-center-sub {
+  font-size: 0.62rem;
+  color: var(--host-text-muted, #64748b);
+  margin-top: 1px;
+  line-height: 1.15;
+  white-space: normal;
+  max-width: 100px;
+}
+
+/* Breakdown List - Căn sát xuống đáy & hỗ trợ dạng lướt */
+.adm-donut-breakdown-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-top: 1px dashed var(--host-border, #edf2f7);
+  padding-top: 8px;
+  padding-bottom: 2px;
+  margin-top: auto;
+  max-height: 185px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+.adm-donut-breakdown-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.adm-donut-breakdown-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.adm-donut-breakdown-list::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+}
+
+.adm-donut-breakdown-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.6);
+}
+
+.adm-donut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  border-radius: var(--host-radius-sm, 6px);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.adm-donut-row:hover,
+.adm-donut-row.hovered {
+  background: var(--host-border-subtle, #f8fafc);
+}
+
+.adm-donut-row-left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.adm-donut-row-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--host-radius-sm, 6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.adm-donut-row-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.adm-donut-row-name {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--host-text-main, #1e293b);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-donut-row-desc {
+  font-size: 0.62rem;
+  color: var(--host-text-light, #94a3b8);
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-donut-row-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
+.adm-donut-row-val {
+  font-family: var(--host-font-display, 'Outfit', monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--host-text-main, #0f172a);
+  line-height: 1.2;
+}
+
+.adm-donut-row-pct {
+  font-family: var(--host-font-display, 'Outfit', monospace);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.15;
+}

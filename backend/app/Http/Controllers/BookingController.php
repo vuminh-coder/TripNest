@@ -213,17 +213,18 @@ class BookingController extends Controller
         // 8. Tự động khởi tạo Lệnh Escrow Tạm Giữ Payout cho Host (status = 'pending')
         $host = $room->accommodation?->host;
         if ($host) {
-            $payoutAccount = $host->defaultPayoutAccount ?: \App\Models\HostPayoutAccount::firstOrCreate(
-                ['host_id' => $host->id],
-                [
+            $payoutAccount = $host->defaultPayoutAccount ?: $host->payoutAccounts()->first();
+            if (!$payoutAccount) {
+                $payoutAccount = \App\Models\HostPayoutAccount::create([
+                    'host_id' => $host->id,
                     'account_type' => 'bank_transfer',
-                    'bank_name' => 'Vietcombank',
-                    'account_number' => '9988776655',
+                    'bank_name' => '',
+                    'account_number' => '',
                     'account_holder_name' => mb_strtoupper($host->host_display_name ?: 'CHỦ NHÀ TRIPNEST'),
                     'is_default' => true,
-                    'is_verified' => true,
-                ]
-            );
+                    'is_verified' => false,
+                ]);
+            }
 
             $grossHostAmount = (float)$baseTotal + (float)$cleaningFee;
             $commissionFee = (float)$serviceFee;

@@ -86,7 +86,7 @@ Route::middleware(['auth:api'])->group(function () {
 // ==========================================
 // 3b. Host Portal - Quản lý chỗ ở & Đánh giá (Host - Cần đăng nhập)
 // ==========================================
-Route::middleware(['auth:api'])->group(function () {
+Route::middleware(['host.auth'])->group(function () {
     Route::get('/host/dashboard-stats', [HostController::class, 'getDashboardStats']);
     Route::get('/host/accommodations', [HostController::class, 'getAccommodations']);
     Route::post('/host/accommodations', [HostController::class, 'storeAccommodation']);
@@ -95,6 +95,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::patch('/host/accommodations/{id}/status', [HostController::class, 'toggleStatus']);
     Route::delete('/host/accommodations/{id}', [HostController::class, 'deleteAccommodation']);
     Route::get('/host/bookings', [HostController::class, 'getHostBookings']);
+    Route::match(['post', 'patch'], '/host/bookings/{id}/approve', [HostController::class, 'approveBooking']);
+    Route::get('/host/rankings', [HostController::class, 'getRankings']);
     Route::get('/host/payouts', [HostController::class, 'getPayouts']);
     Route::post('/host/payouts/request', [HostController::class, 'requestPayout']);
     Route::put('/host/payout-account', [HostController::class, 'updatePayoutAccount']);
@@ -112,6 +114,7 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
     Route::post('/admin/users', [UserController::class, 'create']);
     Route::get('/admin/users/{id}', [UserController::class, 'show']);
     Route::match(['put', 'patch', 'post'], '/admin/users/{id}', [UserController::class, 'update']);
+    Route::match(['patch', 'post'], '/admin/users/{id}/status', [UserController::class, 'toggleStatus']);
     Route::get('/admin/user/{id}', [UserController::class, 'show']);
     Route::post('/admin/user/create', [UserController::class, 'create']);
     Route::match(['put', 'patch', 'post'], '/admin/users/{id}/update', [UserController::class, 'update']);
