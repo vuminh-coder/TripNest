@@ -1,6 +1,6 @@
 // =============================================================================
 // DATABASE MARKUP LANGUAGE (DBML) - TRIPNEST BOOKING SYSTEM (CHUẨN 100% MỚI NHẤT)
-// Kiểm tra & Đối soát trực tiếp từ toàn bộ 28 file Laravel Migration trong backend
+// Kiểm tra & Đối soát trực tiếp từ toàn bộ 30 file Laravel Migration & Live MySQL Database
 // Cập nhật: 09/2026 - Tương thích hoàn toàn với MySQL 9.x và dbdiagram.io / dbdocs.io
 // =============================================================================
 
@@ -769,10 +769,60 @@ Table bookings {
 }
 
 // -----------------------------------------------------------------------------
+// BẢNG: room_locks
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Cơ chế Khóa phòng phân tán tạm thời (Distributed / Pessimistic Locking).
+// - Giữ chỗ tạm thời (thường 10-15 phút) trong quá trình khách đang tiến hành thanh toán tại Checkout,
+//   triệt tiêu 100% rủi ro Race Condition / Overbooking (hai khách cùng thanh toán 1 phòng cùng ngày).
+// - Tự động giải phóng (status = 'released') khi hết hạn giữ chỗ (expires_at) hoặc khách bấm hủy,
+//   hoặc chuyển đổi thành công (status = 'converted') khi đơn đặt phòng chính thức được tạo thành công.
+// -----------------------------------------------------------------------------
+Table room_locks {
+  // [PK] Khóa chính tự tăng của lượt khóa giữ chỗ phòng tạm thời
+  id bigint [pk, increment]
+
+  // [FK] Khóa ngoại trỏ đến hạng phòng đang được giữ chỗ tạm thời (rooms.id)
+  room_id bigint [not null, ref: > rooms.id]
+
+  // [FK] Khóa ngoại trỏ đến người dùng đang thực hiện giữ chỗ (NULL nếu khách vãng lai)
+  user_id bigint [null, ref: > users.id]
+
+  // Chuỗi mã token duy nhất định danh phiên giữ chỗ tại màn hình Checkout (64 ký tự)
+  lock_token varchar(64) [not null]
+
+  // Ngày nhận phòng dự kiến giữ chỗ
+  check_in_date date [not null]
+
+  // Ngày trả phòng dự kiến giữ chỗ
+  check_out_date date [not null]
+
+  // Số lượng phòng đăng ký giữ chỗ tạm thời trong đợt này
+  rooms_count int [default: 1, not null]
+
+  // Mốc thời gian giới hạn giữ phòng (Timeout - quá mốc này phòng tự động được nhả cho người khác)
+  expires_at timestamp [not null]
+
+  // Trạng thái giữ chỗ: 'active' (đang giữ phòng), 'released' (đã giải phóng/hết hạn), 'converted' (đã chuyển thành booking)
+  status enum('active', 'released', 'converted') [default: 'active', not null]
+
+  // Thời điểm tạo khóa giữ chỗ phòng
+  created_at timestamp [null]
+
+  // Thời điểm cập nhật trạng thái khóa gần nhất
+  updated_at timestamp [null]
+
+  indexes {
+    (lock_token, room_id) [unique, name: 'uq_token_room']
+    (room_id, check_in_date, check_out_date, status, expires_at) [name: 'idx_room_lock_collision']
+    (lock_token, status) [name: 'idx_lock_token']
+  }
+}
+
+// -----------------------------------------------------------------------------
 // BẢNG: reviews
 // MỤC ĐÍCH NGHIỆP VỤ:
 // - Đánh giá chất lượng dịch vụ theo mô hình Biểu đồ Radar 6 tiêu chí quốc tế.
-// - Ràng buộc 1-1 với booking_id đảm bảo CHỈ khách đã hoàn thành kỳ nghỉ ('completed')
+// - Ràng buộc với booking_id đảm bảo CHỈ khách đã hoàn thành kỳ nghỉ ('completed')
 //   mới được viết duy nhất 1 review, chống hoàn toàn tình trạng cày review ảo.
 // - Gồm rating tổng thể và cột JSON rating_breakdown (cleanliness, accuracy, communication,...).
 // -----------------------------------------------------------------------------
@@ -780,8 +830,8 @@ Table reviews {
   // [PK] Khóa chính đánh giá
   id bigint [pk, increment]
 
-  // [FK 1-1] Khóa ngoại duy nhất liên kết 1-1 với đơn phòng (1 kỳ nghỉ chỉ được viết 1 review)
-  booking_id bigint [unique, not null, ref: - bookings.id]
+  // [FK] Khóa ngoại trỏ đến đơn phòng (bookings.id). Cho phép NULL ở cấp schema cơ sở dữ liệu
+  booking_id bigint [null, ref: > bookings.id]
 
   // [FK] Khóa ngoại trỏ đến phòng được đánh giá
   room_id bigint [not null, ref: > rooms.id]
@@ -1154,7 +1204,155 @@ Table password_reset_tokens {
 }
 
 // =============================================================================
-// 7. NHÓM BẢNG ĐỒ HỌA TRÊN DBDATABASE / DBDOCS (TABLEGROUPS)
+// 7. NHÓM HẠ TẦNG HÀNG ĐỢI & BỘ NHỚ ĐỆM FRAMEWORK (QUEUE & CACHE)
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// BẢNG: cache
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Bộ nhớ đệm dữ liệu ứng dụng chuẩn của Laravel Framework lưu trong cơ sở dữ liệu.
+// - Tăng tốc độ truy xuất trang chủ, danh mục chỗ nghỉ và tỷ giá ngoại tệ.
+// -----------------------------------------------------------------------------
+Table cache {
+  // [PK] Khóa định danh mục cache duy nhất
+  key varchar(255) [pk]
+
+  // Dữ liệu cache được mã hóa/tuần tự hóa
+  value mediumtext [not null]
+
+  // Mốc thời gian UNIX timestamp hết hạn của cache
+  expiration bigint [not null]
+
+  indexes {
+    expiration [name: 'cache_expiration_index']
+  }
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: cache_locks
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Quản lý Atomic Lock cho bộ nhớ đệm cache, chống race condition xử lý đồng thời.
+// -----------------------------------------------------------------------------
+Table cache_locks {
+  // [PK] Khóa định danh tài nguyên khóa
+  key varchar(255) [pk]
+
+  // Chuỗi định danh tiến trình/owner đang giữ lock
+  owner varchar(255) [not null]
+
+  // Mốc thời gian UNIX timestamp hết hạn của lock
+  expiration bigint [not null]
+
+  indexes {
+    expiration [name: 'cache_locks_expiration_index']
+  }
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: jobs
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Hàng đợi công việc bất đồng bộ (Queue Jobs) của hệ thống TripNest:
+//   Gửi email xác nhận đặt phòng, gửi thông báo OTP, xử lý webhook thanh toán cổng PayOS/VNPay.
+// -----------------------------------------------------------------------------
+Table jobs {
+  // [PK] Khóa chính tự tăng định danh tác vụ hàng đợi
+  id bigint [pk, increment]
+
+  // Tên hàng đợi phân loại (VD: 'default', 'emails', 'notifications')
+  queue varchar(255) [not null]
+
+  // Dữ liệu payload JSON chứa thông tin lớp Job và tham số thực thi
+  payload longtext [not null]
+
+  // Số lần đã thực thi thử lại khi gặp lỗi
+  attempts smallint [not null]
+
+  // Mốc thời gian UNIX timestamp khi worker nhận giữ tác vụ để xử lý
+  reserved_at int [null]
+
+  // Mốc thời gian UNIX timestamp tác vụ sẵn sàng để được thực thi
+  available_at int [not null]
+
+  // Mốc thời gian UNIX timestamp khởi tạo tác vụ
+  created_at int [not null]
+
+  indexes {
+    queue [name: 'jobs_queue_index']
+  }
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: job_batches
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Quản lý lô tác vụ xử lý hàng loạt (Job Batching) trong Laravel.
+// -----------------------------------------------------------------------------
+Table job_batches {
+  // [PK] Mã UUID định danh duy nhất của lô công việc
+  id varchar(255) [pk]
+
+  // Tên phân loại của lô công việc
+  name varchar(255) [not null]
+
+  // Tổng số lượng tác vụ trong lô
+  total_jobs int [not null]
+
+  // Số lượng tác vụ đang chờ xử lý
+  pending_jobs int [not null]
+
+  // Số lượng tác vụ bị lỗi trong lô
+  failed_jobs int [not null]
+
+  // Danh sách ID của các tác vụ bị lỗi dạng chuỗi lưu trữ
+  failed_job_ids longtext [not null]
+
+  // Tùy chọn cấu hình bổ sung của batch (callbacks khi thành công, thất bại)
+  options mediumtext [null]
+
+  // Mốc thời gian UNIX timestamp khi lô bị hủy bỏ
+  cancelled_at int [null]
+
+  // Mốc thời gian UNIX timestamp khởi tạo lô
+  created_at int [not null]
+
+  // Mốc thời gian UNIX timestamp khi tất cả tác vụ trong lô hoàn tất
+  finished_at int [null]
+}
+
+// -----------------------------------------------------------------------------
+// BẢNG: failed_jobs
+// MỤC ĐÍCH NGHIỆP VỤ:
+// - Lưu vết chi tiết các tác vụ hàng đợi bị lỗi sau khi đã hết số lần retry tối đa.
+// - Hỗ trợ kỹ thuật viên và Admin phân tích nguyên nhân ngoại lệ (Exception Stack Trace) và chạy lại (retry).
+// -----------------------------------------------------------------------------
+Table failed_jobs {
+  // [PK] Khóa chính tự tăng của bản ghi lỗi
+  id bigint [pk, increment]
+
+  // Mã định danh duy nhất UUID của job thất bại
+  uuid varchar(255) [unique, not null]
+
+  // Tên kết nối hàng đợi (VD: 'database', 'redis')
+  connection varchar(255) [not null]
+
+  // Tên hàng đợi
+  queue varchar(255) [not null]
+
+  // Dữ liệu payload của job
+  payload longtext [not null]
+
+  // Toàn bộ vết dấu ngoại lệ và thông báo lỗi (Exception Stack Trace)
+  exception longtext [not null]
+
+  // Mốc thời gian chính xác khi tác vụ bị đánh dấu thất bại hoàn toàn
+  failed_at timestamp [default: 'CURRENT_TIMESTAMP', not null]
+
+  indexes {
+    (connection, queue, failed_at) [name: 'failed_jobs_connection_queue_failed_at_index']
+  }
+}
+
+// =============================================================================
+// 8. NHÓM BẢNG ĐỒ HỌA TRÊN DBDATABASE / DBDOCS (TABLEGROUPS)
 // =============================================================================
 
 TableGroup Authentication_And_Users {
@@ -1178,6 +1376,7 @@ TableGroup Accommodation_And_Listings {
 
 TableGroup Booking_And_Reviews {
   bookings
+  room_locks
   vouchers
   reviews
   wishlists
@@ -1195,4 +1394,12 @@ TableGroup System_Security {
   personal_access_tokens
   sessions
   password_reset_tokens
+}
+
+TableGroup System_Queue_And_Cache {
+  cache
+  cache_locks
+  jobs
+  job_batches
+  failed_jobs
 }
